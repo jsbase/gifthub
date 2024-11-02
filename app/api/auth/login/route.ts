@@ -37,7 +37,7 @@ export async function POST(request: Request) {
     // Create JWT token
     const token = sign(
       { groupId: group._id, groupName: group.groupName },
-      process.env.JWT_SECRET,
+      process.env.JWT_SECRET as string,
       { expiresIn: '7d' }
     );
 
