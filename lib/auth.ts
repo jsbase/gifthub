@@ -1,80 +1,74 @@
-import { jwtVerify, SignJWT } from 'jose';
-import bcrypt from 'bcryptjs';
+import { jwtVerify } from 'jose';
 
-const JWT_SECRET = new TextEncoder().encode('your-secret-key');
-
-interface Group {
-  groupName: string;
-  password: string;
-  members: any[];
-  gifts: any[];
-}
+const isClient = typeof window !== 'undefined';
 
 export async function login(groupName: string, password: string) {
-  try {
-    // In a real app, this would be a server call
-    const storedGroups = JSON.parse(localStorage.getItem('groups') || '[]');
-    const group = storedGroups.find((g: Group) => g.groupName === groupName);
-    
-    if (!group) {
-      throw new Error('Group not found');
-    }
+  if (!isClient) throw new Error('This method can only be used in the browser');
+  
+  const response = await fetch('/api/auth/login', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ groupName, password }),
+    credentials: 'include',
+  });
 
-    const isValid = await bcrypt.compare(password, group.password);
-    if (!isValid) {
-      throw new Error('Invalid password');
-    }
-
-    const token = await new SignJWT({ groupName })
-      .setProtectedHeader({ alg: 'HS256' })
-      .setExpirationTime('7d')
-      .sign(JWT_SECRET);
-
-    localStorage.setItem('auth-token', token);
-    return { success: true };
-  } catch (error) {
-    throw error;
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || 'Login failed');
   }
+
+  return { success: true };
 }
 
 export async function register(groupName: string, password: string) {
-  try {
-    const storedGroups = JSON.parse(localStorage.getItem('groups') || '[]');
-    
-    if (storedGroups.some((g: Group) => g.groupName === groupName)) {
-      throw new Error('Group already exists');
-    }
+  if (!isClient) throw new Error('This method can only be used in the browser');
+  
+  const response = await fetch('/api/auth/register', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ groupName, password }),
+    credentials: 'include',
+  });
 
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const newGroup = {
-      groupName,
-      password: hashedPassword,
-      members: [],
-      gifts: [],
-      createdAt: new Date().toISOString(),
-    };
-
-    storedGroups.push(newGroup);
-    localStorage.setItem('groups', JSON.stringify(storedGroups));
-    
-    return { success: true };
-  } catch (error) {
-    throw error;
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || 'Registration failed');
   }
+
+  return { success: true };
 }
 
 export async function verifyAuth() {
+  if (!isClient) return null;
+  
   try {
-    const token = localStorage.getItem('auth-token');
-    if (!token) return null;
+    const response = await fetch('/api/auth/verify', {
+      credentials: 'include',
+    });
 
-    const { payload } = await jwtVerify(token, JWT_SECRET);
-    return payload;
+    if (!response.ok) return null;
+    
+    const data = await response.json();
+    return data;
   } catch (error) {
+    console.error('Auth verification error:', error);
     return null;
   }
 }
 
 export async function logout() {
-  localStorage.removeItem('auth-token');
+  if (!isClient) return;
+  
+  try {
+    await fetch('/api/auth/logout', {
+      method: 'POST',
+      credentials: 'include',
+    });
+  } catch (error) {
+    console.error('Logout error:', error);
+  }
 }

@@ -1,62 +1,68 @@
 import { NextResponse } from 'next/server';
-import clientPromise from '@/lib/mongodb';
+import { SignJWT } from 'jose';
 import bcrypt from 'bcryptjs';
-import { cookies } from 'next/headers';
-import { sign } from 'jsonwebtoken';
-
-if (!process.env.JWT_SECRET) {
-  throw new Error('JWT_SECRET is not defined');
-}
+import { prisma } from '@/lib/prisma';
 
 export async function POST(request: Request) {
   try {
+    if (!process.env.JWT_SECRET) {
+      throw new Error('JWT_SECRET is not set');
+    }
+
     const { groupName, password } = await request.json();
 
-    const client = await clientPromise;
-    const db = client.db();
-    const groups = db.collection('groups');
+    if (!groupName || !password) {
+      return NextResponse.json(
+        { message: 'Group name and password are required' },
+        { status: 400 }
+      );
+    }
 
-    // Find group
-    const group = await groups.findOne({ groupName });
+    const group = await prisma.group.findUnique({
+      where: { name: groupName }
+    });
+
     if (!group) {
       return NextResponse.json(
-        { error: 'Group not found' },
+        { message: 'Group not found' },
         { status: 404 }
       );
     }
 
-    // Verify password
     const isValid = await bcrypt.compare(password, group.password);
     if (!isValid) {
       return NextResponse.json(
-        { error: 'Invalid password' },
+        { message: 'Invalid password' },
         { status: 401 }
       );
     }
 
-    // Create JWT token
-    const token = sign(
-      { groupId: group._id, groupName: group.groupName },
-      process.env.JWT_SECRET as string,
-      { expiresIn: '7d' }
-    );
+    const token = await new SignJWT({ groupName: group.name })
+      .setProtectedHeader({ alg: 'HS256' })
+      .setExpirationTime('7d')
+      .sign(new TextEncoder().encode(process.env.JWT_SECRET));
 
-    // Set cookie
-    cookies().set('auth-token', token, {
+    const response = NextResponse.json({ token, success: true });
+
+    // Set the token as an HTTP-only cookie
+    response.cookies.set({
+      name: 'auth-token',
+      value: token,
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      sameSite: 'lax',
       maxAge: 60 * 60 * 24 * 7, // 7 days
     });
 
-    return NextResponse.json(
-      { message: 'Logged in successfully', groupName: group.groupName },
-      { status: 200 }
-    );
+    return response;
+
   } catch (error) {
     console.error('Login error:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { 
+        message: 'Login failed',
+        details: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined 
+      },
       { status: 500 }
     );
   }
