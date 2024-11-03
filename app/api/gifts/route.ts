@@ -37,9 +37,17 @@ export async function GET(request: Request) {
       );
     }
 
+    const { searchParams } = new URL(request.url);
+    const memberId = searchParams.get('memberId');
+
     const gifts = await prisma.gift.findMany({
-      where: { groupId },
-      orderBy: { createdAt: 'desc' }
+      where: {
+        groupId,
+        ...(memberId ? { forMemberId: memberId } : {}),
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
     });
 
     return NextResponse.json({ gifts });
@@ -62,11 +70,18 @@ export async function POST(request: Request) {
       );
     }
 
-    const { title, description, url } = await request.json();
+    const { title, description, url, forMemberId } = await request.json();
 
     if (!title || title.trim().length === 0) {
       return NextResponse.json(
         { message: 'Gift title is required' },
+        { status: 400 }
+      );
+    }
+
+    if (!forMemberId) {
+      return NextResponse.json(
+        { message: 'Member ID is required' },
         { status: 400 }
       );
     }
@@ -77,6 +92,7 @@ export async function POST(request: Request) {
         description: description?.trim(),
         url: url?.trim(),
         groupId,
+        forMemberId,
       },
     });
 
