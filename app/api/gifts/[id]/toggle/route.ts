@@ -29,9 +29,9 @@ async function getGroupIdFromToken(request: Request) {
 
 export async function PUT(
   request: Request,
-  { params }: { params: { id: string } }
 ) {
   try {
+    const { id } = await request.json();
     const groupId = await getGroupIdFromToken(request);
     if (!groupId) {
       return NextResponse.json(
@@ -42,7 +42,7 @@ export async function PUT(
 
     const gift = await prisma.gift.findFirst({
       where: {
-        id: params.id,
+        id,
         groupId,
       },
     });
@@ -56,7 +56,7 @@ export async function PUT(
 
     const updatedGift = await prisma.gift.update({
       where: { 
-        id: params.id,
+        id,
         groupId,
       },
       data: { isPurchased: !gift.isPurchased },
