@@ -2,7 +2,13 @@ import { jwtVerify } from 'jose';
 
 const isClient = typeof window !== 'undefined';
 
-export async function login(groupName: string, password: string) {
+interface AuthResponse {
+  success: boolean;
+  message?: string;
+  error?: string;
+}
+
+export async function login(groupName: string, password: string): Promise<AuthResponse> {
   if (!isClient) throw new Error('This method can only be used in the browser');
   
   const response = await fetch('/api/auth/login', {
@@ -14,32 +20,42 @@ export async function login(groupName: string, password: string) {
     credentials: 'include',
   });
 
+  const data = await response.json();
+
   if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || 'Login failed');
+    throw new Error(data.message || 'Login failed');
   }
 
-  return { success: true };
+  return data;
 }
 
-export async function register(groupName: string, password: string) {
+export async function register(groupName: string, password: string): Promise<AuthResponse> {
   if (!isClient) throw new Error('This method can only be used in the browser');
   
+  if (!groupName || groupName.trim().length < 3) {
+    throw new Error('Group name must be at least 3 characters long');
+  }
+
+  if (!password || password.length < 6) {
+    throw new Error('Password must be at least 6 characters long');
+  }
+
   const response = await fetch('/api/auth/register', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ groupName, password }),
+    body: JSON.stringify({ groupName: groupName.trim(), password }),
     credentials: 'include',
   });
 
+  const data = await response.json();
+
   if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || 'Registration failed');
+    throw new Error(data.message || 'Registration failed');
   }
 
-  return { success: true };
+  return data;
 }
 
 export async function verifyAuth() {
