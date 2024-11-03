@@ -1,7 +1,9 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, type NextRequest } from 'next/server';
 import { cookies } from 'next/headers';
 import prisma from '@/lib/prisma';
 import { jwtVerify } from 'jose';
+
+export const dynamic = 'force-dynamic';
 
 async function getGroupIdFromToken(request: Request) {
   const cookieStore = await cookies();
@@ -28,7 +30,7 @@ async function getGroupIdFromToken(request: Request) {
 }
 
 export async function GET(
-  request: Request,
+  request: NextRequest,
   context: { params: { id: string } }
 ): Promise<NextResponse> {
   const { id } = context.params;
@@ -73,7 +75,7 @@ export async function GET(
 }
 
 export async function POST(
-  request: Request,
+  request: NextRequest,
   context: { params: { id: string } }
 ): Promise<NextResponse> {
   const { id } = context.params;
@@ -123,7 +125,7 @@ export async function POST(
 }
 
 export async function DELETE(
-  request: Request,
+  request: NextRequest,
   context: { params: { id: string } }
 ): Promise<NextResponse> {
   const { id } = context.params;
@@ -173,7 +175,7 @@ export async function DELETE(
 }
 
 export async function PUT(
-  request: Request,
+  request: NextRequest,
   context: { params: { id: string } }
 ): Promise<NextResponse> {
   const { id } = context.params;
