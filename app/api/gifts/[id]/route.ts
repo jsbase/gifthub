@@ -174,9 +174,9 @@ export async function DELETE(
 
 export async function PUT(
   request: Request,
-  context: { params: { id: string } }
+  { params }: { params: { id: string } }
 ): Promise<NextResponse> {
-  const { id } = context.params;
+  const { id } = params;
   if (!id.match(/^[0-9a-fA-F]{24}$/)) {
     return NextResponse.json(
       { message: 'Invalid gift ID format' },
