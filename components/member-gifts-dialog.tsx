@@ -164,36 +164,40 @@ export function MemberGiftsDialog({
 
           {gifts.length > 0 ? (
             <div className="space-y-4">
-              {gifts.map((gift) => (
+              {[...gifts]
+                .sort((a, b) => Number(a.isPurchased) - Number(b.isPurchased))
+                .map((gift) => (
                 <div
                   key={gift.id}
-                  className="p-4 rounded-lg border bg-card"
+                  className={`p-4 rounded-lg border bg-card ${gift.isPurchased ? 'opacity-60' : ''} relative`}
                 >
-                  <div className="flex items-center justify-between">
+                  <a
+                    href={gift.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={(e) => (!gift.url || gift.isPurchased) && e.preventDefault()}
+                    className={`absolute inset-0 ${gift.url && !gift.isPurchased ? 'cursor-pointer' : 'cursor-default'}`}
+                  />
+                  <div className="flex items-center justify-between relative z-10 pointer-events-none">
                     <div className="flex-grow">
-                      <h3 className="font-medium">{gift.title}</h3>
+                      <h3 className={`font-medium ${gift.isPurchased ? 'line-through' : ''}`}>
+                        {gift.title}
+                      </h3>
                       {gift.description && (
-                        <p className="text-sm text-muted-foreground mt-1">
+                        <p className={`text-sm text-muted-foreground mt-1 ${gift.isPurchased ? 'line-through' : ''}`}>
                           {gift.description}
                         </p>
                       )}
-                      {gift.url && (
-                        <a
-                          href={gift.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-sm text-blue-600 hover:underline mt-1 block"
-                        >
-                          View Link
-                        </a>
-                      )}
                     </div>
-                    <div className="flex items-center space-x-2">
+                    <div className="flex items-center space-x-2 pointer-events-auto">
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => handleTogglePurchased(gift.id)}
-                        className={gift.isPurchased ? "text-green-600" : ""}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleTogglePurchased(gift.id);
+                        }}
+                        className={`relative z-10 ${gift.isPurchased ? "text-green-600" : ""}`}
                       >
                         {gift.isPurchased ? (
                           <X className="h-4 w-4" />
@@ -204,8 +208,11 @@ export function MemberGiftsDialog({
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => handleDeleteGift(gift.id)}
-                        className="text-red-600 hover:text-red-700"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleDeleteGift(gift.id);
+                        }}
+                        className="relative z-10 text-red-600 hover:text-red-700"
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
