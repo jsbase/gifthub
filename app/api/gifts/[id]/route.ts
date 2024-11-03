@@ -125,17 +125,9 @@ async function POST(
 }
 
 export async function DELETE(
-  request: NextRequest,
-): Promise<NextResponse> {
-  const { id } = await request.json();
-
-  if (!id.match(/^[0-9a-fA-F]{24}$/)) {
-    return NextResponse.json(
-      { message: 'Invalid gift ID format' },
-      { status: 400 }
-    );
-  }
-
+  request: Request,
+  { params }: { params: { id: string } }
+) {
   try {
     const groupId = await getGroupIdFromToken(request);
     if (!groupId) {
@@ -147,7 +139,7 @@ export async function DELETE(
 
     const gift = await prisma.gift.findFirst({
       where: {
-        id,
+        id: params.id,
         groupId,
       },
     });
@@ -160,10 +152,16 @@ export async function DELETE(
     }
 
     await prisma.gift.delete({
-      where: { id },
+      where: {
+        id: params.id,
+        groupId,
+      },
     });
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({
+      success: true,
+      message: 'Gift deleted successfully',
+    });
   } catch (error) {
     console.error('Error deleting gift:', error);
     return NextResponse.json(
