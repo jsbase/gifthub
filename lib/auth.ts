@@ -1,12 +1,6 @@
-import { jwtVerify } from 'jose';
+import { AuthResponse } from '@/types';
 
 const isClient = typeof window !== 'undefined';
-
-interface AuthResponse {
-  success: boolean;
-  message?: string;
-  error?: string;
-}
 
 export async function login(groupName: string, password: string): Promise<AuthResponse> {
   if (!isClient) throw new Error('This method can only be used in the browser');

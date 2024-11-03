@@ -7,8 +7,9 @@ import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { UserPlus } from "lucide-react";
 import { toast } from "sonner";
+import { AddMemberDialogProps } from "@/types";
 
-export function AddMemberDialog() {
+export function AddMemberDialog({ onMemberAdded }: AddMemberDialogProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -20,23 +21,31 @@ export function AddMemberDialog() {
     const email = formData.get('email') as string;
 
     try {
+      console.log('Sending request to add member:', email);
+
       const response = await fetch('/api/members', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email }),
       });
 
-      const data = await response.json();
+      const data = await response.json().catch(() => null);
 
       if (!response.ok) {
-        throw new Error(data.message || 'Failed to add member');
+        throw new Error(data?.message || `Error: ${response.status} ${response.statusText}`);
+      }
+
+      if (!data) {
+        throw new Error('No response data received');
       }
 
       toast.success('Member added successfully');
       setIsOpen(false);
-      // Trigger refresh of members list
-      window.location.reload();
+      if (onMemberAdded) {
+        onMemberAdded();
+      }
     } catch (error) {
+      console.error('Error adding member:', error);
       toast.error(error instanceof Error ? error.message : 'Failed to add member');
     } finally {
       setIsLoading(false);

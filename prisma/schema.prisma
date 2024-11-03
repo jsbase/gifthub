@@ -36,19 +36,21 @@ model UserGroup {
   group    Group    @relation(fields: [groupId], references: [id])
   groupId  String   @db.ObjectId
   joinedAt DateTime @default(now())
+  gifts    Gift[]   @relation("UserGroupToGift")
 
   @@unique([userId, groupId])
 }
 
 model Gift {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
   title       String
   description String?
   url         String?
-  isPurchased Boolean  @default(false)
-  group       Group    @relation(fields: [groupId], references: [id])
-  groupId     String   @db.ObjectId
-  createdAt   DateTime @default(now())
-
-  @@index([groupId])
+  isPurchased Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  group       Group     @relation(fields: [groupId], references: [id])
+  groupId     String    @db.ObjectId
+  forMember   UserGroup @relation("UserGroupToGift", fields: [forMemberId], references: [id])
+  forMemberId String    @db.ObjectId
 }

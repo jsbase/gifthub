@@ -5,18 +5,6 @@ import { jwtVerify } from 'jose';
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 
-// Add these interfaces for type safety
-interface User {
-  id: string;
-  email: string;
-}
-
-interface UserGroup {
-  id: string;
-  joinedAt: Date;
-  user: User;
-}
-
 async function getGroupIdFromToken(request: Request) {
   const cookieStore = await cookies();
   const token = cookieStore.get('auth-token')?.value;
@@ -51,18 +39,30 @@ export async function GET(request: Request) {
       );
     }
 
-    const userGroups = await prisma.userGroup.findMany({
-      where: { groupId },
-      include: { user: true }
+    const members = await prisma.userGroup.findMany({
+      where: {
+        groupId: groupId,
+      },
+      include: {
+        user: {
+          select: {
+            email: true,
+          },
+        },
+      },
+      orderBy: {
+        joinedAt: 'desc',
+      },
     });
 
-    const members = userGroups.map((ug: UserGroup) => ({
-      id: ug.id,
-      email: ug.user.email,
-      joinedAt: ug.joinedAt
+    // Transform the data to match your Member interface
+    const formattedMembers = members.map(member => ({
+      id: member.id,
+      email: member.user.email,
+      joinedAt: member.joinedAt.toISOString(),
     }));
 
-    return NextResponse.json({ members });
+    return NextResponse.json({ members: formattedMembers });
   } catch (error) {
     console.error('Error fetching members:', error);
     return NextResponse.json(
@@ -82,7 +82,13 @@ export async function POST(request: Request) {
       );
     }
 
-    const { email } = await request.json();
+    console.log('Received POST request for adding member');
+
+    const body = await request.json();
+    const { email } = body;
+
+    console.log('Received email:', email);
+
     if (!email || !email.includes('@')) {
       return NextResponse.json(
         { message: 'Invalid email address' },
@@ -90,11 +96,22 @@ export async function POST(request: Request) {
       );
     }
 
-    // Generate a secure random password
+    const existingMember = await prisma.userGroup.findFirst({
+      where: {
+        group: { id: groupId },
+        user: { email: email },
+      },
+    });
+
+    if (existingMember) {
+      return NextResponse.json(
+        { message: 'User is already a member of this group' },
+        { status: 400 }
+      );
+    }
+
     const temporaryPassword = crypto.randomBytes(16).toString('hex');
     const hashedPassword = await bcrypt.hash(temporaryPassword, 10);
-
-    // Create user if doesn't exist
     const user = await prisma.user.upsert({
       where: { email },
       update: {},
@@ -104,11 +121,13 @@ export async function POST(request: Request) {
       },
     });
 
-    // Add user to group if not already a member
     const userGroup = await prisma.userGroup.create({
       data: {
         userId: user.id,
         groupId,
+      },
+      include: {
+        user: true,
       },
     });
 
@@ -121,12 +140,18 @@ export async function POST(request: Request) {
       },
     });
   } catch (error) {
-    console.error('Error adding member:', error);
+    console.error('Detailed error in POST /api/members:', error);
 
-    if (error instanceof Error && error.message.includes('P2002')) {
+    if (error instanceof Error) {
+      if (error.message.includes('P2002')) {
+        return NextResponse.json(
+          { message: 'User is already a member of this group' },
+          { status: 400 }
+        );
+      }
       return NextResponse.json(
-        { message: 'User is already a member of this group' },
-        { status: 400 }
+        { message: error.message },
+        { status: 500 }
       );
     }
 
