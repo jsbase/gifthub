@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { verify } from 'jsonwebtoken';
+import { jwtVerify } from 'jose';
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const token = request.cookies.get('auth-token');
 
   // Check if the route should be protected
@@ -12,12 +12,20 @@ export function middleware(request: NextRequest) {
     }
 
     try {
-      verify(token.value, process.env.JWT_SECRET!);
+      const secret = new TextEncoder().encode(process.env.JWT_SECRET);
+      await jwtVerify(token.value, secret);
       return NextResponse.next();
     } catch {
-      return NextResponse.redirect(new URL('/', request.url));
+      // Clear invalid token
+      const response = NextResponse.redirect(new URL('/', request.url));
+      response.cookies.delete('auth-token');
+      return response;
     }
   }
 
   return NextResponse.next();
+}
+
+export const config = {
+  matcher: '/dashboard/:path*'
 }

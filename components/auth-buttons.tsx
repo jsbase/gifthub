@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
@@ -27,6 +27,7 @@ export function AuthButtons() {
       await login(groupName, password);
       toast.success('Logged in successfully');
       setIsLoginOpen(false);
+      router.refresh();
       router.push('/dashboard');
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Login failed');
@@ -68,10 +69,7 @@ export function AuthButtons() {
         <DialogTrigger asChild>
           <Button size="lg" className="min-w-[200px]">Login</Button>
         </DialogTrigger>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Login to Your Group</DialogTitle>
-          </DialogHeader>
+        <AuthDialog title="Login to Your Group" description="Enter your group name and password to log in.">
           <form onSubmit={handleLogin} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="groupName">Group Name</Label>
@@ -85,17 +83,14 @@ export function AuthButtons() {
               {isLoading ? 'Logging in...' : 'Login'}
             </Button>
           </form>
-        </DialogContent>
+        </AuthDialog>
       </Dialog>
 
       <Dialog open={isRegisterOpen} onOpenChange={setIsRegisterOpen}>
         <DialogTrigger asChild>
           <Button size="lg" variant="outline" className="min-w-[200px]">Register</Button>
         </DialogTrigger>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Create a New Group</DialogTitle>
-          </DialogHeader>
+        <AuthDialog title="Create a New Group" description="Choose a group name and password to create a new group.">
           <form onSubmit={handleRegister} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="newGroupName">Group Name</Label>
@@ -113,8 +108,24 @@ export function AuthButtons() {
               {isLoading ? 'Creating Group...' : 'Create Group'}
             </Button>
           </form>
-        </DialogContent>
+        </AuthDialog>
       </Dialog>
     </div>
   );
+}
+
+export function AuthDialog({ children, title, description }: {
+  children: React.ReactNode,
+  title: string,
+  description: string
+}) {
+  return (
+    <DialogContent>
+      <DialogHeader>
+        <DialogTitle>{title}</DialogTitle>
+        <DialogDescription>{description}</DialogDescription>
+      </DialogHeader>
+      {children}
+    </DialogContent>
+  )
 }
