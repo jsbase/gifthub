@@ -112,7 +112,6 @@ export async function POST(request: Request) {
 
     const temporaryPassword = crypto.randomBytes(16).toString('hex');
     const hashedPassword = await bcrypt.hash(temporaryPassword, 10);
-
     const user = await prisma.user.upsert({
       where: { email },
       update: {},
