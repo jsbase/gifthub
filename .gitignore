@@ -33,3 +33,11 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+.env
+
+# generated
+/prisma/generated
+
+# tools
+/.bolt
+/.vscode
