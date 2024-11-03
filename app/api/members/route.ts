@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import prisma from '@/lib/prisma';
 import { jwtVerify } from 'jose';
+import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
 
 // Add these interfaces for type safety
 interface User {
@@ -88,13 +90,17 @@ export async function POST(request: Request) {
       );
     }
 
+    // Generate a secure random password
+    const temporaryPassword = crypto.randomBytes(16).toString('hex');
+    const hashedPassword = await bcrypt.hash(temporaryPassword, 10);
+
     // Create user if doesn't exist
     const user = await prisma.user.upsert({
       where: { email },
       update: {},
       create: {
         email,
-        password: '', // We'll implement proper user authentication later
+        password: hashedPassword,
       },
     });
 

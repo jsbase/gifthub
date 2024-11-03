@@ -50,4 +50,6 @@ model Gift {
   group       Group    @relation(fields: [groupId], references: [id])
   groupId     String   @db.ObjectId
   createdAt   DateTime @default(now())
+
+  @@index([groupId])
 }

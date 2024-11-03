@@ -55,7 +55,10 @@ export async function PUT(
     }
 
     const updatedGift = await prisma.gift.update({
-      where: { id: params.id },
+      where: { 
+        id: params.id,
+        groupId,
+      },
       data: { isPurchased: !gift.isPurchased },
     });
 

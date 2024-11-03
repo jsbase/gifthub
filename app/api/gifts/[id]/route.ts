@@ -27,10 +27,113 @@ async function getGroupIdFromToken(request: Request) {
   }
 }
 
+export async function GET(
+  request: Request,
+  context: { params: { id: string } }
+): Promise<NextResponse> {
+  const { id } = context.params;
+  if (!id.match(/^[0-9a-fA-F]{24}$/)) {
+    return NextResponse.json(
+      { message: 'Invalid gift ID format' },
+      { status: 400 }
+    );
+  }
+
+  try {
+    const groupId = await getGroupIdFromToken(request);
+    if (!groupId) {
+      return NextResponse.json(
+        { message: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    const gift = await prisma.gift.findFirst({
+      where: {
+        id: id,
+        groupId,
+      },
+    });
+
+    if (!gift) {
+      return NextResponse.json(
+        { message: 'Gift not found' },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json(gift);
+  } catch (error) {
+    console.error('Error fetching gift:', error);
+    return NextResponse.json(
+      { message: 'Failed to fetch gift' },
+      { status: 500 }
+    );
+  }
+}
+
+export async function POST(
+  request: Request,
+  context: { params: { id: string } }
+): Promise<NextResponse> {
+  const { id } = context.params;
+  if (!id.match(/^[0-9a-fA-F]{24}$/)) {
+    return NextResponse.json(
+      { message: 'Invalid gift ID format' },
+      { status: 400 }
+    );
+  }
+
+  try {
+    const groupId = await getGroupIdFromToken(request);
+    if (!groupId) {
+      return NextResponse.json(
+        { message: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    const data = await request.json();
+    if (!data || typeof data !== 'object') {
+      return NextResponse.json(
+        { message: 'Invalid gift data' },
+        { status: 400 }
+      );
+    }
+
+    const gift = await prisma.gift.update({
+      where: {
+        id: id,
+        groupId,
+      },
+      data: {
+        ...data,
+        groupId,
+      },
+    });
+
+    return NextResponse.json(gift);
+  } catch (error) {
+    console.error('Error updating gift:', error);
+    return NextResponse.json(
+      { message: 'Failed to update gift' },
+      { status: 500 }
+    );
+  }
+}
+
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
-) {
+  context: { params: { id: string } }
+): Promise<NextResponse> {
+  const { id } = context.params;
+  if (!id.match(/^[0-9a-fA-F]{24}$/)) {
+    return NextResponse.json(
+      { message: 'Invalid gift ID format' },
+      { status: 400 }
+    );
+  }
+
   try {
     const groupId = await getGroupIdFromToken(request);
     if (!groupId) {
@@ -43,7 +146,7 @@ export async function DELETE(
     // Verify the gift belongs to the group
     const gift = await prisma.gift.findFirst({
       where: {
-        id: params.id,
+        id: id,
         groupId,
       },
     });
@@ -56,7 +159,7 @@ export async function DELETE(
     }
 
     await prisma.gift.delete({
-      where: { id: params.id },
+      where: { id: id },
     });
 
     return NextResponse.json({ success: true });
@@ -71,8 +174,16 @@ export async function DELETE(
 
 export async function PUT(
   request: Request,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ): Promise<NextResponse> {
+  const { id } = context.params;
+  if (!id.match(/^[0-9a-fA-F]{24}$/)) {
+    return NextResponse.json(
+      { message: 'Invalid gift ID format' },
+      { status: 400 }
+    );
+  }
+
   try {
     const groupId = await getGroupIdFromToken(request);
     if (!groupId) {
@@ -85,7 +196,7 @@ export async function PUT(
     // Verify the gift belongs to the group
     const gift = await prisma.gift.findFirst({
       where: {
-        id: params.id,
+        id: id,
         groupId,
       },
     });
@@ -98,7 +209,10 @@ export async function PUT(
     }
 
     const updatedGift = await prisma.gift.update({
-      where: { id: params.id },
+      where: { 
+        id: id,
+        groupId,
+      },
       data: { isPurchased: !gift.isPurchased },
     });
 
