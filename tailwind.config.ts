@@ -1,7 +1,7 @@
 import type { Config } from 'tailwindcss';
 
 const config: Config = {
-  darkMode: 'media',
+  darkMode: ['class'],
   content: [
     './pages/**/*.{js,ts,jsx,tsx,mdx}',
     './components/**/*.{js,ts,jsx,tsx,mdx}',
@@ -61,6 +61,9 @@ const config: Config = {
           '5': 'hsl(var(--chart-5))',
         },
       },
+      gradientColorStops: ({ theme }) => ({
+        muted: 'hsl(var(--muted))',
+      }),
       keyframes: {
         'accordion-down': {
           from: {
@@ -85,6 +88,10 @@ const config: Config = {
       },
     },
   },
-  plugins: [require('tailwindcss-animate')],
+  plugins: [require('tailwindcss-animate'), {
+    handler: () => {
+      console.log('Tailwind config loaded!')
+    }
+  }],
 };
 export default config;
