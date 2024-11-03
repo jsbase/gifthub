@@ -7,10 +7,7 @@ import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { UserPlus } from "lucide-react";
 import { toast } from "sonner";
-
-interface AddMemberDialogProps {
-  onMemberAdded?: () => void;
-}
+import { AddMemberDialogProps } from "@/types";
 
 export function AddMemberDialog({ onMemberAdded }: AddMemberDialogProps) {
   const [isOpen, setIsOpen] = useState(false);

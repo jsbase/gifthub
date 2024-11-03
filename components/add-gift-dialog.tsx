@@ -9,11 +9,7 @@ import { Textarea } from "./ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { Gift } from "lucide-react";
 import { toast } from "sonner";
-
-interface Member {
-  id: string;
-  email: string;
-}
+import { Member } from "@/types";
 
 export function AddGiftDialog({ forMemberId }: { forMemberId?: string }) {
   const [isOpen, setIsOpen] = useState(false);

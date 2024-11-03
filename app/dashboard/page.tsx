@@ -8,21 +8,7 @@ import { GiftIcon, LogOut, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 import { AddMemberDialog } from "@/components/add-member-dialog";
 import { MemberGiftsDialog } from "@/components/member-gifts-dialog";
-
-interface Member {
-  id: string;
-  email: string;
-  joinedAt: string;
-}
-
-interface Gift {
-  id: string;
-  title: string;
-  description?: string;
-  url?: string;
-  isPurchased: boolean;
-  createdAt: string;
-}
+import { Member, Gift } from "@/types";
 
 export default function DashboardPage() {
   const router = useRouter();

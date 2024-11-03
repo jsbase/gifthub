@@ -125,9 +125,9 @@ async function POST(
 }
 
 export async function DELETE(
-  request: Request,
-  { params }: { params: { id: string } }
-) {
+  request: NextRequest,
+): Promise<NextResponse> {
+  const { id } = await request.json();
   try {
     const groupId = await getGroupIdFromToken(request);
     if (!groupId) {
@@ -139,7 +139,7 @@ export async function DELETE(
 
     const gift = await prisma.gift.findFirst({
       where: {
-        id: params.id,
+        id,
         groupId,
       },
     });
@@ -153,7 +153,7 @@ export async function DELETE(
 
     await prisma.gift.delete({
       where: {
-        id: params.id,
+        id,
         groupId,
       },
     });

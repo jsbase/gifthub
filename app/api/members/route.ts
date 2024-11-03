@@ -5,18 +5,6 @@ import { jwtVerify } from 'jose';
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 
-// Add these interfaces for type safety
-interface User {
-  id: string;
-  email: string;
-}
-
-interface UserGroup {
-  id: string;
-  joinedAt: Date;
-  user: User;
-}
-
 async function getGroupIdFromToken(request: Request) {
   const cookieStore = await cookies();
   const token = cookieStore.get('auth-token')?.value;

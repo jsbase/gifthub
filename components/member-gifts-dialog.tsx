@@ -9,15 +9,7 @@ import { Textarea } from "./ui/textarea";
 import { PlusCircle, Trash2, Check, X } from "lucide-react";
 import { toast } from "sonner";
 import { Gift } from "@/types";
-
-interface MemberGiftsDialogProps {
-  isOpen: boolean;
-  onClose: () => void;
-  memberEmail: string;
-  memberId: string;
-  gifts: Gift[];
-  onGiftAdded: () => void;
-}
+import { MemberGiftsDialogProps } from "@/types";
 
 export function MemberGiftsDialog({ 
   isOpen, 
