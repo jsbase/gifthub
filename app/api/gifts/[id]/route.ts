@@ -72,7 +72,7 @@ export async function DELETE(
 export async function PUT(
   request: Request,
   { params }: { params: { id: string } }
-) {
+): Promise<NextResponse> {
   try {
     const groupId = await getGroupIdFromToken(request);
     if (!groupId) {
