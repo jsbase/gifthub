@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "./ui/dialog";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
@@ -101,6 +101,9 @@ export function MemberGiftsDialog({
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle>Wish List for {memberEmail}</DialogTitle>
+          <DialogDescription>
+            Here you can view and manage the gift list for {memberEmail}.
+          </DialogDescription>
         </DialogHeader>
         
         <div className="space-y-4">
