@@ -1,16 +1,17 @@
 {
-  "addMember": "Mitglied",
+  "addMember": "Mitglied hinzufügen",
   "addMemberDialog": {
     "addMember": "Mitglied hinzufügen",
     "emailAddress": "E-Mail",
-    "enterGroupName": "Ein neues Mitglied zur Geschenkliste hinzufügen",
-    "enterMemberEmail": "E-Mail des Mitglieds"
+    "enterGroupName": "Bitte ausfüllen um jemanden hinzuzufügen",
+    "enterMemberEmail": "E-Mail"
   },
   "confirmPassword": "Passwort bestätigen",
-  "createGroup": "Neue Gruppe",
+  "createGroup": "Registrieren",
   "createGroupBtn": "Erstellen",
+  "createGroupDescription": "Bitte ausfüllen, um eine Gruppe zu erstellen.",
   "emailAddress": "E-Mail",
-  "enterGroupName": "Gruppenname",
+  "enterGroupName": "Bitte ausfüllen, um dich anzumelden.",
   "enterMemberEmail": "E-Mail des Mitglieds",
   "enterPassword": "Passwort",
   "errors": {
@@ -20,8 +21,8 @@
   },
   "features": {
     "simple": {
-      "description": "Geschenklisten einfach verwalten",
-      "title": "Einfache Gruppen"
+      "description": "Geschenke einfach verwalten",
+      "title": "Einfache Gruppen- verwaltung"
     },
     "tracking": {
       "description": "Überblick behalten, Doppelkäufe vermeiden",
@@ -32,10 +33,10 @@
       "title": "Gemeinsame Planung"
     }
   },
-  "groupName": "Gruppenname",
+  "groupName": "Gruppe",
   "joined": "Mitglied seit",
   "login": "Login",
-  "loginToGroup": "Gruppe beitreten",
+  "loginToGroup": "Login",
   "logout": "Logout",
   "memberGifts": {
     "addGift": "Geschenk",
@@ -48,7 +49,7 @@
     "giftTitle": "Geschenk",
     "noGifts": "Keine Geschenke vorhanden",
     "optional": "Optional",
-    "title": "Wunschliste"
+    "title": "Wunschliste von"
   },
   "members": "Mitglieder",
   "noMembers": "Keine Mitglieder. Füge das erste Mitglied hinzu",

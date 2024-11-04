@@ -1,61 +1,62 @@
 {
-  "addMember": "Участник",
+  "addMember": "Добавить участника",
   "addMemberDialog": {
     "addMember": "Добавить участника",
-    "emailAddress": "Почта",
-    "enterGroupName": "Добавьте нового участника в список подарков",
-    "enterMemberEmail": "Почта участника"
+    "emailAddress": "Электронная почта",
+    "enterGroupName": "Пожалуйста, заполните, чтобы добавить кого-то",
+    "enterMemberEmail": "Электронная почта участника"
   },
-  "confirmPassword": "Подтвердить пароль",
-  "createGroup": "Новая группа",
+  "confirmPassword": "Подтвердите пароль",
+  "createGroup": "Регистрация",
   "createGroupBtn": "Создать",
-  "emailAddress": "Почта",
-  "enterGroupName": "Название группы",
-  "enterMemberEmail": "Почта участника",
+  "createGroupDescription": "Пожалуйста, заполните, чтобы создать группу.",
+  "emailAddress": "Электронная почта",
+  "enterGroupName": "Пожалуйста, заполните, чтобы войти.",
+  "enterMemberEmail": "Электронная почта участника",
   "enterPassword": "Пароль",
   "errors": {
-    "failedToLoad": "Ошибка загрузки",
+    "failedToLoad": "Не удалось загрузить",
     "failedToLoadGifts": "Подарки не загружены",
-    "loginRequired": "Требуется вход"
+    "loginRequired": "Требуется вход в систему"
   },
   "features": {
     "simple": {
-      "description": "Управляйте списками подарков",
-      "title": "Простые группы"
+      "description": "Просто управляйте подарками",
+      "title": "Простое управление группой"
     },
     "tracking": {
-      "description": "Отслеживайте подарки без дубликатов",
-      "title": "Учет подарков"
+      "description": "Следите, избегайте дублирования покупок",
+      "title": "Отслеживание подарков"
     },
     "updates": {
-      "description": "Изменения сразу на всех устройствах",
-      "title": "Обновления"
+      "description": "Легко организуйте и координируйте общие идеи подарков",
+      "title": "Общее планирование"
     }
   },
-  "groupName": "Название группы",
+  "groupName": "Группа",
   "joined": "Участник с",
   "login": "Вход",
-  "loginToGroup": "Войти в группу",
+  "loginToGroup": "Вход",
   "logout": "Выход",
   "memberGifts": {
     "addGift": "Подарок",
     "adding": "Загрузка",
     "cancel": "Отмена",
-    "description": "Редактировать список",
+    "description": "Редактировать список подарков",
     "enterDescription": "Описание",
     "enterGiftTitle": "Название подарка",
     "enterUrl": "Ссылка",
     "giftTitle": "Подарок",
-    "noGifts": "Нет подарков",
-    "optional": "Опционально",
-    "title": "Список желаний"
+    "noGifts": "Нет доступных подарков",
+    "optional": "Необязательно",
+    "title": "Список желаемого от"
   },
   "members": "Участники",
-  "noMembers": "Нет участников. Добавьте первого",
+  "noMembers": "Нет участников. Добавьте первого участника",
   "password": "Пароль",
   "register": "Регистрация",
   "success": {
-    "loggedOut": "Выход выполнен"
+    "loggedOut": "Вы вышли из системы"
   },
-  "tagline": "Удобная организация подарков"
+  "tagline": "Легко организуйте подарки"
 }

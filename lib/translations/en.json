@@ -1,41 +1,42 @@
 {
-  "addMember": "Member",
+  "addMember": "Add Member",
   "addMemberDialog": {
-    "addMember": "Add member",
+    "addMember": "Add Member",
     "emailAddress": "Email",
-    "enterGroupName": "Add a new member to the gift list",
-    "enterMemberEmail": "Member email"
+    "enterGroupName": "Please fill out to add someone",
+    "enterMemberEmail": "Member's Email"
   },
-  "confirmPassword": "Confirm password",
-  "createGroup": "New group",
+  "confirmPassword": "Confirm Password",
+  "createGroup": "Register",
   "createGroupBtn": "Create",
+  "createGroupDescription": "Please fill out to create a group.",
   "emailAddress": "Email",
-  "enterGroupName": "Group name",
-  "enterMemberEmail": "Member email",
+  "enterGroupName": "Please fill out to log in.",
+  "enterMemberEmail": "Member's Email",
   "enterPassword": "Password",
   "errors": {
-    "failedToLoad": "Loading failed",
+    "failedToLoad": "Failed to load",
     "failedToLoadGifts": "Gifts not loaded",
     "loginRequired": "Login required"
   },
   "features": {
     "simple": {
-      "description": "Manage gift lists easily",
-      "title": "Simple Groups"
+      "description": "Easily manage gifts",
+      "title": "Simple Group Management"
     },
     "tracking": {
-      "description": "Track gifts and avoid duplicates",
-      "title": "Gift Tracking"
+      "description": "Keep track, avoid duplicate purchases",
+      "title": "Track Gifts"
     },
     "updates": {
-      "description": "Coordinate gift ideas together easily",
-      "title": "Team Planning"
+      "description": "Easily organize and coordinate shared gift ideas",
+      "title": "Shared Planning"
     }
   },
-  "groupName": "Group name",
+  "groupName": "Group",
   "joined": "Member since",
   "login": "Login",
-  "loginToGroup": "Join group",
+  "loginToGroup": "Login",
   "logout": "Logout",
   "memberGifts": {
     "addGift": "Gift",
@@ -43,19 +44,19 @@
     "cancel": "Cancel",
     "description": "Edit gift list",
     "enterDescription": "Description",
-    "enterGiftTitle": "Gift name",
+    "enterGiftTitle": "Gift Name",
     "enterUrl": "Link",
     "giftTitle": "Gift",
-    "noGifts": "No gifts yet",
+    "noGifts": "No gifts available",
     "optional": "Optional",
-    "title": "Wishlist"
+    "title": "Wishlist from"
   },
   "members": "Members",
-  "noMembers": "No members. Add your first member",
+  "noMembers": "No members. Add the first member",
   "password": "Password",
   "register": "Register",
   "success": {
     "loggedOut": "Logged out"
   },
-  "tagline": "Organize gifts easily"
+  "tagline": "Easily organize gifts"
 }
