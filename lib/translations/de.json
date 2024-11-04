@@ -40,5 +40,7 @@
   "memberGifts": {
     "title": "Geschenk(e)",
     "addGift": "Geschenk hinzufügen"
-  }
+  },
+  "emailAddress": "E-Mail-Adresse",
+  "enterMemberEmail": "E-Mail-Adresse des Mitglieds eingeben"
 }

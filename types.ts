@@ -94,10 +94,16 @@ export interface Translations {
   memberGifts: {
     [key: string]: string;
   };
+  addMemberDialog: {
+    addMember: string;
+    enterGroupName: string;
+    emailAddress: string;
+    enterMemberEmail: string;
+  };
   [key: string]: string | { [key: string]: string | { [key: string]: string } };
 }
 
 export interface AddMemberDialogProps {
   onMemberAdded?: () => void;
-  dict: Translations;
+  dict: Translations['addMemberDialog'];
 }

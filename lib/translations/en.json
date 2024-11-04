@@ -40,5 +40,7 @@
   "memberGifts": {
     "title": "Gifts",
     "addGift": "Add Gift"
-  }
+  },
+  "emailAddress": "Email Address",
+  "enterMemberEmail": "Enter member's email"
 }

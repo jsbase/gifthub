@@ -103,7 +103,7 @@ export default function DashboardPage({
         <section>
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold">{dict.members}</h2>
-            <AddMemberDialog onMemberAdded={fetchData} dict={dict} />
+            <AddMemberDialog onMemberAdded={fetchData} />
           </div>
           {members?.length > 0 ? (
             <div className="grid gap-4">
