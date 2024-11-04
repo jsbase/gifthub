@@ -78,6 +78,7 @@ export interface Translations {
   login: string;
   register: string;
   createGroup: string;
+  createGroupDescription: string;
   enterGroupName: string;
   enterPassword: string;
   loginToGroup: string;

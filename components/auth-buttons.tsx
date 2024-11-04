@@ -73,11 +73,11 @@ export function AuthButtons({ dict }: { dict: Translations }) {
         <AuthDialog title={dict.loginToGroup} description={dict.enterGroupName}>
           <form onSubmit={handleLogin} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="groupName">{dict.groupName}</Label>
-              <Input name="groupName" id="groupName" placeholder={dict.enterGroupName} required />
+              <Label htmlFor="groupName"></Label>
+              <Input name="groupName" id="groupName" placeholder={dict.groupName} required />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">{dict.password}</Label>
+              <Label htmlFor="password"></Label>
               <Input name="password" id="password" type="password" placeholder={dict.enterPassword} required />
             </div>
             <Button type="submit" className="w-full" disabled={isLoading}>
@@ -91,18 +91,18 @@ export function AuthButtons({ dict }: { dict: Translations }) {
         <DialogTrigger asChild>
           <Button size="lg" variant="outline" className="min-w-[200px]">{dict.register}</Button>
         </DialogTrigger>
-        <AuthDialog title={dict.createGroup} description={dict.enterGroupName}>
+        <AuthDialog title={dict.createGroup} description={dict.createGroupDescription}>
           <form onSubmit={handleRegister} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="newGroupName">{dict.groupName}</Label>
-              <Input name="newGroupName" id="newGroupName" placeholder={dict.enterGroupName} required />
+              <Label htmlFor="newGroupName"></Label>
+              <Input name="newGroupName" id="newGroupName" placeholder={dict.groupName} required />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="newPassword">{dict.password}</Label>
+              <Label htmlFor="newPassword"></Label>
               <Input name="newPassword" id="newPassword" type="password" placeholder={dict.enterPassword} required />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="confirmPassword">{dict.confirmPassword}</Label>
+              <Label htmlFor="confirmPassword"></Label>
               <Input name="confirmPassword" id="confirmPassword" type="password" placeholder={dict.confirmPassword} required />
             </div>
             <Button type="submit" className="w-full" disabled={isLoading}>
