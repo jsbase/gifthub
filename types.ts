@@ -59,6 +59,20 @@ export interface AddMemberDialogDictionary {
   enterMemberEmail: string;
 }
 
+export interface MemberGiftsTranslations {
+  title: string;
+  description: string;
+  addGift: string;
+  giftTitle: string;
+  enterGiftTitle: string;
+  optional: string;
+  enterDescription: string;
+  enterUrl: string;
+  cancel: string;
+  adding: string;
+  noGifts: string;
+}
+
 export interface Translations {
   tagline: string;
   login: string;
@@ -98,11 +112,9 @@ export interface Translations {
   success: {
     loggedOut: string;
   };
-  memberGifts: {
-    [key: string]: string;
-  };
+  memberGifts: MemberGiftsTranslations;
   addMemberDialog: AddMemberDialogDictionary;
-  [key: string]: string | { [key: string]: string | { [key: string]: string } } | AddMemberDialogDictionary;
+  [key: string]: string | { [key: string]: string | { [key: string]: string } } | AddMemberDialogDictionary | MemberGiftsTranslations;
 }
 
 export interface AddMemberDialogProps {

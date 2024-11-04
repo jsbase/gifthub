@@ -38,8 +38,17 @@
     "loggedOut": "Successfully signed out"
   },
   "memberGifts": {
-    "title": "Gifts",
-    "addGift": "Add Gift"
+    "addGift": "Add Gift",
+    "title": "Wish List for",
+    "description": "Browse and manage the gift list here.",
+    "giftTitle": "Gift Title",
+    "enterGiftTitle": "Enter gift title",
+    "optional": "Optional",
+    "enterDescription": "Enter gift description",
+    "enterUrl": "Enter gift URL",
+    "cancel": "Cancel",
+    "adding": "Adding...",
+    "noGifts": "No gifts added yet for this member."
   },
   "emailAddress": "Email Address",
   "enterMemberEmail": "Enter member's email",

@@ -17,7 +17,8 @@ export function MemberGiftsDialog({
   memberEmail, 
   memberId,
   gifts,
-  onGiftAdded 
+  onGiftAdded,
+  dict
 }: MemberGiftsDialogProps) {
   const [showAddGiftForm, setShowAddGiftForm] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -100,9 +101,9 @@ export function MemberGiftsDialog({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Wish List for {memberEmail}</DialogTitle>
+          <DialogTitle>{dict.title} {memberEmail}</DialogTitle>
           <DialogDescription>
-            Here you can view and manage the gift list for {memberEmail}.
+            {dict.description || `Here you can view and manage the gift list for ${memberEmail}.`}
           </DialogDescription>
         </DialogHeader>
         
@@ -113,37 +114,37 @@ export function MemberGiftsDialog({
             variant="outline"
           >
             <PlusCircle className="h-4 w-4 mr-2" />
-            Add Gift
+            {dict.addGift}
           </Button>
 
           {showAddGiftForm && (
             <form onSubmit={handleAddGift} className="space-y-4 border rounded-lg p-4">
               <div className="space-y-2">
-                <Label htmlFor="title">Gift Title</Label>
+                <Label htmlFor="title">{dict.giftTitle || 'Gift Title'}</Label>
                 <Input
                   id="title"
                   name="title"
-                  placeholder="Enter gift title"
+                  placeholder={dict.enterGiftTitle || 'Enter gift title'}
                   required
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="description">Description (Optional)</Label>
+                <Label htmlFor="description">{dict.description || 'Description'} ({dict.optional || 'Optional'})</Label>
                 <Textarea
                   id="description"
                   name="description"
-                  placeholder="Enter gift description"
+                  placeholder={dict.enterDescription || 'Enter gift description'}
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="url">URL (Optional)</Label>
+                <Label htmlFor="url">URL ({dict.optional || 'Optional'})</Label>
                 <Input
                   id="url"
                   name="url"
                   type="url"
-                  placeholder="Enter gift URL"
+                  placeholder={dict.enterUrl || 'Enter gift URL'}
                 />
               </div>
 
@@ -153,10 +154,10 @@ export function MemberGiftsDialog({
                   variant="outline"
                   onClick={() => setShowAddGiftForm(false)}
                 >
-                  Cancel
+                  {dict.cancel || 'Cancel'}
                 </Button>
                 <Button type="submit" disabled={isLoading}>
-                  {isLoading ? 'Adding...' : 'Add Gift'}
+                  {isLoading ? (dict.adding || 'Adding...') : (dict.addGift || 'Add Gift')}
                 </Button>
               </div>
             </form>
@@ -223,7 +224,7 @@ export function MemberGiftsDialog({
             </div>
           ) : (
             <p className="text-center text-muted-foreground">
-              No gifts added yet for this member.
+              {dict.noGifts || 'No gifts added yet for this member.'}
             </p>
           )}
         </div>

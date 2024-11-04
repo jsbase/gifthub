@@ -38,8 +38,17 @@
     "loggedOut": "Erfolgreich abgemeldet"
   },
   "memberGifts": {
-    "title": "Geschenk(e)",
-    "addGift": "Geschenk hinzufügen"
+    "addGift": "Geschenk hinzufügen",
+    "title": "Wunschliste für",
+    "description": "Hier können Sie die Geschenkliste durchsuchen und verwalten.",
+    "giftTitle": "Geschenktitel",
+    "enterGiftTitle": "Geschenktitel eingeben",
+    "optional": "Optional",
+    "enterDescription": "Geschenkbeschreibung eingeben",
+    "enterUrl": "Geschenk-URL eingeben",
+    "cancel": "Abbrechen",
+    "adding": "Hinzufügen...",
+    "noGifts": "Noch keine Geschenke für dieses Mitglied hinzugefügt."
   },
   "emailAddress": "E-Mail-Adresse",
   "enterMemberEmail": "E-Mail-Adresse des Mitglieds eingeben",
