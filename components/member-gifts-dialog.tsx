@@ -103,7 +103,7 @@ export function MemberGiftsDialog({
         <DialogHeader>
           <DialogTitle>{dict.title} {memberEmail}</DialogTitle>
           <DialogDescription>
-            {dict.description || `Here you can view and manage the gift list for ${memberEmail}.`}
+            {dict.description}
           </DialogDescription>
         </DialogHeader>
         
@@ -120,31 +120,31 @@ export function MemberGiftsDialog({
           {showAddGiftForm && (
             <form onSubmit={handleAddGift} className="space-y-4 border rounded-lg p-4">
               <div className="space-y-2">
-                <Label htmlFor="title">{dict.giftTitle || 'Gift Title'}</Label>
+                <Label htmlFor="title">{dict.giftTitle}</Label>
                 <Input
                   id="title"
                   name="title"
-                  placeholder={dict.enterGiftTitle || 'Enter gift title'}
+                  placeholder={dict.enterGiftTitle}
                   required
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="description">{dict.description || 'Description'} ({dict.optional || 'Optional'})</Label>
+                <Label htmlFor="description">{dict.description} ({dict.optional})</Label>
                 <Textarea
                   id="description"
                   name="description"
-                  placeholder={dict.enterDescription || 'Enter gift description'}
+                  placeholder={dict.enterDescription}
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="url">URL ({dict.optional || 'Optional'})</Label>
+                <Label htmlFor="url">URL ({dict.optional})</Label>
                 <Input
                   id="url"
                   name="url"
                   type="url"
-                  placeholder={dict.enterUrl || 'Enter gift URL'}
+                  placeholder={dict.enterUrl}
                 />
               </div>
 
@@ -154,10 +154,10 @@ export function MemberGiftsDialog({
                   variant="outline"
                   onClick={() => setShowAddGiftForm(false)}
                 >
-                  {dict.cancel || 'Cancel'}
+                  {dict.cancel}
                 </Button>
                 <Button type="submit" disabled={isLoading}>
-                  {isLoading ? (dict.adding || 'Adding...') : (dict.addGift || 'Add Gift')}
+                  {isLoading ? dict.adding : dict.addGift}
                 </Button>
               </div>
             </form>
@@ -224,7 +224,7 @@ export function MemberGiftsDialog({
             </div>
           ) : (
             <p className="text-center text-muted-foreground">
-              {dict.noGifts || 'No gifts added yet for this member.'}
+              {dict.noGifts}
             </p>
           )}
         </div>

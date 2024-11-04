@@ -1,61 +1,61 @@
 {
-  "login": "Anmelden",
-  "register": "Registrieren",
-  "createGroup": "Neue Gruppe erstellen",
-  "enterGroupName": "Geben Sie Ihren Gruppennamen ein",
-  "enterPassword": "Geben Sie Ihr Passwort ein",
-  "loginToGroup": "In Ihre Gruppe einloggen",
-  "groupName": "Gruppenname",
-  "password": "Passwort",
-  "confirmPassword": "Passwort bestätigen",
-  "createGroupBtn": "Gruppe erstellen",
-  "members": "Mitglieder",
-  "addMember": "Mitglied hinzufügen",
-  "logout": "Abmelden",
-  "noMembers": "Noch keine Mitglieder hinzugefügt. Fügen Sie Ihr erstes Mitglied hinzu, um mit der Verwaltung von Geschenken zu beginnen.",
-  "joined": "Beigetreten",
-  "tagline": "Der einfache Weg, Geschenkideen für Ihre Familie und Gruppen zu verwalten",
-  "features": {
-    "simple": {
-      "title": "Einfache Gruppen",
-      "description": "Erstellen und verwalten Sie Geschenklisten für Ihre Familie oder Gruppe mit nur einem Namen und Passwort"
-    },
-    "tracking": {
-      "title": "Geschenk-Tracking",
-      "description": "Behalten Sie den Überblick über Geschenkideen, markieren Sie gekaufte Artikel und vermeiden Sie doppelte Geschenke"
-    },
-    "updates": {
-      "title": "Echtzeit-Updates",
-      "description": "Sehen Sie Änderungen sofort auf allen Geräten ohne Aktualisierung"
-    }
-  },
-  "errors": {
-    "loginRequired": "Bitte melden Sie sich an, um auf das Dashboard zuzugreifen",
-    "failedToLoad": "Dashboard-Daten konnten nicht geladen werden",
-    "failedToLoadGifts": "Geschenke konnten nicht geladen werden"
-  },
-  "success": {
-    "loggedOut": "Erfolgreich abgemeldet"
-  },
-  "memberGifts": {
-    "addGift": "Geschenk hinzufügen",
-    "title": "Wunschliste für",
-    "description": "Hier können Sie die Geschenkliste durchsuchen und verwalten.",
-    "giftTitle": "Geschenktitel",
-    "enterGiftTitle": "Geschenktitel eingeben",
-    "optional": "Optional",
-    "enterDescription": "Geschenkbeschreibung eingeben",
-    "enterUrl": "Geschenk-URL eingeben",
-    "cancel": "Abbrechen",
-    "adding": "Hinzufügen...",
-    "noGifts": "Noch keine Geschenke für dieses Mitglied hinzugefügt."
-  },
-  "emailAddress": "E-Mail-Adresse",
-  "enterMemberEmail": "E-Mail-Adresse des Mitglieds eingeben",
+  "addMember": "Mitglied",
   "addMemberDialog": {
     "addMember": "Mitglied hinzufügen",
-    "enterGroupName": "Geben Sie Ihren Gruppennamen ein",
-    "emailAddress": "E-Mail-Adresse",
-    "enterMemberEmail": "E-Mail-Adresse des Mitglieds eingeben"
-  }
+    "emailAddress": "E-Mail",
+    "enterGroupName": "Ein neues Mitglied zur Geschenkliste hinzufügen",
+    "enterMemberEmail": "E-Mail des Mitglieds"
+  },
+  "confirmPassword": "Passwort bestätigen",
+  "createGroup": "Neue Gruppe",
+  "createGroupBtn": "Erstellen",
+  "emailAddress": "E-Mail",
+  "enterGroupName": "Gruppenname",
+  "enterMemberEmail": "E-Mail des Mitglieds",
+  "enterPassword": "Passwort",
+  "errors": {
+    "failedToLoad": "Laden fehlgeschlagen",
+    "failedToLoadGifts": "Geschenke nicht geladen",
+    "loginRequired": "Login erforderlich"
+  },
+  "features": {
+    "simple": {
+      "description": "Geschenklisten einfach verwalten",
+      "title": "Einfache Gruppen"
+    },
+    "tracking": {
+      "description": "Überblick behalten, Doppelkäufe vermeiden",
+      "title": "Geschenke tracken"
+    },
+    "updates": {
+      "description": "Gemeinsame Geschenkideen einfach organisieren und koordinieren",
+      "title": "Gemeinsame Planung"
+    }
+  },
+  "groupName": "Gruppenname",
+  "joined": "Mitglied seit",
+  "login": "Login",
+  "loginToGroup": "Gruppe beitreten",
+  "logout": "Logout",
+  "memberGifts": {
+    "addGift": "Geschenk",
+    "adding": "Lädt",
+    "cancel": "Abbrechen",
+    "description": "Geschenkliste bearbeiten",
+    "enterDescription": "Beschreibung",
+    "enterGiftTitle": "Geschenkname",
+    "enterUrl": "Link",
+    "giftTitle": "Geschenk",
+    "noGifts": "Keine Geschenke vorhanden",
+    "optional": "Optional",
+    "title": "Wunschliste"
+  },
+  "members": "Mitglieder",
+  "noMembers": "Keine Mitglieder. Füge das erste Mitglied hinzu",
+  "password": "Passwort",
+  "register": "Registrieren",
+  "success": {
+    "loggedOut": "Ausgeloggt"
+  },
+  "tagline": "Geschenke einfach organisieren"
 }
