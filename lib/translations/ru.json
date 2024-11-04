@@ -1,0 +1,62 @@
+{
+  "addMember": "Добавить участника",
+  "addMemberDialog": {
+    "addMember": "Добавить участника",
+    "emailAddress": "Электронная почта",
+    "enterGroupName": "Пожалуйста, заполните, чтобы добавить кого-то",
+    "enterMemberEmail": "Электронная почта участника"
+  },
+  "confirmPassword": "Подтвердите пароль",
+  "createGroup": "Регистрация",
+  "createGroupBtn": "Создать",
+  "createGroupDescription": "Пожалуйста, заполните, чтобы создать группу.",
+  "emailAddress": "Электронная почта",
+  "enterGroupName": "Пожалуйста, заполните, чтобы войти.",
+  "enterMemberEmail": "Электронная почта участника",
+  "enterPassword": "Пароль",
+  "errors": {
+    "failedToLoad": "Не удалось загрузить",
+    "failedToLoadGifts": "Подарки не загружены",
+    "loginRequired": "Требуется вход в систему"
+  },
+  "features": {
+    "simple": {
+      "description": "Просто управляйте подарками",
+      "title": "Простое управление группой"
+    },
+    "tracking": {
+      "description": "Следите, избегайте дублирования покупок",
+      "title": "Отслеживание подарков"
+    },
+    "updates": {
+      "description": "Легко организуйте и координируйте общие идеи подарков",
+      "title": "Общее планирование"
+    }
+  },
+  "groupName": "Группа",
+  "joined": "Участник с",
+  "login": "Вход",
+  "loginToGroup": "Вход",
+  "logout": "Выход",
+  "memberGifts": {
+    "addGift": "Добавить подарок",
+    "adding": "Загрузка",
+    "cancel": "Отмена",
+    "description": "Описание",
+    "enterDescription": "Опишите подарок",
+    "enterGiftTitle": "Название подарка",
+    "enterUrl": "Ссылка",
+    "giftTitle": "Подарок",
+    "noGifts": "Нет доступных подарков",
+    "optional": "Необязательно",
+    "title": "Список желаемого от"
+  },
+  "members": "Участники",
+  "noMembers": "Нет участников. Добавьте первого участника",
+  "password": "Пароль",
+  "register": "Регистрация",
+  "success": {
+    "loggedOut": "Вы вышли из системы"
+  },
+  "tagline": "Легко организуйте подарки"
+}

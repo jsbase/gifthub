@@ -8,8 +8,9 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { useRouter } from 'next/navigation';
 import { login, register } from "@/lib/auth";
+import { Translations } from "@/types";
 
-export function AuthButtons() {
+export function AuthButtons({ dict }: { dict: Translations }) {
   const router = useRouter();
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isRegisterOpen, setIsRegisterOpen] = useState(false);
@@ -67,20 +68,20 @@ export function AuthButtons() {
     <div className="flex flex-col sm:flex-row gap-4 justify-center">
       <Dialog open={isLoginOpen} onOpenChange={setIsLoginOpen}>
         <DialogTrigger asChild>
-          <Button size="lg" className="min-w-[200px]">Login</Button>
+          <Button size="lg" className="min-w-[200px]">{dict.login}</Button>
         </DialogTrigger>
-        <AuthDialog title="Login to Your Group" description="Enter your group name and password to log in.">
+        <AuthDialog title={dict.loginToGroup} description={dict.enterGroupName}>
           <form onSubmit={handleLogin} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="groupName">Group Name</Label>
-              <Input name="groupName" id="groupName" placeholder="Enter your group name" required />
+              <Label htmlFor="groupName"></Label>
+              <Input name="groupName" id="groupName" placeholder={dict.groupName} required />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <Input name="password" id="password" type="password" placeholder="Enter your password" required />
+              <Label htmlFor="password"></Label>
+              <Input name="password" id="password" type="password" placeholder={dict.enterPassword} required />
             </div>
             <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? 'Logging in...' : 'Login'}
+              {isLoading ? 'Logging in...' : dict.login}
             </Button>
           </form>
         </AuthDialog>
@@ -88,24 +89,24 @@ export function AuthButtons() {
 
       <Dialog open={isRegisterOpen} onOpenChange={setIsRegisterOpen}>
         <DialogTrigger asChild>
-          <Button size="lg" variant="outline" className="min-w-[200px]">Register</Button>
+          <Button size="lg" variant="outline" className="min-w-[200px]">{dict.register}</Button>
         </DialogTrigger>
-        <AuthDialog title="Create a New Group" description="Choose a group name and password to create a new group.">
+        <AuthDialog title={dict.createGroup} description={dict.createGroupDescription}>
           <form onSubmit={handleRegister} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="newGroupName">Group Name</Label>
-              <Input name="newGroupName" id="newGroupName" placeholder="Choose a group name" required />
+              <Label htmlFor="newGroupName"></Label>
+              <Input name="newGroupName" id="newGroupName" placeholder={dict.groupName} required />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="newPassword">Password</Label>
-              <Input name="newPassword" id="newPassword" type="password" placeholder="Choose a password" required />
+              <Label htmlFor="newPassword"></Label>
+              <Input name="newPassword" id="newPassword" type="password" placeholder={dict.enterPassword} required />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirm Password</Label>
-              <Input name="confirmPassword" id="confirmPassword" type="password" placeholder="Confirm your password" required />
+              <Label htmlFor="confirmPassword"></Label>
+              <Input name="confirmPassword" id="confirmPassword" type="password" placeholder={dict.confirmPassword} required />
             </div>
             <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? 'Creating Group...' : 'Create Group'}
+              {isLoading ? 'Creating Group...' : dict.createGroupBtn}
             </Button>
           </form>
         </AuthDialog>
