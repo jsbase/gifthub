@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import prisma from '@/lib/prisma';
 import { jwtVerify } from 'jose';
+import { log } from 'console';
 
 export const dynamic = 'force-dynamic';
 
@@ -127,7 +128,16 @@ async function POST(
 export async function DELETE(
   request: NextRequest,
 ): Promise<NextResponse> {
-  const { id } = await request.json();
+  const { pathname } = new URL(request.url);
+  const id = pathname.split('/').pop();
+
+  if (!id) {
+    return NextResponse.json(
+      { message: 'Gift ID is required' },
+      { status: 400 }
+    );
+  }
+
   try {
     const groupId = await getGroupIdFromToken(request);
     if (!groupId) {
