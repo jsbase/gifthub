@@ -1,6 +1,7 @@
 'use client';
 
 import Image from 'next/image';
+import { usePathname, useRouter } from 'next/navigation';
 import { Button } from './ui/button';
 import {
   DropdownMenu,
@@ -16,21 +17,30 @@ const languages = [
 ] as const;
 
 export function LanguageSwitcher() {
-  const currentLanguage = {
-    name: languages[0].name,
-    flag: languages[0].flag
+  const pathname = usePathname();
+  const router = useRouter();
+
+  const currentLang = languages.find(
+    lang => pathname.startsWith(`/${lang.code}/`) || pathname === `/${lang.code}`
+  ) || languages[0];
+
+  const switchLanguage = (langCode: string) => {
+    const newPath = pathname.split('/').slice(2).join('/');
+    const redirectPath = `/${langCode}${newPath ? `/${newPath}` : ''}`;
+    router.push(redirectPath);
   };
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="w-8 h-8 rounded-full overflow-hidden">
+        <Button variant="ghost" size="icon" className="w-8 h-8 rounded-full overflow-hidden p-0">
           <Image
-            src={currentLanguage?.flag || languages[0].flag}
-            alt={currentLanguage?.name || languages[0].name}
+            src={currentLang.flag}
+            alt={currentLang.name}
             width={32}
             height={32}
-            className="w-full h-full object-cover"
+            className="w-8 h-8"
+            style={{ objectFit: 'cover' }}
           />
         </Button>
       </DropdownMenuTrigger>
@@ -38,7 +48,7 @@ export function LanguageSwitcher() {
         {languages.map((lang) => (
           <DropdownMenuItem
             key={lang.code}
-            onClick={() => console.log(lang.code)}
+            onClick={() => switchLanguage(lang.code)}
             className="flex items-center gap-2"
           >
             <Image
@@ -46,7 +56,8 @@ export function LanguageSwitcher() {
               alt={lang.name}
               width={20}
               height={20}
-              className="rounded-sm"
+              className="w-5 h-5"
+              style={{ objectFit: 'cover' }}
             />
             <span>{lang.name}</span>
           </DropdownMenuItem>

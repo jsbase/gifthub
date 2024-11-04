@@ -9,7 +9,7 @@ import { UserPlus } from "lucide-react";
 import { toast } from "sonner";
 import { AddMemberDialogProps } from "@/types";
 
-export function AddMemberDialog({ onMemberAdded }: AddMemberDialogProps) {
+export function AddMemberDialog({ onMemberAdded, dict }: AddMemberDialogProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 

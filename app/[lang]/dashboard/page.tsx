@@ -8,10 +8,16 @@ import { GiftIcon, LogOut, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 import { AddMemberDialog } from "@/components/add-member-dialog";
 import { MemberGiftsDialog } from "@/components/member-gifts-dialog";
-import { Member, Gift } from "@/types";
+import { Member, Gift, Translations } from "@/types";
+import { getDictionary } from '../dictionaries';
 
-export default function DashboardPage() {
+export default function DashboardPage({
+  params: { lang }
+}: {
+  params: { lang: string }
+}) {
   const router = useRouter();
+  const [dict, setDict] = useState<Translations | null>(null);
   const [groupName, setGroupName] = useState<string>("");
   const [members, setMembers] = useState<Member[]>([]);
   const [loading, setLoading] = useState(true);
@@ -19,19 +25,22 @@ export default function DashboardPage() {
   const [memberGifts, setMemberGifts] = useState<Gift[]>([]);
 
   useEffect(() => {
-    const checkAuth = async () => {
+    const init = async () => {
+      const translations = await getDictionary(lang);
+      setDict(translations);
+      
       const auth = await verifyAuth();
       if (!auth) {
-        router.replace("/");
-        toast.error("Please log in to access the dashboard");
+        router.replace(`/${lang}`);
+        toast.error(translations.errors.loginRequired);
       } else {
         setGroupName(auth.groupName as string);
         fetchData();
       }
     };
 
-    checkAuth();
-  }, [router]);
+    init();
+  }, [router, lang]);
 
   const fetchData = async () => {
     try {
@@ -42,7 +51,7 @@ export default function DashboardPage() {
       }
     } catch (error) {
       console.error('Error fetching data:', error);
-      toast.error('Failed to load dashboard data');
+      toast.error(dict?.errors.failedToLoad || 'Failed to load data');
     } finally {
       setLoading(false);
     }
@@ -50,8 +59,8 @@ export default function DashboardPage() {
 
   const handleLogout = async () => {
     await logout();
-    router.replace("/");
-    toast.success("Logged out successfully");
+    router.replace(`/${lang}`);
+    toast.success(dict?.success.loggedOut || 'Logged out successfully');
   };
 
   const handleMemberClick = async (memberId: string) => {
@@ -65,13 +74,13 @@ export default function DashboardPage() {
       setSelectedMemberId(memberId);
       setMemberGifts(data.gifts);
     } catch (error) {
-      toast.error('Failed to load member gifts');
+      toast.error(dict?.errors.failedToLoadGifts || 'Failed to load gifts');
     }
   };
 
   const getSelectedMember = () => members.find(m => m.id === selectedMemberId);
 
-  if (loading || !groupName) return null;
+  if (loading || !groupName || !dict) return null;
 
   return (
     <div className="min-h-screen bg-background">
@@ -83,7 +92,7 @@ export default function DashboardPage() {
           </div>
           <Button variant="ghost" onClick={handleLogout}>
             <LogOut className="h-4 w-4 mr-2" />
-            Logout
+            {dict.logout}
           </Button>
         </div>
       </header>
@@ -91,8 +100,8 @@ export default function DashboardPage() {
       <main className="container mx-auto px-4 py-8">
         <section>
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold">Members</h2>
-            <AddMemberDialog onMemberAdded={fetchData} />
+            <h2 className="text-2xl font-bold">{dict.members}</h2>
+            <AddMemberDialog onMemberAdded={fetchData} dict={dict.addMember} />
           </div>
           {members?.length > 0 ? (
             <div className="grid gap-4">
@@ -106,7 +115,7 @@ export default function DashboardPage() {
                   <div className="flex flex-col items-start">
                     <p className="font-medium">{member.email}</p>
                     <p className="text-sm text-muted-foreground">
-                      Joined {new Date(member.joinedAt).toLocaleDateString()}
+                      {dict.joined} {new Date(member.joinedAt).toLocaleDateString(lang)}
                     </p>
                   </div>
                   <ChevronRight className="h-5 w-5 text-muted-foreground" />
@@ -115,7 +124,7 @@ export default function DashboardPage() {
             </div>
           ) : (
             <div className="text-muted-foreground">
-              No members added yet. Add your first member to start managing gifts.
+              {dict.noMembers}
             </div>
           )}
         </section>
@@ -128,6 +137,7 @@ export default function DashboardPage() {
         memberId={selectedMemberId || ''}
         gifts={memberGifts}
         onGiftAdded={() => handleMemberClick(selectedMemberId!)}
+        dict={dict.memberGifts}
       />
     </div>
   );

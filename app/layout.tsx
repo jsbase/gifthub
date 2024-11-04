@@ -36,8 +36,12 @@ export const metadata: Metadata = {
     ],
   },
   manifest: '/site.webmanifest',
+};
+
+export const viewport = {
   themeColor: '#ffffff',
-  viewport: 'width=device-width, initial-scale=1.0',
+  width: 'device-width',
+  initialScale: 1.0,
 };
 
 export default function RootLayout({
@@ -47,6 +51,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <meta name="viewport" content={`width=${viewport.width}, initial-scale=${viewport.initialScale}`} />
+      </head>
       <body className={inter.className}>
         <ThemeProvider
           attribute="class"

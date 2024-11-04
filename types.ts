@@ -36,6 +36,7 @@ export interface UserGroup {
 
 export interface AddMemberDialogProps {
   onMemberAdded?: () => void;
+  dict: Translations;
 }
 
 export interface MemberGiftsDialogProps {
@@ -56,7 +57,43 @@ export interface AuthResponse {
 }
 
 export interface Translations {
-  [key: string]: {
-    [key: string]: string;
+  tagline: string;
+  login: string;
+  register: string;
+  createGroup: string;
+  enterGroupName: string;
+  enterPassword: string;
+  loginToGroup: string;
+  groupName: string;
+  password: string;
+  confirmPassword: string;
+  createGroupBtn: string;
+  members: string;
+  addMember: string;
+  logout: string;
+  noMembers: string;
+  joined: string;
+  features: {
+    simple: {
+      title: string;
+      description: string;
+    };
+    tracking: {
+      title: string;
+      description: string;
+    };
+    updates: {
+      title: string;
+      description: string;
+    };
   };
+  errors: {
+    loginRequired: string;
+    failedToLoad: string;
+    failedToLoadGifts: string;
+  };
+  success: {
+    loggedOut: string;
+  };
+  [key: string]: string | { [key: string]: string | { [key: string]: string } };
 }
