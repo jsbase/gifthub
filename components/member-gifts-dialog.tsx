@@ -120,7 +120,7 @@ export function MemberGiftsDialog({
           {showAddGiftForm && (
             <form onSubmit={handleAddGift} className="space-y-4 border rounded-lg p-4">
               <div className="space-y-2">
-                <Label htmlFor="title">{dict.giftTitle}</Label>
+                <Label htmlFor="title"></Label>
                 <Input
                   id="title"
                   name="title"
@@ -130,21 +130,21 @@ export function MemberGiftsDialog({
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="description">{dict.description} ({dict.optional})</Label>
+                <Label htmlFor="description"></Label>
                 <Textarea
                   id="description"
                   name="description"
-                  placeholder={dict.enterDescription}
+                  placeholder={`${dict.enterDescription} (${dict.optional})`}
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="url">URL ({dict.optional})</Label>
+                <Label htmlFor="url"></Label>
                 <Input
                   id="url"
                   name="url"
                   type="url"
-                  placeholder={dict.enterUrl}
+                  placeholder={`${dict.enterUrl} (${dict.optional})`}
                 />
               </div>
 
