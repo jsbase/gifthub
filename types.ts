@@ -54,3 +54,9 @@ export interface AuthResponse {
   message?: string;
   error?: string;
 }
+
+export interface Translations {
+  [key: string]: {
+    [key: string]: string;
+  };
+}

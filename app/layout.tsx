@@ -3,12 +3,41 @@ import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "@/components/theme-provider";
+import { LanguageSwitcher } from '@/components/language-switcher';
 
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
   title: 'GiftHub - Family Gift Management',
   description: 'Manage gift ideas for your family and groups',
+  authors: [{ name: 'GiftHub' }],
+  keywords: ['gift', 'gift ideas', 'family gifts', 'group gifts', 'gift management'],
+  robots: 'index, follow',
+  openGraph: {
+    title: 'GiftHub - Family Gift Management',
+    description: 'Manage gift ideas for your family and groups',
+    images: [
+      {
+        url: '/apple-touch-icon.png',
+      },
+    ],
+    url: 'https://gifthub-wishlist.vercel.app/',
+    siteName: 'GiftHub',
+    locale: 'en_US',
+    type: 'website',
+  },
+  icons: {
+    icon: [
+      { url: '/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
+      { url: '/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
+    ],
+    apple: [
+      { url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
+    ],
+  },
+  manifest: '/site.webmanifest',
+  themeColor: '#ffffff',
+  viewport: 'width=device-width, initial-scale=1.0',
 };
 
 export default function RootLayout({
@@ -18,25 +47,6 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <head>
-        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
-        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
-        <link rel="manifest" href="/site.webmanifest" />
-        <meta name="theme-color" content="#ffffff" />
-        <meta name="description" content="Manage gift ideas for your family and groups" />
-        <meta name="author" content="GiftHub" />
-        <meta name="keywords" content="gift, gift ideas, family gifts, group gifts, gift management" />
-        <meta name="robots" content="index, follow" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <meta name="og:title" content="GiftHub - Family Gift Management" />
-        <meta name="og:description" content="Manage gift ideas for your family and groups" />
-        <meta name="og:image" content="/apple-touch-icon.png" />
-        <meta name="og:url" content="https://gifthub-wishlist.vercel.app/" />
-        <meta name="og:site_name" content="GiftHub" />
-        <meta name="og:locale" content="en_US" />
-        <meta name="og:type" content="website" />
-      </head>
       <body className={inter.className}>
         <ThemeProvider
           attribute="class"
@@ -44,6 +54,9 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
+          <div className="fixed top-4 right-4 z-50">
+            <LanguageSwitcher />
+          </div>
           {children}
           <Toaster />
         </ThemeProvider>
