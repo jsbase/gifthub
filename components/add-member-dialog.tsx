@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from "./ui/dialog";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
@@ -8,10 +8,29 @@ import { Label } from "./ui/label";
 import { UserPlus } from "lucide-react";
 import { toast } from "sonner";
 import { AddMemberDialogProps } from "@/types";
+import { getDictionary } from "@/app/[lang]/dictionaries";
+import { usePathname } from "next/navigation";
+import { AddMemberDialogDictionary } from "@/types";
 
-export function AddMemberDialog({ onMemberAdded }: AddMemberDialogProps) {
+export function AddMemberDialog({ onMemberAdded }: Omit<AddMemberDialogProps, 'dict'>) {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [dict, setDict] = useState<AddMemberDialogDictionary | null>(null);
+  const pathname = usePathname();
+  
+  // Get current language from URL
+  const lang = pathname.split('/')[1];
+
+  // Load translations when component mounts
+  useEffect(() => {
+    const loadTranslations = async () => {
+      const translations = await getDictionary(lang);
+      if (translations.addMemberDialog) {
+        setDict(translations.addMemberDialog as unknown as AddMemberDialogDictionary);
+      }
+    };
+    loadTranslations();
+  }, [lang]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -52,34 +71,36 @@ export function AddMemberDialog({ onMemberAdded }: AddMemberDialogProps) {
     }
   };
 
+  if (!dict) return null;
+
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <Button>
           <UserPlus className="h-4 w-4 mr-2" />
-          Add Member
+          {dict.addMember}
         </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Add New Member</DialogTitle>
+          <DialogTitle>{dict.addMember}</DialogTitle>
           <DialogDescription>
-            Enter the email address of the member you want to add.
+            {dict.enterGroupName}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="email">Email Address</Label>
+            <Label htmlFor="email">{dict.emailAddress}</Label>
             <Input
               id="email"
               name="email"
               type="email"
-              placeholder="Enter member's email"
+              placeholder={dict.enterMemberEmail}
               required
             />
           </div>
           <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? 'Adding...' : 'Add Member'}
+            {isLoading ? 'Adding...' : dict.addMember}
           </Button>
         </form>
       </DialogContent>

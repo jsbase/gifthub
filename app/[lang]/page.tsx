@@ -1,7 +1,16 @@
+import { getDictionary } from './dictionaries';
 import { AuthButtons } from "@/components/auth-buttons";
 import { GiftIcon } from "lucide-react";
+import { Translations } from "@/types";
 
-export default function Home() {
+export default async function Home({
+  params,
+}: {
+  params: Promise<{ lang: string }>
+}) {
+  const { lang } = await params;
+  const dict: Translations = await getDictionary(lang);
+
   return (
     <main className="min-h-screen bg-gradient-to-b from-background to-muted">
       <div className="container mx-auto px-4 py-16 flex flex-col items-center justify-center min-h-screen">
@@ -10,27 +19,27 @@ export default function Home() {
             <GiftIcon className="h-12 w-12 text-primary" />
             <h1 className="text-4xl font-bold tracking-tight">GiftHub</h1>
           </div>
-          
+
           <p className="text-xl text-muted-foreground">
-            The simple way to manage gift ideas for your family and groups
+            {dict.tagline}
           </p>
-          
+
           <div className="mt-12">
-            <AuthButtons />
+            <AuthButtons dict={dict} />
           </div>
-          
+
           <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8">
-            <FeatureCard 
-              title="Simple Groups"
-              description="Create and manage gift lists for your family or group with just a name and password"
+            <FeatureCard
+              title={dict.features.simple.title}
+              description={dict.features.simple.description}
             />
-            <FeatureCard 
-              title="Gift Tracking"
-              description="Keep track of gift ideas, mark items as purchased, and avoid duplicate gifts"
+            <FeatureCard
+              title={dict.features.tracking.title}
+              description={dict.features.tracking.description}
             />
-            <FeatureCard 
-              title="Real-time Updates"
-              description="See changes instantly across all devices without refreshing"
+            <FeatureCard
+              title={dict.features.updates.title}
+              description={dict.features.updates.description}
             />
           </div>
         </div>

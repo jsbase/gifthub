@@ -1,0 +1,61 @@
+{
+  "addMember": "Member",
+  "addMemberDialog": {
+    "addMember": "Add member",
+    "emailAddress": "Email",
+    "enterGroupName": "Add a new member to the gift list",
+    "enterMemberEmail": "Member email"
+  },
+  "confirmPassword": "Confirm password",
+  "createGroup": "New group",
+  "createGroupBtn": "Create",
+  "emailAddress": "Email",
+  "enterGroupName": "Group name",
+  "enterMemberEmail": "Member email",
+  "enterPassword": "Password",
+  "errors": {
+    "failedToLoad": "Loading failed",
+    "failedToLoadGifts": "Gifts not loaded",
+    "loginRequired": "Login required"
+  },
+  "features": {
+    "simple": {
+      "description": "Manage gift lists easily",
+      "title": "Simple Groups"
+    },
+    "tracking": {
+      "description": "Track gifts and avoid duplicates",
+      "title": "Gift Tracking"
+    },
+    "updates": {
+      "description": "Coordinate gift ideas together easily",
+      "title": "Team Planning"
+    }
+  },
+  "groupName": "Group name",
+  "joined": "Member since",
+  "login": "Login",
+  "loginToGroup": "Join group",
+  "logout": "Logout",
+  "memberGifts": {
+    "addGift": "Gift",
+    "adding": "Loading",
+    "cancel": "Cancel",
+    "description": "Edit gift list",
+    "enterDescription": "Description",
+    "enterGiftTitle": "Gift name",
+    "enterUrl": "Link",
+    "giftTitle": "Gift",
+    "noGifts": "No gifts yet",
+    "optional": "Optional",
+    "title": "Wishlist"
+  },
+  "members": "Members",
+  "noMembers": "No members. Add your first member",
+  "password": "Password",
+  "register": "Register",
+  "success": {
+    "loggedOut": "Logged out"
+  },
+  "tagline": "Organize gifts easily"
+}
