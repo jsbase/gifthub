@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "./ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from "./ui/dialog";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
@@ -63,6 +63,9 @@ export function AddMemberDialog({ onMemberAdded }: AddMemberDialogProps) {
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Add New Member</DialogTitle>
+          <DialogDescription>
+            Enter the email address of the member you want to add.
+          </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
