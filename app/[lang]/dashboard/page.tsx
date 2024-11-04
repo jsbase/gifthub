@@ -12,7 +12,7 @@ import { Member, Gift, Translations } from "@/types";
 import { getDictionary } from '../dictionaries';
 
 export default function DashboardPage({
-  params: { lang }
+  params,
 }: {
   params: { lang: string }
 }) {
@@ -26,12 +26,12 @@ export default function DashboardPage({
 
   useEffect(() => {
     const init = async () => {
-      const translations = await getDictionary(lang);
+      const translations = (await getDictionary(params.lang)) as Translations;
       setDict(translations);
       
       const auth = await verifyAuth();
       if (!auth) {
-        router.replace(`/${lang}`);
+        router.replace(`/${params.lang}`);
         toast.error(translations.errors.loginRequired);
       } else {
         setGroupName(auth.groupName as string);
@@ -40,7 +40,7 @@ export default function DashboardPage({
     };
 
     init();
-  }, [router, lang]);
+  }, [router, params.lang]);
 
   const fetchData = async () => {
     try {
@@ -59,7 +59,7 @@ export default function DashboardPage({
 
   const handleLogout = async () => {
     await logout();
-    router.replace(`/${lang}`);
+    router.replace(`/${params.lang}`);
     toast.success(dict?.success.loggedOut || 'Logged out successfully');
   };
 
@@ -101,7 +101,7 @@ export default function DashboardPage({
         <section>
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold">{dict.members}</h2>
-            <AddMemberDialog onMemberAdded={fetchData} dict={dict.addMember} />
+            <AddMemberDialog onMemberAdded={fetchData} dict={dict} />
           </div>
           {members?.length > 0 ? (
             <div className="grid gap-4">
@@ -115,7 +115,7 @@ export default function DashboardPage({
                   <div className="flex flex-col items-start">
                     <p className="font-medium">{member.email}</p>
                     <p className="text-sm text-muted-foreground">
-                      {dict.joined} {new Date(member.joinedAt).toLocaleDateString(lang)}
+                      {dict.joined} {new Date(member.joinedAt).toLocaleDateString(params.lang)}
                     </p>
                   </div>
                   <ChevronRight className="h-5 w-5 text-muted-foreground" />

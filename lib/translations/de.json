@@ -36,5 +36,9 @@
   },
   "success": {
     "loggedOut": "Erfolgreich abgemeldet"
+  },
+  "memberGifts": {
+    "title": "Geschenk(e)",
+    "addGift": "Geschenk hinzufügen"
   }
 }

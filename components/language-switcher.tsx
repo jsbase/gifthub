@@ -9,6 +9,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from './ui/dropdown-menu';
+import { loadTranslations } from '@/app/[lang]/actions';
 
 const languages = [
   { code: 'en', name: 'English', flag: '/flags/gb.svg' },
@@ -24,7 +25,11 @@ export function LanguageSwitcher() {
     lang => pathname.startsWith(`/${lang.code}/`) || pathname === `/${lang.code}`
   ) || languages[0];
 
-  const switchLanguage = (langCode: string) => {
+  const switchLanguage = async (langCode: string) => {
+    // Load new translations
+    await loadTranslations(langCode);
+    
+    // Existing path switching logic
     const newPath = pathname.split('/').slice(2).join('/');
     const redirectPath = `/${langCode}${newPath ? `/${newPath}` : ''}`;
     router.push(redirectPath);
@@ -49,7 +54,7 @@ export function LanguageSwitcher() {
           <DropdownMenuItem
             key={lang.code}
             onClick={() => switchLanguage(lang.code)}
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 cursor-pointer hover:bg-accent active:bg-accent/80 focus:bg-accent/80 py-3"
           >
             <Image
               src={lang.flag}

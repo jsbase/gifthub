@@ -34,11 +34,6 @@ export interface UserGroup {
   user: User;
 }
 
-export interface AddMemberDialogProps {
-  onMemberAdded?: () => void;
-  dict: Translations;
-}
-
 export interface MemberGiftsDialogProps {
   isOpen: boolean;
   onClose: () => void;
@@ -46,9 +41,10 @@ export interface MemberGiftsDialogProps {
   memberId: string;
   gifts: Gift[];
   onGiftAdded: () => void;
+  dict: Translations['memberGifts'];
 }
 
-export interface CommandDialogProps extends DialogProps {}
+export interface CommandDialogProps extends DialogProps { }
 
 export interface AuthResponse {
   success: boolean;
@@ -95,5 +91,13 @@ export interface Translations {
   success: {
     loggedOut: string;
   };
+  memberGifts: {
+    [key: string]: string;
+  };
   [key: string]: string | { [key: string]: string | { [key: string]: string } };
+}
+
+export interface AddMemberDialogProps {
+  onMemberAdded?: () => void;
+  dict: Translations;
 }

@@ -36,5 +36,9 @@
   },
   "success": {
     "loggedOut": "Successfully signed out"
+  },
+  "memberGifts": {
+    "title": "Gifts",
+    "addGift": "Add Gift"
   }
 }
