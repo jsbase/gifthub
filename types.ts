@@ -52,6 +52,13 @@ export interface AuthResponse {
   error?: string;
 }
 
+export interface AddMemberDialogDictionary {
+  addMember: string;
+  enterGroupName: string;
+  emailAddress: string;
+  enterMemberEmail: string;
+}
+
 export interface Translations {
   tagline: string;
   login: string;
@@ -94,13 +101,8 @@ export interface Translations {
   memberGifts: {
     [key: string]: string;
   };
-  addMemberDialog: {
-    addMember: string;
-    enterGroupName: string;
-    emailAddress: string;
-    enterMemberEmail: string;
-  };
-  [key: string]: string | { [key: string]: string | { [key: string]: string } };
+  addMemberDialog: AddMemberDialogDictionary;
+  [key: string]: string | { [key: string]: string | { [key: string]: string } } | AddMemberDialogDictionary;
 }
 
 export interface AddMemberDialogProps {

@@ -10,11 +10,12 @@ import { toast } from "sonner";
 import { AddMemberDialogProps } from "@/types";
 import { getDictionary } from "@/app/[lang]/dictionaries";
 import { usePathname } from "next/navigation";
+import { AddMemberDialogDictionary } from "@/types";
 
 export function AddMemberDialog({ onMemberAdded }: Omit<AddMemberDialogProps, 'dict'>) {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [dict, setDict] = useState<AddMemberDialogProps['dict'] | null>(null);
+  const [dict, setDict] = useState<AddMemberDialogDictionary | null>(null);
   const pathname = usePathname();
   
   // Get current language from URL
@@ -24,7 +25,9 @@ export function AddMemberDialog({ onMemberAdded }: Omit<AddMemberDialogProps, 'd
   useEffect(() => {
     const loadTranslations = async () => {
       const translations = await getDictionary(lang);
-      setDict(translations.addMemberDialog);
+      if (translations.addMemberDialog) {
+        setDict(translations.addMemberDialog as unknown as AddMemberDialogDictionary);
+      }
     };
     loadTranslations();
   }, [lang]);

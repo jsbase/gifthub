@@ -42,5 +42,11 @@
     "addGift": "Geschenk hinzufügen"
   },
   "emailAddress": "E-Mail-Adresse",
-  "enterMemberEmail": "E-Mail-Adresse des Mitglieds eingeben"
+  "enterMemberEmail": "E-Mail-Adresse des Mitglieds eingeben",
+  "addMemberDialog": {
+    "addMember": "Mitglied hinzufügen",
+    "enterGroupName": "Geben Sie Ihren Gruppennamen ein",
+    "emailAddress": "E-Mail-Adresse",
+    "enterMemberEmail": "E-Mail-Adresse des Mitglieds eingeben"
+  }
 }

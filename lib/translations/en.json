@@ -42,5 +42,11 @@
     "addGift": "Add Gift"
   },
   "emailAddress": "Email Address",
-  "enterMemberEmail": "Enter member's email"
+  "enterMemberEmail": "Enter member's email",
+  "addMemberDialog": {
+    "addMember": "Add member",
+    "enterGroupName": "Enter your group name",
+    "emailAddress": "Email Address",
+    "enterMemberEmail": "Enter member's email"
+  }
 }
