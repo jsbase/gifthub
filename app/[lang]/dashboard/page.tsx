@@ -10,12 +10,14 @@ import { AddMemberDialog } from "@/components/add-member-dialog";
 import { MemberGiftsDialog } from "@/components/member-gifts-dialog";
 import { Member, Gift, Translations } from "@/types";
 import { getDictionary } from '../dictionaries';
+import { use } from 'react';
 
 export default function DashboardPage({
   params,
 }: {
-  params: { lang: string }
+  params: Promise<{ lang: string }>
 }) {
+  const { lang } = use(params);
   const router = useRouter();
   const [dict, setDict] = useState<Translations | null>(null);
   const [groupName, setGroupName] = useState<string>("");
@@ -26,12 +28,12 @@ export default function DashboardPage({
 
   useEffect(() => {
     const init = async () => {
-      const translations = (await getDictionary(params.lang)) as Translations;
+      const translations = (await getDictionary(lang)) as Translations;
       setDict(translations);
       
       const auth = await verifyAuth();
       if (!auth) {
-        router.replace(`/${params.lang}`);
+        router.replace(`/${lang}`);
         toast.error(translations.errors.loginRequired);
       } else {
         setGroupName(auth.groupName as string);
@@ -40,7 +42,7 @@ export default function DashboardPage({
     };
 
     init();
-  }, [router, params.lang]);
+  }, [router, lang]);
 
   const fetchData = async () => {
     try {
@@ -59,7 +61,7 @@ export default function DashboardPage({
 
   const handleLogout = async () => {
     await logout();
-    router.replace(`/${params.lang}`);
+    router.replace(`/${lang}`);
     toast.success(dict?.success.loggedOut || 'Logged out successfully');
   };
 
@@ -115,7 +117,7 @@ export default function DashboardPage({
                   <div className="flex flex-col items-start">
                     <p className="font-medium">{member.email}</p>
                     <p className="text-sm text-muted-foreground">
-                      {dict.joined} {new Date(member.joinedAt).toLocaleDateString(params.lang)}
+                      {dict.joined} {new Date(member.joinedAt).toLocaleDateString(lang)}
                     </p>
                   </div>
                   <ChevronRight className="h-5 w-5 text-muted-foreground" />
