@@ -112,7 +112,7 @@ export function MemberGiftsDialog({
           <DialogTitle className="xs:text-base">
             {dict.title} {memberEmail}
           </DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="sr-only">
             {dict.manageGifts}
           </DialogDescription>
         </DialogHeader>
@@ -122,8 +122,7 @@ export function MemberGiftsDialog({
             <>
               <Button
                 onClick={() => setShowAddGiftForm(true)}
-                className="w-full"
-                variant="outline"
+                className="w-full my-4"
               >
                 <PlusCircle className="h-4 w-4 mr-2" />
                 {dict.addGift}
