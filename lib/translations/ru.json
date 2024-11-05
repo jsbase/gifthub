@@ -1,7 +1,8 @@
 {
   "addMember": "Добавить участника",
   "addMemberDialog": {
-    "addMember": "Добавить участника",
+    "addMemberTitle": "Добавить участника",
+    "addMember": "Добавить",
     "emailAddress": "Электронная почта",
     "enterGroupName": "Пожалуйста, заполните, чтобы добавить кого-то",
     "enterMemberEmail": "Электронная почта участника"
