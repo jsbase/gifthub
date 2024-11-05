@@ -10,6 +10,7 @@ import {
   DropdownMenuTrigger,
 } from './ui/dropdown-menu';
 import { loadTranslations } from '@/app/[lang]/actions';
+import { cookies } from 'next/headers';
 
 const languages = [
   { code: 'en', name: 'English', flag: '/flags/gb.svg' },
