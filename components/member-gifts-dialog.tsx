@@ -98,15 +98,17 @@ export function MemberGiftsDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{dict.title} {memberEmail}</DialogTitle>
+          <DialogTitle className="xs:text-base">
+            {dict.title} {memberEmail}
+          </DialogTitle>
           <DialogDescription>
             {dict.manageGifts}
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4">
+        <div className="space-y-4 xs:space-y-2">
           {!showAddGiftForm && (
             <>
               <Button
@@ -119,13 +121,13 @@ export function MemberGiftsDialog({
               </Button>
 
               {gifts.length > 0 ? (
-                <div className="space-y-4">
+                <div className="space-y-3 xs:space-y-2">
                   {[...gifts]
                     .sort((a, b) => Number(a.isPurchased) - Number(b.isPurchased))
                     .map((gift) => (
                       <div
                         key={gift.id}
-                        className={`p-4 rounded-lg border bg-card ${gift.isPurchased ? 'opacity-60' : ''} relative`}
+                        className={`p-4 xs:p-3 rounded-lg border bg-card ${gift.isPurchased ? 'opacity-60' : ''} relative`}
                       >
                         <a
                           href={gift.url}
@@ -178,7 +180,7 @@ export function MemberGiftsDialog({
                     ))}
                 </div>
               ) : (
-                <p className="text-center text-muted-foreground">
+                <p className="text-center text-muted-foreground xs:text-sm">
                   {dict.noGifts}
                 </p>
               )}
@@ -186,33 +188,37 @@ export function MemberGiftsDialog({
           )}
 
           {showAddGiftForm && (
-            <form onSubmit={handleAddGift} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="title"></Label>
+            <form onSubmit={handleAddGift} className="space-y-4 xs:space-y-3">
+              <div className="space-y-2 xs:space-y-1">
+                <Label htmlFor="title" className="xs:text-sm"></Label>
                 <Input
                   id="title"
                   name="title"
                   placeholder={dict.enterGiftTitle}
                   required
+                  className="xs:text-sm"
                 />
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="description"></Label>
+              <div className="space-y-2 xs:space-y-1">
+                <Label htmlFor="description" className="xs:text-sm"></Label>
                 <Textarea
                   id="description"
                   name="description"
                   placeholder={`${dict.enterDescription} (${dict.optional})`}
+                  className="xs:text-sm"
+                  rows={3}
                 />
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="url"></Label>
+              <div className="space-y-2 xs:space-y-1">
+                <Label htmlFor="url" className="xs:text-sm"></Label>
                 <Input
                   id="url"
                   name="url"
                   type="url"
                   placeholder={`${dict.enterUrl} (${dict.optional})`}
+                  className="xs:text-sm"
                 />
               </div>
 
@@ -221,10 +227,11 @@ export function MemberGiftsDialog({
                   type="button"
                   variant="outline"
                   onClick={() => setShowAddGiftForm(false)}
+                  className="xs:text-sm"
                 >
                   {dict.cancel}
                 </Button>
-                <Button type="submit" disabled={isLoading}>
+                <Button type="submit" disabled={isLoading} className="xs:text-sm">
                   {isLoading ? dict.adding : dict.addGift}
                 </Button>
               </div>
