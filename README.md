@@ -5,12 +5,15 @@
 ## 🎯 What is GiftHub?
 GiftHub helps you manage gift-giving within your family or other groups. Create wishlists, track who's buying what, and ensure everyone gets something special - all while keeping the surprise! Perfect for birthdays, holidays, or any gift-giving occasion.
 
-## 🚀 Deployments
-- 💻 Development: https://wishy-git-development-jsbases-projects.vercel.app/
-- 🔍 Preview: https://wishy-git-preview-jsbases-projects.vercel.app/
-- ✨ Production: https://wishy-three.vercel.app/
-
-[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/~/github.com/jsbase/wishy)
+## ✨ Features
+- 👨‍👩‍👧‍👦 Create and manage family/group gift lists
+- 🎯 Add items to wishlists
+- 🤫 Secretly mark items as "being bought"
+- 📅 Track special occasions and deadlines
+- 🎨 Modern UI with [Radix UI](https://www.radix-ui.com/) components
+- 🌙 Dark mode support
+- 🔒 Secure authentication
+- 💅 Beautiful, responsive design
 
 ---
 
@@ -29,16 +32,6 @@ npm run dev
 ```
 
 3. Open [http://localhost:3000](http://localhost:3000) to see your app! 🎉
-
-## ✨ Features
-- 👨‍👩‍👧‍👦 Create and manage family/group gift lists
-- 🎯 Add items to wishlists
-- 🤫 Secretly mark items as "being bought"
-- 📅 Track special occasions and deadlines
-- 🎨 Modern UI with [Radix UI](https://www.radix-ui.com/) components
-- 🌙 Dark mode support
-- 🔒 Secure authentication
-- 💅 Beautiful, responsive design
 
 ## 📚 Learn More
 

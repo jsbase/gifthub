@@ -29,7 +29,13 @@ export function AuthButtons({ dict }: { dict: Translations }) {
       toast.success('Logged in successfully');
       setIsLoginOpen(false);
       router.refresh();
-      router.push('/dashboard');
+      
+      // Get current language from cookie
+      const lang = document.cookie.split('; ')
+        .find(row => row.startsWith('NEXT_LOCALE='))
+        ?.split('=')[1] || 'en';
+        
+      router.push(`/${lang}/dashboard`);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Login failed');
     } finally {
