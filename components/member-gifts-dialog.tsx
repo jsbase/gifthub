@@ -10,10 +10,10 @@ import { PlusCircle, Trash2, Check, X } from "lucide-react";
 import { toast } from "sonner";
 import { MemberGiftsDialogProps } from "@/types";
 
-export function MemberGiftsDialog({ 
-  isOpen, 
-  onClose, 
-  memberEmail, 
+export function MemberGiftsDialog({
+  isOpen,
+  onClose,
+  memberEmail,
   memberId,
   gifts,
   onGiftAdded,
@@ -102,22 +102,91 @@ export function MemberGiftsDialog({
         <DialogHeader>
           <DialogTitle>{dict.title} {memberEmail}</DialogTitle>
           <DialogDescription>
-            {dict.description}
+            {dict.manageGifts}
           </DialogDescription>
         </DialogHeader>
-        
+
         <div className="space-y-4">
-          <Button
-            onClick={() => setShowAddGiftForm(true)}
-            className="w-full"
-            variant="outline"
-          >
-            <PlusCircle className="h-4 w-4 mr-2" />
-            {dict.addGift}
-          </Button>
+          {!showAddGiftForm && (
+            <>
+              <Button
+                onClick={() => setShowAddGiftForm(true)}
+                className="w-full"
+                variant="outline"
+              >
+                <PlusCircle className="h-4 w-4 mr-2" />
+                {dict.addGift}
+              </Button>
+
+              {gifts.length > 0 ? (
+                <div className="space-y-4">
+                  {[...gifts]
+                    .sort((a, b) => Number(a.isPurchased) - Number(b.isPurchased))
+                    .map((gift) => (
+                      <div
+                        key={gift.id}
+                        className={`p-4 rounded-lg border bg-card ${gift.isPurchased ? 'opacity-60' : ''} relative`}
+                      >
+                        <a
+                          href={gift.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={(e) => (!gift.url || gift.isPurchased) && e.preventDefault()}
+                          className={`absolute inset-0 ${gift.url && !gift.isPurchased ? 'cursor-pointer' : 'cursor-default'}`}
+                        />
+                        <div className="flex items-center justify-between relative z-10 pointer-events-none">
+                          <div className="flex-grow">
+                            <h3 className={`font-medium ${gift.isPurchased ? 'line-through' : ''}`}>
+                              {gift.title}
+                            </h3>
+                            {gift.description && (
+                              <p className={`text-sm text-muted-foreground mt-1 ${gift.isPurchased ? 'line-through' : ''}`}>
+                                {gift.description}
+                              </p>
+                            )}
+                          </div>
+                          <div className="flex items-center space-x-2 pointer-events-auto">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                handleTogglePurchased(gift.id);
+                              }}
+                              className={`relative z-10 ${gift.isPurchased ? "text-green-600" : ""}`}
+                            >
+                              {gift.isPurchased ? (
+                                <X className="h-4 w-4" />
+                              ) : (
+                                <Check className="h-4 w-4" />
+                              )}
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                handleDeleteGift(gift.id);
+                              }}
+                              className="relative z-10 text-red-600 hover:text-red-700"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              ) : (
+                <p className="text-center text-muted-foreground">
+                  {dict.noGifts}
+                </p>
+              )}
+            </>
+          )}
 
           {showAddGiftForm && (
-            <form onSubmit={handleAddGift} className="space-y-4 border rounded-lg p-4">
+            <form onSubmit={handleAddGift} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="title"></Label>
                 <Input
@@ -160,71 +229,6 @@ export function MemberGiftsDialog({
                 </Button>
               </div>
             </form>
-          )}
-
-          {gifts.length > 0 ? (
-            <div className="space-y-4">
-              {[...gifts]
-                .sort((a, b) => Number(a.isPurchased) - Number(b.isPurchased))
-                .map((gift) => (
-                <div
-                  key={gift.id}
-                  className={`p-4 rounded-lg border bg-card ${gift.isPurchased ? 'opacity-60' : ''} relative`}
-                >
-                  <a
-                    href={gift.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={(e) => (!gift.url || gift.isPurchased) && e.preventDefault()}
-                    className={`absolute inset-0 ${gift.url && !gift.isPurchased ? 'cursor-pointer' : 'cursor-default'}`}
-                  />
-                  <div className="flex items-center justify-between relative z-10 pointer-events-none">
-                    <div className="flex-grow">
-                      <h3 className={`font-medium ${gift.isPurchased ? 'line-through' : ''}`}>
-                        {gift.title}
-                      </h3>
-                      {gift.description && (
-                        <p className={`text-sm text-muted-foreground mt-1 ${gift.isPurchased ? 'line-through' : ''}`}>
-                          {gift.description}
-                        </p>
-                      )}
-                    </div>
-                    <div className="flex items-center space-x-2 pointer-events-auto">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          handleTogglePurchased(gift.id);
-                        }}
-                        className={`relative z-10 ${gift.isPurchased ? "text-green-600" : ""}`}
-                      >
-                        {gift.isPurchased ? (
-                          <X className="h-4 w-4" />
-                        ) : (
-                          <Check className="h-4 w-4" />
-                        )}
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          handleDeleteGift(gift.id);
-                        }}
-                        className="relative z-10 text-red-600 hover:text-red-700"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-center text-muted-foreground">
-              {dict.noGifts}
-            </p>
           )}
         </div>
       </DialogContent>
