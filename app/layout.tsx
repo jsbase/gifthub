@@ -53,6 +53,7 @@ export default function RootLayout({
       <head>
         <meta name="viewport" content={`width=${viewport.width}, initial-scale=${viewport.initialScale}`} />
       </head>
+
       <body className={inter.className}>
         <ThemeProvider
           attribute="class"
