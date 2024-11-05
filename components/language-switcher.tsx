@@ -10,6 +10,7 @@ import {
   DropdownMenuTrigger,
 } from './ui/dropdown-menu';
 import { loadTranslations } from '@/app/[lang]/actions';
+import { cookies } from 'next/headers';
 
 const languages = [
   { code: 'en', name: 'English', flag: '/flags/gb.svg' },
@@ -26,10 +27,13 @@ export function LanguageSwitcher() {
   ) || languages[0];
 
   const switchLanguage = async (langCode: string) => {
+    // Set language preference in cookie
+    document.cookie = `NEXT_LOCALE=${langCode};path=/;max-age=31536000`; // 1 year expiry
+    
     // Load new translations
     await loadTranslations(langCode);
     
-    // Existing path switching logic
+    // Update path
     const newPath = pathname.split('/').slice(2).join('/');
     const redirectPath = `/${langCode}${newPath ? `/${newPath}` : ''}`;
     router.push(redirectPath);
