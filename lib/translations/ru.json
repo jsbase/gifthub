@@ -71,5 +71,10 @@
     "giftStatusUpdateFailed": "Не удалось обновить статус подарка",
     "giftDeleted": "Подарок успешно удален",
     "giftDeleteFailed": "Не удалось удалить подарок"
+  },
+  "footer": {
+    "copyright": "© 2024 Gifthub. Все права защищены.",
+    "privacyPolicy": "Политика конфиденциальности",
+    "termsConditions": "Условия использования"
   }
 }

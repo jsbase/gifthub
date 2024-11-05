@@ -1,14 +1,7 @@
 import { GiftIcon, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { LanguageSwitcher } from "@/components/language-switcher";
-import { Translations } from "@/types";
-
-interface HeaderProps {
-  groupName?: string;
-  dict?: Translations;
-  onLogout?: () => void;
-  showAuth?: boolean;
-}
+import { HeaderProps } from "@/types";
 
 export function Header({ groupName, dict, onLogout, showAuth = false }: HeaderProps) {
   return (

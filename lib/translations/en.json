@@ -71,5 +71,10 @@
     "giftStatusUpdateFailed": "Failed to update gift status",
     "giftDeleted": "Gift deleted successfully",
     "giftDeleteFailed": "Failed to delete gift"
+  },
+  "footer": {
+    "copyright": "© 2024 Gifthub. All Rights Reserved.",
+    "privacyPolicy": "Privacy Policy",
+    "termsConditions": "Terms & Conditions"
   }
 }

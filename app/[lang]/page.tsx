@@ -1,8 +1,9 @@
 import { getDictionary } from './dictionaries';
 import { Translations } from "@/types";
-import { Header } from "@/components/header";
 import { GiftIcon } from "lucide-react";
 import { AuthButtons } from '@/components/auth-buttons';
+import { Header } from "@/components/header";
+import { Footer } from '@/components/footer';
 
 export default async function Home({
   params,
@@ -14,7 +15,7 @@ export default async function Home({
 
   return (
     <>
-      <Header />
+      <Header dict={dict} />
       <main className="min-h-screen bg-gradient-to-b from-background to-muted">
         <div className="container mx-auto px-4 py-16 flex flex-col items-center justify-center min-h-screen">
           <div className="text-center max-w-2xl mx-auto">
@@ -48,6 +49,7 @@ export default async function Home({
           </div>
         </div>
       </main>
+      <Footer dict={dict} />
     </>
   );
 }
