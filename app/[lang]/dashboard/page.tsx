@@ -11,6 +11,7 @@ import { MemberGiftsDialog } from "@/components/member-gifts-dialog";
 import { Member, Gift, Translations } from "@/types";
 import { getDictionary } from '../dictionaries';
 import { use } from 'react';
+import { Header } from "@/components/header";
 
 export default function DashboardPage({
   params,
@@ -86,18 +87,12 @@ export default function DashboardPage({
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="border-b">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <GiftIcon className="h-6 w-6" />
-            <h1 className="text-xl font-semibold">{groupName}</h1>
-          </div>
-          <Button variant="ghost" onClick={handleLogout}>
-            <LogOut className="h-4 w-4 mr-2" />
-            {dict.logout}
-          </Button>
-        </div>
-      </header>
+      <Header 
+        groupName={groupName} 
+        dict={dict} 
+        onLogout={handleLogout}
+        showAuth={true}
+      />
 
       <main className="container mx-auto px-4 py-8">
         <section>
