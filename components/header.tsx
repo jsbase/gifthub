@@ -25,7 +25,11 @@ export function Header({ groupName, dict, onLogout, showAuth = false }: HeaderPr
         <div className="flex items-center space-x-4">
           <LanguageSwitcher />
           {showAuth && dict && onLogout && (
-            <Button variant="ghost" onClick={onLogout}>
+            <Button 
+              variant="ghost" 
+              onClick={onLogout}
+              className="pl-2"
+            >
               <LogOut className="h-4 w-4 mr-2" />
               {dict.logout}
             </Button>
