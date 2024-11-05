@@ -5,6 +5,10 @@ const isClient = typeof window !== 'undefined';
 export async function login(groupName: string, password: string): Promise<AuthResponse> {
   if (!isClient) throw new Error('This method can only be used in the browser');
   
+  // Get current language preference
+  const lang = document.cookie.split('; ').find(row => row.startsWith('NEXT_LOCALE='))
+    ?.split('=')[1] || 'en';
+
   const response = await fetch('/api/auth/login', {
     method: 'POST',
     headers: {
