@@ -27,12 +27,13 @@ export function LanguageSwitcher() {
   ) || languages[0];
 
   const switchLanguage = async (langCode: string) => {
-    // Set language preference in cookie
-    document.cookie = `NEXT_LOCALE=${langCode};path=/;max-age=31536000`; // 1 year expiry
-    
+    // Set cookie using js-cookie or similar approach
+    const maxAge = 365 * 24 * 60 * 60; // 1 year in seconds
+    document.cookie = `NEXT_LOCALE=${langCode};path=/;max-age=${maxAge};SameSite=Lax`;
+
     // Load new translations
     await loadTranslations(langCode);
-    
+
     // Update path
     const newPath = pathname.split('/').slice(2).join('/');
     const redirectPath = `/${langCode}${newPath ? `/${newPath}` : ''}`;
@@ -42,13 +43,13 @@ export function LanguageSwitcher() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="w-8 h-8 rounded-full overflow-hidden p-0">
+        <Button variant="ghost" size="icon" className="w-6 h-6 rounded-full overflow-hidden p-0">
           <Image
             src={currentLang.flag}
             alt={currentLang.name}
-            width={32}
-            height={32}
-            className="w-8 h-8"
+            width={30}
+            height={30}
+            className="w-6 h-6"
             style={{ objectFit: 'cover' }}
           />
         </Button>
