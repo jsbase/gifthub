@@ -7,6 +7,9 @@
     "enterGroupName": "Пожалуйста, заполните, чтобы добавить кого-то",
     "enterMemberEmail": "Электронная почта участника"
   },
+  "confirmations": {
+    "deleteGift": "Вы уверены, что хотите удалить этот подарок?"
+  },
   "confirmPassword": "Подтвердите пароль",
   "createGroup": "Регистрация",
   "createGroupBtn": "Создать",
@@ -59,5 +62,13 @@
   "success": {
     "loggedOut": "Вы вышли из системы"
   },
-  "tagline": "Легко организуйте подарки"
+  "tagline": "Легко организуйте подарки",
+  "toasts": {
+    "giftAdded": "Подарок успешно добавлен",
+    "giftAddFailed": "Не удалось добавить подарок",
+    "giftStatusUpdated": "Статус подарка обновлен",
+    "giftStatusUpdateFailed": "Не удалось обновить статус подарка",
+    "giftDeleted": "Подарок успешно удален",
+    "giftDeleteFailed": "Не удалось удалить подарок"
+  }
 }

@@ -8,7 +8,6 @@ import { Label } from "./ui/label";
 import { Textarea } from "./ui/textarea";
 import { PlusCircle, Trash2, Check, X } from "lucide-react";
 import { toast } from "sonner";
-import { Gift } from "@/types";
 import { MemberGiftsDialogProps } from "@/types";
 
 export function MemberGiftsDialog({ 
@@ -46,12 +45,12 @@ export function MemberGiftsDialog({
         throw new Error('Failed to add gift');
       }
 
-      toast.success('Gift added successfully');
+      toast.success(dict.toasts.giftAdded);
       setShowAddGiftForm(false);
       onGiftAdded();
       (e.target as HTMLFormElement).reset();
     } catch (error) {
-      toast.error('Failed to add gift');
+      toast.error(dict.toasts.giftAddFailed);
     } finally {
       setIsLoading(false);
     }
@@ -69,15 +68,15 @@ export function MemberGiftsDialog({
         throw new Error('Failed to update gift status');
       }
 
-      toast.success('Gift status updated');
+      toast.success(dict.toasts.giftStatusUpdated);
       onGiftAdded(); // Refresh the list
     } catch (error) {
-      toast.error('Failed to update gift status');
+      toast.error(dict.toasts.giftStatusUpdateFailed);
     }
   };
 
   const handleDeleteGift = async (giftId: string) => {
-    if (!confirm('Are you sure you want to delete this gift?')) {
+    if (!confirm(dict.confirmations.deleteGift)) {
       return;
     }
 
@@ -90,10 +89,10 @@ export function MemberGiftsDialog({
         throw new Error('Failed to delete gift');
       }
 
-      toast.success('Gift deleted successfully');
+      toast.success(dict.toasts.giftDeleted);
       onGiftAdded(); // Refresh the list
     } catch (error) {
-      toast.error('Failed to delete gift');
+      toast.error(dict.toasts.giftDeleteFailed);
     }
   };
 

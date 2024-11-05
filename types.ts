@@ -34,46 +34,6 @@ export interface UserGroup {
   user: User;
 }
 
-export interface MemberGiftsDialogProps {
-  isOpen: boolean;
-  onClose: () => void;
-  memberEmail: string;
-  memberId: string;
-  gifts: Gift[];
-  onGiftAdded: () => void;
-  dict: Translations['memberGifts'];
-}
-
-export interface CommandDialogProps extends DialogProps { }
-
-export interface AuthResponse {
-  success: boolean;
-  message?: string;
-  error?: string;
-}
-
-export interface AddMemberDialogDictionary {
-  addMember: string;
-  addMemberTitle: string;
-  enterGroupName: string;
-  emailAddress: string;
-  enterMemberEmail: string;
-}
-
-export interface MemberGiftsTranslations {
-  title: string;
-  description: string;
-  addGift: string;
-  giftTitle: string;
-  enterGiftTitle: string;
-  optional: string;
-  enterDescription: string;
-  enterUrl: string;
-  cancel: string;
-  adding: string;
-  noGifts: string;
-}
-
 export interface Translations {
   tagline: string;
   login: string;
@@ -116,7 +76,65 @@ export interface Translations {
   };
   memberGifts: MemberGiftsTranslations;
   addMemberDialog: AddMemberDialogDictionary;
-  [key: string]: string | { [key: string]: string | { [key: string]: string } } | AddMemberDialogDictionary | MemberGiftsTranslations;
+  toasts: ToastTranslations;
+  confirmations: ConfirmationTranslations;
+  [key: string]: string | { [key: string]: string | { [key: string]: string } } | AddMemberDialogDictionary | MemberGiftsTranslations | ToastTranslations | ConfirmationTranslations;
+}
+
+export interface MemberGiftsDialogProps {
+  isOpen: boolean;
+  onClose: () => void;
+  memberEmail: string;
+  memberId: string;
+  gifts: Gift[];
+  onGiftAdded: () => void;
+  dict: MemberGiftsTranslations & {
+    toasts: ToastTranslations;
+    confirmations: ConfirmationTranslations;
+  };
+}
+
+export interface CommandDialogProps extends DialogProps { }
+
+export interface AuthResponse {
+  success: boolean;
+  message?: string;
+  error?: string;
+}
+
+export interface AddMemberDialogDictionary {
+  addMember: string;
+  addMemberTitle: string;
+  enterGroupName: string;
+  emailAddress: string;
+  enterMemberEmail: string;
+}
+
+export interface MemberGiftsTranslations {
+  title: string;
+  description: string;
+  addGift: string;
+  giftTitle: string;
+  enterGiftTitle: string;
+  optional: string;
+  enterDescription: string;
+  enterUrl: string;
+  cancel: string;
+  adding: string;
+  noGifts: string;
+}
+
+export interface ToastTranslations {
+  giftAdded: string;
+  giftAddFailed: string;
+  giftStatusUpdated: string;
+  giftStatusUpdateFailed: string;
+  giftDeleted: string;
+  giftDeleteFailed: string;
+}
+
+export interface ConfirmationTranslations {
+  deleteGift: string;
 }
 
 export interface AddMemberDialogProps {

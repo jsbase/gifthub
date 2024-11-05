@@ -134,7 +134,11 @@ export default function DashboardPage({
         memberId={selectedMemberId || ''}
         gifts={memberGifts}
         onGiftAdded={() => handleMemberClick(selectedMemberId!)}
-        dict={dict.memberGifts}
+        dict={{
+          ...dict.memberGifts,
+          toasts: dict.toasts,
+          confirmations: dict.confirmations
+        }}
       />
     </div>
   );

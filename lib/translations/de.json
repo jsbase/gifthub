@@ -7,6 +7,9 @@
     "enterGroupName": "Bitte ausfüllen um jemanden hinzuzufügen",
     "enterMemberEmail": "E-Mail"
   },
+  "confirmations": {
+    "deleteGift": "Sind Sie sicher, dass Sie dieses Geschenk löschen wollen?"
+  },
   "confirmPassword": "Passwort bestätigen",
   "createGroup": "Registrieren",
   "createGroupBtn": "Erstellen",
@@ -59,5 +62,13 @@
   "success": {
     "loggedOut": "Ausgeloggt"
   },
-  "tagline": "Geschenke einfach organisieren"
+  "tagline": "Geschenke einfach organisieren",
+  "toasts": {
+    "giftAdded": "Geschenk erfolgreich hinzugefügt",
+    "giftAddFailed": "Geschenk konnte nicht hinzugefügt werden",
+    "giftStatusUpdated": "Geschenkstatus aktualisiert",
+    "giftStatusUpdateFailed": "Geschenkstatus konnte nicht aktualisiert werden",
+    "giftDeleted": "Geschenk erfolgreich gelöscht",
+    "giftDeleteFailed": "Geschenk konnte nicht gelöscht werden"
+  }
 }

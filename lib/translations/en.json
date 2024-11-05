@@ -7,6 +7,9 @@
     "enterGroupName": "Please fill out to add someone",
     "enterMemberEmail": "Member's Email"
   },
+  "confirmations": {
+    "deleteGift": "Are you sure you want to delete this gift?"
+  },
   "confirmPassword": "Confirm Password",
   "createGroup": "Register",
   "createGroupBtn": "Create",
@@ -59,5 +62,13 @@
   "success": {
     "loggedOut": "Logged out"
   },
-  "tagline": "Easily organize gifts"
+  "tagline": "Easily organize gifts",
+  "toasts": {
+    "giftAdded": "Gift added successfully",
+    "giftAddFailed": "Failed to add gift",
+    "giftStatusUpdated": "Gift status updated",
+    "giftStatusUpdateFailed": "Failed to update gift status",
+    "giftDeleted": "Gift deleted successfully",
+    "giftDeleteFailed": "Failed to delete gift"
+  }
 }
