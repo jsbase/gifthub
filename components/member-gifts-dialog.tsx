@@ -9,6 +9,7 @@ import { Textarea } from "./ui/textarea";
 import { PlusCircle, Trash2, Check, X } from "lucide-react";
 import { toast } from "sonner";
 import { MemberGiftsDialogProps } from "@/types";
+import { cn } from "@/lib/utils";
 
 export function MemberGiftsDialog({
   isOpen,
@@ -21,6 +22,9 @@ export function MemberGiftsDialog({
 }: MemberGiftsDialogProps) {
   const [showAddGiftForm, setShowAddGiftForm] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+
+  // Determine if we should use full height based on gifts count AND form state
+  const useFullHeight = gifts.length > 5 && !showAddGiftForm;
 
   const handleAddGift = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -98,7 +102,12 @@ export function MemberGiftsDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className={cn(
+        "max-w-2xl",
+        // Conditional height classes
+        useFullHeight ? "xs:h-screen xs:max-h-screen" : "max-h-[90vh]",
+        "overflow-y-auto"
+      )}>
         <DialogHeader>
           <DialogTitle className="xs:text-base">
             {dict.title} {memberEmail}
@@ -222,17 +231,21 @@ export function MemberGiftsDialog({
                 />
               </div>
 
-              <div className="flex space-x-2">
+              <div className="flex flex-row space-x-2 xs:flex-col xs:space-x-0 xs:space-y-2">
+                <Button 
+                  type="submit" 
+                  disabled={isLoading} 
+                  className="xs:w-full xs:text-sm"
+                >
+                  {isLoading ? dict.adding : dict.addGift}
+                </Button>
                 <Button
                   type="button"
                   variant="outline"
                   onClick={() => setShowAddGiftForm(false)}
-                  className="xs:text-sm"
+                  className="xs:w-full xs:text-sm"
                 >
                   {dict.cancel}
-                </Button>
-                <Button type="submit" disabled={isLoading} className="xs:text-sm">
-                  {isLoading ? dict.adding : dict.addGift}
                 </Button>
               </div>
             </form>
