@@ -113,6 +113,7 @@ export interface AddMemberDialogDictionary {
 export interface MemberGiftsTranslations {
   title: string;
   description: string;
+  manageGifts: string;
   addGift: string;
   giftTitle: string;
   enterGiftTitle: string;
