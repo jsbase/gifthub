@@ -1,7 +1,8 @@
 {
   "addMember": "Mitglied hinzufügen",
   "addMemberDialog": {
-    "addMember": "Mitglied hinzufügen",
+    "addMemberTitle": "Mitglied hinzufügen",
+    "addMember": "Hinzufügen",
     "emailAddress": "E-Mail",
     "enterGroupName": "Bitte ausfüllen um jemanden hinzuzufügen",
     "enterMemberEmail": "E-Mail"

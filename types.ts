@@ -54,6 +54,7 @@ export interface AuthResponse {
 
 export interface AddMemberDialogDictionary {
   addMember: string;
+  addMemberTitle: string;
   enterGroupName: string;
   emailAddress: string;
   enterMemberEmail: string;

@@ -83,7 +83,7 @@ export function AddMemberDialog({ onMemberAdded }: Omit<AddMemberDialogProps, 'd
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{dict.addMember}</DialogTitle>
+          <DialogTitle>{dict.addMemberTitle}</DialogTitle>
           <DialogDescription>
             {dict.enterGroupName}
           </DialogDescription>
