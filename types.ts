@@ -215,7 +215,7 @@ export interface AddMemberDialogProps {
 
 export interface HeaderProps {
   groupName?: string;
-  dict?: Translations;
+  dict?: Pick<Translations, 'logout'>;
   onLogout?: () => void;
   showAuth?: boolean;
 }
@@ -245,4 +245,18 @@ export interface TermsPageProps {
 export interface AuthState {
   isAuthenticated: boolean;
   groupName: string | undefined;
+}
+
+export type LanguageCode = 'en' | 'de' | 'ru';
+
+export interface Language {
+  code: LanguageCode;
+  name: string;
+  flag: string;
+}
+
+export interface AuthVerifyResponse {
+  success: boolean;
+  groupName?: string;
+  message?: string;
 }

@@ -1,4 +1,4 @@
-import { AuthResponse } from '@/types';
+import { AuthResponse, AuthVerifyResponse } from '@/types';
 
 const isClient = typeof window !== 'undefined';
 
@@ -56,7 +56,7 @@ export async function register(groupName: string, password: string): Promise<Aut
   return data;
 }
 
-export async function verifyAuth() {
+export async function verifyAuth(): Promise<AuthVerifyResponse | null> {
   if (!isClient) return null;
   
   try {

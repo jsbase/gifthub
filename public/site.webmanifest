@@ -20,11 +20,15 @@
       "purpose": "maskable"
     }
   ],
+  "id": "/",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#ffffff",
   "orientation": "portrait",
   "scope": "/",
-  "prefer_related_applications": false
+  "prefer_related_applications": false,
+  "categories": ["productivity", "lifestyle"],
+  "lang": "en",
+  "dir": "ltr"
 }
