@@ -1,4 +1,5 @@
 import { FooterProps } from "@/types";
+import Link from "next/link";
 
 export function Footer({ dict }: FooterProps) {
   return (
@@ -9,12 +10,18 @@ export function Footer({ dict }: FooterProps) {
             {dict.footer.copyright}
           </span>
           <div className="flex space-x-5 sm:justify-center">
-            <a href="#" className="text-gray-500 hover:text-gray-900 dark:hover:text-white">
+            <Link 
+              href="/privacy" 
+              className="text-gray-500 hover:text-gray-900 dark:hover:text-white"
+            >
               {dict.footer.privacyPolicy}
-            </a>
-            <a href="#" className="text-gray-500 hover:text-gray-900 dark:hover:text-white">
+            </Link>
+            <Link 
+              href="#" 
+              className="text-gray-500 hover:text-gray-900 dark:hover:text-white"
+            >
               {dict.footer.termsConditions}
-            </a>
+            </Link>
           </div>
         </div>
       </div>
