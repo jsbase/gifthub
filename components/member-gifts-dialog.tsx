@@ -28,6 +28,7 @@ export function MemberGiftsDialog({
 
   const [showAddGiftForm, setShowAddGiftForm] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [animatingGifts, setAnimatingGifts] = useState<Set<string>>(new Set());
 
   // Determine if we should use full height based on gifts count AND form state
   const useFullHeight = gifts.length > 5 && !showAddGiftForm;
@@ -79,6 +80,9 @@ export function MemberGiftsDialog({
       }
 
       const data = await response.json();
+      if (data.isPurchased) {
+        setAnimatingGifts(prev => new Set(prev).add(giftId));
+      }
       toast.success(data.isPurchased ? dict.toasts.giftStatusPurchased : dict.toasts.giftStatusAvailable);
       onGiftAdded();
     } catch (error) {
@@ -145,7 +149,10 @@ export function MemberGiftsDialog({
                         <div className="absolute inset-0 bg-background/80 rounded-lg" />
                       )}
                       {gift.isPurchased && (
-                        <div className="absolute -top-1 right-[1.4rem] xs:right-[1.1rem] z-20 w-6 h-6">
+                        <div className={cn(
+                          "absolute -top-1 right-[1.4rem] xs:right-[1.1rem] z-20 w-6 h-6",
+                          animatingGifts.has(gift.id) && "animate-slide-in-top"
+                        )}>
                           <Image
                             src="/purchased.svg"
                             alt="Purchased"
