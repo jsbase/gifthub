@@ -60,16 +60,37 @@ export async function verifyAuth() {
   if (!isClient) return null;
   
   try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 3000);
+
+    // Statt HEAD verwenden wir GET mit einem speziellen Header
     const response = await fetch('/api/auth/verify', {
       credentials: 'include',
+      signal: controller.signal,
+      headers: {
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'X-Silent-Auth': '1'  // Neuer Header für stille Authentifizierung
+      }
     });
 
-    if (!response.ok) return null;
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      return null;
+    }
     
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error('Auth verification error:', error);
+    if (error instanceof Error && 
+      (error.name === 'AbortError' || 
+       error.message === 'Verification failed')) {
+      return null;
+    }
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Auth verification error:', error);
+    }
     return null;
   }
 }

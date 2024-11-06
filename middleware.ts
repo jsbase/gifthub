@@ -8,6 +8,11 @@ const locales = ['en', 'de', 'ru'];
 const defaultLocale = 'en';
 
 function getLocale(request: NextRequest): string {
+  const localeCookie = request.cookies.get('NEXT_LOCALE');
+  if (localeCookie?.value && locales.includes(localeCookie.value)) {
+    return localeCookie.value;
+  }
+
   const negotiatorHeaders: Record<string, string> = {};
   request.headers.forEach((value, key) => (negotiatorHeaders[key] = value));
 
@@ -20,7 +25,6 @@ function getLocale(request: NextRequest): string {
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   
-  // Check for auth on dashboard routes
   if (pathname.startsWith('/dashboard')) {
     const token = request.cookies.get('auth-token');
     
@@ -32,21 +36,18 @@ export async function middleware(request: NextRequest) {
       const secret = new TextEncoder().encode(process.env.JWT_SECRET);
       await jwtVerify(token.value, secret);
     } catch {
-      // Clear invalid token
       const response = NextResponse.redirect(new URL('/', request.url));
       response.cookies.delete('auth-token');
       return response;
     }
   }
 
-  // Check for locale after auth check
   const pathnameHasLocale = locales.some(
     (locale) => pathname.startsWith(`/${locale}/`) || pathname === `/${locale}`
   );
 
   if (pathnameHasLocale) return NextResponse.next();
 
-  // Add locale to URL
   const locale = getLocale(request);
   request.nextUrl.pathname = `/${locale}${pathname}`;
   
@@ -55,7 +56,6 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    // Match all paths except static files and API routes
     '/((?!_next|api|flags|assets|.*\\.(?:ico|png|webmanifest)).*)'
   ]
 };

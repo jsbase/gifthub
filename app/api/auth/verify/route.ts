@@ -4,8 +4,12 @@ import { jwtVerify } from 'jose';
 export async function GET(request: NextRequest) {
   try {
     const token = request.cookies.get('auth-token')?.value;
+    const isSilentAuth = request.headers.get('X-Silent-Auth') === '1';
 
     if (!token) {
+      if (isSilentAuth) {
+        return NextResponse.json({ success: false }, { status: 200 });
+      }
       return NextResponse.json(
         { message: 'No token found' },
         { status: 401 }
@@ -27,10 +31,12 @@ export async function GET(request: NextRequest) {
     });
 
   } catch (error) {
-    console.error('Token verification error:', error);
+    if (request.headers.get('X-Silent-Auth') === '1') {
+      return NextResponse.json({ success: false }, { status: 200 });
+    }
     return NextResponse.json(
       { message: 'Invalid token' },
       { status: 401 }
     );
   }
-} 
+}
