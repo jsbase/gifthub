@@ -110,7 +110,7 @@ export default function DashboardPage({
                   onClick={() => handleMemberClick(member.id)}
                 >
                   <div className="flex flex-col items-start">
-                    <p className="font-medium">{member.email}</p>
+                    <p className="font-medium">{member.name}</p>
                     <p className="text-sm text-muted-foreground">
                       {dict.joined} {new Date(member.joinedAt).toLocaleDateString(lang)}
                     </p>
@@ -130,7 +130,7 @@ export default function DashboardPage({
       <MemberGiftsDialog
         isOpen={!!selectedMemberId}
         onClose={() => setSelectedMemberId(null)}
-        memberEmail={getSelectedMember()?.email ?? ''}
+        memberName={getSelectedMember()?.name ?? ''}
         memberId={selectedMemberId ?? ''}
         gifts={memberGifts}
         onGiftAdded={() => selectedMemberId && handleMemberClick(selectedMemberId)}

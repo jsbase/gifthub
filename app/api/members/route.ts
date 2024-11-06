@@ -46,7 +46,7 @@ export async function GET(request: Request) {
       include: {
         user: {
           select: {
-            email: true,
+            name: true,
           },
         },
       },
@@ -58,7 +58,7 @@ export async function GET(request: Request) {
     // Transform the data to match your Member interface
     const formattedMembers = members.map(member => ({
       id: member.id,
-      email: member.user.email,
+      name: member.user.name,
       joinedAt: member.joinedAt.toISOString(),
     }));
 
@@ -82,16 +82,14 @@ export async function POST(request: Request) {
       );
     }
 
-    console.log('Received POST request for adding member');
-
     const body = await request.json();
-    const { email } = body;
+    const { name } = body;
 
-    console.log('Received email:', email);
-
-    if (!email || !email.includes('@')) {
+    // Validate name format
+    const nameRegex = /^[a-zA-Z0-9\s.\-]+$/;
+    if (!name || !nameRegex.test(name)) {
       return NextResponse.json(
-        { message: 'Invalid email address' },
+        { message: 'Invalid name format. Only letters, numbers, spaces, dots, and hyphens are allowed.' },
         { status: 400 }
       );
     }
@@ -99,7 +97,7 @@ export async function POST(request: Request) {
     const existingMember = await prisma.userGroup.findFirst({
       where: {
         group: { id: groupId },
-        user: { email: email },
+        user: { name: name },
       },
     });
 
@@ -112,13 +110,20 @@ export async function POST(request: Request) {
 
     const temporaryPassword = crypto.randomBytes(16).toString('hex');
     const hashedPassword = await bcrypt.hash(temporaryPassword, 10);
+    
     const user = await prisma.user.upsert({
-      where: { email },
+      where: { name },
       update: {},
       create: {
-        email,
+        name,
         password: hashedPassword,
       },
+    }).catch((error) => {
+      // Handle unique constraint violation
+      if (error.code === 'P2002') {
+        throw new Error('A user with this name already exists');
+      }
+      throw error;
     });
 
     const userGroup = await prisma.userGroup.create({
@@ -135,29 +140,18 @@ export async function POST(request: Request) {
       success: true,
       member: {
         id: userGroup.id,
-        email: user.email,
+        name: user.name,
         joinedAt: userGroup.joinedAt,
       },
     });
   } catch (error) {
     console.error('Detailed error in POST /api/members:', error);
-
-    if (error instanceof Error) {
-      if (error.message.includes('P2002')) {
-        return NextResponse.json(
-          { message: 'User is already a member of this group' },
-          { status: 400 }
-        );
-      }
-      return NextResponse.json(
-        { message: error.message },
-        { status: 500 }
-      );
-    }
-
     return NextResponse.json(
-      { message: 'Failed to add member' },
-      { status: 500 }
+      { 
+        message: error instanceof Error ? error.message : 'Failed to add member',
+        success: false 
+      },
+      { status: error instanceof Error && error.message.includes('already exists') ? 400 : 500 }
     );
   }
 }

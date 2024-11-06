@@ -3,9 +3,8 @@
   "addMemberDialog": {
     "addMemberTitle": "Mitglied hinzufügen",
     "addMember": "Hinzufügen",
-    "emailAddress": "E-Mail",
     "enterGroupName": "Bitte ausfüllen um jemanden hinzuzufügen",
-    "enterMemberEmail": "E-Mail"
+    "enterMemberName": "Name des Mitglieds"
   },
   "confirmations": {
     "deleteGift": "Sind Sie sicher, dass Sie dieses Geschenk löschen wollen?"
