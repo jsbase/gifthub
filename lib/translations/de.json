@@ -46,6 +46,7 @@
     "adding": "Lädt",
     "cancel": "Abbrechen",
     "description": "Beschreibung",
+    "giftStatusAlreadyPurchased": "Bereits gekauft",
     "enterDescription": "Kleine Beschreibung",
     "enterGiftTitle": "Welches Geschenk?",
     "enterUrl": "Link",
@@ -66,7 +67,8 @@
   "toasts": {
     "giftAdded": "Geschenk erfolgreich hinzugefügt",
     "giftAddFailed": "Geschenk konnte nicht hinzugefügt werden",
-    "giftStatusUpdated": "Geschenkstatus aktualisiert",
+    "giftStatusPurchased": "Gekauft",
+    "giftStatusAvailable": "Wieder verfügbar",
     "giftStatusUpdateFailed": "Geschenkstatus konnte nicht aktualisiert werden",
     "giftDeleted": "Geschenk erfolgreich gelöscht",
     "giftDeleteFailed": "Geschenk konnte nicht gelöscht werden"

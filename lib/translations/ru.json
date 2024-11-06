@@ -46,6 +46,7 @@
     "adding": "Загрузка",
     "cancel": "Отмена",
     "description": "Описание",
+    "giftStatusAlreadyPurchased": "Уже куплено",
     "enterDescription": "Краткое описание",
     "enterGiftTitle": "Какой подарок?",
     "enterUrl": "Ссылка",
@@ -66,7 +67,8 @@
   "toasts": {
     "giftAdded": "Подарок успешно добавлен",
     "giftAddFailed": "Не удалось добавить подарок",
-    "giftStatusUpdated": "Статус подарка обновлен",
+    "giftStatusPurchased": "Куплено",
+    "giftStatusAvailable": "Вновь доступен",
     "giftStatusUpdateFailed": "Не удалось обновить статус подарка",
     "giftDeleted": "Подарок успешно удален",
     "giftDeleteFailed": "Не удалось удалить подарок"
