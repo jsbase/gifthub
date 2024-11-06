@@ -3,15 +3,12 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { use } from 'react';
-
 import { Button } from "@/components/ui/button";
 import { Header } from "@/components/header";
 import { AddMemberDialog } from "@/components/add-member-dialog";
 import { MemberGiftsDialog } from "@/components/member-gifts-dialog";
 import { Footer } from "@/components/footer";
-
 import { ChevronRight } from "lucide-react";
-
 import { verifyAuth, logout } from "@/lib/auth";
 import { getDictionary } from '../dictionaries';
 import { Member, Gift, Translations } from "@/types";
