@@ -3,7 +3,7 @@ import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { PrivacyPageProps } from "@/types";
 export default async function PrivacyPolicy({ params }: PrivacyPageProps) {
-  const { lang } = params;
+  const { lang } = await params;
   const dict = await getDictionary(lang);
   const sections = Array.from({ length: 10 }, (_, i) => i + 1);
 

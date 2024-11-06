@@ -222,6 +222,7 @@ export interface HeaderProps {
 
 export interface HomeProps {
   params: { lang: string }
+  searchParams?: { [key: string]: string | string[] | undefined }
 }
 
 export interface FeatureCardProps {
@@ -235,10 +236,12 @@ export interface FooterProps {
 
 export interface PrivacyPageProps {
   params: { lang: string }
+  searchParams?: { [key: string]: string | string[] | undefined }
 }
 
 export interface TermsPageProps {
   params: { lang: string }
+  searchParams?: { [key: string]: string | string[] | undefined }
 }
 
 export interface AuthState {

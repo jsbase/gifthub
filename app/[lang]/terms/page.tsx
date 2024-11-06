@@ -4,7 +4,7 @@ import { Footer } from "@/components/footer";
 import { TermsPageProps } from "@/types";
 
 export default async function TermsConditions({ params }: TermsPageProps) {
-  const { lang } = params;
+  const { lang } = await params;
   const dict = await getDictionary(lang);
   const sections = Array.from({ length: 6 }, (_, i) => i + 1);
 
