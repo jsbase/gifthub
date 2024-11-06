@@ -11,6 +11,7 @@ import { AddMemberDialogProps } from "@/types";
 import { getDictionary } from "@/app/[lang]/dictionaries";
 import { usePathname } from "next/navigation";
 import { AddMemberDialogDictionary } from "@/types";
+import { cn } from "@/lib/utils";
 
 export function AddMemberDialog({ onMemberAdded }: Omit<AddMemberDialogProps, 'dict'>) {
   const [isOpen, setIsOpen] = useState(false);
@@ -81,7 +82,10 @@ export function AddMemberDialog({ onMemberAdded }: Omit<AddMemberDialogProps, 'd
           {dict.addMember}
         </Button>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className={cn(
+        "xs:p-4",
+        "xs:h-[85vh] xs:max-h-[85vh]"
+      )}>
         <DialogHeader>
           <DialogTitle>{dict.addMemberTitle}</DialogTitle>
           <DialogDescription>

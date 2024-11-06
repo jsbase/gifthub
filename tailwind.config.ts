@@ -9,27 +9,15 @@ const config: Config = {
   ],
   theme: {
     extend: {
-      backgroundImage: {
-        'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
-        'gradient-conic':
-          'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))',
-      },
       borderRadius: {
         lg: 'var(--radius)',
         md: 'calc(var(--radius) - 2px)',
         sm: 'calc(var(--radius) - 4px)',
       },
       colors: {
+        /* Core colors */
         background: 'hsl(var(--background))',
         foreground: 'hsl(var(--foreground))',
-        card: {
-          DEFAULT: 'hsl(var(--card))',
-          foreground: 'hsl(var(--card-foreground))',
-        },
-        popover: {
-          DEFAULT: 'hsl(var(--popover))',
-          foreground: 'hsl(var(--popover-foreground))',
-        },
         primary: {
           DEFAULT: 'hsl(var(--primary))',
           foreground: 'hsl(var(--primary-foreground))',
@@ -42,17 +30,31 @@ const config: Config = {
           DEFAULT: 'hsl(var(--muted))',
           foreground: 'hsl(var(--muted-foreground))',
         },
-        accent: {
-          DEFAULT: 'hsl(var(--accent))',
-          foreground: 'hsl(var(--accent-foreground))',
-        },
         destructive: {
           DEFAULT: 'hsl(var(--destructive))',
           foreground: 'hsl(var(--destructive-foreground))',
         },
+        
+        /* Input and borders */
         border: 'hsl(var(--border))',
         input: 'hsl(var(--input))',
         ring: 'hsl(var(--ring))',
+        
+        /* Gray scale */
+        gray: {
+          50: 'hsl(var(--gray-50))',
+          100: 'hsl(var(--gray-100))',
+          200: 'hsl(var(--gray-200))',
+          300: 'hsl(var(--gray-300))',
+          400: 'hsl(var(--gray-400))',
+          500: 'hsl(var(--gray-500))',
+          600: 'hsl(var(--gray-600))',
+          700: 'hsl(var(--gray-700))',
+          800: 'hsl(var(--gray-800))',
+          900: 'hsl(var(--gray-900))',
+        },
+        
+        /* Chart colors */
         chart: {
           '1': 'hsl(var(--chart-1))',
           '2': 'hsl(var(--chart-2))',
@@ -60,26 +62,20 @@ const config: Config = {
           '4': 'hsl(var(--chart-4))',
           '5': 'hsl(var(--chart-5))',
         },
+        
+        /* Add new color */
+        card: {
+          background: 'hsl(var(--card-background))',
+        },
       },
-      gradientColorStops: ({ theme }) => ({
-        muted: 'hsl(var(--muted))',
-      }),
       keyframes: {
         'accordion-down': {
-          from: {
-            height: '0',
-          },
-          to: {
-            height: 'var(--radix-accordion-content-height)',
-          },
+          from: { height: '0' },
+          to: { height: 'var(--radix-accordion-content-height)' },
         },
         'accordion-up': {
-          from: {
-            height: 'var(--radix-accordion-content-height)',
-          },
-          to: {
-            height: '0',
-          },
+          from: { height: 'var(--radix-accordion-content-height)' },
+          to: { height: '0' },
         },
       },
       animation: {
@@ -91,10 +87,7 @@ const config: Config = {
       },
     },
   },
-  plugins: [require('tailwindcss-animate'), {
-    handler: () => {
-      console.log('Tailwind config loaded!')
-    }
-  }],
+  plugins: [require('tailwindcss-animate')],
 };
+
 export default config;

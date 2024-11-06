@@ -78,7 +78,12 @@ export interface Translations {
   addMemberDialog: AddMemberDialogDictionary;
   toasts: ToastTranslations;
   confirmations: ConfirmationTranslations;
-  [key: string]: string | { [key: string]: string | { [key: string]: string } } | AddMemberDialogDictionary | MemberGiftsTranslations | ToastTranslations | ConfirmationTranslations;
+  footer: {
+    copyright: string;
+    privacyPolicy: string;
+    termsConditions: string;
+  };
+  [key: string]: string | { [key: string]: string | { [key: string]: string } } | AddMemberDialogDictionary | MemberGiftsTranslations | ToastTranslations | ConfirmationTranslations | { [key: string]: string };
 }
 
 export interface MemberGiftsDialogProps {
@@ -141,4 +146,15 @@ export interface ConfirmationTranslations {
 export interface AddMemberDialogProps {
   onMemberAdded?: () => void;
   dict: Translations['addMemberDialog'];
+}
+
+export interface HeaderProps {
+  groupName?: string;
+  dict?: Translations;
+  onLogout?: () => void;
+  showAuth?: boolean;
+}
+
+export interface FooterProps {
+  dict: Translations;
 }

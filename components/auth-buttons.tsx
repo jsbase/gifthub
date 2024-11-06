@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { useRouter } from 'next/navigation';
 import { login, register } from "@/lib/auth";
 import { Translations } from "@/types";
+import { cn } from "@/lib/utils";
 
 export function AuthButtons({ dict }: { dict: Translations }) {
   const router = useRouter();
@@ -76,17 +77,38 @@ export function AuthButtons({ dict }: { dict: Translations }) {
         <DialogTrigger asChild>
           <Button size="lg" className="min-w-[200px]">{dict.login}</Button>
         </DialogTrigger>
-        <AuthDialog title={dict.loginToGroup} description={dict.enterGroupName}>
-          <form onSubmit={handleLogin} className="space-y-4">
+        <AuthDialog 
+          title={dict.loginToGroup} 
+          description={dict.enterGroupName}
+          className="xs:h-[85vh] xs:max-h-[85vh]"
+        >
+          <form onSubmit={handleLogin} className="space-y-4 xs:space-y-2">
             <div className="space-y-2">
               <Label htmlFor="groupName"></Label>
-              <Input name="groupName" id="groupName" placeholder={dict.groupName} required />
+              <Input 
+                name="groupName" 
+                id="groupName" 
+                placeholder={dict.groupName} 
+                required 
+                className="xs:text-base"
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="password"></Label>
-              <Input name="password" id="password" type="password" placeholder={dict.enterPassword} required />
+              <Input 
+                name="password" 
+                id="password" 
+                type="password" 
+                placeholder={dict.enterPassword} 
+                required 
+                className="xs:text-base"
+              />
             </div>
-            <Button type="submit" className="w-full" disabled={isLoading}>
+            <Button 
+              type="submit" 
+              className="w-full xs:text-base xs:h-12" 
+              disabled={isLoading}
+            >
               {isLoading ? 'Logging in...' : dict.login}
             </Button>
           </form>
@@ -97,21 +119,49 @@ export function AuthButtons({ dict }: { dict: Translations }) {
         <DialogTrigger asChild>
           <Button size="lg" variant="outline" className="min-w-[200px]">{dict.register}</Button>
         </DialogTrigger>
-        <AuthDialog title={dict.createGroup} description={dict.createGroupDescription}>
+        <AuthDialog 
+          title={dict.createGroup} 
+          description={dict.createGroupDescription}
+          className="xs:h-[85vh] xs:max-h-[85vh]"
+        >
           <form onSubmit={handleRegister} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="newGroupName"></Label>
-              <Input name="newGroupName" id="newGroupName" placeholder={dict.groupName} required />
+              <Input 
+                name="newGroupName" 
+                id="newGroupName" 
+                placeholder={dict.groupName} 
+                required 
+                className="xs:text-base"
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="newPassword"></Label>
-              <Input name="newPassword" id="newPassword" type="password" placeholder={dict.enterPassword} required />
+              <Input 
+                name="newPassword" 
+                id="newPassword" 
+                type="password" 
+                placeholder={dict.enterPassword} 
+                required 
+                className="xs:text-base"
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="confirmPassword"></Label>
-              <Input name="confirmPassword" id="confirmPassword" type="password" placeholder={dict.confirmPassword} required />
+              <Input 
+                name="confirmPassword" 
+                id="confirmPassword" 
+                type="password" 
+                placeholder={dict.confirmPassword} 
+                required 
+                className="xs:text-base"
+              />
             </div>
-            <Button type="submit" className="w-full" disabled={isLoading}>
+            <Button 
+              type="submit" 
+              className="w-full xs:text-base xs:h-12" 
+              disabled={isLoading}
+            >
               {isLoading ? 'Creating Group...' : dict.createGroupBtn}
             </Button>
           </form>
@@ -121,18 +171,28 @@ export function AuthButtons({ dict }: { dict: Translations }) {
   );
 }
 
-export function AuthDialog({ children, title, description }: {
+export function AuthDialog({ 
+  children, 
+  title, 
+  description,
+  className 
+}: {
   children: React.ReactNode,
   title: string,
-  description: string
+  description: string,
+  className?: string
 }) {
   return (
-    <DialogContent>
+    <DialogContent className={cn(
+      "sm:max-w-[400px]",
+      "xs:p-4",
+      className
+    )}>
       <DialogHeader>
         <DialogTitle>{title}</DialogTitle>
         <DialogDescription>{description}</DialogDescription>
       </DialogHeader>
       {children}
     </DialogContent>
-  )
+  );
 }
