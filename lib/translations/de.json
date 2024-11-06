@@ -71,5 +71,10 @@
     "giftStatusUpdateFailed": "Geschenkstatus konnte nicht aktualisiert werden",
     "giftDeleted": "Geschenk erfolgreich gelöscht",
     "giftDeleteFailed": "Geschenk konnte nicht gelöscht werden"
+  },
+  "footer": {
+    "copyright": "© 2024 GiftHub. Alle Rechte vorbehalten.",
+    "privacyPolicy": "Datenschutz",
+    "termsConditions": "AGB"
   }
 }
