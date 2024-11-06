@@ -12,7 +12,7 @@ import {
 import { loadTranslations } from '@/app/[lang]/actions';
 import { LanguageCode, Language } from '@/types';
 
-const languages: Language[] = [
+const languages: readonly Language[] = [
   { code: 'de', name: 'Deutsch', flag: '/flags/de.svg' },
   { code: 'en', name: 'English', flag: '/flags/gb.svg' },
   { code: 'ru', name: 'Русский', flag: '/flags/ru.svg' },
@@ -29,7 +29,7 @@ export function LanguageSwitcher() {
   const switchLanguage = async (langCode: LanguageCode) => {
     // Set cookie
     document.cookie = `NEXT_LOCALE=${langCode};path=/;max-age=${365 * 24 * 60 * 60};SameSite=Lax`;
-    
+
     await loadTranslations(langCode);
 
     const newPath = pathname.split('/').slice(2).join('/');
@@ -40,9 +40,9 @@ export function LanguageSwitcher() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button 
-          variant="ghost" 
-          size="icon" 
+        <Button
+          variant="ghost"
+          size="icon"
           className="w-6 h-6 rounded-full overflow-hidden p-0"
         >
           <Image
