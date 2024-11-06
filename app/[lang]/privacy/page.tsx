@@ -1,4 +1,3 @@
-import { Translations } from "@/types";
 import { getDictionary } from "../dictionaries";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";

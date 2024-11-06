@@ -193,6 +193,17 @@ export interface HeaderProps {
   showAuth?: boolean;
 }
 
+export interface HomeProps {
+  params: Promise<{
+    lang: string;
+  }>;
+}
+
+export interface FeatureCardProps {
+  title: string;
+  description: string;
+}
+
 export interface FooterProps {
   dict: Translations;
 }
@@ -201,4 +212,9 @@ export interface PrivacyPageProps {
   params: {
     dict: Translations;
   };
+}
+
+export interface AuthState {
+  isAuthenticated: boolean;
+  groupName: string | undefined;
 }
