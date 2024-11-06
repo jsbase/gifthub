@@ -112,7 +112,16 @@ export default function DashboardPage({
                   <div className="flex flex-col items-start">
                     <p className="font-medium">{member.name}</p>
                     <p className="text-sm text-muted-foreground">
-                      {dict.joined} {new Date(member.joinedAt).toLocaleDateString(lang)}
+                      {dict.joined} {new Date(member.joinedAt).toLocaleDateString(lang, {
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric',
+                        ...(lang === 'en' ? {
+                          day: 'numeric',
+                          month: '2-digit',
+                          year: 'numeric'
+                        } : {})
+                      })}
                     </p>
                   </div>
                   <ChevronRight className="h-5 w-5 text-muted-foreground" />
