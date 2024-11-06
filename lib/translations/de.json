@@ -76,5 +76,51 @@
     "copyright": "© 2024 GiftHub. Alle Rechte vorbehalten.",
     "privacyPolicy": "Datenschutz",
     "termsConditions": "AGB"
+  },
+  "privacy": {
+    "title": "Datenschutzrichtlinie",
+    "section1": {
+      "title": "1. Allgemeine Informationen und Pflichtangaben",
+      "content": "Der Schutz Ihrer persönlichen Daten ist uns wichtig. Wir behandeln Ihre personenbezogenen Daten vertraulich und entsprechend der gesetzlichen Datenschutzvorschriften sowie dieser Datenschutzerklärung. Diese Richtlinie erklärt, welche Daten wir erheben, wie wir sie verwenden und welche Rechte Sie in Bezug auf Ihre Daten haben."
+    },
+    "section2": {
+      "title": "2. Verantwortliche Stelle für die Datenverarbeitung",
+      "content": "Verantwortlich für die Datenverarbeitung in dieser Web-App ist: [Name des Betreibers] [Adresse] [E-Mail-Adresse] [Telefonnummer]"
+    },
+    "section3": {
+      "title": "3. Erhebung und Speicherung personenbezogener Daten",
+      "subtitle1": "a) Beim Besuch unserer Web-App",
+      "content1": "Beim Zugriff auf unsere Web-App werden automatisch bestimmte Daten durch unseren Server erfasst, wie: IP-Adresse, Datum und Uhrzeit des Zugriffs, verwendeter Browser und Betriebssystem, besuchte Seiten und Aktionen innerhalb der Web-App. Diese Daten werden ausschließlich zur Sicherstellung eines reibungslosen Betriebs und zur Verbesserung unserer Web-App verwendet und anschließend automatisch gelöscht.",
+      "subtitle2": "b) Registrierung und Anmeldung zur Nutzung der Web-App",
+      "content2": "Um die Web-App als Gruppe zu nutzen, ist eine Registrierung mit einem Gruppenkonto erforderlich. Während der Registrierung und Anmeldung speichern wir: Gruppenzugangsdaten (Benutzername und Passwort), Benutzerprofile innerhalb der Gruppe (Name, ggf. E-Mail-Adresse), Wunschlisten und zugewiesene Geschenk-Wünsche mit Links zu Produkten"
+    },
+    "section4": {
+      "title": "4. Verwendung der Daten zur Verwaltung der Wunschlisten",
+      "content": "Innerhalb der Gruppe können Produkte als Geschenk-Wünsche gespeichert und bestimmten Nutzern zugewiesen werden. Die Produktlinks und Zuweisungen werden in unserer Datenbank gespeichert und sind nur für Mitglieder der jeweiligen Gruppe zugänglich."
+    },
+    "section5": {
+      "title": "5. Premium-Modell und Zahlungsdaten",
+      "content": "Wenn Sie unser Premium-Modell wählen, werden zusätzliche Informationen gespeichert, die für die Zahlungsabwicklung erforderlich sind. Dazu gehören: Zahlungsmethoden, Transaktionsdaten, Zahlungsstatus. Zahlungsdaten werden ausschließlich zur Abwicklung der Premium-Mitgliedschaft verwendet und sicher in unserer Datenbank gespeichert."
+    },
+    "section6": {
+      "title": "6. Weitergabe und Übermittlung von Daten",
+      "content": "Wir geben Ihre persönlichen Daten nur weiter, wenn es zur Erfüllung unserer Dienstleistung notwendig ist oder wenn wir gesetzlich dazu verpflichtet sind. Eine Weitergabe an Dritte erfolgt ohne Ihre ausdrückliche Zustimmung nicht."
+    },
+    "section7": {
+      "title": "7. Aufbewahrung und Löschung von Daten",
+      "content": "Wir bewahren Ihre persönlichen Daten nur so lange auf, wie es zur Erfüllung der in dieser Richtlinie genannten Zwecke erforderlich ist oder gesetzlich vorgeschrieben ist. Daten werden in der Regel nach Beendigung der Vertragsbeziehung und nach Ablauf gesetzlicher Aufbewahrungsfristen gelöscht."
+    },
+    "section8": {
+      "title": "8. Ihre Rechte",
+      "content": "Sie haben das Recht, jederzeit: Auskunft über die Daten, die wir über Sie gespeichert haben, zu verlangen, Berichtigung unrichtiger Daten zu verlangen, Einschränkung der Verarbeitung zu verlangen, Löschung Ihrer Daten, soweit gesetzlich zulässig, zu verlangen, Widerspruch gegen die Verarbeitung Ihrer Daten einzulegen. Zur Ausübung Ihrer Rechte oder bei weiteren Fragen zur Verarbeitung Ihrer personenbezogenen Daten kontaktieren Sie uns bitte unter: [Kontakt-E-Mail-Adresse]."
+    },
+    "section9": {
+      "title": "9. Datensicherheit",
+      "content": "Wir setzen geeignete technische und organisatorische Sicherheitsmaßnahmen ein, um Ihre Daten vor unbefugtem Zugriff, Verlust oder Manipulation zu schützen. Unsere Sicherheitsmaßnahmen werden entsprechend der technologischen Entwicklung kontinuierlich verbessert."
+    },
+    "section10": {
+      "title": "10. Änderungen dieser Datenschutzrichtlinie",
+      "content": "Wir behalten uns das Recht vor, diese Datenschutzrichtlinie zu ändern, um rechtlichen Anforderungen oder Änderungen in der Funktionalität unserer Web-App zu entsprechen. Die aktuelle Version der Datenschutzrichtlinie ist jederzeit in unserer Web-App verfügbar."
+    }
   }
 }
