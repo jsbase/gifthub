@@ -29,12 +29,16 @@ export function MemberGiftsDialog({
   const [showAddGiftForm, setShowAddGiftForm] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [justPurchasedId, setJustPurchasedId] = useState<string | null>(null);
+  const [justToggledId, setJustToggledId] = useState<string | null>(null);
+  const [isRemoving, setIsRemoving] = useState(false);
 
   // Reset form when dialog closes
   useEffect(() => {
     if (!isOpen) {
       setShowAddGiftForm(false);
       setJustPurchasedId(null);
+      setJustToggledId(null);
+      setIsRemoving(false);
     }
   }, [isOpen]);
 
@@ -79,14 +83,12 @@ export function MemberGiftsDialog({
         body: JSON.stringify({ id: giftId }),
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to update gift status');
-      }
+      if (!response.ok) throw new Error('Failed to update gift status');
 
       const data = await response.json();
-      if (data.isPurchased) {
-        setJustPurchasedId(giftId);
-      }
+      setJustToggledId(giftId);
+      setIsRemoving(!data.isPurchased);
+      
       toast.success(data.isPurchased ? dict.toasts.giftStatusPurchased : dict.toasts.giftStatusAvailable);
       onGiftAdded();
     } catch (error) {
@@ -122,10 +124,11 @@ export function MemberGiftsDialog({
     >
       {gift.isPurchased && (
         <>
-          <div className="absolute inset-0 bg-background/80 rounded-lg transition-opacity duration-200" />
+          <div className="absolute inset-0 bg-background/80 rounded-lg transition-opacity duration-300" />
           <div className={cn(
-            "absolute -top-2 right-[4.3rem] xs:right-[4rem] z-20 w-6 h-6",
-            gift.id === justPurchasedId && "animate-slide-in-top"
+            "absolute -top-2 right-[4.3rem] xs:right-[4rem] z-20 w-6 h-6 transition-all duration-300",
+            gift.id === justToggledId && !isRemoving && "animate-slide-in-top",
+            gift.id === justToggledId && isRemoving && "animate-slide-out-top",
           )}>
             <Image
               src="/purchased.svg"
@@ -157,14 +160,17 @@ export function MemberGiftsDialog({
           {gift.description && (
             <div className="relative h-[1.5rem]">
               <p className={cn(
-                "text-sm text-muted-foreground mt-1 absolute w-full",
-                gift.isPurchased && gift.id === justPurchasedId ? "animate-slide-in-top-small" : "opacity-0"
+                "text-sm text-muted-foreground mt-1 absolute w-full transition-all duration-300",
+                gift.id === justToggledId && !isRemoving && "animate-slide-in-top-small",
+                gift.id === justToggledId && isRemoving && "animate-slide-out-top-small",
+                !gift.isPurchased && "opacity-0"
               )}>
                 {dict.giftStatusAlreadyPurchased}
               </p>
               <p className={cn(
-                "text-sm text-muted-foreground mt-1 absolute w-full transition-opacity duration-500",
-                gift.isPurchased && gift.id === justPurchasedId ? "animate-slide-out-bottom opacity-60" : 
+                "text-sm text-muted-foreground mt-1 absolute w-full transition-all duration-300",
+                gift.id === justToggledId && !isRemoving && "animate-slide-out-bottom",
+                gift.id === justToggledId && isRemoving && "animate-slide-in-bottom",
                 gift.isPurchased ? "opacity-60" : "opacity-100"
               )}>
                 {gift.description}
