@@ -112,7 +112,7 @@ export function MemberGiftsDialog({
   const GiftCard = ({ gift }: { gift: Gift }) => (
     <div
       key={gift.id}
-      className="p-4 xs:p-3 rounded-lg border bg-card relative"
+      className="p-4 xs:p-3 rounded-lg border bg-card relative flex flex-col xs:flex-row xs:items-center xs:justify-between"
     >
       {/* Purchased overlay */}
       {gift.isPurchased && (
@@ -135,17 +135,17 @@ export function MemberGiftsDialog({
       )}
 
       {/* Main content container */}
-      <div className="relative z-10">
+      <div className="relative z-10 flex-1 xs:max-w-2/3">
         {/* Gift content */}
         <div className={cn(
           "transition-opacity duration-500",
           gift.isPurchased ? "opacity-60" : ""
         )}>
-          <h3 className="font-medium truncate">{gift.title}</h3>
+          <h3 className="font-medium break-words">{gift.title}</h3>
           {gift.description && (
             <div className="relative h-[1.5rem]">
               <p className={cn(
-                "text-sm text-muted-foreground mt-1 absolute w-full transition-all duration-300",
+                "text-sm text-muted-foreground mt-1 absolute w-full transition-all duration-300 break-words",
                 gift.id === justToggledId && !isRemoving && "animate-slide-in-top-small",
                 gift.id === justToggledId && isRemoving && "animate-slide-out-top-small",
                 !gift.isPurchased && "opacity-0",
@@ -154,7 +154,7 @@ export function MemberGiftsDialog({
                 {dict.giftStatusAlreadyPurchased}
               </p>
               <p className={cn(
-                "text-sm text-muted-foreground mt-1 absolute w-full transition-all duration-300",
+                "text-sm text-muted-foreground mt-1 absolute w-full transition-all duration-300 break-words",
                 gift.id === justToggledId && !isRemoving && "animate-slide-out-bottom",
                 gift.id === justToggledId && isRemoving && "animate-slide-in-bottom",
                 gift.isPurchased ? "translate-y-8 opacity-0" : "translate-y-0 opacity-100"
@@ -164,27 +164,27 @@ export function MemberGiftsDialog({
             </div>
           )}
         </div>
+      </div>
 
-        {/* Action buttons */}
-        <div className="absolute top-0 right-0 flex items-center space-x-2 z-20">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              handleDeleteGift(gift.id);
-            }}
-            className="text-red-600 hover:text-red-700"
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button>
-          <div onClick={(e) => e.stopPropagation()}>
-            <PurchaseToggle 
-              isPurchased={gift.isPurchased} 
-              onChange={() => handleTogglePurchased(gift.id)} 
-            />
-          </div>
+      {/* Action buttons */}
+      <div className="flex items-center space-x-2 z-20">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            handleDeleteGift(gift.id);
+          }}
+          className="text-red-600 hover:text-red-700"
+        >
+          <Trash2 className="h-4 w-4" />
+        </Button>
+        <div onClick={(e) => e.stopPropagation()}>
+          <PurchaseToggle 
+            isPurchased={gift.isPurchased} 
+            onChange={() => handleTogglePurchased(gift.id)} 
+          />
         </div>
       </div>
 
