@@ -80,8 +80,6 @@ export interface Translations {
   confirmations: ConfirmationTranslations;
   footer: {
     copyright: string;
-    followUs: string;
-    legal: string;
     privacyPolicy: string;
     termsConditions: string;
   };
