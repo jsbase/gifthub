@@ -2,6 +2,7 @@ import { getDictionary } from "../dictionaries";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { PrivacyPageProps } from "@/types";
+
 export default async function PrivacyPolicy({ params }: PrivacyPageProps) {
   const { lang } = await params;
   const dict = await getDictionary(lang);
