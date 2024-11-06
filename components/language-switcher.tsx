@@ -10,11 +10,10 @@ import {
   DropdownMenuTrigger,
 } from './ui/dropdown-menu';
 import { loadTranslations } from '@/app/[lang]/actions';
-import { cookies } from 'next/headers';
 
 const languages = [
-  { code: 'en', name: 'English', flag: '/flags/gb.svg' },
   { code: 'de', name: 'Deutsch', flag: '/flags/de.svg' },
+  { code: 'en', name: 'English', flag: '/flags/gb.svg' },
   { code: 'ru', name: 'Русский', flag: '/flags/ru.svg' },
 ] as const;
 
@@ -27,23 +26,23 @@ export function LanguageSwitcher() {
   ) || languages[0];
 
   const switchLanguage = async (langCode: string) => {
-    // Set cookie using js-cookie or similar approach
-    const maxAge = 365 * 24 * 60 * 60; // 1 year in seconds
-    document.cookie = `NEXT_LOCALE=${langCode};path=/;max-age=${maxAge};SameSite=Lax`;
-
-    // Load new translations
+    // Set cookie
+    document.cookie = `NEXT_LOCALE=${langCode};path=/;max-age=${365 * 24 * 60 * 60};SameSite=Lax`;
+    
     await loadTranslations(langCode);
 
-    // Update path
     const newPath = pathname.split('/').slice(2).join('/');
-    const redirectPath = `/${langCode}${newPath ? `/${newPath}` : ''}`;
-    router.push(redirectPath);
+    router.push(`/${langCode}${newPath ? `/${newPath}` : ''}`);
   };
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="w-6 h-6 rounded-full overflow-hidden p-0">
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          className="w-6 h-6 rounded-full overflow-hidden p-0"
+        >
           <Image
             src={currentLang.flag}
             alt={currentLang.name}

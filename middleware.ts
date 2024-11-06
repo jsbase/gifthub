@@ -1,11 +1,10 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { jwtVerify } from 'jose';
-import { match } from '@formatjs/intl-localematcher';
-import Negotiator from 'negotiator';
+import acceptLanguage from 'accept-language';
 
 const locales = ['en', 'de', 'ru'];
-const defaultLocale = 'en';
+const defaultLocale = 'de';
 
 function getLocale(request: NextRequest): string {
   const localeCookie = request.cookies.get('NEXT_LOCALE');
@@ -13,13 +12,8 @@ function getLocale(request: NextRequest): string {
     return localeCookie.value;
   }
 
-  const negotiatorHeaders: Record<string, string> = {};
-  request.headers.forEach((value, key) => (negotiatorHeaders[key] = value));
-
-  const languages = new Negotiator({ headers: negotiatorHeaders }).languages();
-  const locale = match(languages, locales, defaultLocale);
-  
-  return locale;
+  acceptLanguage.languages(locales);
+  return acceptLanguage.get(request.headers.get('accept-language')) || defaultLocale;
 }
 
 export async function middleware(request: NextRequest) {
