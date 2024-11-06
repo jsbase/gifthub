@@ -194,7 +194,7 @@ export function MemberGiftsDialog({
           href={gift.url}
           target="_blank"
           rel="noopener noreferrer"
-          className="absolute top-0 left-0 h-full w-[78%] z-10 cursor-pointer"
+          className="absolute top-0 left-0 h-full w-[78%] xs:w-[67%] z-10 cursor-pointer"
           onClick={(e) => {
             // Prevent link activation if clicking on buttons or toggle
             if (
