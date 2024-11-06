@@ -81,11 +81,33 @@ const config: Config = {
           '0%': { transform: 'translateY(-100%)', opacity: '0' },
           '100%': { transform: 'translateY(0)', opacity: '1' },
         },
+        'slide-out-bottom': {
+          '0%': { 
+            transform: 'translateY(0)',
+            opacity: '1'
+          },
+          '100%': { 
+            transform: 'translateY(8px)',
+            opacity: '0'
+          },
+        },
+        'slide-in-from-top-small': {
+          '0%': { 
+            transform: 'translateY(-8px)',
+            opacity: '0'
+          },
+          '100%': { 
+            transform: 'translateY(0)',
+            opacity: '1'
+          },
+        },
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
         'slide-in-top': 'slide-in-from-top 0.3s ease-out',
+        'slide-out-bottom': 'slide-out-bottom 0.5s ease-out forwards',
+        'slide-in-top-small': 'slide-in-from-top-small 0.5s ease-out forwards',
       },
       screens: {
         'xs': {'max': '639px'},

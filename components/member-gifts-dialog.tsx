@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "./ui/dialog";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
@@ -29,6 +29,12 @@ export function MemberGiftsDialog({
   const [showAddGiftForm, setShowAddGiftForm] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [animatingGifts, setAnimatingGifts] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    if (!isOpen) {
+      setShowAddGiftForm(false);
+    }
+  }, [isOpen]);
 
   // Determine if we should use full height based on gifts count AND form state
   const useFullHeight = gifts.length > 5 && !showAddGiftForm;
@@ -146,11 +152,11 @@ export function MemberGiftsDialog({
                       className="p-4 xs:p-3 rounded-lg border bg-card relative"
                     >
                       {gift.isPurchased && (
-                        <div className="absolute inset-0 bg-background/80 rounded-lg" />
+                        <div className="absolute inset-0 bg-background/80 rounded-lg transition-opacity duration-200" />
                       )}
                       {gift.isPurchased && (
                         <div className={cn(
-                          "absolute -top-1 right-[1.4rem] xs:right-[1.1rem] z-20 w-6 h-6",
+                          "absolute -top-2 right-[4.3rem] xs:right-[4rem] z-20 w-6 h-6",
                           animatingGifts.has(gift.id) && "animate-slide-in-top"
                         )}>
                           <Image
@@ -171,16 +177,35 @@ export function MemberGiftsDialog({
                       />
                       <div className="flex items-center justify-between relative z-10">
                         <div className={cn(
-                          "flex-grow",
+                          "flex-grow transition-opacity duration-500",
                           gift.isPurchased ? "opacity-60" : ""
                         )}>
                           <h3 className="font-medium">
                             {gift.title}
                           </h3>
                           {gift.description && (
-                            <p className="text-sm text-muted-foreground mt-1">
-                              {gift.description}
-                            </p>
+                            <div className="relative h-[1.5rem]">
+                              <p 
+                                className={cn(
+                                  "text-sm text-muted-foreground mt-1 absolute w-full",
+                                  gift.isPurchased 
+                                    ? "animate-slide-in-top-small" 
+                                    : "opacity-0"
+                                )}
+                              >
+                                {dict.giftStatusAlreadyPurchased}
+                              </p>
+                              <p 
+                                className={cn(
+                                  "text-sm text-muted-foreground mt-1 absolute w-full transition-opacity duration-500",
+                                  gift.isPurchased 
+                                    ? "animate-slide-out-bottom opacity-60" 
+                                    : "opacity-100"
+                                )}
+                              >
+                                {gift.description}
+                              </p>
+                            </div>
                           )}
                         </div>
                         <div className="flex items-center space-x-2 relative z-20">
