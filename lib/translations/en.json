@@ -76,5 +76,51 @@
     "copyright": "© 2024 GiftHub. All Rights Reserved.",
     "privacyPolicy": "Privacy Policy",
     "termsConditions": "Terms & Conditions"
+  },
+  "privacy": {
+    "title": "Privacy Policy",
+    "section1": {
+      "title": "1. General Information and Mandatory Notices",
+      "content": "Protecting your personal data is important to us. We treat your personal information confidentially and in accordance with legal data protection regulations as well as this privacy policy. This policy explains what data we collect, how we use it, and what rights you have regarding your data."
+    },
+    "section2": {
+      "title": "2. Responsible Party for Data Processing",
+      "content": "The responsible party for data processing within this web app is: [Operator's Name] [Address] [Email Address] [Phone Number]"
+    },
+    "section3": {
+      "title": "3. Collection and Storage of Personal Data",
+      "subtitle1": "a) When Visiting Our Web App",
+      "content1": "When you access our web app, certain data is automatically collected by our server, such as: IP address, Date and time of access, Browser and operating system used, Pages visited and actions within the web app. This data is used exclusively to ensure smooth operation and improve our web app, and is automatically deleted afterward.",
+      "subtitle2": "b) Registration and Login for Using the Web App",
+      "content2": "To use the web app as a group, registration with a group account is required. During registration and login, we store: Group login data (username and password), User profiles within the group (name, possibly email address), Wishlists and assigned gift wishes with links to products"
+    },
+    "section4": {
+      "title": "4. Use of Data for Wishlist Management",
+      "content": "Within the group, products can be saved as gift wishes and assigned to specific users. The product links and assignments are stored in our database and are only accessible to members of the respective group."
+    },
+    "section5": {
+      "title": "5. Premium Model and Payment Data",
+      "content": "If you choose our premium model, additional information necessary for payment processing will be stored. This includes: Payment methods, Transaction data, Payment status. Payment data is used exclusively for processing the premium membership and is securely stored in our database."
+    },
+    "section6": {
+      "title": "6. Data Sharing and Transfer",
+      "content": "We only share your personal data if it is necessary for fulfilling our service or if we are legally required to do so. No data is transferred to third parties without your explicit consent."
+    },
+    "section7": {
+      "title": "7. Data Retention and Deletion",
+      "content": "We retain your personal data only as long as necessary to fulfill the purposes outlined in this policy or as legally required. Data is typically deleted after the end of the contractual relationship and upon completion of statutory retention periods."
+    },
+    "section8": {
+      "title": "8. Your Rights",
+      "content": "You have the right at any time to: Request information about the data we have stored about you, Request correction of incorrect data, Request restriction of processing, Request deletion of your data, as permitted by law, Object to the processing of your data. To exercise your rights or if you have any further questions regarding the processing of your personal data, please contact us at: [Contact Email Address]."
+    },
+    "section9": {
+      "title": "9. Data Security",
+      "content": "We employ appropriate technical and organizational security measures to protect your data against unauthorized access, loss, or manipulation. Our security measures are continuously improved in line with technological advancements."
+    },
+    "section10": {
+      "title": "10. Changes to This Privacy Policy",
+      "content": "We reserve the right to amend this privacy policy to comply with changes in legal requirements or in the functionality of our web app. The current version of the privacy policy is available on our web app at any time."
+    }
   }
 }

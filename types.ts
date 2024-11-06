@@ -6,21 +6,13 @@ export interface Gift {
   description?: string;
   url?: string;
   isPurchased: boolean;
+  createdAt: string;
 }
 
 export interface Member {
   id: string;
   email: string;
   joinedAt: string;
-}
-
-export interface Gift {
-  id: string;
-  title: string;
-  description?: string;
-  url?: string;
-  isPurchased: boolean;
-  createdAt: string;
 }
 
 export interface User {
@@ -82,6 +74,52 @@ export interface Translations {
     copyright: string;
     privacyPolicy: string;
     termsConditions: string;
+  };
+  privacy: {
+    title: string;
+    section1: {
+      title: string;
+      content: string;
+    };
+    section2: {
+      title: string;
+      content: string;
+    };
+    section3: {
+      title: string;
+      subtitle1: string;
+      content1: string;
+      subtitle2: string;
+      content2: string;
+    };
+    section4: {
+      title: string;
+      content: string;
+    };
+    section5: {
+      title: string;
+      content: string;
+    };
+    section6: {
+      title: string;
+      content: string;
+    };
+    section7: {
+      title: string;
+      content: string;
+    };
+    section8: {
+      title: string;
+      content: string;
+    };
+    section9: {
+      title: string;
+      content: string;
+    };
+    section10: {
+      title: string;
+      content: string;
+    };
   };
   [key: string]: string | { [key: string]: string | { [key: string]: string } } | AddMemberDialogDictionary | MemberGiftsTranslations | ToastTranslations | ConfirmationTranslations | { [key: string]: string };
 }
@@ -157,4 +195,10 @@ export interface HeaderProps {
 
 export interface FooterProps {
   dict: Translations;
+}
+
+export interface PrivacyPageProps {
+  params: {
+    dict: Translations;
+  };
 }
