@@ -46,6 +46,7 @@
     "adding": "Загрузка",
     "cancel": "Отмена",
     "description": "Описание",
+    "giftStatusAlreadyPurchased": "Уже куплено",
     "enterDescription": "Краткое описание",
     "enterGiftTitle": "Какой подарок?",
     "enterUrl": "Ссылка",

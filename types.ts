@@ -194,6 +194,7 @@ export interface MemberGiftsTranslations {
   cancel: string;
   adding: string;
   noGifts: string;
+  giftStatusAlreadyPurchased: string;
 }
 
 export interface ToastTranslations {
