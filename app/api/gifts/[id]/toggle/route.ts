@@ -62,10 +62,7 @@ export async function PUT(
       data: { isPurchased: !gift.isPurchased },
     });
 
-    return NextResponse.json({
-      success: true,
-      gift: updatedGift,
-    });
+    return NextResponse.json({ isPurchased: updatedGift.isPurchased });
   } catch (error) {
     console.error('Error toggling gift status:', error);
     return NextResponse.json(

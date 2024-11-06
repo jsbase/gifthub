@@ -77,7 +77,10 @@ export default function RootLayout({
           <div className="flex-1 flex flex-col">
             {children}
           </div>
-          <Toaster />
+          <Toaster 
+            position="top-center"
+            className="xs:!fixed xs:!top-4 xs:!right-4"
+          />
         </ThemeProvider>
       </body>
     </html>
