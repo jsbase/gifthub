@@ -40,7 +40,7 @@ export default function DashboardPage({
         return;
       }
 
-      setGroupName(auth.groupName);
+      setGroupName(auth.groupName ?? '');
       fetchData();
     };
 
