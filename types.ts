@@ -221,9 +221,7 @@ export interface HeaderProps {
 }
 
 export interface HomeProps {
-  params: Promise<{
-    lang: string;
-  }>;
+  params: { lang: string }
 }
 
 export interface FeatureCardProps {
@@ -236,9 +234,11 @@ export interface FooterProps {
 }
 
 export interface PrivacyPageProps {
-  params: {
-    dict: Translations;
-  };
+  params: { lang: string }
+}
+
+export interface TermsPageProps {
+  params: { lang: string }
 }
 
 export interface AuthState {

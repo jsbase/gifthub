@@ -1,9 +1,10 @@
 import { getDictionary } from "../dictionaries";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
+import { TermsPageProps } from "@/types";
 
-export default async function TermsConditions({ params }: { params: { lang: string } }) {
-  const { lang } = await params;
+export default async function TermsConditions({ params }: TermsPageProps) {
+  const { lang } = params;
   const dict = await getDictionary(lang);
   const sections = Array.from({ length: 6 }, (_, i) => i + 1);
 
