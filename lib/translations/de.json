@@ -122,5 +122,32 @@
       "title": "10. Änderungen dieser Datenschutzrichtlinie",
       "content": "Wir behalten uns das Recht vor, diese Datenschutzrichtlinie zu ändern, um rechtlichen Anforderungen oder Änderungen in der Funktionalität unserer Web-App zu entsprechen. Die aktuelle Version der Datenschutzrichtlinie ist jederzeit in unserer Web-App verfügbar."
     }
+  },
+  "terms": {
+    "title": "Allgemeine Geschäftsbedingungen",
+    "section1": {
+      "title": "1. Geltungsbereich",
+      "content": "Diese Allgemeinen Geschäftsbedingungen gelten für die Nutzung der GiftHub Web-App, einer Plattform zur Organisation von Geschenken in Gruppen und Familien."
+    },
+    "section2": {
+      "title": "2. Leistungsbeschreibung",
+      "content": "GiftHub ermöglicht es Nutzern, Geschenkwünsche zu organisieren, Wunschlisten zu erstellen und den Überblick über geplante Geschenke zu behalten. Die App dient der Koordination von Geschenken innerhalb von Gruppen, wobei die Überraschung gewahrt bleibt."
+    },
+    "section3": {
+      "title": "3. Registrierung und Nutzerkonto",
+      "content": "Die Nutzung von GiftHub erfordert die Erstellung eines Gruppenkontos. Die Nutzer sind verpflichtet, ihre Zugangsdaten geheim zu halten und vor dem Zugriff Dritter zu schützen."
+    },
+    "section4": {
+      "title": "4. Nutzungsregeln",
+      "content": "Die Nutzer verpflichten sich, die App nur für den vorgesehenen Zweck zu verwenden und keine rechtswidrigen oder anstößigen Inhalte zu teilen."
+    },
+    "section5": {
+      "title": "5. Datenschutz",
+      "content": "Der Schutz personenbezogener Daten hat höchste Priorität. Details sind in unserer Datenschutzerklärung zu finden."
+    },
+    "section6": {
+      "title": "6. Haftungsausschluss",
+      "content": "GiftHub übernimmt keine Garantie für die ständige Verfügbarkeit der App und haftet nicht für leicht fahrlässig verursachte Schäden."
+    }
   }
 }

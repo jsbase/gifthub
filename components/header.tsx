@@ -21,26 +21,30 @@ export function Header({
   });
 
   useEffect(() => {
-    if (showAuth) {
-      const checkAuth = async () => {
-        try {
-          const auth = await verifyAuth();
-          if (auth) {
-            setAuthState({
-              isAuthenticated: true,
-              groupName: auth.groupName
-            });
-          }
-        } catch (error) {
-          if (error instanceof Error && !error.message.includes('401')) {
-            console.error('Auth verification failed:', error);
-          }
-        }
-      };
+    let isMounted = true;
 
-      checkAuth();
-    }
-  }, [showAuth]);
+    const checkAuth = async () => {
+      try {
+        const auth = await verifyAuth();
+        if (isMounted) {
+          setAuthState({
+            isAuthenticated: !!auth,
+            groupName: auth?.groupName || initialGroupName
+          });
+        }
+      } catch (error) {
+        if (isMounted && process.env.NODE_ENV === 'development') {
+          console.error('Auth check failed:', error);
+        }
+      }
+    };
+
+    checkAuth();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [initialGroupName]);
 
   const homeRoute = authState.isAuthenticated ? "/dashboard" : "/";
 
@@ -59,7 +63,7 @@ export function Header({
 
         <div className="flex items-center space-x-4">
           <LanguageSwitcher />
-          {authState.isAuthenticated && dict && onLogout && (
+          {showAuth && authState.isAuthenticated && dict && onLogout && (
             <Button 
               variant="ghost" 
               onClick={onLogout}
