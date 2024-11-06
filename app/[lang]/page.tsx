@@ -12,9 +12,9 @@ export default async function Home({ params }: HomeProps) {
   const dict: Translations = await getDictionary(lang);
 
   return (
-    <>
+    <div className="flex flex-col min-h-screen">
       <Header dict={dict} />
-      <main className="min-h-screen bg-gradient-to-b from-background to-muted">
+      <main className="flex-1 bg-gradient-to-b from-background to-muted">
         <div className="py-8 px-4 mx-auto max-w-screen-xl text-center lg:py-16">
           {/* Logo and Title */}
           <div className="flex items-center justify-center space-x-2 mb-4">
@@ -47,6 +47,6 @@ export default async function Home({ params }: HomeProps) {
         </div>
       </main>
       <Footer dict={dict} />
-    </>
+    </div>
   );
 }
