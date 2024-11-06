@@ -7,7 +7,7 @@ import { Footer } from '@/components/footer';
 import { FeatureCard } from '@/components/feature-card';
 import { HomeProps } from '@/types';
 
-export default async function Home({ params }: HomeProps) {
+export default async function Home({ params, searchParams }: HomeProps) {
   const { lang } = await params;
   const dict: Translations = await getDictionary(lang);
 

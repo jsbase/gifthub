@@ -221,8 +221,8 @@ export interface HeaderProps {
 }
 
 export interface HomeProps {
-  params: Promise<{ lang: string }>
-  searchParams?: { [key: string]: string | string[] | undefined }
+  params: Promise<{ lang: string }>,
+  searchParams?: Promise<{ [key: string]: string | string[] | undefined }>
 }
 
 export interface FeatureCardProps {
@@ -236,12 +236,10 @@ export interface FooterProps {
 
 export interface PrivacyPageProps {
   params: Promise<{ lang: string }>
-  searchParams?: { [key: string]: string | string[] | undefined }
 }
 
 export interface TermsPageProps {
   params: Promise<{ lang: string }>
-  searchParams?: { [key: string]: string | string[] | undefined }
 }
 
 export interface AuthState {
