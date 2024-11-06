@@ -221,7 +221,7 @@ export interface HeaderProps {
 }
 
 export interface HomeProps {
-  params: { lang: string }
+  params: Promise<{ lang: string }>
   searchParams?: { [key: string]: string | string[] | undefined }
 }
 
@@ -235,12 +235,12 @@ export interface FooterProps {
 }
 
 export interface PrivacyPageProps {
-  params: { lang: string }
+  params: Promise<{ lang: string }>
   searchParams?: { [key: string]: string | string[] | undefined }
 }
 
 export interface TermsPageProps {
-  params: { lang: string }
+  params: Promise<{ lang: string }>
   searchParams?: { [key: string]: string | string[] | undefined }
 }
 
