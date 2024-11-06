@@ -121,6 +121,33 @@ export interface Translations {
       content: string;
     };
   };
+  terms: {
+    title: string;
+    section1: {
+      title: string;
+      content: string;
+    };
+    section2: {
+      title: string;
+      content: string;
+    };
+    section3: {
+      title: string;
+      content: string;
+    };
+    section4: {
+      title: string;
+      content: string;
+    };
+    section5: {
+      title: string;
+      content: string;
+    };
+    section6: {
+      title: string;
+      content: string;
+    };
+  };
   [key: string]: string | { [key: string]: string | { [key: string]: string } } | AddMemberDialogDictionary | MemberGiftsTranslations | ToastTranslations | ConfirmationTranslations | { [key: string]: string };
 }
 

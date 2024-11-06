@@ -10,14 +10,14 @@ export function Footer({ dict }: FooterProps) {
             {dict.footer.copyright}
           </span>
           <div className="flex space-x-5 sm:justify-center">
-            <Link 
-              href="/privacy" 
+            <Link
+              href="/privacy"
               className="text-gray-500 hover:text-gray-900 dark:hover:text-white"
             >
               {dict.footer.privacyPolicy}
             </Link>
-            <Link 
-              href="#" 
+            <Link
+              href="/terms"
               className="text-gray-500 hover:text-gray-900 dark:hover:text-white"
             >
               {dict.footer.termsConditions}

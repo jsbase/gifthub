@@ -2,7 +2,7 @@ import { getDictionary } from "../dictionaries";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 
-export default async function PrivacyPolicy({ params }: { params: Promise<{ lang: string }> }) {
+export default async function PrivacyPolicy({ params }: { params: { lang: string } }) {
   const { lang } = await params;
   const dict = await getDictionary(lang);
   const sections = Array.from({ length: 10 }, (_, i) => i + 1);

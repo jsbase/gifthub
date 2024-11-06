@@ -122,5 +122,32 @@
       "title": "10. Changes to This Privacy Policy",
       "content": "We reserve the right to amend this privacy policy to comply with changes in legal requirements or in the functionality of our web app. The current version of the privacy policy is available on our web app at any time."
     }
+  },
+  "terms": {
+    "title": "Terms and Conditions",
+    "section1": {
+      "title": "1. Scope",
+      "content": "These Terms and Conditions apply to the use of the GiftHub web app, a platform for organizing gifts within groups and families."
+    },
+    "section2": {
+      "title": "2. Service Description",
+      "content": "GiftHub enables users to organize gift wishes, create wishlists, and keep track of planned gifts. The app serves to coordinate gifts within groups while maintaining the element of surprise."
+    },
+    "section3": {
+      "title": "3. Registration and User Account",
+      "content": "Using GiftHub requires creating a group account. Users are obligated to keep their access credentials confidential and protect them from third-party access."
+    },
+    "section4": {
+      "title": "4. Usage Rules",
+      "content": "Users agree to use the app only for its intended purpose and not to share any illegal or offensive content."
+    },
+    "section5": {
+      "title": "5. Privacy",
+      "content": "The protection of personal data is our highest priority. Details can be found in our Privacy Policy."
+    },
+    "section6": {
+      "title": "6. Disclaimer",
+      "content": "GiftHub does not guarantee constant availability of the app and is not liable for damages caused by slight negligence."
+    }
   }
 }
