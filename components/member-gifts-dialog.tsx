@@ -104,13 +104,12 @@ export function MemberGiftsDialog({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className={cn(
         "max-w-2xl",
-        // Conditional height classes
-        useFullHeight ? "xs:h-screen xs:max-h-screen" : "max-h-[90vh]",
-        "overflow-y-auto"
+        "xs:p-4",
+        "xs:h-[85vh] xs:max-h-[85vh]"
       )}>
         <DialogHeader>
           <DialogTitle className="xs:text-base">
-            {dict.title} {memberEmail}
+            {dict.title}<br />{memberEmail}
           </DialogTitle>
           <DialogDescription className="sr-only">
             {dict.manageGifts}

@@ -54,6 +54,9 @@
 
     /* Add new variable for feature cards */
     --card-background: 0 0% 100%;
+
+    /* Layout dimensions */
+    --header-height: 56px;
   }
 
   .dark {
