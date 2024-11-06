@@ -11,8 +11,6 @@ import { toast } from "sonner";
 import { type Gift, type MemberGiftsDialogProps } from "@/types";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
-import { useParams } from 'next/navigation';
-import type { LanguageCode } from '@/types';
 
 export function MemberGiftsDialog({
   isOpen,
@@ -23,20 +21,14 @@ export function MemberGiftsDialog({
   onGiftAdded,
   dict
 }: MemberGiftsDialogProps) {
-  const params = useParams();
-  const lang = params.lang as LanguageCode;
-
   const [showAddGiftForm, setShowAddGiftForm] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [justPurchasedId, setJustPurchasedId] = useState<string | null>(null);
   const [justToggledId, setJustToggledId] = useState<string | null>(null);
   const [isRemoving, setIsRemoving] = useState(false);
 
-  // Reset form when dialog closes
   useEffect(() => {
     if (!isOpen) {
       setShowAddGiftForm(false);
-      setJustPurchasedId(null);
       setJustToggledId(null);
       setIsRemoving(false);
     }
@@ -126,7 +118,7 @@ export function MemberGiftsDialog({
         <>
           <div className="absolute inset-0 bg-background/80 rounded-lg transition-opacity duration-300" />
           <div className={cn(
-            "absolute -top-2 right-[4.3rem] xs:right-[4rem] z-20 w-6 h-6 transition-all duration-300",
+            "absolute -top-[0.2rem] -left-[13px] z-20 w-6 h-6 transition-all duration-300",
             gift.id === justToggledId && !isRemoving && "animate-slide-in-top",
             gift.id === justToggledId && isRemoving && "animate-slide-out-top",
           )}>
@@ -163,7 +155,8 @@ export function MemberGiftsDialog({
                 "text-sm text-muted-foreground mt-1 absolute w-full transition-all duration-300",
                 gift.id === justToggledId && !isRemoving && "animate-slide-in-top-small",
                 gift.id === justToggledId && isRemoving && "animate-slide-out-top-small",
-                !gift.isPurchased && "opacity-0"
+                !gift.isPurchased && "opacity-0",
+                gift.isPurchased && "translate-y-0",
               )}>
                 {dict.giftStatusAlreadyPurchased}
               </p>
@@ -171,7 +164,7 @@ export function MemberGiftsDialog({
                 "text-sm text-muted-foreground mt-1 absolute w-full transition-all duration-300",
                 gift.id === justToggledId && !isRemoving && "animate-slide-out-bottom",
                 gift.id === justToggledId && isRemoving && "animate-slide-in-bottom",
-                gift.isPurchased ? "opacity-60" : "opacity-100"
+                gift.isPurchased ? "translate-y-8 opacity-0" : "translate-y-0 opacity-100"
               )}>
                 {gift.description}
               </p>
