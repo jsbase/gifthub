@@ -11,8 +11,6 @@ import { toast } from "sonner";
 import { type Gift, type MemberGiftsDialogProps } from "@/types";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
-import { useParams } from 'next/navigation';
-import type { LanguageCode } from '@/types';
 
 export function MemberGiftsDialog({
   isOpen,
@@ -23,20 +21,14 @@ export function MemberGiftsDialog({
   onGiftAdded,
   dict
 }: MemberGiftsDialogProps) {
-  const params = useParams();
-  const lang = params.lang as LanguageCode;
-
   const [showAddGiftForm, setShowAddGiftForm] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [justPurchasedId, setJustPurchasedId] = useState<string | null>(null);
   const [justToggledId, setJustToggledId] = useState<string | null>(null);
   const [isRemoving, setIsRemoving] = useState(false);
 
-  // Reset form when dialog closes
   useEffect(() => {
     if (!isOpen) {
       setShowAddGiftForm(false);
-      setJustPurchasedId(null);
       setJustToggledId(null);
       setIsRemoving(false);
     }
@@ -122,11 +114,12 @@ export function MemberGiftsDialog({
       key={gift.id}
       className="p-4 xs:p-3 rounded-lg border bg-card relative"
     >
+      {/* Purchased overlay */}
       {gift.isPurchased && (
         <>
           <div className="absolute inset-0 bg-background/80 rounded-lg transition-opacity duration-300" />
           <div className={cn(
-            "absolute -top-2 right-[4.3rem] xs:right-[4rem] z-20 w-6 h-6 transition-all duration-300",
+            "absolute -top-[0.2rem] -left-[13px] z-20 w-6 h-6 transition-all duration-300",
             gift.id === justToggledId && !isRemoving && "animate-slide-in-top",
             gift.id === justToggledId && isRemoving && "animate-slide-out-top",
           )}>
@@ -140,30 +133,23 @@ export function MemberGiftsDialog({
           </div>
         </>
       )}
-      
-      {/* Link wrapper */}
-      <a
-        href={gift.url}
-        target="_blank"
-        rel="noopener noreferrer"
-        onClick={(e) => (!gift.url || gift.isPurchased) && e.preventDefault()}
-        className={`absolute inset-0 ${gift.url && !gift.isPurchased ? 'cursor-pointer' : 'cursor-default'}`}
-      />
 
-      {/* Gift content */}
-      <div className="flex items-center justify-between relative z-10">
+      {/* Main content container */}
+      <div className="relative z-10">
+        {/* Gift content */}
         <div className={cn(
-          "flex-grow transition-opacity duration-500",
+          "transition-opacity duration-500",
           gift.isPurchased ? "opacity-60" : ""
         )}>
-          <h3 className="font-medium">{gift.title}</h3>
+          <h3 className="font-medium truncate">{gift.title}</h3>
           {gift.description && (
             <div className="relative h-[1.5rem]">
               <p className={cn(
                 "text-sm text-muted-foreground mt-1 absolute w-full transition-all duration-300",
                 gift.id === justToggledId && !isRemoving && "animate-slide-in-top-small",
                 gift.id === justToggledId && isRemoving && "animate-slide-out-top-small",
-                !gift.isPurchased && "opacity-0"
+                !gift.isPurchased && "opacity-0",
+                gift.isPurchased && "translate-y-0",
               )}>
                 {dict.giftStatusAlreadyPurchased}
               </p>
@@ -171,7 +157,7 @@ export function MemberGiftsDialog({
                 "text-sm text-muted-foreground mt-1 absolute w-full transition-all duration-300",
                 gift.id === justToggledId && !isRemoving && "animate-slide-out-bottom",
                 gift.id === justToggledId && isRemoving && "animate-slide-in-bottom",
-                gift.isPurchased ? "opacity-60" : "opacity-100"
+                gift.isPurchased ? "translate-y-8 opacity-0" : "translate-y-0 opacity-100"
               )}>
                 {gift.description}
               </p>
@@ -180,33 +166,60 @@ export function MemberGiftsDialog({
         </div>
 
         {/* Action buttons */}
-        <div className="flex items-center space-x-2 relative z-20">
+        <div className="absolute top-0 right-0 flex items-center space-x-2 z-20">
           <Button
             variant="ghost"
             size="sm"
             onClick={(e) => {
               e.preventDefault();
+              e.stopPropagation();
               handleDeleteGift(gift.id);
             }}
-            className="relative z-10 text-red-600 hover:text-red-700"
+            className="text-red-600 hover:text-red-700"
           >
             <Trash2 className="h-4 w-4" />
           </Button>
-          <PurchaseToggle 
-            isPurchased={gift.isPurchased} 
-            onChange={() => handleTogglePurchased(gift.id)} 
-          />
+          <div onClick={(e) => e.stopPropagation()}>
+            <PurchaseToggle 
+              isPurchased={gift.isPurchased} 
+              onChange={() => handleTogglePurchased(gift.id)} 
+            />
+          </div>
         </div>
       </div>
+
+      {/* Clickable link overlay */}
+      {gift.url && !gift.isPurchased && (
+        <a
+          href={gift.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="absolute top-0 left-0 h-full w-[78%] xs:w-[67%] z-10 cursor-pointer"
+          onClick={(e) => {
+            // Prevent link activation if clicking on buttons or toggle
+            if (
+              (e.target as HTMLElement).closest('button') || 
+              (e.target as HTMLElement).closest('label') ||
+              (e.target as HTMLElement).closest('input')
+            ) {
+              e.preventDefault();
+              e.stopPropagation();
+            }
+          }}
+        />
+      )}
     </div>
   );
 
   const PurchaseToggle = ({ isPurchased, onChange }: { isPurchased: boolean; onChange: () => void }) => (
-    <label className="inline-flex cursor-pointer items-center">
+    <label className="inline-flex cursor-pointer items-center" onClick={(e) => e.stopPropagation()}>
       <input
         type="checkbox"
         checked={isPurchased}
-        onChange={onChange}
+        onChange={(e) => {
+          e.stopPropagation();
+          onChange();
+        }}
         className="peer sr-only"
       />
       <div className={cn(
