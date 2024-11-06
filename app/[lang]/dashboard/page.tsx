@@ -1,18 +1,17 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { use } from 'react';
-import { Button } from "@/components/ui/button";
-import { Header } from "@/components/header";
-import { AddMemberDialog } from "@/components/add-member-dialog";
-import { MemberGiftsDialog } from "@/components/member-gifts-dialog";
-import { Footer } from "@/components/footer";
-import { ChevronRight } from "lucide-react";
-import { verifyAuth, logout } from "@/lib/auth";
+import { useEffect, useState, use } from 'react';
+import { useRouter } from 'next/navigation';
+import { Button } from '@/components/ui/button';
+import { Header } from '@/components/header';
+import { AddMemberDialog } from '@/components/add-member-dialog';
+import { MemberGiftsDialog } from '@/components/member-gifts-dialog';
+import { Footer } from '@/components/footer';
+import { ChevronRight } from 'lucide-react';
+import { verifyAuth, logout } from '@/lib/auth';
 import { getDictionary } from '../dictionaries';
-import { Member, Gift, Translations } from "@/types";
-import { toast } from "sonner";
+import { Member, Gift, Translations } from '@/types';
+import { toast } from 'sonner';
 
 export default function DashboardPage({
   params,
@@ -22,7 +21,7 @@ export default function DashboardPage({
   const { lang } = use(params);
   const router = useRouter();
   const [dict, setDict] = useState<Translations | null>(null);
-  const [groupName, setGroupName] = useState("");
+  const [groupName, setGroupName] = useState('');
   const [members, setMembers] = useState<Member[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
@@ -32,7 +31,7 @@ export default function DashboardPage({
     const init = async () => {
       const translations = await getDictionary(lang) as Translations;
       setDict(translations);
-      
+
       const auth = await verifyAuth();
       if (!auth) {
         router.replace(`/${lang}`);
@@ -40,7 +39,7 @@ export default function DashboardPage({
         return;
       }
 
-      setGroupName(auth.groupName);
+      setGroupName(auth.groupName ?? '');
       fetchData();
     };
 
@@ -51,7 +50,7 @@ export default function DashboardPage({
     try {
       const membersRes = await fetch('/api/members');
       if (!membersRes.ok) throw new Error('Failed to fetch members');
-      
+
       const membersData = await membersRes.json();
       setMembers(membersData.members);
     } catch (error) {
@@ -66,7 +65,7 @@ export default function DashboardPage({
     try {
       const response = await fetch(`/api/gifts?memberId=${memberId}`);
       if (!response.ok) throw new Error('Failed to fetch member gifts');
-      
+
       const data = await response.json();
       setSelectedMemberId(memberId);
       setMemberGifts(data.gifts);
@@ -87,9 +86,9 @@ export default function DashboardPage({
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <Header 
-        groupName={groupName} 
-        dict={dict} 
+      <Header
+        groupName={groupName}
+        dict={dict}
         onLogout={handleLogout}
         showAuth={true}
       />
@@ -134,7 +133,7 @@ export default function DashboardPage({
         memberEmail={getSelectedMember()?.email ?? ''}
         memberId={selectedMemberId ?? ''}
         gifts={memberGifts}
-        onGiftAdded={() => handleMemberClick(selectedMemberId!)}
+        onGiftAdded={() => selectedMemberId && handleMemberClick(selectedMemberId)}
         dict={{
           ...dict.memberGifts,
           toasts: dict.toasts,
