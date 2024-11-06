@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <g class="layer">
+    <g fill="#2c3e50">
+      <path d="m104 198-11-12L259 41l159 145-10 12L259 63 104 198z" />
+      <circle cx="258.7" cy="64.5" r="37.5" />
+    </g>
+    <path fill="#22c55e" d="M0 185h512v327H0V185z" />
+    <text x="142" y="327" fill="#fff" stroke-width="0" font-family="Sans-serif" font-size="124" font-weight="bold"
+      style="white-space:pre" text-anchor="middle" transform="matrix(2.1857 0 0 2.078 -55 -240)">$$$</text>
+  </g>
+</svg>

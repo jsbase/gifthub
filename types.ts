@@ -199,7 +199,8 @@ export interface MemberGiftsTranslations {
 export interface ToastTranslations {
   giftAdded: string;
   giftAddFailed: string;
-  giftStatusUpdated: string;
+  giftStatusPurchased: string;
+  giftStatusAvailable: string;
   giftStatusUpdateFailed: string;
   giftDeleted: string;
   giftDeleteFailed: string;

@@ -6,10 +6,13 @@ import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Textarea } from "./ui/textarea";
-import { PlusCircle, Trash2, Check, X } from "lucide-react";
+import { PlusCircle, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { MemberGiftsDialogProps } from "@/types";
 import { cn } from "@/lib/utils";
+import Image from "next/image";
+import { useParams } from 'next/navigation';
+import type { LanguageCode } from '@/types';
 
 export function MemberGiftsDialog({
   isOpen,
@@ -20,6 +23,9 @@ export function MemberGiftsDialog({
   onGiftAdded,
   dict
 }: MemberGiftsDialogProps) {
+  const params = useParams();
+  const lang = params.lang as LanguageCode;
+
   const [showAddGiftForm, setShowAddGiftForm] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -72,8 +78,9 @@ export function MemberGiftsDialog({
         throw new Error('Failed to update gift status');
       }
 
-      toast.success(dict.toasts.giftStatusUpdated);
-      onGiftAdded(); // Refresh the list
+      const data = await response.json();
+      toast.success(data.isPurchased ? dict.toasts.giftStatusPurchased : dict.toasts.giftStatusAvailable);
+      onGiftAdded();
     } catch (error) {
       toast.error(dict.toasts.giftStatusUpdateFailed);
     }
@@ -129,62 +136,84 @@ export function MemberGiftsDialog({
 
               {gifts.length > 0 ? (
                 <div className="space-y-3 xs:space-y-2">
-                  {[...gifts]
-                    .sort((a, b) => Number(a.isPurchased) - Number(b.isPurchased))
-                    .map((gift) => (
-                      <div
-                        key={gift.id}
-                        className={`p-4 xs:p-3 rounded-lg border bg-card ${gift.isPurchased ? 'opacity-60' : ''} relative`}
-                      >
-                        <a
-                          href={gift.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          onClick={(e) => (!gift.url || gift.isPurchased) && e.preventDefault()}
-                          className={`absolute inset-0 ${gift.url && !gift.isPurchased ? 'cursor-pointer' : 'cursor-default'}`}
-                        />
-                        <div className="flex items-center justify-between relative z-10 pointer-events-none">
-                          <div className="flex-grow">
-                            <h3 className={`font-medium ${gift.isPurchased ? 'line-through' : ''}`}>
-                              {gift.title}
-                            </h3>
-                            {gift.description && (
-                              <p className={`text-sm text-muted-foreground mt-1 ${gift.isPurchased ? 'line-through' : ''}`}>
-                                {gift.description}
-                              </p>
-                            )}
-                          </div>
-                          <div className="flex items-center space-x-2 pointer-events-auto">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={(e) => {
+                  {gifts.map((gift) => (
+                    <div
+                      key={gift.id}
+                      className="p-4 xs:p-3 rounded-lg border bg-card relative"
+                    >
+                      {gift.isPurchased && (
+                        <div className="absolute inset-0 bg-background/80 rounded-lg" />
+                      )}
+                      {gift.isPurchased && (
+                        <div className="absolute -top-1 right-[1.4rem] xs:right-[1.1rem] z-20 w-6 h-6">
+                          <Image
+                            src="/purchased.svg"
+                            alt="Purchased"
+                            width={24}
+                            height={24}
+                            className="w-full h-full"
+                          />
+                        </div>
+                      )}
+                      <a
+                        href={gift.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => (!gift.url || gift.isPurchased) && e.preventDefault()}
+                        className={`absolute inset-0 ${gift.url && !gift.isPurchased ? 'cursor-pointer' : 'cursor-default'}`}
+                      />
+                      <div className="flex items-center justify-between relative z-10">
+                        <div className={cn(
+                          "flex-grow",
+                          gift.isPurchased ? "opacity-60" : ""
+                        )}>
+                          <h3 className="font-medium">
+                            {gift.title}
+                          </h3>
+                          {gift.description && (
+                            <p className="text-sm text-muted-foreground mt-1">
+                              {gift.description}
+                            </p>
+                          )}
+                        </div>
+                        <div className="flex items-center space-x-2 relative z-20">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              handleDeleteGift(gift.id);
+                            }}
+                            className="relative z-10 text-red-600 hover:text-red-700"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                          <label className="inline-flex cursor-pointer items-center">
+                            <input
+                              type="checkbox"
+                              checked={gift.isPurchased}
+                              onChange={(e) => {
                                 e.preventDefault();
                                 handleTogglePurchased(gift.id);
                               }}
-                              className={`relative z-10 ${gift.isPurchased ? "text-green-600" : ""}`}
-                            >
-                              {gift.isPurchased ? (
-                                <X className="h-4 w-4" />
-                              ) : (
-                                <Check className="h-4 w-4" />
+                              className="peer sr-only"
+                            />
+                            <div
+                              className={cn(
+                                "peer relative h-5 w-9 rounded-full after:absolute after:start-[2px] after:top-[2px]",
+                                "after:h-4 after:w-4 after:rounded-full after:border after:border-gray-300",
+                                "after:bg-white after:transition-all after:content-['']",
+                                "transition-colors duration-200",
+                                gift.isPurchased
+                                  ? "bg-green-500 after:translate-x-full"
+                                  : "bg-red-500 after:translate-x-0"
                               )}
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={(e) => {
-                                e.preventDefault();
-                                handleDeleteGift(gift.id);
-                              }}
-                              className="relative z-10 text-red-600 hover:text-red-700"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
+                            />
+                          </label>
                         </div>
                       </div>
-                    ))}
+                    </div>
+                  ))}
                 </div>
               ) : (
                 <p className="text-center text-muted-foreground xs:text-sm">
@@ -230,9 +259,9 @@ export function MemberGiftsDialog({
               </div>
 
               <div className="flex flex-row space-x-2 xs:flex-col xs:space-x-0 xs:space-y-2">
-                <Button 
-                  type="submit" 
-                  disabled={isLoading} 
+                <Button
+                  type="submit"
+                  disabled={isLoading}
                   className="xs:w-full xs:text-sm"
                 >
                   {isLoading ? dict.adding : dict.addGift}

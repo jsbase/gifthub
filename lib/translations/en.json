@@ -66,7 +66,8 @@
   "toasts": {
     "giftAdded": "Gift added successfully",
     "giftAddFailed": "Failed to add gift",
-    "giftStatusUpdated": "Gift status updated",
+    "giftStatusPurchased": "Purchased",
+    "giftStatusAvailable": "Available again",
     "giftStatusUpdateFailed": "Failed to update gift status",
     "giftDeleted": "Gift deleted successfully",
     "giftDeleteFailed": "Failed to delete gift"
