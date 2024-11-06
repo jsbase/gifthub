@@ -8,6 +8,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { verifyAuth } from "@/lib/auth";
 import { AuthState } from "@/types";
+import { usePathname } from "next/navigation";
 
 export function Header({ 
   groupName: initialGroupName, 
@@ -20,6 +21,9 @@ export function Header({
     groupName: initialGroupName
   });
 
+  const pathname = usePathname();
+  const currentLang = pathname.split('/')[1];
+
   useEffect(() => {
     let isMounted = true;
 
@@ -28,13 +32,19 @@ export function Header({
         const auth = await verifyAuth();
         if (isMounted) {
           setAuthState({
-            isAuthenticated: !!auth,
+            isAuthenticated: auth?.success ?? false,
             groupName: auth?.groupName || initialGroupName
           });
         }
       } catch (error) {
-        if (isMounted && process.env.NODE_ENV === 'development') {
-          console.error('Auth check failed:', error);
+        if (isMounted) {
+          setAuthState(prev => ({
+            ...prev,
+            isAuthenticated: false
+          }));
+          if (process.env.NODE_ENV === 'development') {
+            console.error('Auth check failed:', error);
+          }
         }
       }
     };
@@ -44,9 +54,11 @@ export function Header({
     return () => {
       isMounted = false;
     };
-  }, [initialGroupName]);
+  }, [initialGroupName, pathname]);
 
-  const homeRoute = authState.isAuthenticated ? "/dashboard" : "/";
+  const isDashboardRoute = pathname.includes('/dashboard');
+
+  const homeRoute = `/${currentLang}${isDashboardRoute && !authState.isAuthenticated ? '' : authState.isAuthenticated ? '/dashboard' : ''}`;
 
   return (
     <header className="border-b">
