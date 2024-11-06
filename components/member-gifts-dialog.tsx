@@ -14,8 +14,8 @@ import { cn } from "@/lib/utils";
 export function MemberGiftsDialog({
   isOpen,
   onClose,
-  memberEmail,
   memberId,
+  memberName,
   gifts,
   onGiftAdded,
   dict
@@ -109,7 +109,7 @@ export function MemberGiftsDialog({
       )}>
         <DialogHeader>
           <DialogTitle className="xs:text-base">
-            {dict.title}<br />{memberEmail}
+            {dict.title}<br />{memberName}
           </DialogTitle>
           <DialogDescription className="sr-only">
             {dict.manageGifts}

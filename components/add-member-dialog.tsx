@@ -38,28 +38,26 @@ export function AddMemberDialog({ onMemberAdded }: Omit<AddMemberDialogProps, 'd
     setIsLoading(true);
 
     const formData = new FormData(e.currentTarget);
-    const email = formData.get('email') as string;
+    const name = formData.get('name') as string;
 
     try {
-      console.log('Sending request to add member:', email);
-
       const response = await fetch('/api/members', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ name }),
       });
 
-      const data = await response.json().catch(() => null);
+      const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data?.message || `Error: ${response.status} ${response.statusText}`);
+        throw new Error(data.message || `Error: ${response.status}`);
       }
 
-      if (!data) {
-        throw new Error('No response data received');
+      if (!data.success) {
+        throw new Error(data.message || 'Failed to add member');
       }
 
-      toast.success('Member added successfully');
+      toast.success(`Member ${name} added successfully`);
       setIsOpen(false);
       if (onMemberAdded) {
         onMemberAdded();
@@ -89,17 +87,17 @@ export function AddMemberDialog({ onMemberAdded }: Omit<AddMemberDialogProps, 'd
         <DialogHeader>
           <DialogTitle>{dict.addMemberTitle}</DialogTitle>
           <DialogDescription>
-            {dict.enterGroupName}
+            {dict.enterMemberName}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="email"></Label>
+            <Label htmlFor="name">{dict.enterMemberName}</Label>
             <Input
-              id="email"
-              name="email"
-              type="email"
-              placeholder={dict.enterMemberEmail}
+              id="name"
+              name="name"
+              type="text"
+              placeholder={dict.enterMemberName}
               required
             />
           </div>

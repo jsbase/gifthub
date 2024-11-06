@@ -110,9 +110,18 @@ export default function DashboardPage({
                   onClick={() => handleMemberClick(member.id)}
                 >
                   <div className="flex flex-col items-start">
-                    <p className="font-medium">{member.email}</p>
+                    <p className="font-medium">{member.name}</p>
                     <p className="text-sm text-muted-foreground">
-                      {dict.joined} {new Date(member.joinedAt).toLocaleDateString(lang)}
+                      {dict.joined} {new Date(member.joinedAt).toLocaleDateString(lang, {
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric',
+                        ...(lang === 'en' ? {
+                          day: 'numeric',
+                          month: '2-digit',
+                          year: 'numeric'
+                        } : {})
+                      })}
                     </p>
                   </div>
                   <ChevronRight className="h-5 w-5 text-muted-foreground" />
@@ -130,7 +139,7 @@ export default function DashboardPage({
       <MemberGiftsDialog
         isOpen={!!selectedMemberId}
         onClose={() => setSelectedMemberId(null)}
-        memberEmail={getSelectedMember()?.email ?? ''}
+        memberName={getSelectedMember()?.name ?? ''}
         memberId={selectedMemberId ?? ''}
         gifts={memberGifts}
         onGiftAdded={() => selectedMemberId && handleMemberClick(selectedMemberId)}

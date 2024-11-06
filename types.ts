@@ -11,13 +11,15 @@ export interface Gift {
 
 export interface Member {
   id: string;
-  email: string;
+  name: string;
   joinedAt: string;
 }
 
 export interface User {
   id: string;
-  email: string;
+  name: string;
+  password?: string;
+  createdAt?: Date;
 }
 
 export interface UserGroup {
@@ -154,7 +156,7 @@ export interface Translations {
 export interface MemberGiftsDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  memberEmail: string;
+  memberName: string;
   memberId: string;
   gifts: Gift[];
   onGiftAdded: () => void;
@@ -176,8 +178,7 @@ export interface AddMemberDialogDictionary {
   addMember: string;
   addMemberTitle: string;
   enterGroupName: string;
-  emailAddress: string;
-  enterMemberEmail: string;
+  enterMemberName: string;
 }
 
 export interface MemberGiftsTranslations {
