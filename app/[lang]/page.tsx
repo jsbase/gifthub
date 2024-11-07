@@ -15,7 +15,7 @@ export default async function Home({ params }: HomeProps) {
     <div className="flex flex-col min-h-screen">
       <Header dict={dict} />
       <main className="flex-1 bg-gradient-to-b from-background to-muted">
-        <div className="py-8 px-4 mx-auto max-w-screen-xl text-center lg:py-16">
+        <div className="container max-w-screen-xl text-center py-8 lg:py-16">
           {/* Logo and Title */}
           <div className="flex items-center justify-center space-x-2 mb-4">
             <GiftIcon className="h-12 w-12 text-primary" />
@@ -35,7 +35,7 @@ export default async function Home({ params }: HomeProps) {
           </div>
 
           {/* Feature Cards */}
-          <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="text-center my-12 lg:mb-0 md:mb-0 grid grid-cols-1 md:grid-cols-3 gap-dialog-desktop xs:gap-dialog-mobile">
             {Object.entries(dict.features).map(([key, feature]) => (
               <FeatureCard
                 key={key}

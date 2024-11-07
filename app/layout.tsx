@@ -25,7 +25,7 @@ export const metadata: Metadata = {
         url: '/apple-touch-icon.png',
       },
     ],
-    url: 'https://gifthub-wishlist.vercel.app/',
+    url: process.env.NEXT_PUBLIC_BASE_URL,
     siteName: 'GiftHub',
     locale: 'en_US',
     type: 'website',

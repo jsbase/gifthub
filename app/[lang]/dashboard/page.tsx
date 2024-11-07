@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, use } from 'react';
+import { useEffect, useState, use, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Header } from '@/components/header';
@@ -27,6 +27,21 @@ export default function DashboardPage({
   const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
   const [memberGifts, setMemberGifts] = useState<Gift[]>([]);
 
+  const fetchData = useCallback(async () => {
+    try {
+      const membersRes = await fetch('/api/members');
+      if (!membersRes.ok) throw new Error('Failed to fetch members');
+
+      const membersData = await membersRes.json();
+      setMembers(membersData.members);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      toast.error(dict?.errors.failedToLoad ?? 'Failed to load data');
+    } finally {
+      setLoading(false);
+    }
+  }, [dict]);
+
   useEffect(() => {
     const init = async () => {
       const translations = await getDictionary(lang) as Translations;
@@ -44,22 +59,7 @@ export default function DashboardPage({
     };
 
     init();
-  }, [router, lang]);
-
-  const fetchData = async () => {
-    try {
-      const membersRes = await fetch('/api/members');
-      if (!membersRes.ok) throw new Error('Failed to fetch members');
-
-      const membersData = await membersRes.json();
-      setMembers(membersData.members);
-    } catch (error) {
-      console.error('Error fetching data:', error);
-      toast.error(dict?.errors.failedToLoad ?? 'Failed to load data');
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [router, lang, fetchData, dict]);
 
   const handleMemberClick = async (memberId: string) => {
     try {
@@ -106,7 +106,7 @@ export default function DashboardPage({
                 <Button
                   key={member.id}
                   variant="ghost"
-                  className="w-full p-4 h-auto bg-card hover:bg-accent flex items-center justify-between"
+                  className="w-full pr-0 pl-2 h-auto bg-card hover:bg-accent flex items-center justify-between"
                   onClick={() => handleMemberClick(member.id)}
                 >
                   <div className="flex flex-col items-start">

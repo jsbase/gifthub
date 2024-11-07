@@ -82,7 +82,7 @@ export function AuthButtons({ dict }: { dict: Translations }) {
           description={dict.enterGroupName}
           className="xs:h-[85vh] xs:max-h-[85vh]"
         >
-          <form onSubmit={handleLogin} className="space-y-4 xs:space-y-2">
+          <form onSubmit={handleLogin} className="space-y-dialog-desktop xs:space-y-dialog-mobile">
             <div className="space-y-2">
               <Label htmlFor="groupName"></Label>
               <Input 
@@ -124,7 +124,7 @@ export function AuthButtons({ dict }: { dict: Translations }) {
           description={dict.createGroupDescription}
           className="xs:h-[85vh] xs:max-h-[85vh]"
         >
-          <form onSubmit={handleRegister} className="space-y-4">
+          <form onSubmit={handleRegister} className="space-y-dialog-desktop xs:space-y-dialog-mobile">
             <div className="space-y-2">
               <Label htmlFor="newGroupName"></Label>
               <Input 
@@ -184,8 +184,8 @@ export function AuthDialog({
 }) {
   return (
     <DialogContent className={cn(
-      "sm:max-w-[400px]",
-      "xs:p-4",
+      "max-w-dialog",
+      "xs:p-dialog-mobile p-dialog-desktop",
       className
     )}>
       <DialogHeader>
