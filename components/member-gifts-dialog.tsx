@@ -22,6 +22,7 @@ export function MemberGiftsDialog({
 }: MemberGiftsDialogProps) {
   const [showAddGiftForm, setShowAddGiftForm] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [animatedGiftId, setAnimatedGiftId] = useState<string | null>(null);
 
   // Determine if the dialog should be full screen based on the number of gifts
   const isFullScreen = gifts.length > 5; // Adjust the number as needed
@@ -69,6 +70,7 @@ export function MemberGiftsDialog({
 
   const handleTogglePurchased = async (giftId: string) => {
     try {
+      setAnimatedGiftId(giftId); // Set the animated gift ID
       const response = await fetch(`/api/gifts/${giftId}/toggle`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -83,6 +85,8 @@ export function MemberGiftsDialog({
       onGiftAdded();
     } catch (error) {
       toast.error(dict.toasts.giftStatusUpdateFailed);
+    } finally {
+      setAnimatedGiftId(null); // Reset the animated gift ID
     }
   };
 
@@ -123,9 +127,9 @@ export function MemberGiftsDialog({
             </div>
             <div className="flex-none">
               {gift.isPurchased ? (
-                <CheckCircle className="inline-block mr-2 text-green-500" />
+                <CheckCircle className={`inline-block mr-2 text-green-500`} />
               ) : (
-                <Circle className="inline-block mr-2 text-gray-500" />
+                <Circle className={`inline-block mr-2 text-gray-500 ${animatedGiftId === gift.id ? 'icon-fadeIn' : ''}`} />
               )}
             </div>
           </div>
@@ -168,7 +172,7 @@ export function MemberGiftsDialog({
         "max-w-2xl",
         "xs:p-4",
         "xs:h-[85vh] xs:max-h-[85vh]",
-        isFullScreen ? "xs:w-full xs:h-full" : "xs:w-auto xs:h-auto" // Apply full screen styles conditionally
+        isFullScreen ? "xs:w-full xs:h-full" : "xs:w-auto xs:h-auto"
       )}>
         <DialogHeader>
           <DialogTitle className="xs:text-base">
