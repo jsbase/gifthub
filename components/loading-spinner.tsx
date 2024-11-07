@@ -4,8 +4,8 @@ import Image from 'next/image';
 import { createPortal } from 'react-dom';
 import { useState, useEffect } from 'react';
 
-export function LoadingSpinner() {
-  const [isMounted, setIsMounted] = useState(false);
+export function LoadingSpinner(): JSX.Element | null {
+  const [isMounted, setIsMounted] = useState<boolean>(false);
 
   useEffect(() => {
     setIsMounted(true);
