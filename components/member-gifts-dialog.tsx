@@ -6,11 +6,10 @@ import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Textarea } from "./ui/textarea";
-import { PlusCircle, Trash2 } from "lucide-react";
+import { PlusCircle, Trash2, CheckCircle, Circle } from "lucide-react";
 import { toast } from "sonner";
 import { type Gift, type MemberGiftsDialogProps } from "@/types";
 import { cn } from "@/lib/utils";
-import Image from "next/image";
 
 export function MemberGiftsDialog({
   isOpen,
@@ -23,14 +22,14 @@ export function MemberGiftsDialog({
 }: MemberGiftsDialogProps) {
   const [showAddGiftForm, setShowAddGiftForm] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [justToggledId, setJustToggledId] = useState<string | null>(null);
-  const [isRemoving, setIsRemoving] = useState(false);
+  const [animatedGiftId, setAnimatedGiftId] = useState<string | null>(null);
+
+  // Determine if the dialog should be full screen based on the number of gifts
+  const isFullScreen = gifts.length > 5; // Adjust the number as needed
 
   useEffect(() => {
     if (!isOpen) {
       setShowAddGiftForm(false);
-      setJustToggledId(null);
-      setIsRemoving(false);
     }
   }, [isOpen]);
 
@@ -40,10 +39,12 @@ export function MemberGiftsDialog({
     setIsLoading(true);
 
     const formData = new FormData(e.currentTarget);
-    const giftData = {
+    const giftData: Omit<Gift, 'id' | 'createdAt'> = {
       title: formData.get('title') as string,
       description: formData.get('description') as string,
       url: formData.get('url') as string,
+      isPurchased: false,
+      groupId: "", // Assuming you have a way to set this
       forMemberId: memberId,
     };
 
@@ -69,6 +70,7 @@ export function MemberGiftsDialog({
 
   const handleTogglePurchased = async (giftId: string) => {
     try {
+      setAnimatedGiftId(giftId); // Set the animated gift ID
       const response = await fetch(`/api/gifts/${giftId}/toggle`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -78,13 +80,13 @@ export function MemberGiftsDialog({
       if (!response.ok) throw new Error('Failed to update gift status');
 
       const data = await response.json();
-      setJustToggledId(giftId);
-      setIsRemoving(!data.isPurchased);
-      
-      toast.success(data.isPurchased ? dict.toasts.giftStatusPurchased : dict.toasts.giftStatusAvailable);
+
+      toast.success(data.isPurchased ? dict.toasts.giftStatusPurchased : dict.toasts.giftStatusBackToList);
       onGiftAdded();
     } catch (error) {
       toast.error(dict.toasts.giftStatusUpdateFailed);
+    } finally {
+      setAnimatedGiftId(null); // Reset the animated gift ID
     }
   };
 
@@ -110,128 +112,58 @@ export function MemberGiftsDialog({
   };
 
   const GiftCard = ({ gift }: { gift: Gift }) => (
-    <div
-      key={gift.id}
-      className="p-4 xs:p-3 rounded-lg border bg-card relative"
-    >
-      {/* Purchased overlay */}
-      {gift.isPurchased && (
-        <>
-          <div className="absolute inset-0 bg-background/80 rounded-lg transition-opacity duration-300" />
-          <div className={cn(
-            "absolute -top-[0.2rem] -left-[13px] z-20 w-6 h-6 transition-all duration-300",
-            gift.id === justToggledId && !isRemoving && "animate-slide-in-top",
-            gift.id === justToggledId && isRemoving && "animate-slide-out-top",
-          )}>
-            <Image
-              src="/purchased.svg"
-              alt="Purchased"
-              width={24}
-              height={24}
-              className="w-full h-full"
-            />
-          </div>
-        </>
-      )}
-
-      {/* Main content container */}
-      <div className="relative z-10">
-        {/* Gift content */}
-        <div className={cn(
-          "transition-opacity duration-500",
-          gift.isPurchased ? "opacity-60" : ""
-        )}>
-          <h3 className="font-medium w-[78%] xs:w-[67%]">{gift.title}</h3>
-          {gift.description && (
-            <div className="relative h-[1.5rem]">
-              <p className={cn(
-                "text-sm text-muted-foreground mt-1 absolute w-full transition-all duration-300",
-                gift.id === justToggledId && !isRemoving && "animate-slide-in-top-small",
-                gift.id === justToggledId && isRemoving && "animate-slide-out-top-small",
-                !gift.isPurchased && "opacity-0",
-                gift.isPurchased && "translate-y-0",
-              )}>
-                {dict.giftStatusAlreadyPurchased}
-              </p>
-              <p className={cn(
-                "text-sm text-muted-foreground mt-1 absolute w-full transition-all duration-300",
-                gift.id === justToggledId && !isRemoving && "animate-slide-out-bottom",
-                gift.id === justToggledId && isRemoving && "animate-slide-in-bottom",
-                gift.isPurchased ? "translate-y-8 opacity-0" : "translate-y-0 opacity-100"
-              )}>
+    <div className="flex flex-col rounded-lg border bg-card relative">
+      {/* Gift details */}
+      {gift.description && (
+        <a href={gift.url} target="_blank" rel="noopener noreferrer" onClick={() => !gift.isPurchased && window.open(gift.url, '_blank')} className="p-4 pb-2 mt-1 border-b block">
+          <div className="flex flex-row">
+            <div className="flex-1">
+              <h3 className={`font-medium ${gift.isPurchased ? 'line-through text-gray-200' : ''}`}>
+                {gift.title}
+              </h3>
+              <p className={`text-sm ${gift.isPurchased ? 'line-through text-gray-200' : 'text-muted-foreground'}`}>
                 {gift.description}
               </p>
             </div>
-          )}
-        </div>
-
-        {/* Action buttons */}
-        <div className="absolute top-0 right-0 flex items-center space-x-2 z-20">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              handleDeleteGift(gift.id);
-            }}
-            className="text-red-600 hover:text-red-700"
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button>
-          <div onClick={(e) => e.stopPropagation()}>
-            <PurchaseToggle 
-              isPurchased={gift.isPurchased} 
-              onChange={() => handleTogglePurchased(gift.id)} 
-            />
+            <div className="flex-none">
+              {gift.isPurchased ? (
+                <CheckCircle className={`inline-block mr-2 text-green-500`} />
+              ) : (
+                <Circle className={`inline-block mr-2 text-gray-500 ${animatedGiftId === gift.id ? 'icon-fadeIn' : ''}`} />
+              )}
+            </div>
           </div>
-        </div>
-      </div>
-
-      {/* Clickable link overlay */}
-      {gift.url && !gift.isPurchased && (
-        <a
-          href={gift.url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="absolute top-0 left-0 h-full w-[78%] xs:w-[67%] z-10 cursor-pointer"
-          onClick={(e) => {
-            // Prevent link activation if clicking on buttons or toggle
-            if (
-              (e.target as HTMLElement).closest('button') || 
-              (e.target as HTMLElement).closest('label') ||
-              (e.target as HTMLElement).closest('input')
-            ) {
-              e.preventDefault();
-              e.stopPropagation();
-            }
-          }}
-        />
+        </a>
       )}
-    </div>
-  );
 
-  const PurchaseToggle = ({ isPurchased, onChange }: { isPurchased: boolean; onChange: () => void }) => (
-    <label className="inline-flex cursor-pointer items-center" onClick={(e) => e.stopPropagation()}>
-      <input
-        type="checkbox"
-        checked={isPurchased}
-        onChange={(e) => {
-          e.stopPropagation();
-          onChange();
-        }}
-        className="peer sr-only"
-      />
-      <div className={cn(
-        "peer relative h-5 w-9 rounded-full after:absolute after:start-[2px] after:top-[2px]",
-        "after:h-4 after:w-4 after:rounded-full after:border after:border-gray-300",
-        "after:bg-white after:transition-all after:content-['']",
-        "transition-colors duration-200",
-        isPurchased
-          ? "bg-green-500 after:translate-x-full"
-          : "bg-red-500 after:translate-x-0"
-      )} />
-    </label>
+      {/* Control area */}
+      <div className="flex flex-row space-x-2">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            handleDeleteGift(gift.id);
+          }}
+          className="flex-1 text-red-600 hover:text-red-700 border-r rounded-none"
+        >
+          <Trash2 className="h-4 w-4" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            handleTogglePurchased(gift.id);
+          }}
+          className="flex-1 transition-transform duration-300 ease-in-out rounded-none"
+        >
+          {gift.isPurchased ? dict.markAsAvailable : dict.markAsPurchased}
+        </Button>
+      </div>
+    </div>
   );
 
   return (
@@ -239,11 +171,12 @@ export function MemberGiftsDialog({
       <DialogContent className={cn(
         "max-w-2xl",
         "xs:p-4",
-        "xs:h-[85vh] xs:max-h-[85vh]"
+        "xs:h-[85vh] xs:max-h-[85vh]",
+        isFullScreen ? "xs:w-full xs:h-full" : "xs:w-auto xs:h-auto"
       )}>
         <DialogHeader>
           <DialogTitle className="xs:text-base">
-            {dict.title}<br />{memberName}
+            {dict.title} {memberName}
           </DialogTitle>
           <DialogDescription className="sr-only">
             {dict.manageGifts}
