@@ -50,7 +50,6 @@ export interface Translations {
   addMember: string;
   logout: string;
   noMembers: string;
-  joined: string;
   features: {
     simple: {
       title: string;
