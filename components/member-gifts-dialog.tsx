@@ -6,7 +6,7 @@ import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Textarea } from "./ui/textarea";
-import { PlusCircle, Trash2, CheckCircle } from "lucide-react";
+import { PlusCircle, Trash2, CheckCircle, Circle } from "lucide-react";
 import { toast } from "sonner";
 import { type Gift, type MemberGiftsDialogProps } from "@/types";
 import { cn } from "@/lib/utils";
@@ -111,16 +111,24 @@ export function MemberGiftsDialog({
     <div className="flex flex-col rounded-lg border bg-card relative">
       {/* Gift details */}
       {gift.description && (
-        <a href={gift.url} target="_blank" rel="noopener noreferrer" onClick={() => !gift.isPurchased && window.open(gift.url, '_blank')} className="flex-1 p-4 pb-2 border-b mt-1 block">
-          <div className="flex flex-row items-center">
-            {gift.isPurchased && <CheckCircle className="inline-block mr-2 text-green-500" />}
-            <h3 className={`font-medium ${gift.isPurchased ? 'line-through text-gray-200' : ''}`}>
-              {gift.title}
-            </h3>
+        <a href={gift.url} target="_blank" rel="noopener noreferrer" onClick={() => !gift.isPurchased && window.open(gift.url, '_blank')} className="p-4 pb-2 mt-1 border-b block">
+          <div className="flex flex-row">
+            <div className="flex-1">
+              <h3 className={`font-medium ${gift.isPurchased ? 'line-through text-gray-200' : ''}`}>
+                {gift.title}
+              </h3>
+              <p className={`text-sm ${gift.isPurchased ? 'line-through text-gray-200' : 'text-muted-foreground'}`}>
+                {gift.description}
+              </p>
+            </div>
+            <div className="flex-none">
+              {gift.isPurchased ? (
+                <CheckCircle className="inline-block mr-2 text-green-500" />
+              ) : (
+                <Circle className="inline-block mr-2 text-gray-500" />
+              )}
+            </div>
           </div>
-          <p className={`text-sm ${gift.isPurchased ? 'line-through text-gray-200' : 'text-muted-foreground'}`}>
-            {gift.description}
-          </p>
         </a>
       )}
 
