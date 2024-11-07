@@ -91,6 +91,7 @@
     },
     "section3": {
       "title": "3. Erhebung und Speicherung personenbezogener Daten",
+      "content": "",
       "subtitle1": "a) Beim Besuch unserer Web-App",
       "content1": "Beim Zugriff auf unsere Web-App werden automatisch bestimmte Daten durch unseren Server erfasst, wie: IP-Adresse, Datum und Uhrzeit des Zugriffs, verwendeter Browser und Betriebssystem, besuchte Seiten und Aktionen innerhalb der Web-App. Diese Daten werden ausschließlich zur Sicherstellung eines reibungslosen Betriebs und zur Verbesserung unserer Web-App verwendet und anschließend automatisch gelöscht.",
       "subtitle2": "b) Registrierung und Anmeldung zur Nutzung der Web-App",
