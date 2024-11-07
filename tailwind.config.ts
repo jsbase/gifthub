@@ -68,6 +68,23 @@ const animations = {
       from: { opacity: '0' },
       to: { opacity: '1' },
     },
+    'spinner-rotate': {
+      to: { transform: 'rotate(360deg)' }
+    },
+    'spinner-dash': {
+      '0%': {
+        'stroke-dasharray': '0 150',
+        'stroke-dashoffset': '0'
+      },
+      '47.5%': {
+        'stroke-dasharray': '42 150',
+        'stroke-dashoffset': '-16'
+      },
+      '95%, 100%': {
+        'stroke-dasharray': '42 150',
+        'stroke-dashoffset': '-59'
+      }
+    },
   },
   animation: {
     'accordion-down': 'accordion-down 0.2s ease-out',
@@ -79,6 +96,8 @@ const animations = {
     'slide-out-top-small': 'slide-out-top-small 0.3s ease-out forwards',
     'slide-in-bottom': 'slide-in-bottom 0.3s ease-out forwards',
     'fade-in': 'fade-in 0.5s ease-in-out',
+    'spinner-rotate': 'spinner-rotate 2s linear infinite',
+    'spinner-dash': 'spinner-dash 1.5s ease-out infinite',
   },
 };
 
