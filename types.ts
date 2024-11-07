@@ -50,7 +50,6 @@ export interface Translations {
   addMember: string;
   logout: string;
   noMembers: string;
-  joined: string;
   features: {
     simple: {
       title: string;
@@ -155,6 +154,11 @@ export interface Translations {
       title: string;
       content: string;
     };
+  };
+  giftCount: {
+    zero: string;
+    one: string;
+    many: string;
   };
   [key: string]: string | { [key: string]: string | { [key: string]: string } } | AddMemberDialogDictionary | MemberGiftsTranslations | ToastTranslations | ConfirmationTranslations | { [key: string]: string };
 }
