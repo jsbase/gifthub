@@ -195,7 +195,7 @@ export function MemberGiftsDialog({
               </Button>
 
               {gifts.length > 0 ? (
-                <div className="space-y-3 xs:space-y-2">
+                <div className="space-y-4">
                   {gifts.map((gift) => (
                     <GiftCard key={gift.id} gift={gift} />
                   ))}
