@@ -46,7 +46,6 @@
     "adding": "Loading",
     "cancel": "Cancel",
     "description": "Description",
-    "giftStatusAlreadyPurchased": "Already purchased",
     "enterDescription": "Small description",
     "enterGiftTitle": "What gift?",
     "enterUrl": "Link",
@@ -54,7 +53,9 @@
     "manageGifts": "All gifts are managed here.",
     "noGifts": "No gifts available",
     "optional": "Optional",
-    "title": "Wishlist from"
+    "title": "Wishlist from",
+    "markAsPurchased": "Strikethrough",
+    "markAsAvailable": "Unlock"
   },
   "members": "Members",
   "noMembers": "No members. Add the first member",
@@ -68,7 +69,7 @@
     "giftAdded": "Gift added successfully",
     "giftAddFailed": "Failed to add gift",
     "giftStatusPurchased": "Purchased",
-    "giftStatusAvailable": "Available again",
+    "giftStatusBackToList": "Back on the Wishlist",
     "giftStatusUpdateFailed": "Failed to update gift status",
     "giftDeleted": "Gift deleted successfully",
     "giftDeleteFailed": "Failed to delete gift"
@@ -90,6 +91,7 @@
     },
     "section3": {
       "title": "3. Collection and Storage of Personal Data",
+      "content": "",
       "subtitle1": "a) When Visiting Our Web App",
       "content1": "When you access our web app, certain data is automatically collected by our server, such as: IP address, Date and time of access, Browser and operating system used, Pages visited and actions within the web app. This data is used exclusively to ensure smooth operation and improve our web app, and is automatically deleted afterward.",
       "subtitle2": "b) Registration and Login for Using the Web App",

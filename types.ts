@@ -1,5 +1,6 @@
 import { type DialogProps } from '@radix-ui/react-dialog';
 
+// Gift-related interfaces
 export interface Gift {
   id: string;
   title: string;
@@ -7,8 +8,11 @@ export interface Gift {
   url?: string;
   isPurchased: boolean;
   createdAt: string;
+  groupId: string;
+  forMemberId: string;
 }
 
+// User and Group-related interfaces
 export interface Member {
   id: string;
   name: string;
@@ -28,6 +32,7 @@ export interface UserGroup {
   user: User;
 }
 
+// Translation-related interfaces
 export interface Translations {
   tagline: string;
   login: string;
@@ -89,6 +94,7 @@ export interface Translations {
     };
     section3: {
       title: string;
+      content: string;
       subtitle1: string;
       content1: string;
       subtitle2: string;
@@ -153,6 +159,7 @@ export interface Translations {
   [key: string]: string | { [key: string]: string | { [key: string]: string } } | AddMemberDialogDictionary | MemberGiftsTranslations | ToastTranslations | ConfirmationTranslations | { [key: string]: string };
 }
 
+// Dialog-related interfaces
 export interface MemberGiftsDialogProps {
   isOpen: boolean;
   onClose: () => void;
@@ -166,14 +173,22 @@ export interface MemberGiftsDialogProps {
   };
 }
 
-export interface CommandDialogProps extends DialogProps { }
+export interface CommandDialogProps extends DialogProps {}
 
+// Response-related interfaces
 export interface AuthResponse {
   success: boolean;
   message?: string;
   error?: string;
 }
 
+export interface AuthVerifyResponse {
+  success: boolean;
+  groupName?: string;
+  message?: string;
+}
+
+// Additional interfaces
 export interface AddMemberDialogDictionary {
   addMember: string;
   addMemberTitle: string;
@@ -194,17 +209,18 @@ export interface MemberGiftsTranslations {
   cancel: string;
   adding: string;
   noGifts: string;
-  giftStatusAlreadyPurchased: string;
+  markAsPurchased: string;
+  markAsAvailable: string;
 }
 
 export interface ToastTranslations {
   giftAdded: string;
   giftAddFailed: string;
-  giftStatusPurchased: string;
-  giftStatusAvailable: string;
   giftStatusUpdateFailed: string;
   giftDeleted: string;
   giftDeleteFailed: string;
+  giftStatusPurchased: string;
+  giftStatusBackToList: string;
 }
 
 export interface ConfirmationTranslations {
@@ -256,10 +272,4 @@ export interface Language {
   code: LanguageCode;
   name: string;
   flag: string;
-}
-
-export interface AuthVerifyResponse {
-  success: boolean;
-  groupName?: string;
-  message?: string;
 }
