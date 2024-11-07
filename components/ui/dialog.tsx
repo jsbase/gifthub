@@ -49,6 +49,7 @@ const DialogContent = React.forwardRef<
         'xs:rounded-none',
         'xs:translate-x-0',
         'xs:data-[state=closed]:slide-out-to-bottom xs:data-[state=open]:slide-in-from-bottom',
+        'xs:mb-4',
         
         'sm:h-fit',
         'sm:max-h-[85vh]',

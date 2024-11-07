@@ -46,7 +46,6 @@
     "adding": "Lädt",
     "cancel": "Abbrechen",
     "description": "Beschreibung",
-    "giftStatusAlreadyPurchased": "Bereits gekauft",
     "enterDescription": "Kleine Beschreibung",
     "enterGiftTitle": "Welches Geschenk?",
     "enterUrl": "Link",
@@ -54,7 +53,9 @@
     "manageGifts": "Hier werden alle Geschenke verwaltet.",
     "noGifts": "Keine Geschenke vorhanden",
     "optional": "Optional",
-    "title": "Wunschliste von"
+    "title": "Wunschliste von",
+    "markAsPurchased": "Streichen",
+    "markAsAvailable": "Freigeben"
   },
   "members": "Mitglieder",
   "noMembers": "Keine Mitglieder. Füge das erste Mitglied hinzu",
@@ -68,7 +69,7 @@
     "giftAdded": "Geschenk erfolgreich hinzugefügt",
     "giftAddFailed": "Geschenk konnte nicht hinzugefügt werden",
     "giftStatusPurchased": "Gekauft",
-    "giftStatusAvailable": "Wieder verfügbar",
+    "giftStatusBackToList": "Wieder auf der Wunschliste",
     "giftStatusUpdateFailed": "Geschenkstatus konnte nicht aktualisiert werden",
     "giftDeleted": "Geschenk erfolgreich gelöscht",
     "giftDeleteFailed": "Geschenk konnte nicht gelöscht werden"

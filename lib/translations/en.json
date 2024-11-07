@@ -46,7 +46,6 @@
     "adding": "Loading",
     "cancel": "Cancel",
     "description": "Description",
-    "giftStatusAlreadyPurchased": "Already purchased",
     "enterDescription": "Small description",
     "enterGiftTitle": "What gift?",
     "enterUrl": "Link",
@@ -54,7 +53,9 @@
     "manageGifts": "All gifts are managed here.",
     "noGifts": "No gifts available",
     "optional": "Optional",
-    "title": "Wishlist from"
+    "title": "Wishlist from",
+    "markAsPurchased": "Strikethrough",
+    "markAsAvailable": "Unlock"
   },
   "members": "Members",
   "noMembers": "No members. Add the first member",
@@ -68,7 +69,7 @@
     "giftAdded": "Gift added successfully",
     "giftAddFailed": "Failed to add gift",
     "giftStatusPurchased": "Purchased",
-    "giftStatusAvailable": "Available again",
+    "giftStatusBackToList": "Back on the Wishlist",
     "giftStatusUpdateFailed": "Failed to update gift status",
     "giftDeleted": "Gift deleted successfully",
     "giftDeleteFailed": "Failed to delete gift"
