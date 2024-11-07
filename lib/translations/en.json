@@ -37,7 +37,11 @@
     }
   },
   "groupName": "Group",
-  "joined": "Member since",
+  "giftCount": {
+    "zero": "no gift ideas",
+    "one": "1 gift idea",
+    "many": "{{count}} gift ideas"
+  },
   "login": "Login",
   "loginToGroup": "Login",
   "logout": "Logout",

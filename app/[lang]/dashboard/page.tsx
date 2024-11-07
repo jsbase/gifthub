@@ -23,6 +23,7 @@ export default function DashboardPage({
   const [dict, setDict] = useState<Translations | null>(null);
   const [groupName, setGroupName] = useState('');
   const [members, setMembers] = useState<Member[]>([]);
+  const [memberGiftCounts, setMemberGiftCounts] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
   const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
   const [memberGifts, setMemberGifts] = useState<Gift[]>([]);
@@ -34,6 +35,16 @@ export default function DashboardPage({
 
       const membersData = await membersRes.json();
       setMembers(membersData.members);
+
+      const giftCounts: Record<string, number> = {};
+      for (const member of membersData.members) {
+        const giftsRes = await fetch(`/api/gifts?memberId=${member.id}`);
+        if (giftsRes.ok) {
+          const giftsData = await giftsRes.json();
+          giftCounts[member.id] = giftsData.gifts.length;
+        }
+      }
+      setMemberGiftCounts(giftCounts);
     } catch (error) {
       console.error('Error fetching data:', error);
       toast.error(dict?.errors.failedToLoad ?? 'Failed to load data');
@@ -112,16 +123,11 @@ export default function DashboardPage({
                   <div className="flex flex-col items-start">
                     <p className="font-medium">{member.name}</p>
                     <p className="text-sm text-muted-foreground">
-                      {dict.joined} {new Date(member.joinedAt).toLocaleDateString(lang, {
-                        day: '2-digit',
-                        month: '2-digit',
-                        year: 'numeric',
-                        ...(lang === 'en' ? {
-                          day: 'numeric',
-                          month: '2-digit',
-                          year: 'numeric'
-                        } : {})
-                      })}
+                      {memberGiftCounts[member.id] === 0 
+                        ? dict.giftCount.zero 
+                        : memberGiftCounts[member.id] === 1 
+                          ? dict.giftCount.one
+                          : dict.giftCount.many.replace('{{count}}', memberGiftCounts[member.id].toString())}
                     </p>
                   </div>
                   <ChevronRight className="h-5 w-5 text-muted-foreground" />

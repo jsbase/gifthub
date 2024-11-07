@@ -156,6 +156,11 @@ export interface Translations {
       content: string;
     };
   };
+  giftCount: {
+    zero: string;
+    one: string;
+    many: string;
+  };
   [key: string]: string | { [key: string]: string | { [key: string]: string } } | AddMemberDialogDictionary | MemberGiftsTranslations | ToastTranslations | ConfirmationTranslations | { [key: string]: string };
 }
 
