@@ -129,7 +129,7 @@ export function MemberGiftsDialog({
               {gift.isPurchased ? (
                 <CheckCircle className={`inline-block mr-2 text-green-500`} />
               ) : (
-                <Circle className={`inline-block mr-2 text-gray-500 ${animatedGiftId === gift.id ? 'icon-fadeIn' : ''}`} />
+                <Circle className={`inline-block mr-2 text-gray-500 ${animatedGiftId === gift.id ? 'animate-fade-in' : ''}`} />
               )}
             </div>
           </div>
@@ -169,8 +169,8 @@ export function MemberGiftsDialog({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className={cn(
-        "max-w-2xl",
-        "xs:p-4",
+        "max-w-dialog",
+        "xs:p-dialog-mobile",
         "xs:h-[85vh] xs:max-h-[85vh]",
         isFullScreen ? "xs:w-full xs:h-full" : "xs:w-auto xs:h-auto"
       )}>
@@ -183,7 +183,7 @@ export function MemberGiftsDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4 xs:space-y-2">
+        <div className="space-y-dialog-desktop xs:space-y-dialog-mobile">
           {!showAddGiftForm && (
             <>
               <Button
@@ -195,7 +195,7 @@ export function MemberGiftsDialog({
               </Button>
 
               {gifts.length > 0 ? (
-                <div className="space-y-3 xs:space-y-2">
+                <div className="space-y-4">
                   {gifts.map((gift) => (
                     <GiftCard key={gift.id} gift={gift} />
                   ))}

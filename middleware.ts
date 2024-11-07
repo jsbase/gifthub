@@ -2,10 +2,7 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { jwtVerify } from 'jose';
 import acceptLanguage from 'accept-language';
-import { LanguageCode } from '@/types';
-
-const locales: LanguageCode[] = ['en', 'de', 'ru'];
-const defaultLocale: LanguageCode = 'de';
+import { locales, defaultLocale, LanguageCode } from '@/lib/i18n-config';
 
 function getLocale(request: NextRequest): LanguageCode {
   const localeCookie = request.cookies.get('NEXT_LOCALE');
@@ -13,13 +10,13 @@ function getLocale(request: NextRequest): LanguageCode {
     return localeCookie.value as LanguageCode;
   }
 
-  acceptLanguage.languages(locales);
+  acceptLanguage.languages([...locales]);
   return (acceptLanguage.get(request.headers.get('accept-language')) || defaultLocale) as LanguageCode;
 }
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  
+
   // Check if this is a language switch
   const isLanguageSwitch = locales.some(
     (locale) => pathname.startsWith(`/${locale}/`)
@@ -27,7 +24,7 @@ export async function middleware(request: NextRequest) {
 
   if (pathname.startsWith('/dashboard')) {
     const token = request.cookies.get('auth-token');
-    
+
     if (!token) {
       return NextResponse.redirect(new URL('/', request.url));
     }
@@ -35,7 +32,7 @@ export async function middleware(request: NextRequest) {
     try {
       const secret = new TextEncoder().encode(process.env.JWT_SECRET);
       await jwtVerify(token.value, secret);
-      
+
       // If this is a language switch and auth is valid, allow it
       if (isLanguageSwitch) {
         return NextResponse.next();
@@ -55,7 +52,7 @@ export async function middleware(request: NextRequest) {
 
   const locale = getLocale(request);
   request.nextUrl.pathname = `/${locale}${pathname}`;
-  
+
   return NextResponse.redirect(request.nextUrl);
 }
 
