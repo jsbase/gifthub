@@ -6,7 +6,9 @@ export function Footer({ dict }: FooterProps) {
   return (
     <footer className={cn(
       "bg-white",
-      "dark:bg-gray-800"
+      "dark:bg-gray-800",
+      "mt-auto",
+      "w-full"
     )}>
       <div className={cn(
         "container",

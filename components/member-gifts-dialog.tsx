@@ -24,14 +24,29 @@ export function MemberGiftsDialog({
   const [isLoading, setIsLoading] = useState(false);
   const [animatedGiftId, setAnimatedGiftId] = useState<string | null>(null);
 
-  // Determine if the dialog should be full screen based on the number of gifts
-  const isFullScreen = gifts.length > 5; // Adjust the number as needed
+  // Add mounted state to prevent hydration issues
+  const [mounted, setMounted] = useState(false);
 
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Reset form state when dialog closes
   useEffect(() => {
     if (!isOpen) {
       setShowAddGiftForm(false);
+      setIsLoading(false);
+      setAnimatedGiftId(null);
     }
   }, [isOpen]);
+
+  // Prevent rendering until mounted
+  if (!mounted) {
+    return null;
+  }
+
+  // Determine if the dialog should be full screen based on the number of gifts
+  const isFullScreen = gifts.length > 5; // Adjust the number as needed
 
   // API Handlers
   const handleAddGift = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -111,114 +126,123 @@ export function MemberGiftsDialog({
     }
   };
 
-  const GiftCard = ({ gift }: { gift: Gift }) => (
-    <div className={cn(
-      "flex",
-      "flex-col",
-      "rounded-lg",
-      "border",
-      "bg-card",
-      "relative"
-    )}>
-      {/* Gift details */}
-      {gift.description && (
-        <a
-          href={gift.url}
-          target="_blank"
-          rel="noopener noreferrer"
-          onClick={() => !gift.isPurchased && window.open(gift.url, '_blank')}
-          className={cn(
-            "p-4 pb-2 mt-1",
-            "border-b",
-            "block"
-          )}
-        >
-          <div className={cn(
-            "flex",
-            "flex-row"
-          )}>
-            <div className="flex-1">
-              <h3 className={cn(
-                "font-medium",
-                gift.isPurchased ? 'line-through text-gray-200' : ''
-              )}>
-                {gift.title}
-              </h3>
-              <p className={cn(
-                "text-sm",
-                gift.isPurchased ? 'line-through text-gray-200' : 'text-muted-foreground'
-              )}>
-                {gift.description}
-              </p>
-            </div>
-            <div className="flex-none">
-              {gift.isPurchased ? (
-                <CheckCircle className={cn(
-                  "inline-block",
-                  "mr-2",
-                  "text-green-500"
-                )} />
-              ) : (
-                <Circle className={cn(
-                  "inline-block",
-                  "mr-2",
-                  "text-gray-500",
-                  animatedGiftId === gift.id ? 'animate-fade-in' : ''
-                )} />
-              )}
-            </div>
-          </div>
-        </a>
-      )}
+  const GiftCard = ({ gift }: { gift: Gift }) => {
+    const handleGiftClick = (e: React.MouseEvent) => {
+      e.preventDefault();
+      if (!gift.isPurchased && gift.url && typeof window !== 'undefined') {
+        window.open(gift.url, '_blank');
+      }
+    };
 
-      {/* Control area */}
+    return (
       <div className={cn(
         "flex",
-        "flex-row",
-        "space-x-2"
+        "flex-col",
+        "rounded-lg",
+        "border",
+        "bg-card",
+        "relative"
       )}>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            handleDeleteGift(gift.id);
-          }}
-          className={cn(
-            "flex-1",
-            "text-red-600",
-            "hover:text-red-700",
-            "border-r",
-            "rounded-none"
-          )}
-        >
-          <Trash2 className={cn(
-            "h-4",
-            "w-4"
-          )} />
-        </Button>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            handleTogglePurchased(gift.id);
-          }}
-          className={cn(
-            "flex-1",
-            "transition-transform",
-            "duration-300",
-            "ease-in-out",
-            "rounded-none"
-          )}
-        >
-          {gift.isPurchased ? dict.markAsAvailable : dict.markAsPurchased}
-        </Button>
+        {/* Gift details */}
+        {gift.description && (
+          <a
+            href={gift.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={handleGiftClick}
+            className={cn(
+              "p-4 pb-2 mt-1",
+              "border-b",
+              "block"
+            )}
+          >
+            <div className={cn(
+              "flex",
+              "flex-row"
+            )}>
+              <div className="flex-1">
+                <h3 className={cn(
+                  "font-medium",
+                  gift.isPurchased ? 'line-through text-gray-200' : ''
+                )}>
+                  {gift.title}
+                </h3>
+                <p className={cn(
+                  "text-sm",
+                  gift.isPurchased ? 'line-through text-gray-200' : 'text-muted-foreground'
+                )}>
+                  {gift.description}
+                </p>
+              </div>
+              <div className="flex-none">
+                {gift.isPurchased ? (
+                  <CheckCircle className={cn(
+                    "inline-block",
+                    "mr-2",
+                    "text-green-500"
+                  )} />
+                ) : (
+                  <Circle className={cn(
+                    "inline-block",
+                    "mr-2",
+                    "text-gray-500",
+                    animatedGiftId === gift.id ? 'animate-fade-in' : ''
+                  )} />
+                )}
+              </div>
+            </div>
+          </a>
+        )}
+
+        {/* Control area */}
+        <div className={cn(
+          "flex",
+          "flex-row",
+          "space-x-2"
+        )}>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              handleDeleteGift(gift.id);
+            }}
+            className={cn(
+              "flex-1",
+              "text-red-600",
+              "hover:text-red-700",
+              "border-r",
+              "rounded-none"
+            )}
+          >
+            <Trash2 className={cn(
+              "h-4",
+              "w-4"
+            )} />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              handleTogglePurchased(gift.id);
+            }}
+            className={cn(
+              "flex-1",
+              "transition-transform",
+              "duration-300",
+              "ease-in-out",
+              "rounded-none"
+            )}
+          >
+            {gift.isPurchased ? dict.markAsAvailable : dict.markAsPurchased}
+          </Button>
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>

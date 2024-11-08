@@ -3,11 +3,17 @@
 import { cn } from '@/lib/utils';
 import { useTheme } from 'next-themes';
 import { Toaster as Sonner } from 'sonner';
+import { useState, useEffect } from 'react';
 
 type ToasterProps = React.ComponentProps<typeof Sonner>;
 
 const Toaster = ({ ...props }: ToasterProps) => {
   const { theme = 'system' } = useTheme();
+  const [position, setPosition] = useState<'top-center' | 'bottom-right'>('top-center');
+
+  useEffect(() => {
+    setPosition(window.innerWidth >= 640 ? 'bottom-right' : 'top-center');
+  }, []);
 
   return (
     <Sonner
@@ -16,6 +22,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
         "toaster",
         "group"
       )}
+      position={position}
       toastOptions={{
         classNames: {
           toast:

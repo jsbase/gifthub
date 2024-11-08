@@ -38,17 +38,27 @@ self.addEventListener('activate', (event) => {
 
 // Fetch event with network-first strategy for dynamic content
 self.addEventListener('fetch', (event) => {
-  // Don't cache API calls or other dynamic requests
-  if (event.request.url.includes('/api/') || 
-      event.request.method !== 'GET') {
+  const url = new URL(event.request.url);
+  
+  // Only handle requests from our own origin and http(s) schemes
+  if (event.request.method !== 'GET' || 
+      !['http:', 'https:'].includes(url.protocol) ||
+      !url.origin.includes(self.location.origin)) {
+    return;
+  }
+
+  // Don't cache API calls
+  if (url.pathname.startsWith('/api/')) {
     return;
   }
 
   event.respondWith(
     fetch(event.request)
       .then((response) => {
-        // Cache successful responses for static assets
-        if (response.ok && event.request.url.match(/\.(js|css|png|jpg|jpeg|gif|ico|json|webmanifest)$/)) {
+        // Only cache successful responses for static assets from our origin
+        if (response.ok && 
+            url.origin === self.location.origin && 
+            url.pathname.match(/\.(js|css|png|jpg|jpeg|gif|ico|json|webmanifest)$/)) {
           const responseClone = response.clone();
           caches.open(CACHE_NAME).then((cache) => {
             cache.put(event.request, responseClone);
@@ -78,8 +88,16 @@ self.addEventListener('fetch', (event) => {
   );
 });
 
-// Handle push notifications (optional)
-self.addEventListener('push', (event) => {
+// Handle push notifications
+self.addEventListener('push', async (event) => {
+  // Check if we have permission first
+  const hasPermission = await self.registration.pushManager.permissionState({ userVisibleOnly: true });
+  
+  if (hasPermission !== 'granted') {
+    console.log('Notification permission not granted');
+    return;
+  }
+
   const options = {
     body: event.data?.text() ?? 'New update available',
     icon: '/android-chrome-192x192.png',

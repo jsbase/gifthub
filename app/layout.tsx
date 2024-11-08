@@ -3,11 +3,8 @@ import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "@/components/theme-provider";
-import { registerServiceWorker } from './sw';
-
-if (typeof window !== 'undefined') {
-  registerServiceWorker();
-}
+import { cn } from '@/lib/utils';
+import ServiceWorkerRegistration from '@/components/ServiceWorkerRegistration';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -67,20 +64,27 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.className} min-h-screen flex flex-col`}>
+      <body className={cn(
+        inter.className,
+        "min-h-screen",
+        "flex",
+        "flex-col"
+      )}>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
           enableSystem
           disableTransitionOnChange
         >
-          <div className="flex-1 flex flex-col">
+          <div className={cn(
+            "flex-1",
+            "flex",
+            "flex-col"
+          )}>
             {children}
           </div>
-          <Toaster 
-            position="top-center"
-            className="xs:!fixed xs:!top-4 xs:!right-4"
-          />
+          <Toaster />
+          <ServiceWorkerRegistration />
         </ThemeProvider>
       </body>
     </html>
