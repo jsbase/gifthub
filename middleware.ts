@@ -14,9 +14,7 @@ function getLocale(request: NextRequest): LanguageCode {
   return (acceptLanguage.get(request.headers.get('accept-language')) || defaultLocale) as LanguageCode;
 }
 
-export async function middleware(
-  request: NextRequest
-): Promise<NextResponse> {
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Check if this is a language switch
@@ -62,4 +60,4 @@ export const config = {
   matcher: [
     '/((?!_next|api|flags|assets|loading.svg|purchased.svg|.*\\.(?:ico|png|webmanifest)).*)'
   ]
-} as const;
+};
