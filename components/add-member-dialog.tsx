@@ -18,11 +18,8 @@ export function AddMemberDialog({ onMemberAdded }: Omit<AddMemberDialogProps, 'd
   const [isLoading, setIsLoading] = useState(false);
   const [dict, setDict] = useState<AddMemberDialogDictionary | null>(null);
   const pathname = usePathname();
-  
-  // Get current language from URL
   const lang = pathname.split('/')[1];
 
-  // Load translations when component mounts
   useEffect(() => {
     const loadTranslations = async () => {
       const translations = await getDictionary(lang);
@@ -54,17 +51,17 @@ export function AddMemberDialog({ onMemberAdded }: Omit<AddMemberDialogProps, 'd
       }
 
       if (!data.success) {
-        throw new Error(data.message || 'Failed to add member');
+        throw new Error(data.message || dict?.toasts.memberAddFailed);
       }
 
-      toast.success(`Member ${name} added successfully`);
+      toast.success(dict?.toasts.memberAdded.replace('{name}', name));
       setIsOpen(false);
       if (onMemberAdded) {
         onMemberAdded();
       }
     } catch (error) {
-      console.error('Error adding member:', error);
-      toast.error(error instanceof Error ? error.message : 'Failed to add member');
+      console.error('Error adding member:', error instanceof Error ? error.message : error);
+      toast.error(dict?.toasts.memberAddFailed);
     } finally {
       setIsLoading(false);
     }
@@ -76,23 +73,29 @@ export function AddMemberDialog({ onMemberAdded }: Omit<AddMemberDialogProps, 'd
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <Button>
-          <UserPlus className="h-4 w-4 mr-2" />
+          <UserPlus className={cn(
+            "h-4 w-4",
+            "mr-2"
+          )} />
           {dict.addMember}
         </Button>
       </DialogTrigger>
       <DialogContent className={cn(
         "xs:p-4",
-        "xs:h-[85vh] xs:max-h-[85vh]"
+        "xs:h-[85vh]",
+        "xs:max-h-[85vh]"
       )}>
         <DialogHeader>
           <DialogTitle>{dict.addMemberTitle}</DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="sr-only">
             {dict.enterMemberName}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="name">{dict.enterMemberName}</Label>
+            <Label className="sr-only" htmlFor="name">
+              {dict.enterMemberName}
+            </Label>
             <Input
               id="name"
               name="name"
@@ -102,7 +105,7 @@ export function AddMemberDialog({ onMemberAdded }: Omit<AddMemberDialogProps, 'd
             />
           </div>
           <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? 'Adding...' : dict.addMember}
+            {isLoading ? dict.adding : dict.addMember}
           </Button>
         </form>
       </DialogContent>

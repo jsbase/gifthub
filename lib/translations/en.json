@@ -3,6 +3,7 @@
   "addMemberDialog": {
     "addMemberTitle": "Add Member",
     "addMember": "Add",
+    "adding": "Adding...",
     "enterGroupName": "Please fill out to add someone",
     "enterMemberName": "Member's name"
   },
@@ -20,7 +21,10 @@
   "errors": {
     "failedToLoad": "Failed to load",
     "failedToLoadGifts": "Gifts not loaded",
-    "loginRequired": "Login required"
+    "loginFailed": "Login failed",
+    "loginRequired": "Login required",
+    "passwordMismatch": "Passwords do not match",
+    "registrationFailed": "Registration failed"
   },
   "features": {
     "simple": {
@@ -42,6 +46,7 @@
     "one": "1 gift idea",
     "many": "{{count}} gift ideas"
   },
+  "loading": "Loading...",
   "login": "Login",
   "loginToGroup": "Login",
   "logout": "Logout",
@@ -76,7 +81,11 @@
     "giftStatusBackToList": "Back on the Wishlist",
     "giftStatusUpdateFailed": "Failed to update gift status",
     "giftDeleted": "Gift deleted successfully",
-    "giftDeleteFailed": "Failed to delete gift"
+    "giftDeleteFailed": "Failed to delete gift",
+    "memberAdded": "Member {name} added successfully",
+    "memberAddFailed": "Failed to add member",
+    "loginSuccess": "Logged in successfully",
+    "registrationSuccess": "Registration successful! Please log in."
   },
   "footer": {
     "copyright": "© 2024 GiftHub. All Rights Reserved.",
@@ -119,7 +128,7 @@
     },
     "section8": {
       "title": "8. Your Rights",
-      "content": "You have the right at any time to: Request information about the data we have stored about you, Request correction of incorrect data, Request restriction of processing, Request deletion of your data, as permitted by law, Object to the processing of your data. To exercise your rights or if you have any further questions regarding the processing of your personal data, please contact us at: [Contact Email Address]."
+      "content": "You have the right at any time to: Request information about the data we have stored about you, Request correction of incorrect data, Request restriction of processing, Request deletion of your data, as permitted by law, Object to the processing of your data. To exercise your rights or if you have any further questions regarding the processing of your personal data, please contact us at: jsbase.dev@gmail.com."
     },
     "section9": {
       "title": "9. Data Security",

@@ -1,5 +1,6 @@
 'use client';
 
+import { cn } from '@/lib/utils';
 import { useTheme } from 'next-themes';
 import { Toaster as Sonner } from 'sonner';
 
@@ -11,7 +12,10 @@ const Toaster = ({ ...props }: ToasterProps) => {
   return (
     <Sonner
       theme={theme as ToasterProps['theme']}
-      className="toaster group"
+      className={cn(
+        "toaster",
+        "group"
+      )}
       toastOptions={{
         classNames: {
           toast:

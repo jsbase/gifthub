@@ -37,6 +37,7 @@ export interface Translations {
   tagline: string;
   login: string;
   register: string;
+  loading: string;
   createGroup: string;
   createGroupDescription: string;
   enterGroupName: string;
@@ -68,6 +69,9 @@ export interface Translations {
     loginRequired: string;
     failedToLoad: string;
     failedToLoadGifts: string;
+    loginFailed: string;
+    passwordMismatch: string;
+    registrationFailed: string;
   };
   success: {
     loggedOut: string;
@@ -196,8 +200,13 @@ export interface AuthVerifyResponse {
 export interface AddMemberDialogDictionary {
   addMember: string;
   addMemberTitle: string;
+  adding: string;
   enterGroupName: string;
   enterMemberName: string;
+  toasts: {
+    memberAdded: string;
+    memberAddFailed: string;
+  };
 }
 
 export interface MemberGiftsTranslations {
@@ -218,6 +227,8 @@ export interface MemberGiftsTranslations {
 }
 
 export interface ToastTranslations {
+  memberAdded: string;
+  memberAddFailed: string;
   giftAdded: string;
   giftAddFailed: string;
   giftStatusUpdateFailed: string;
@@ -225,6 +236,8 @@ export interface ToastTranslations {
   giftDeleteFailed: string;
   giftStatusPurchased: string;
   giftStatusBackToList: string;
+  loginSuccess: string;
+  registrationSuccess: string;
 }
 
 export interface ConfirmationTranslations {
@@ -233,7 +246,7 @@ export interface ConfirmationTranslations {
 
 export interface AddMemberDialogProps {
   onMemberAdded?: () => void;
-  dict: Translations['addMemberDialog'];
+  dict: Pick<Translations, 'addMemberDialog' | 'toasts'>;
 }
 
 export interface HeaderProps {
