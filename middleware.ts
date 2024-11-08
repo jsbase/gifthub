@@ -2,7 +2,8 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { jwtVerify } from 'jose';
 import acceptLanguage from 'accept-language';
-import { locales, defaultLocale, LanguageCode } from '@/lib/i18n-config';
+import { locales, defaultLocale } from '@/lib/i18n-config';
+import type { LanguageCode } from '@/types';
 
 function getLocale(request: NextRequest): LanguageCode {
   const localeCookie = request.cookies.get('NEXT_LOCALE');
@@ -16,6 +17,15 @@ function getLocale(request: NextRequest): LanguageCode {
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+
+  // Skip middleware for static files and Next.js internals
+  if (
+    pathname.startsWith('/_next') ||
+    pathname.includes('/api/') ||
+    pathname.includes('.') // This will match all files with extensions
+  ) {
+    return NextResponse.next();
+  }
 
   // Check if this is a language switch
   const isLanguageSwitch = locales.some(
@@ -58,6 +68,11 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    '/((?!_next|api|flags|assets|purchased.svg|.*\\.(?:ico|png|webmanifest)).*)'
+    '/',
+    '/dashboard',
+    '/dashboard/:path*',
+    '/:locale',
+    '/:locale/:path*',
+    '/:path*'
   ]
 };

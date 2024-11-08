@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, use, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Header } from '@/components/header';
 import { AddMemberDialog } from '@/components/add-member-dialog';
@@ -12,6 +12,7 @@ import { verifyAuth, logout } from '@/lib/auth';
 import { getDictionary } from '../dictionaries';
 import { Member, Gift, Translations } from '@/types';
 import { toast } from 'sonner';
+import { LoadingSpinner } from '@/components/loading-spinner';
 
 export default function DashboardPage({
   params,
@@ -19,6 +20,7 @@ export default function DashboardPage({
   params: Promise<{ lang: string }>
 }) {
   const { lang } = use(params);
+  const [mounted, setMounted] = useState(false);
   const router = useRouter();
   const [dict, setDict] = useState<Translations | null>(null);
   const [groupName, setGroupName] = useState('');
@@ -27,6 +29,11 @@ export default function DashboardPage({
   const [loading, setLoading] = useState(true);
   const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
   const [memberGifts, setMemberGifts] = useState<Gift[]>([]);
+  const [isRouteChanging, setIsRouteChanging] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const fetchData = useCallback(async () => {
     try {
@@ -72,6 +79,12 @@ export default function DashboardPage({
     init();
   }, [router, lang, fetchData, dict]);
 
+  const pathname = usePathname();
+
+  useEffect(() => {
+    setIsRouteChanging(false);
+  }, [pathname]);
+
   const handleMemberClick = async (memberId: string) => {
     try {
       const response = await fetch(`/api/gifts?memberId=${memberId}`);
@@ -93,7 +106,11 @@ export default function DashboardPage({
 
   const getSelectedMember = () => members.find(m => m.id === selectedMemberId);
 
-  if (loading || !groupName || !dict) return null;
+  if (loading || !groupName || !dict || isRouteChanging) {
+    return <LoadingSpinner />;
+  }
+
+  if (!mounted) return null;
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
