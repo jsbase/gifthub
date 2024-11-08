@@ -5,15 +5,17 @@ import acceptLanguage from 'accept-language';
 import { locales, defaultLocale } from '@/lib/i18n-config';
 import type { LanguageCode } from '@/types';
 
-function getLocale(request: NextRequest): LanguageCode {
+const getLocale = (request: NextRequest): LanguageCode => {
+  // First priority: Check cookie
   const localeCookie = request.cookies.get('NEXT_LOCALE');
   if (localeCookie?.value && locales.includes(localeCookie.value as LanguageCode)) {
     return localeCookie.value as LanguageCode;
   }
 
+  // Second priority: Check browser's accept-language header
   acceptLanguage.languages([...locales]);
   return (acceptLanguage.get(request.headers.get('accept-language')) || defaultLocale) as LanguageCode;
-}
+};
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -53,6 +55,24 @@ export async function middleware(request: NextRequest) {
       response.cookies.delete('auth-token');
       return response;
     }
+  }
+
+  // Check if the current path has a locale
+  const matchedLocale = locales.find(
+    (locale) => pathname.startsWith(`/${locale}/`) || pathname === `/${locale}`
+  );
+
+  if (matchedLocale) {
+    // Always update the cookie when there's a locale in the URL
+    const response = NextResponse.next();
+    response.cookies.set({
+      name: 'NEXT_LOCALE',
+      value: matchedLocale,
+      path: '/',
+      maxAge: 365 * 24 * 60 * 60,
+      sameSite: 'lax',
+    });
+    return response;
   }
 
   const pathnameHasLocale = locales.some(
