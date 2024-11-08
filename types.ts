@@ -198,8 +198,8 @@ export interface AuthVerifyResponse {
 
 // Additional interfaces
 export interface AddMemberDialogDictionary {
-  addMember: string;
   addMemberTitle: string;
+  addMember: string;
   adding: string;
   enterGroupName: string;
   enterMemberName: string;
@@ -223,15 +223,15 @@ export interface MemberGiftsTranslations {
 }
 
 export interface ToastTranslations {
-  memberAdded: string;
-  memberAddFailed: string;
   giftAdded: string;
   giftAddFailed: string;
+  giftStatusPurchased: string;
+  giftStatusBackToList: string;
   giftStatusUpdateFailed: string;
   giftDeleted: string;
   giftDeleteFailed: string;
-  giftStatusPurchased: string;
-  giftStatusBackToList: string;
+  memberAdded: string;
+  memberAddFailed: string;
   loginSuccess: string;
   registrationSuccess: string;
 }

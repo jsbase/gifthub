@@ -10,22 +10,26 @@ import { toast } from "sonner";
 import { AddMemberDialogProps } from "@/types";
 import { getDictionary } from "@/app/[lang]/dictionaries";
 import { usePathname } from "next/navigation";
-import { AddMemberDialogDictionary } from "@/types";
+import { AddMemberDialogDictionary, ToastTranslations } from "@/types";
 import { cn } from "@/lib/utils";
 
 export function AddMemberDialog({ onMemberAdded }: Omit<AddMemberDialogProps, 'dict'>) {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [dict, setDict] = useState<AddMemberDialogDictionary | null>(null);
+  const [dict, setDict] = useState<{
+    addMemberDialog: AddMemberDialogDictionary;
+    toasts: ToastTranslations;
+  } | null>(null);
   const pathname = usePathname();
   const lang = pathname.split('/')[1];
 
   useEffect(() => {
     const loadTranslations = async () => {
       const translations = await getDictionary(lang);
-      if (translations.addMemberDialog) {
-        setDict(translations.addMemberDialog as unknown as AddMemberDialogDictionary);
-      }
+      setDict({
+        addMemberDialog: translations.addMemberDialog,
+        toasts: translations.toasts
+      });
     };
     loadTranslations();
   }, [lang]);
@@ -77,7 +81,7 @@ export function AddMemberDialog({ onMemberAdded }: Omit<AddMemberDialogProps, 'd
             "h-4 w-4",
             "mr-2"
           )} />
-          {dict.addMember}
+          {dict.addMemberDialog.addMember}
         </Button>
       </DialogTrigger>
       <DialogContent className={cn(
@@ -86,26 +90,26 @@ export function AddMemberDialog({ onMemberAdded }: Omit<AddMemberDialogProps, 'd
         "xs:max-h-[85vh]"
       )}>
         <DialogHeader>
-          <DialogTitle>{dict.addMemberTitle}</DialogTitle>
+          <DialogTitle>{dict.addMemberDialog.addMemberTitle}</DialogTitle>
           <DialogDescription className="sr-only">
-            {dict.enterMemberName}
+            {dict.addMemberDialog.enterMemberName}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label className="sr-only" htmlFor="name">
-              {dict.enterMemberName}
+              {dict.addMemberDialog.enterMemberName}
             </Label>
             <Input
               id="name"
               name="name"
               type="text"
-              placeholder={dict.enterMemberName}
+              placeholder={dict.addMemberDialog.enterMemberName}
               required
             />
           </div>
           <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? dict.adding : dict.addMember}
+            {isLoading ? dict.addMemberDialog.adding : dict.addMemberDialog.addMember}
           </Button>
         </form>
       </DialogContent>
