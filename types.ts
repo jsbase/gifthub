@@ -277,3 +277,10 @@ export interface Language {
   name: string;
   flag: string;
 }
+
+export type Languages = {
+  [key in LanguageCode]: {
+    name: string;
+    flag: string;
+  };
+}
