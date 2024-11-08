@@ -22,7 +22,8 @@ export async function middleware(request: NextRequest) {
   if (
     pathname.startsWith('/_next') ||
     pathname.includes('/api/') ||
-    pathname.includes('.') // This will match all files with extensions
+    pathname.includes('.') || // This will match all files with extensions
+    pathname.endsWith('.webmanifest') // Handle all webmanifest files
   ) {
     return NextResponse.next();
   }
