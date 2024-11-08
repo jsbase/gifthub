@@ -203,10 +203,6 @@ export interface AddMemberDialogDictionary {
   adding: string;
   enterGroupName: string;
   enterMemberName: string;
-  toasts: {
-    memberAdded: string;
-    memberAddFailed: string;
-  };
 }
 
 export interface MemberGiftsTranslations {
@@ -246,7 +242,10 @@ export interface ConfirmationTranslations {
 
 export interface AddMemberDialogProps {
   onMemberAdded?: () => void;
-  dict: Pick<Translations, 'addMemberDialog' | 'toasts'>;
+  dict: {
+    addMemberDialog: AddMemberDialogDictionary;
+    toasts: ToastTranslations;
+  };
 }
 
 export interface HeaderProps {
