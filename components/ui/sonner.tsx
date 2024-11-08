@@ -16,6 +16,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
         "toaster",
         "group"
       )}
+      position={window?.innerWidth >= 640 ? "bottom-right" : "top-center"}
       toastOptions={{
         classNames: {
           toast:
