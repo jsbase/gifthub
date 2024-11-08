@@ -104,7 +104,6 @@ export function AuthButtons({ dict }: { dict: Translations }) {
                 id="groupName" 
                 placeholder={dict.groupName} 
                 required 
-                className="xs:text-base"
               />
             </div>
             <div className="space-y-2">
@@ -117,7 +116,6 @@ export function AuthButtons({ dict }: { dict: Translations }) {
                 type="password" 
                 placeholder={dict.enterPassword} 
                 required 
-                className="xs:text-base"
               />
             </div>
             <Button 
@@ -162,7 +160,6 @@ export function AuthButtons({ dict }: { dict: Translations }) {
                 id="newGroupName" 
                 placeholder={dict.groupName} 
                 required 
-                className="xs:text-base"
               />
             </div>
             <div className="space-y-2">
@@ -175,7 +172,6 @@ export function AuthButtons({ dict }: { dict: Translations }) {
                 type="password" 
                 placeholder={dict.enterPassword} 
                 required 
-                className="xs:text-base"
               />
             </div>
             <div className="space-y-2">
@@ -188,7 +184,6 @@ export function AuthButtons({ dict }: { dict: Translations }) {
                 type="password" 
                 placeholder={dict.confirmPassword} 
                 required 
-                className="xs:text-base"
               />
             </div>
             <Button 

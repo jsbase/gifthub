@@ -294,7 +294,6 @@ export function MemberGiftsDialog({
                   name="title"
                   placeholder={dict.enterGiftTitle}
                   required
-                  className="xs:text-sm"
                 />
               </div>
 
@@ -309,7 +308,6 @@ export function MemberGiftsDialog({
                   id="description"
                   name="description"
                   placeholder={`${dict.enterDescription} (${dict.optional})`}
-                  className="xs:text-sm"
                   rows={3}
                 />
               </div>
@@ -326,7 +324,6 @@ export function MemberGiftsDialog({
                   name="url"
                   type="url"
                   placeholder={`${dict.enterUrl} (${dict.optional})`}
-                  className="xs:text-sm"
                 />
               </div>
 

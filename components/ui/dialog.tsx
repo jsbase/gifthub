@@ -118,7 +118,6 @@ const DialogHeader = ({
       "flex-col",
       "space-y-1.5",
       "text-center",
-      "sm:text-left",
       "xs:space-y-1",
       "xs:pt-0 sm:pt-0",
       className
@@ -157,8 +156,8 @@ const DialogTitle = React.forwardRef<
       "font-semibold",
       "leading-none",
       "tracking-tight",
-      "xs:text-base",
-      "sm:text-lg",
+      "xs:max-w-[95%]",
+      "max-w-[98%]",
       className
     )}
     {...props}
