@@ -13,6 +13,7 @@ import { getDictionary } from '../dictionaries';
 import { Member, Gift, Translations } from '@/types';
 import { toast } from 'sonner';
 import { LoadingSpinner } from '@/components/loading-spinner';
+import { cn } from '@/lib/utils';
 
 export default function DashboardPage({
   params,
@@ -54,7 +55,7 @@ export default function DashboardPage({
       setMemberGiftCounts(giftCounts);
     } catch (error) {
       console.error('Error fetching data:', error);
-      toast.error(dict?.errors.failedToLoad ?? 'Failed to load data');
+      toast.error(dict?.errors.failedToLoad);
     } finally {
       setLoading(false);
     }
@@ -94,14 +95,14 @@ export default function DashboardPage({
       setSelectedMemberId(memberId);
       setMemberGifts(data.gifts);
     } catch (error) {
-      toast.error(dict?.errors.failedToLoadGifts ?? 'Failed to load gifts');
+      toast.error(dict?.errors.failedToLoadGifts);
     }
   };
 
   const handleLogout = async () => {
     await logout();
     router.replace(`/${lang}`);
-    toast.success(dict?.success.loggedOut ?? 'Logged out successfully');
+    toast.success(dict?.success.loggedOut);
   };
 
   const getSelectedMember = () => members.find(m => m.id === selectedMemberId);
@@ -113,7 +114,11 @@ export default function DashboardPage({
   if (!mounted) return null;
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className={cn(
+      "min-h-screen",
+      "bg-background",
+      "flex flex-col"
+    )}>
       <Header
         groupName={groupName}
         dict={dict}
@@ -121,10 +126,25 @@ export default function DashboardPage({
         showAuth={true}
       />
 
-      <main className="container mx-auto px-4 py-8 flex-1">
+      <main className={cn(
+        "container",
+        "mx-auto",
+        "px-4 py-8",
+        "flex-1"
+      )}>
         <section>
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold">{dict.members}</h2>
+          <div className={cn(
+            "flex",
+            "items-center",
+            "justify-between",
+            "mb-6"
+          )}>
+            <h2 className={cn(
+              "text-2xl",
+              "font-bold"
+            )}>
+              {dict.members}
+            </h2>
             <AddMemberDialog onMemberAdded={fetchData} />
           </div>
 
@@ -134,20 +154,40 @@ export default function DashboardPage({
                 <Button
                   key={member.id}
                   variant="ghost"
-                  className="w-full pr-0 pl-2 h-auto bg-card hover:bg-accent flex items-center justify-between"
+                  className={cn(
+                    "w-full",
+                    "pr-0 pl-2",
+                    "h-auto",
+                    "bg-card",
+                    "hover:bg-accent",
+                    "flex",
+                    "items-center",
+                    "justify-between"
+                  )}
                   onClick={() => handleMemberClick(member.id)}
                 >
-                  <div className="flex flex-col items-start">
-                    <p className="font-medium">{member.name}</p>
-                    <p className="text-sm text-muted-foreground">
+                  <div className={cn(
+                    "flex flex-col",
+                    "items-start"
+                  )}>
+                    <p className="font-medium">
+                      {member.name}
+                    </p>
+                    <p className={cn(
+                      "text-sm",
+                      "text-muted-foreground"
+                    )}>
                       {memberGiftCounts[member.id] === 0 
                         ? dict.giftCount.zero 
                         : memberGiftCounts[member.id] === 1 
                           ? dict.giftCount.one
-                          : dict.giftCount.many.replace('{{count}}', memberGiftCounts[member.id].toString())}
+                          : dict.giftCount.many.replace('{{count}}', String(memberGiftCounts[member.id] || 0))}
                     </p>
                   </div>
-                  <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                  <ChevronRight className={cn(
+                    "h-5 w-5",
+                    "text-muted-foreground"
+                  )} />
                 </Button>
               ))}
             </div>

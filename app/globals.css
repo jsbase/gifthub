@@ -9,6 +9,15 @@
   body {
     @apply bg-background text-foreground;
   }
+  /* Gemeinsame Stile für Input und Textarea */
+  input,
+  textarea {
+    @apply text-sm text-foreground;
+  }
+  input::placeholder,
+  textarea::placeholder {
+    @apply text-sm text-muted-foreground;
+  }
 }
 
 @layer base {

@@ -24,14 +24,29 @@ export function MemberGiftsDialog({
   const [isLoading, setIsLoading] = useState(false);
   const [animatedGiftId, setAnimatedGiftId] = useState<string | null>(null);
 
-  // Determine if the dialog should be full screen based on the number of gifts
-  const isFullScreen = gifts.length > 5; // Adjust the number as needed
+  // Add mounted state to prevent hydration issues
+  const [mounted, setMounted] = useState(false);
 
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Reset form state when dialog closes
   useEffect(() => {
     if (!isOpen) {
       setShowAddGiftForm(false);
+      setIsLoading(false);
+      setAnimatedGiftId(null);
     }
   }, [isOpen]);
+
+  // Prevent rendering until mounted
+  if (!mounted) {
+    return null;
+  }
+
+  // Determine if the dialog should be full screen based on the number of gifts
+  const isFullScreen = gifts.length > 5; // Adjust the number as needed
 
   // API Handlers
   const handleAddGift = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -57,12 +72,12 @@ export function MemberGiftsDialog({
 
       if (!response.ok) throw new Error('Failed to add gift');
 
-      toast.success(dict.toasts.giftAdded);
+      toast.success(dict?.toasts.giftAdded);
       setShowAddGiftForm(false);
       onGiftAdded();
       (e.target as HTMLFormElement).reset();
     } catch {
-      toast.error(dict.toasts.giftAddFailed);
+      toast.error(dict?.toasts.giftAddFailed);
     } finally {
       setIsLoading(false);
     }
@@ -81,17 +96,17 @@ export function MemberGiftsDialog({
 
       const data = await response.json();
 
-      toast.success(data.isPurchased ? dict.toasts.giftStatusPurchased : dict.toasts.giftStatusBackToList);
+      toast.success(data.isPurchased ? dict?.toasts.giftStatusPurchased : dict?.toasts.giftStatusBackToList);
       onGiftAdded();
     } catch (error) {
-      toast.error(dict.toasts.giftStatusUpdateFailed);
+      toast.error(dict?.toasts.giftStatusUpdateFailed);
     } finally {
       setAnimatedGiftId(null); // Reset the animated gift ID
     }
   };
 
   const handleDeleteGift = async (giftId: string) => {
-    if (!confirm(dict.confirmations.deleteGift)) {
+    if (!confirm(dict?.confirmations.deleteGift)) {
       return;
     }
 
@@ -104,74 +119,138 @@ export function MemberGiftsDialog({
         throw new Error('Failed to delete gift');
       }
 
-      toast.success(dict.toasts.giftDeleted);
+      toast.success(dict?.toasts.giftDeleted);
       onGiftAdded(); // Refresh the list
     } catch (error) {
-      toast.error(dict.toasts.giftDeleteFailed);
+      toast.error(dict?.toasts.giftDeleteFailed);
     }
   };
 
-  const GiftCard = ({ gift }: { gift: Gift }) => (
-    <div className="flex flex-col rounded-lg border bg-card relative">
-      {/* Gift details */}
-      {gift.description && (
-        <a href={gift.url} target="_blank" rel="noopener noreferrer" onClick={() => !gift.isPurchased && window.open(gift.url, '_blank')} className="p-4 pb-2 mt-1 border-b block">
-          <div className="flex flex-row">
-            <div className="flex-1">
-              <h3 className={`font-medium ${gift.isPurchased ? 'line-through text-gray-200' : ''}`}>
-                {gift.title}
-              </h3>
-              <p className={`text-sm ${gift.isPurchased ? 'line-through text-gray-200' : 'text-muted-foreground'}`}>
-                {gift.description}
-              </p>
-            </div>
-            <div className="flex-none">
-              {gift.isPurchased ? (
-                <CheckCircle className={`inline-block mr-2 text-green-500`} />
-              ) : (
-                <Circle className={`inline-block mr-2 text-gray-500 ${animatedGiftId === gift.id ? 'animate-fade-in' : ''}`} />
-              )}
-            </div>
-          </div>
-        </a>
-      )}
+  const GiftCard = ({ gift }: { gift: Gift }) => {
+    const handleGiftClick = (e: React.MouseEvent) => {
+      e.preventDefault();
+      if (!gift.isPurchased && gift.url && typeof window !== 'undefined') {
+        window.open(gift.url, '_blank');
+      }
+    };
 
-      {/* Control area */}
-      <div className="flex flex-row space-x-2">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            handleDeleteGift(gift.id);
-          }}
-          className="flex-1 text-red-600 hover:text-red-700 border-r rounded-none"
-        >
-          <Trash2 className="h-4 w-4" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            handleTogglePurchased(gift.id);
-          }}
-          className="flex-1 transition-transform duration-300 ease-in-out rounded-none"
-        >
-          {gift.isPurchased ? dict.markAsAvailable : dict.markAsPurchased}
-        </Button>
+    return (
+      <div className={cn(
+        "flex",
+        "flex-col",
+        "rounded-lg",
+        "border",
+        "bg-card",
+        "relative"
+      )}>
+        {/* Gift details */}
+        {gift.description && (
+          <a
+            href={gift.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={handleGiftClick}
+            className={cn(
+              "p-4 pb-2 mt-1",
+              "border-b",
+              "block"
+            )}
+          >
+            <div className={cn(
+              "flex",
+              "flex-row"
+            )}>
+              <div className="flex-1">
+                <h3 className={cn(
+                  "font-medium",
+                  gift.isPurchased ? 'line-through text-gray-200' : ''
+                )}>
+                  {gift.title}
+                </h3>
+                <p className={cn(
+                  "text-sm",
+                  gift.isPurchased ? 'line-through text-gray-200' : 'text-muted-foreground'
+                )}>
+                  {gift.description}
+                </p>
+              </div>
+              <div className="flex-none">
+                {gift.isPurchased ? (
+                  <CheckCircle className={cn(
+                    "inline-block",
+                    "mr-2",
+                    "text-green-500"
+                  )} />
+                ) : (
+                  <Circle className={cn(
+                    "inline-block",
+                    "mr-2",
+                    "text-gray-500",
+                    animatedGiftId === gift.id ? 'animate-fade-in' : ''
+                  )} />
+                )}
+              </div>
+            </div>
+          </a>
+        )}
+
+        {/* Control area */}
+        <div className={cn(
+          "flex",
+          "flex-row",
+          "space-x-2"
+        )}>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              handleDeleteGift(gift.id);
+            }}
+            className={cn(
+              "flex-1",
+              "text-red-600",
+              "hover:text-red-700",
+              "border-r",
+              "rounded-none"
+            )}
+          >
+            <Trash2 className={cn(
+              "h-4",
+              "w-4"
+            )} />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              handleTogglePurchased(gift.id);
+            }}
+            className={cn(
+              "flex-1",
+              "transition-transform",
+              "duration-300",
+              "ease-in-out",
+              "rounded-none"
+            )}
+          >
+            {gift.isPurchased ? dict.markAsAvailable : dict.markAsPurchased}
+          </Button>
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className={cn(
         "max-w-dialog",
         "xs:p-dialog-mobile",
-        "xs:h-[85vh] xs:max-h-[85vh]",
+        "xs:h-[85vh]",
+        "xs:max-h-[85vh]",
         isFullScreen ? "xs:w-full xs:h-full" : "xs:w-auto xs:h-auto"
       )}>
         <DialogHeader>
@@ -183,14 +262,24 @@ export function MemberGiftsDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-dialog-desktop xs:space-y-dialog-mobile">
+        <div className={cn(
+          "space-y-dialog-desktop",
+          "xs:space-y-dialog-mobile"
+        )}>
           {!showAddGiftForm && (
             <>
               <Button
                 onClick={() => setShowAddGiftForm(true)}
-                className="w-full my-4"
+                className={cn(
+                  "w-full",
+                  "my-4"
+                )}
               >
-                <PlusCircle className="h-4 w-4 mr-2" />
+                <PlusCircle className={cn(
+                  "h-4",
+                  "w-4",
+                  "mr-2"
+                )} />
                 {dict.addGift}
               </Button>
 
@@ -201,7 +290,11 @@ export function MemberGiftsDialog({
                   ))}
                 </div>
               ) : (
-                <p className="text-center text-muted-foreground xs:text-sm">
+                <p className={cn(
+                  "text-center",
+                  "text-muted-foreground",
+                  "xs:text-sm"
+                )}>
                   {dict.noGifts}
                 </p>
               )}
@@ -209,45 +302,70 @@ export function MemberGiftsDialog({
           )}
 
           {showAddGiftForm && (
-            <form onSubmit={handleAddGift} className="space-y-4 xs:space-y-3">
-              <div className="space-y-2 xs:space-y-1">
-                <Label htmlFor="title" className="xs:text-sm"></Label>
+            <form onSubmit={handleAddGift} className={cn(
+              "space-y-4",
+              "xs:space-y-3"
+            )}>
+              <div className={cn(
+                "space-y-2",
+                "xs:space-y-1"
+              )}>
+                <Label htmlFor="title" className="sr-only">
+                  {dict.enterGiftTitle}
+                </Label>
                 <Input
                   id="title"
                   name="title"
                   placeholder={dict.enterGiftTitle}
                   required
-                  className="xs:text-sm"
                 />
               </div>
 
-              <div className="space-y-2 xs:space-y-1">
-                <Label htmlFor="description" className="xs:text-sm"></Label>
+              <div className={cn(
+                "space-y-2",
+                "xs:space-y-1"
+              )}>
+                <Label className="sr-only" htmlFor="description">
+                  {dict.enterDescription}
+                </Label>
                 <Textarea
                   id="description"
                   name="description"
                   placeholder={`${dict.enterDescription} (${dict.optional})`}
-                  className="xs:text-sm"
                   rows={3}
                 />
               </div>
 
-              <div className="space-y-2 xs:space-y-1">
-                <Label htmlFor="url" className="xs:text-sm"></Label>
+              <div className={cn(
+                "space-y-2",
+                "xs:space-y-1"
+              )}>
+                <Label className="sr-only" htmlFor="url">
+                  {dict.enterUrl}
+                </Label>
                 <Input
                   id="url"
                   name="url"
                   type="url"
                   placeholder={`${dict.enterUrl} (${dict.optional})`}
-                  className="xs:text-sm"
                 />
               </div>
 
-              <div className="flex flex-row space-x-2 xs:flex-col xs:space-x-0 xs:space-y-2">
+              <div className={cn(
+                "flex",
+                "flex-row",
+                "space-x-2",
+                "xs:flex-col",
+                "xs:space-x-0",
+                "xs:space-y-2"
+              )}>
                 <Button
                   type="submit"
                   disabled={isLoading}
-                  className="xs:w-full xs:text-sm"
+                  className={cn(
+                    "xs:w-full",
+                    "xs:text-sm"
+                  )}
                 >
                   {isLoading ? dict.adding : dict.addGift}
                 </Button>
@@ -255,7 +373,10 @@ export function MemberGiftsDialog({
                   type="button"
                   variant="outline"
                   onClick={() => setShowAddGiftForm(false)}
-                  className="xs:w-full xs:text-sm"
+                  className={cn(
+                    "xs:w-full",
+                    "xs:text-sm"
+                  )}
                 >
                   {dict.cancel}
                 </Button>

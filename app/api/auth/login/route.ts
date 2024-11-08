@@ -56,13 +56,18 @@ export async function POST(request: Request) {
       maxAge: 60 * 60 * 24 * 7, // 7 days
     });
 
-    // Set default locale cookie if it doesn't exist
+    // Get the current locale from the request headers
+    const acceptLanguage = request.headers.get('accept-language') || '';
+    const preferredLocale = acceptLanguage.split(',')[0].split('-')[0];
+    const validLocales = ['en', 'de', 'ru'];
+    const locale = validLocales.includes(preferredLocale) ? preferredLocale : defaultLocale;
+
+    // Set locale cookie if it doesn't exist
     const cookieStore = await cookies();
-    const locale = cookieStore.get('NEXT_LOCALE');
-    if (!locale) {
+    if (!cookieStore.get('NEXT_LOCALE')) {
       response.cookies.set({
         name: 'NEXT_LOCALE',
-        value: defaultLocale,
+        value: locale,
         path: '/',
         maxAge: 365 * 24 * 60 * 60,
         sameSite: 'lax',

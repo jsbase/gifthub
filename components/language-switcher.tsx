@@ -13,6 +13,7 @@ import { loadTranslations } from '@/app/[lang]/actions';
 import { LanguageCode, Language } from '@/types';
 import { LoadingSpinner } from '@/components/loading-spinner';
 import { useState } from 'react';
+import { cn } from '@/lib/utils';
 
 const languages: readonly Language[] = [
   { code: 'de', name: 'Deutsch', flag: '/flags/de.svg' },
@@ -49,15 +50,23 @@ export function LanguageSwitcher() {
           <Button
             variant="ghost"
             size="icon"
-            className="w-6 h-6 rounded-full overflow-hidden p-0"
+            className={cn(
+              "w-6 h-6",
+              "rounded-full",
+              "overflow-hidden",
+              "p-0"
+            )}
           >
             <Image
               src={currentLang.flag}
               alt={currentLang.name}
               width={30}
               height={30}
-              className="w-6 h-6"
-              style={{ objectFit: 'cover' }}
+              className={cn(
+                "w-6",
+                "h-6",
+                "object-cover"
+              )}
             />
           </Button>
         </DropdownMenuTrigger>
@@ -66,14 +75,26 @@ export function LanguageSwitcher() {
             <DropdownMenuItem
               key={lang.code}
               onClick={() => switchLanguage(lang.code)}
-              className="flex items-center gap-2 cursor-pointer hover:bg-accent active:bg-accent/80 focus:bg-accent/80 py-3"
+              className={cn(
+                "flex",
+                "items-center",
+                "gap-2",
+                "cursor-pointer",
+                "hover:bg-accent",
+                "active:bg-accent/80",
+                "focus:bg-accent/80",
+                "py-3"
+              )}
             >
               <Image
                 src={lang.flag}
                 alt={lang.name}
                 width={20}
                 height={20}
-                className="w-5 h-5"
+                className={cn(
+                  "w-5",
+                  "h-5"
+                )}
                 style={{ objectFit: 'cover' }}
               />
               <span>{lang.name}</span>
