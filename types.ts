@@ -5,8 +5,8 @@ import { ReactNode } from 'react';
 export interface Gift {
   id: string;
   title: string;
-  description?: string;
-  url?: string;
+  description?: string | null;
+  url?: string | null;
   isPurchased: boolean;
   createdAt: string;
   groupId: string;
@@ -221,6 +221,7 @@ export interface MemberGiftsTranslations {
   noGifts: string;
   markAsPurchased: string;
   markAsAvailable: string;
+  deleteGift?: string;
 }
 
 export interface ToastTranslations {
@@ -302,7 +303,7 @@ export type Languages = {
 
 export interface GiftCardProps {
   gift: Gift;
-  dict: MemberGiftsTranslations;
+  dict: Pick<MemberGiftsTranslations, 'markAsPurchased' | 'markAsAvailable'>;
   onDelete: (id: string) => void;
   onTogglePurchased: (id: string) => void;
   animatedGiftId: string | null;
@@ -389,4 +390,15 @@ export interface CustomDialogProps {
 export interface SubmissionState {
   isSubmitting: boolean;
   error: string | null;
+}
+
+export interface GiftApiResponse {
+  success: boolean;
+  gift?: Gift;
+  message?: string;
+}
+
+export interface GiftsApiResponse {
+  gifts: Gift[];
+  message?: string;
 }
