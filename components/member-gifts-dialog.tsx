@@ -45,10 +45,31 @@ const GiftCard = memo(function GiftCard({
 
   const handleGiftClick = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
-    if (!gift.isPurchased && gift.url && typeof window !== 'undefined') {
+    if (gift.url && typeof window !== 'undefined') {
       window.open(gift.url, '_blank');
     }
-  }, [gift.isPurchased, gift.url]);
+  }, [gift.url]);
+
+  const ContentWrapper = gift.url ? 'a' : 'div';
+  const wrapperProps = gift.url ? {
+    href: gift.url,
+    target: "_blank",
+    rel: "noopener noreferrer",
+    onClick: handleGiftClick,
+    className: cn(
+      "p-4 pb-2 mt-1",
+      "border-b",
+      "block",
+      "cursor-pointer"
+    )
+  } : {
+    className: cn(
+      "p-4 pb-2 mt-1",
+      "border-b",
+      "block",
+      "cursor-default"
+    )
+  };
 
   return (
     <div className={cn(
@@ -59,56 +80,46 @@ const GiftCard = memo(function GiftCard({
       "bg-card",
       "relative"
     )}>
-      {/* Gift details */}
-      {gift.description && (
-        <a
-          href={gift.url}
-          target="_blank"
-          rel="noopener noreferrer"
-          onClick={handleGiftClick}
-          className={cn(
-            "p-4 pb-2 mt-1",
-            "border-b",
-            "block"
-          )}
-        >
-          <div className={cn(
-            "flex",
-            "flex-row"
-          )}>
-            <div className="flex-1">
-              <h3 className={cn(
-                "font-medium",
-                gift.isPurchased ? 'line-through text-gray-200' : ''
-              )}>
-                {gift.title}
-              </h3>
+      {/* Gift details - always show if there's a title */}
+      <ContentWrapper {...wrapperProps}>
+        <div className={cn(
+          "flex",
+          "flex-row"
+        )}>
+          <div className="flex-1">
+            <h3 className={cn(
+              "font-medium",
+              gift.isPurchased ? 'line-through text-gray-200' : ''
+            )}>
+              {gift.title}
+            </h3>
+            {gift.description && (
               <p className={cn(
                 "text-sm",
                 gift.isPurchased ? 'line-through text-gray-200' : 'text-muted-foreground'
               )}>
                 {gift.description}
               </p>
-            </div>
-            <div className="flex-none">
-              {gift.isPurchased ? (
-                <CheckCircle className={cn(
-                  "inline-block",
-                  "mr-2",
-                  "text-green-500"
-                )} />
-              ) : (
-                <Circle className={cn(
-                  "inline-block",
-                  "mr-2",
-                  "text-gray-500",
-                  animatedGiftId === gift.id ? 'animate-fade-in' : ''
-                )} />
-              )}
-            </div>
+            )}
           </div>
-        </a>
-      )}
+          <div className="flex-none">
+            {gift.isPurchased ? (
+              <CheckCircle className={cn(
+                "inline-block",
+                "mr-2",
+                "text-green-500"
+              )} />
+            ) : (
+              <Circle className={cn(
+                "inline-block",
+                "mr-2",
+                "text-gray-500",
+                animatedGiftId === gift.id ? 'animate-fade-in' : ''
+              )} />
+            )}
+          </div>
+        </div>
+      </ContentWrapper>
 
       {/* Control area */}
       <div className={cn(
