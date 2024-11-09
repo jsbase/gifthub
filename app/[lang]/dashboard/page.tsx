@@ -42,7 +42,7 @@ export default function DashboardPage({
       const giftsRes = await fetch(`/api/gifts?memberId=${member.id}`);
       if (giftsRes.ok) {
         const giftsData = await giftsRes.json();
-        giftCounts[member.id] = giftsData.gifts.length;
+        giftCounts[member.id] = giftsData.gifts.filter((gift: Gift) => !gift.isPurchased).length;
       }
     }
     setMemberGiftCounts(giftCounts);
@@ -116,7 +116,7 @@ export default function DashboardPage({
       const data = await response.json();
       setMemberGiftCounts(prev => ({
         ...prev,
-        [memberId]: data.gifts.length
+        [memberId]: data.gifts.filter((gift: Gift) => !gift.isPurchased).length
       }));
     }
   }, []);
