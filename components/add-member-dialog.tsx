@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, memo } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from "./ui/dialog";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
@@ -13,7 +13,38 @@ import { usePathname } from "next/navigation";
 import { AddMemberDialogDictionary, ToastTranslations } from "@/types";
 import { cn } from "@/lib/utils";
 
-export function AddMemberDialog({ onMemberAdded }: Omit<AddMemberDialogProps, 'dict'>) {
+// Memoize the form component since it's reused and only depends on specific props
+const AddMemberForm = memo(function AddMemberForm({
+  dict,
+  isLoading,
+  onSubmit
+}: {
+  dict: AddMemberDialogDictionary;
+  isLoading: boolean;
+  onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
+}) {
+  return (
+    <form onSubmit={onSubmit} className="space-y-4">
+      <div className="space-y-2">
+        <Label className="sr-only" htmlFor="name">
+          {dict.enterMemberName}
+        </Label>
+        <Input
+          id="name"
+          name="name"
+          type="text"
+          placeholder={dict.enterMemberName}
+          required
+        />
+      </div>
+      <Button type="submit" className="w-full" disabled={isLoading}>
+        {isLoading ? dict.adding : dict.addMember}
+      </Button>
+    </form>
+  );
+});
+
+export default function AddMemberDialog({ onMemberAdded }: Omit<AddMemberDialogProps, 'dict'>) {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [dict, setDict] = useState<{
@@ -34,7 +65,7 @@ export function AddMemberDialog({ onMemberAdded }: Omit<AddMemberDialogProps, 'd
     loadTranslations();
   }, [lang]);
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = useCallback(async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
 
@@ -69,7 +100,7 @@ export function AddMemberDialog({ onMemberAdded }: Omit<AddMemberDialogProps, 'd
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [dict?.toasts.memberAdded, dict?.toasts.memberAddFailed, onMemberAdded]);
 
   if (!dict) return null;
 
@@ -77,41 +108,22 @@ export function AddMemberDialog({ onMemberAdded }: Omit<AddMemberDialogProps, 'd
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <Button>
-          <UserPlus className={cn(
-            "h-4 w-4",
-            "mr-2"
-          )} />
+          <UserPlus className={cn("h-4 w-4", "mr-2")} />
           {dict.addMemberDialog.addMember}
         </Button>
       </DialogTrigger>
-      <DialogContent className={cn(
-        "xs:p-4",
-        "xs:h-[85vh]",
-        "xs:max-h-[85vh]"
-      )}>
+      <DialogContent className={cn("xs:p-4", "xs:h-[85vh]", "xs:max-h-[85vh]")}>
         <DialogHeader>
           <DialogTitle>{dict.addMemberDialog.addMemberTitle}</DialogTitle>
           <DialogDescription className="sr-only">
             {dict.addMemberDialog.enterMemberName}
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label className="sr-only" htmlFor="name">
-              {dict.addMemberDialog.enterMemberName}
-            </Label>
-            <Input
-              id="name"
-              name="name"
-              type="text"
-              placeholder={dict.addMemberDialog.enterMemberName}
-              required
-            />
-          </div>
-          <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? dict.addMemberDialog.adding : dict.addMemberDialog.addMember}
-          </Button>
-        </form>
+        <AddMemberForm 
+          dict={dict.addMemberDialog}
+          isLoading={isLoading}
+          onSubmit={handleSubmit}
+        />
       </DialogContent>
     </Dialog>
   );

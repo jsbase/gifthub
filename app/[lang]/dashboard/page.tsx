@@ -1,19 +1,62 @@
 'use client';
 
-import { useEffect, useState, use, useCallback } from 'react';
+import { useEffect, useState, use, useCallback, memo, lazy } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Header } from '@/components/header';
-import { AddMemberDialog } from '@/components/add-member-dialog';
-import { MemberGiftsDialog } from '@/components/member-gifts-dialog';
 import { Footer } from '@/components/footer';
 import { ChevronRight } from 'lucide-react';
 import { verifyAuth, logout } from '@/lib/auth';
 import { getDictionary } from '../dictionaries';
 import { Member, Gift, Translations } from '@/types';
 import { toast } from 'sonner';
-import { LoadingSpinner } from '@/components/loading-spinner';
+import LoadingSpinner from '@/components/loading-spinner';
 import { cn } from '@/lib/utils';
+
+// Memoize the member button component
+const MemberButton = memo(function MemberButton({
+  member,
+  giftCount,
+  dict,
+  onClick
+}: {
+  member: Member,
+  giftCount: number,
+  dict: Translations,
+  onClick: (id: string) => void
+}) {
+  return (
+    <Button
+      variant="ghost"
+      className={cn(
+        "w-full",
+        "pr-0 pl-2",
+        "h-auto",
+        "bg-card",
+        "hover:bg-accent",
+        "flex",
+        "items-center",
+        "justify-between"
+      )}
+      onClick={() => onClick(member.id)}
+    >
+      <div className={cn("flex flex-col", "items-start")}>
+        <p className="font-medium">{member.name}</p>
+        <p className={cn("text-sm", "text-muted-foreground")}>
+          {giftCount === 0 
+            ? dict.giftCount.zero 
+            : giftCount === 1 
+              ? dict.giftCount.one
+              : dict.giftCount.many.replace('{{count}}', String(giftCount))}
+        </p>
+      </div>
+      <ChevronRight className={cn("h-5 w-5", "text-muted-foreground")} />
+    </Button>
+  );
+});
+
+const AddMemberDialog = lazy(() => import('@/components/add-member-dialog'));
+const MemberGiftsDialog = lazy(() => import('@/components/member-gifts-dialog'));
 
 export default function DashboardPage({
   params,
@@ -32,10 +75,7 @@ export default function DashboardPage({
   const [memberGifts, setMemberGifts] = useState<Gift[]>([]);
   const [isRouteChanging, setIsRouteChanging] = useState(false);
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
+  // Optimize fetchGiftCounts to only depend on setMemberGiftCounts
   const fetchGiftCounts = useCallback(async (members: Member[]) => {
     const giftCounts: Record<string, number> = {};
     for (const member of members) {
@@ -48,6 +88,7 @@ export default function DashboardPage({
     setMemberGiftCounts(giftCounts);
   }, []);
 
+  // Optimize fetchData to only depend on essential dependencies
   const fetchData = useCallback(async () => {
     try {
       const membersRes = await fetch('/api/members');
@@ -62,7 +103,12 @@ export default function DashboardPage({
     } finally {
       setLoading(false);
     }
-  }, [dict, fetchGiftCounts]);
+  }, [dict?.errors.failedToLoad, fetchGiftCounts]);
+
+  // Split initialization effect from data fetching
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     const init = async () => {
@@ -77,11 +123,17 @@ export default function DashboardPage({
       }
 
       setGroupName(auth.groupName ?? '');
-      fetchData();
     };
 
     init();
-  }, [router, lang, fetchData, dict]);
+  }, [lang, router]);
+
+  // Separate effect for data fetching
+  useEffect(() => {
+    if (dict && groupName) {
+      fetchData();
+    }
+  }, [dict, groupName, fetchData]);
 
   const pathname = usePathname();
 
@@ -165,44 +217,13 @@ export default function DashboardPage({
           {members.length > 0 ? (
             <div className="grid gap-4">
               {members.map((member) => (
-                <Button
+                <MemberButton
                   key={member.id}
-                  variant="ghost"
-                  className={cn(
-                    "w-full",
-                    "pr-0 pl-2",
-                    "h-auto",
-                    "bg-card",
-                    "hover:bg-accent",
-                    "flex",
-                    "items-center",
-                    "justify-between"
-                  )}
-                  onClick={() => handleMemberClick(member.id)}
-                >
-                  <div className={cn(
-                    "flex flex-col",
-                    "items-start"
-                  )}>
-                    <p className="font-medium">
-                      {member.name}
-                    </p>
-                    <p className={cn(
-                      "text-sm",
-                      "text-muted-foreground"
-                    )}>
-                      {memberGiftCounts[member.id] === 0 
-                        ? dict.giftCount.zero 
-                        : memberGiftCounts[member.id] === 1 
-                          ? dict.giftCount.one
-                          : dict.giftCount.many.replace('{{count}}', String(memberGiftCounts[member.id] || 0))}
-                    </p>
-                  </div>
-                  <ChevronRight className={cn(
-                    "h-5 w-5",
-                    "text-muted-foreground"
-                  )} />
-                </Button>
+                  member={member}
+                  giftCount={memberGiftCounts[member.id] || 0}
+                  dict={dict}
+                  onClick={handleMemberClick}
+                />
               ))}
             </div>
           ) : (

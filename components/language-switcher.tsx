@@ -1,5 +1,6 @@
 'use client';
 
+import { lazy, memo, Suspense, useState } from 'react';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import { Button } from './ui/button';
@@ -11,8 +12,6 @@ import {
 } from './ui/dropdown-menu';
 import { loadTranslations } from '@/app/[lang]/actions';
 import { LanguageCode, Language } from '@/types';
-import { LoadingSpinner } from '@/components/loading-spinner';
-import { useState } from 'react';
 import { cn } from '@/lib/utils';
 
 const languages: readonly Language[] = [
@@ -21,7 +20,36 @@ const languages: readonly Language[] = [
   { code: 'ru', name: 'Русский', flag: '/flags/ru.svg' },
 ] as const;
 
-export function LanguageSwitcher() {
+// Lazy load the LoadingSpinner since it's conditionally rendered
+const LoadingSpinner = lazy(() => import('./loading-spinner'));
+
+// Memoize the flag image component since it's used multiple times
+const LanguageFlag = memo(function LanguageFlag({ 
+  src, 
+  alt, 
+  width, 
+  height, 
+  className 
+}: { 
+  src: string; 
+  alt: string; 
+  width: number; 
+  height: number; 
+  className?: string; 
+}) {
+  return (
+    <Image
+      src={src}
+      alt={alt}
+      width={width}
+      height={height}
+      className={className}
+      style={{ objectFit: 'cover' }}
+    />
+  );
+});
+
+export const LanguageSwitcher = memo(function LanguageSwitcher() {
   const pathname = usePathname();
   const router = useRouter();
   const [isChangingLanguage, setIsChangingLanguage] = useState(false);
@@ -44,29 +72,24 @@ export function LanguageSwitcher() {
 
   return (
     <>
-      {isChangingLanguage && <LoadingSpinner />}
+      {isChangingLanguage && (
+        <Suspense fallback={null}>
+          <LoadingSpinner />
+        </Suspense>
+      )}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button
             variant="ghost"
             size="icon"
-            className={cn(
-              "w-6 h-6",
-              "rounded-full",
-              "overflow-hidden",
-              "p-0"
-            )}
+            className={cn("w-6 h-6", "rounded-full", "overflow-hidden", "p-0")}
           >
-            <Image
+            <LanguageFlag
               src={currentLang.flag}
               alt={currentLang.name}
               width={30}
               height={30}
-              className={cn(
-                "w-6",
-                "h-6",
-                "object-cover"
-              )}
+              className={cn("w-6", "h-6", "object-cover")}
             />
           </Button>
         </DropdownMenuTrigger>
@@ -76,26 +99,17 @@ export function LanguageSwitcher() {
               key={lang.code}
               onClick={() => switchLanguage(lang.code)}
               className={cn(
-                "flex",
-                "items-center",
-                "gap-2",
-                "cursor-pointer",
-                "hover:bg-accent",
-                "active:bg-accent/80",
-                "focus:bg-accent/80",
-                "py-3"
+                "flex", "items-center", "gap-2", "cursor-pointer",
+                "hover:bg-accent", "active:bg-accent/80",
+                "focus:bg-accent/80", "py-3"
               )}
             >
-              <Image
+              <LanguageFlag
                 src={lang.flag}
                 alt={lang.name}
                 width={20}
                 height={20}
-                className={cn(
-                  "w-5",
-                  "h-5"
-                )}
-                style={{ objectFit: 'cover' }}
+                className={cn("w-5", "h-5")}
               />
               <span>{lang.name}</span>
             </DropdownMenuItem>
@@ -104,4 +118,4 @@ export function LanguageSwitcher() {
       </DropdownMenu>
     </>
   );
-}
+});

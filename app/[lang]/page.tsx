@@ -7,17 +7,43 @@ import { FeatureCard } from '@/components/feature-card';
 import { HomeProps } from '@/types';
 import { cn } from '@/lib/utils';
 import { Logo } from "@/components/logo";
+import { memo } from 'react';
+
+// Memoize the feature cards section
+const FeatureCards = memo(function FeatureCards({ 
+  features 
+}: { 
+  features: Translations['features']
+}) {
+  return (
+    <div className={cn(
+      "text-center",
+      "my-12",
+      "lg:mb-0",
+      "md:mb-0",
+      "grid",
+      "grid-cols-1",
+      "md:grid-cols-3",
+      "gap-dialog-desktop",
+      "xs:gap-dialog-mobile"
+    )}>
+      {Object.entries(features).map(([key, feature]) => (
+        <FeatureCard
+          key={key}
+          title={feature.title}
+          description={feature.description}
+        />
+      ))}
+    </div>
+  );
+});
 
 export default async function Home({ params }: HomeProps) {
   const { lang } = await params;
   const dict: Translations = await getDictionary(lang);
 
   return (
-    <div className={cn(
-      "flex",
-      "flex-col",
-      "min-h-screen"
-    )}>
+    <div className={cn("flex", "flex-col", "min-h-screen")}>
       <Header dict={dict} />
       <main className={cn(
         "flex-1",
@@ -32,13 +58,7 @@ export default async function Home({ params }: HomeProps) {
           "py-8",
           "lg:py-16"
         )}>
-          {/* Logo and Title */}
-          <Logo size="lg" className={cn(
-            "mb-4",
-            "justify-center"
-          )} />
-
-          {/* Tagline */}
+          <Logo size="lg" className={cn("mb-4", "justify-center")} />
           <p className={cn(
             "mb-8",
             "text-lg",
@@ -50,8 +70,6 @@ export default async function Home({ params }: HomeProps) {
           )}>
             {dict.tagline}
           </p>
-
-          {/* Auth Buttons */}
           <div className={cn(
             "flex",
             "flex-col",
@@ -62,27 +80,7 @@ export default async function Home({ params }: HomeProps) {
           )}>
             <AuthButtons dict={dict} />
           </div>
-
-          {/* Feature Cards */}
-          <div className={cn(
-            "text-center",
-            "my-12",
-            "lg:mb-0",
-            "md:mb-0",
-            "grid",
-            "grid-cols-1",
-            "md:grid-cols-3",
-            "gap-dialog-desktop",
-            "xs:gap-dialog-mobile"
-          )}>
-            {Object.entries(dict.features).map(([key, feature]) => (
-              <FeatureCard
-                key={key}
-                title={feature.title}
-                description={feature.description}
-              />
-            ))}
-          </div>
+          <FeatureCards features={dict.features} />
         </div>
       </main>
       <Footer dict={dict} />
