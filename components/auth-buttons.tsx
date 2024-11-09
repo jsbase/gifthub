@@ -10,6 +10,7 @@ import { useRouter } from 'next/navigation';
 import { login, register } from "@/lib/auth";
 import { Translations } from "@/types";
 import { cn } from "@/lib/utils";
+import { useDebounce } from "@/hooks/use-debounce";
 
 // Memoize the login form
 const LoginForm = memo(function LoginForm({
@@ -117,8 +118,9 @@ export function AuthButtons({ dict }: { dict: Translations }) {
   const [isRegisterOpen, setIsRegisterOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleLogin = useCallback(async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleLoginBase = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (isLoading) return; // Prevent multiple submissions
     setIsLoading(true);
 
     const formData = new FormData(e.currentTarget);
@@ -131,7 +133,6 @@ export function AuthButtons({ dict }: { dict: Translations }) {
       setIsLoginOpen(false);
       router.refresh();
       
-      // Get current language from cookie
       const lang = document.cookie.split('; ')
         .find(row => row.startsWith('NEXT_LOCALE='))
         ?.split('=')[1] || 'en';
@@ -142,10 +143,11 @@ export function AuthButtons({ dict }: { dict: Translations }) {
     } finally {
       setIsLoading(false);
     }
-  }, [dict?.toasts.loginSuccess, dict?.errors.loginFailed, router]);
+  };
 
-  const handleRegister = useCallback(async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleRegisterBase = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (isLoading) return; // Prevent multiple submissions
     setIsLoading(true);
 
     const formData = new FormData(e.currentTarget);
@@ -169,7 +171,11 @@ export function AuthButtons({ dict }: { dict: Translations }) {
     } finally {
       setIsLoading(false);
     }
-  }, [dict?.errors.passwordMismatch, dict?.toasts.registrationSuccess, dict?.errors.registrationFailed]);
+  };
+
+  // Debounce the form handlers with a 500ms delay
+  const handleLogin = useDebounce(handleLoginBase, 500, { leading: true });
+  const handleRegister = useDebounce(handleRegisterBase, 500, { leading: true });
 
   return (
     <div className={cn(

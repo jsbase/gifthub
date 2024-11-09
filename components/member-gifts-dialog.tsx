@@ -10,21 +10,39 @@ import { PlusCircle, Trash2, CheckCircle, Circle } from "lucide-react";
 import { toast } from "sonner";
 import { MemberGiftsTranslations, type Gift, type MemberGiftsDialogProps } from "@/types";
 import { cn } from "@/lib/utils";
+import { useDebounce } from "@/hooks/use-debounce";
 
 // Memoize the GiftCard component
-const GiftCard = memo(function GiftCard({ 
-  gift, 
+const GiftCard = memo(function GiftCard({
+  gift,
   dict,
   onDelete,
   onTogglePurchased,
-  animatedGiftId 
-}: { 
+  animatedGiftId
+}: {
   gift: Gift;
   dict: MemberGiftsTranslations;
   onDelete: (id: string) => void;
   onTogglePurchased: (id: string) => void;
   animatedGiftId: string | null;
 }) {
+  // Debounce the delete handler
+  const debouncedDelete = useDebounce((id: string) => {
+    onDelete(id);
+  }, 300);
+
+  const handleDelete = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    debouncedDelete(gift.id);
+  }, [gift.id, debouncedDelete]);
+
+  const handleTogglePurchased = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onTogglePurchased(gift.id);
+  }, [gift.id, onTogglePurchased]);
+
   const handleGiftClick = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
     if (!gift.isPurchased && gift.url && typeof window !== 'undefined') {
@@ -101,11 +119,7 @@ const GiftCard = memo(function GiftCard({
         <Button
           variant="ghost"
           size="sm"
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            onDelete(gift.id);
-          }}
+          onClick={handleDelete}
           className={cn(
             "flex-1",
             "text-red-600",
@@ -122,11 +136,7 @@ const GiftCard = memo(function GiftCard({
         <Button
           variant="ghost"
           size="sm"
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            onTogglePurchased(gift.id);
-          }}
+          onClick={handleTogglePurchased}
           className={cn(
             "flex-1",
             "transition-transform",
