@@ -102,7 +102,7 @@ export default function DashboardPage({
       setMemberGiftCounts(giftCountsByMember);
     } catch (error) {
       console.error('Error fetching data:', error);
-      toast.error(dict?.errors.failedToLoad ?? 'Failed to load data');
+      toast.error(dict?.errors.failedToLoad);
     } finally {
       setLoading(false);
     }
