@@ -303,7 +303,7 @@ export type Languages = {
 
 export interface GiftCardProps {
   gift: Gift;
-  dict: MemberGiftsTranslations;
+  dict: Pick<MemberGiftsTranslations, 'markAsPurchased' | 'markAsAvailable'>;
   onDelete: (id: string) => void;
   onTogglePurchased: (id: string) => void;
   animatedGiftId: string | null;
