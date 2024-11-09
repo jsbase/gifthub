@@ -1,6 +1,42 @@
 import { cn } from '@/lib/utils';
 import { FooterProps } from "@/types";
 import Link from "next/link";
+import { memo } from 'react';
+
+// Memoize the footer links section
+const FooterLinks = memo(function FooterLinks({ 
+  dict 
+}: Pick<FooterProps, 'dict'>) {
+  return (
+    <div className={cn(
+      "flex",
+      "space-x-5",
+      "justify-end",
+      "sm:justify-center"
+    )}>
+      <Link
+        href="/privacy"
+        className={cn(
+          "text-gray-500",
+          "hover:text-gray-900",
+          "dark:hover:text-white"
+        )}
+      >
+        {dict.footer.privacyPolicy}
+      </Link>
+      <Link
+        href="/terms"
+        className={cn(
+          "text-gray-500",
+          "hover:text-gray-900",
+          "dark:hover:text-white"
+        )}
+      >
+        {dict.footer.termsConditions}
+      </Link>
+    </div>
+  );
+});
 
 export function Footer({ dict }: FooterProps) {
   return (
@@ -34,33 +70,7 @@ export function Footer({ dict }: FooterProps) {
           )}>
             {dict.footer.copyright}
           </p>
-          <div className={cn(
-            "flex",
-            "space-x-5",
-            "justify-end",
-            "sm:justify-center"
-          )}>
-            <Link
-              href="/privacy"
-              className={cn(
-                "text-gray-500",
-                "hover:text-gray-900",
-                "dark:hover:text-white"
-              )}
-            >
-              {dict.footer.privacyPolicy}
-            </Link>
-            <Link
-              href="/terms"
-              className={cn(
-                "text-gray-500",
-                "hover:text-gray-900",
-                "dark:hover:text-white"
-              )}
-            >
-              {dict.footer.termsConditions}
-            </Link>
-          </div>
+          <FooterLinks dict={dict} />
         </div>
       </div>
     </footer>

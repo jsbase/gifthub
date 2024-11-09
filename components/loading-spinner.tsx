@@ -5,7 +5,7 @@ import { createPortal } from 'react-dom';
 import { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 
-export const LoadingSpinner = function LoadingSpinner(): JSX.Element | null {
+export default function LoadingSpinner(): JSX.Element | null {
   const [isMounted, setIsMounted] = useState<boolean>(false);
 
   useEffect(() => {

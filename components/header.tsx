@@ -1,5 +1,6 @@
 "use client";
 
+import React from 'react';
 import { LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { LanguageSwitcher } from "@/components/language-switcher";
@@ -80,9 +81,9 @@ export function Header({
             "transition-opacity"
           )}
         >
-          <Logo 
-            size="sm" 
-            groupName={authState.isAuthenticated ? authState.groupName : undefined} 
+          <Logo
+            size="sm"
+            groupName={authState.isAuthenticated ? authState.groupName : undefined}
           />
         </Link>
 
