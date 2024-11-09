@@ -36,6 +36,18 @@ export default function DashboardPage({
     setMounted(true);
   }, []);
 
+  const fetchGiftCounts = useCallback(async (members: Member[]) => {
+    const giftCounts: Record<string, number> = {};
+    for (const member of members) {
+      const giftsRes = await fetch(`/api/gifts?memberId=${member.id}`);
+      if (giftsRes.ok) {
+        const giftsData = await giftsRes.json();
+        giftCounts[member.id] = giftsData.gifts.length;
+      }
+    }
+    setMemberGiftCounts(giftCounts);
+  }, []);
+
   const fetchData = useCallback(async () => {
     try {
       const membersRes = await fetch('/api/members');
@@ -43,23 +55,14 @@ export default function DashboardPage({
 
       const membersData = await membersRes.json();
       setMembers(membersData.members);
-
-      const giftCounts: Record<string, number> = {};
-      for (const member of membersData.members) {
-        const giftsRes = await fetch(`/api/gifts?memberId=${member.id}`);
-        if (giftsRes.ok) {
-          const giftsData = await giftsRes.json();
-          giftCounts[member.id] = giftsData.gifts.length;
-        }
-      }
-      setMemberGiftCounts(giftCounts);
+      await fetchGiftCounts(membersData.members);
     } catch (error) {
       console.error('Error fetching data:', error);
       toast.error(dict?.errors.failedToLoad);
     } finally {
       setLoading(false);
     }
-  }, [dict]);
+  }, [dict, fetchGiftCounts]);
 
   useEffect(() => {
     const init = async () => {
@@ -106,6 +109,17 @@ export default function DashboardPage({
   };
 
   const getSelectedMember = () => members.find(m => m.id === selectedMemberId);
+
+  const updateMemberGiftCount = useCallback(async (memberId: string) => {
+    const response = await fetch(`/api/gifts?memberId=${memberId}`);
+    if (response.ok) {
+      const data = await response.json();
+      setMemberGiftCounts(prev => ({
+        ...prev,
+        [memberId]: data.gifts.length
+      }));
+    }
+  }, []);
 
   if (loading || !groupName || !dict || isRouteChanging) {
     return <LoadingSpinner />;
@@ -205,7 +219,12 @@ export default function DashboardPage({
         memberName={getSelectedMember()?.name ?? ''}
         memberId={selectedMemberId ?? ''}
         gifts={memberGifts}
-        onGiftAdded={() => selectedMemberId && handleMemberClick(selectedMemberId)}
+        onGiftAdded={() => {
+          if (selectedMemberId) {
+            handleMemberClick(selectedMemberId);
+            updateMemberGiftCount(selectedMemberId);
+          }
+        }}
         dict={{
           ...dict.memberGifts,
           toasts: dict.toasts,
