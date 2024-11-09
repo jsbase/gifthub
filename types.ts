@@ -1,4 +1,5 @@
 import { type DialogProps } from '@radix-ui/react-dialog';
+import { ReactNode } from 'react';
 
 // Gift-related interfaces
 export interface Gift {
@@ -242,9 +243,9 @@ export interface ConfirmationTranslations {
 
 export interface AddMemberDialogProps {
   onMemberAdded?: () => void;
-  dict: {
+  dict?: {
     addMemberDialog: AddMemberDialogDictionary;
-    toasts: ToastTranslations;
+    toasts: Pick<ToastTranslations, 'memberAdded' | 'memberAddFailed'>;
   };
 }
 
@@ -295,4 +296,97 @@ export type Languages = {
     name: string;
     flag: string;
   };
+}
+
+// Add these new interfaces:
+
+export interface GiftCardProps {
+  gift: Gift;
+  dict: MemberGiftsTranslations;
+  onDelete: (id: string) => void;
+  onTogglePurchased: (id: string) => void;
+  animatedGiftId: string | null;
+}
+
+export interface DialogContentProps {
+  className?: string;
+  children: React.ReactNode;
+}
+
+export interface DialogHeaderProps {
+  className?: string;
+  children: React.ReactNode;
+}
+
+export interface DialogTitleProps {
+  className?: string;
+  children: React.ReactNode;
+}
+
+export interface DialogDescriptionProps {
+  className?: string;
+  children: React.ReactNode;
+}
+
+export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  variant?: 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link';
+  size?: 'default' | 'sm' | 'lg' | 'icon';
+  className?: string;
+  children: ReactNode;
+  isLoading?: boolean;
+}
+
+export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
+  className?: string;
+}
+
+export interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
+  className?: string;
+}
+
+export interface LabelProps extends React.LabelHTMLAttributes<HTMLLabelElement> {
+  className?: string;
+}
+
+// Debounce-related types
+export interface DebouncedFunction<T extends (...args: any[]) => any> {
+  (...args: Parameters<T>): void;
+}
+
+export interface DebounceOptions {
+  delay: number;
+  maxWait?: number;
+  leading?: boolean;
+  trailing?: boolean;
+}
+
+// Add API response type for member addition
+export interface AddMemberResponse {
+  success: boolean;
+  message?: string;
+  member?: Member;
+}
+
+// Add form-related types for the dialog
+export interface AddMemberFormData {
+  name: string;
+}
+
+export interface AddMemberFormProps {
+  onSubmit: (data: AddMemberFormData) => Promise<void>;
+  isLoading: boolean;
+  dict: AddMemberDialogDictionary;
+}
+
+// Rename the local interface to avoid conflict
+export interface CustomDialogProps {
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  children: ReactNode;
+}
+
+// Add form submission state type
+export interface SubmissionState {
+  isSubmitting: boolean;
+  error: string | null;
 }

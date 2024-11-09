@@ -10,6 +10,7 @@ import { PlusCircle, Trash2, CheckCircle, Circle } from "lucide-react";
 import { toast } from "sonner";
 import { MemberGiftsTranslations, type Gift, type MemberGiftsDialogProps } from "@/types";
 import { cn } from "@/lib/utils";
+import { useDebounce } from "@/hooks/use-debounce";
 
 // Memoize the GiftCard component
 const GiftCard = memo(function GiftCard({
@@ -25,12 +26,16 @@ const GiftCard = memo(function GiftCard({
   onTogglePurchased: (id: string) => void;
   animatedGiftId: string | null;
 }) {
-  // Memoize the click handlers
+  // Debounce the delete handler
+  const debouncedDelete = useDebounce((id: string) => {
+    onDelete(id);
+  }, 300);
+
   const handleDelete = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    onDelete(gift.id);
-  }, [gift.id, onDelete]);
+    debouncedDelete(gift.id);
+  }, [gift.id, debouncedDelete]);
 
   const handleTogglePurchased = useCallback((e: React.MouseEvent) => {
     e.preventDefault();

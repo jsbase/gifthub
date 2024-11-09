@@ -13,6 +13,7 @@ import {
 import { loadTranslations } from '@/app/[lang]/actions';
 import { LanguageCode, Language } from '@/types';
 import { cn } from '@/lib/utils';
+import { useDebounce } from '@/hooks/use-debounce';
 
 const languages: readonly Language[] = [
   { code: 'de', name: 'Deutsch', flag: '/flags/de.svg' },
@@ -58,7 +59,7 @@ export const LanguageSwitcher = memo(function LanguageSwitcher() {
     lang => pathname.startsWith(`/${lang.code}/`) || pathname === `/${lang.code}`
   ) || languages[0];
 
-  const switchLanguage = async (langCode: LanguageCode) => {
+  const switchLanguageBase = async (langCode: LanguageCode) => {
     try {
       setIsChangingLanguage(true);
       document.cookie = `NEXT_LOCALE=${langCode};path=/;max-age=${365 * 24 * 60 * 60};SameSite=Lax`;
@@ -69,6 +70,14 @@ export const LanguageSwitcher = memo(function LanguageSwitcher() {
       setIsChangingLanguage(false);
     }
   };
+
+  // Debounce the language switch with a 300ms delay
+  // Using leading: true to ensure the first click is immediate
+  // Using trailing: false to prevent delayed execution after the debounce period
+  const switchLanguage = useDebounce(switchLanguageBase, 300, {
+    leading: true,
+    trailing: false,
+  });
 
   return (
     <>

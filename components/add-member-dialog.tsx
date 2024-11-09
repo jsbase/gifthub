@@ -12,6 +12,7 @@ import { getDictionary } from "@/app/[lang]/dictionaries";
 import { usePathname } from "next/navigation";
 import { AddMemberDialogDictionary, ToastTranslations } from "@/types";
 import { cn } from "@/lib/utils";
+import { useDebounce } from "@/hooks/use-debounce";
 
 // Memoize the form component since it's reused and only depends on specific props
 const AddMemberForm = memo(function AddMemberForm({
@@ -65,13 +66,8 @@ export default function AddMemberDialog({ onMemberAdded }: Omit<AddMemberDialogP
     loadTranslations();
   }, [lang]);
 
-  const handleSubmit = useCallback(async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setIsLoading(true);
-
-    const formData = new FormData(e.currentTarget);
-    const name = formData.get('name') as string;
-
+  // Debounce the member addition
+  const debouncedAddMember = useDebounce(async (name: string) => {
     try {
       const response = await fetch('/api/members', {
         method: 'POST',
@@ -100,7 +96,17 @@ export default function AddMemberDialog({ onMemberAdded }: Omit<AddMemberDialogP
     } finally {
       setIsLoading(false);
     }
-  }, [dict?.toasts.memberAdded, dict?.toasts.memberAddFailed, onMemberAdded]);
+  }, 300);
+
+  const handleSubmit = useCallback(async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsLoading(true);
+
+    const formData = new FormData(e.currentTarget);
+    const name = formData.get('name') as string;
+    
+    debouncedAddMember(name);
+  }, [debouncedAddMember]);
 
   if (!dict) return null;
 
