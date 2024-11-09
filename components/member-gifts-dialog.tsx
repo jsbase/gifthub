@@ -12,19 +12,32 @@ import { MemberGiftsTranslations, type Gift, type MemberGiftsDialogProps } from 
 import { cn } from "@/lib/utils";
 
 // Memoize the GiftCard component
-const GiftCard = memo(function GiftCard({ 
-  gift, 
+const GiftCard = memo(function GiftCard({
+  gift,
   dict,
   onDelete,
   onTogglePurchased,
-  animatedGiftId 
-}: { 
+  animatedGiftId
+}: {
   gift: Gift;
   dict: MemberGiftsTranslations;
   onDelete: (id: string) => void;
   onTogglePurchased: (id: string) => void;
   animatedGiftId: string | null;
 }) {
+  // Memoize the click handlers
+  const handleDelete = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onDelete(gift.id);
+  }, [gift.id, onDelete]);
+
+  const handleTogglePurchased = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onTogglePurchased(gift.id);
+  }, [gift.id, onTogglePurchased]);
+
   const handleGiftClick = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
     if (!gift.isPurchased && gift.url && typeof window !== 'undefined') {
@@ -101,11 +114,7 @@ const GiftCard = memo(function GiftCard({
         <Button
           variant="ghost"
           size="sm"
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            onDelete(gift.id);
-          }}
+          onClick={handleDelete}
           className={cn(
             "flex-1",
             "text-red-600",
@@ -122,11 +131,7 @@ const GiftCard = memo(function GiftCard({
         <Button
           variant="ghost"
           size="sm"
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            onTogglePurchased(gift.id);
-          }}
+          onClick={handleTogglePurchased}
           className={cn(
             "flex-1",
             "transition-transform",
