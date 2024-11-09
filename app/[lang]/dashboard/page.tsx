@@ -75,35 +75,38 @@ export default function DashboardPage({
   const [memberGifts, setMemberGifts] = useState<Gift[]>([]);
   const [isRouteChanging, setIsRouteChanging] = useState(false);
 
-  // Optimize fetchGiftCounts to only depend on setMemberGiftCounts
-  const fetchGiftCounts = useCallback(async (members: Member[]) => {
-    const giftCounts: Record<string, number> = {};
-    for (const member of members) {
-      const giftsRes = await fetch(`/api/gifts?memberId=${member.id}`);
-      if (giftsRes.ok) {
-        const giftsData = await giftsRes.json();
-        giftCounts[member.id] = giftsData.gifts.filter((gift: Gift) => !gift.isPurchased).length;
-      }
-    }
-    setMemberGiftCounts(giftCounts);
-  }, []);
-
   // Optimize fetchData to only depend on essential dependencies
   const fetchData = useCallback(async () => {
     try {
+      // 1. Get all members
       const membersRes = await fetch('/api/members');
       if (!membersRes.ok) throw new Error('Failed to fetch members');
-
       const membersData = await membersRes.json();
       setMembers(membersData.members);
-      await fetchGiftCounts(membersData.members);
+
+      // 2. Get all gifts in one call
+      const giftsRes = await fetch('/api/gifts');
+      if (!giftsRes.ok) throw new Error('Failed to fetch gifts');
+      const { gifts } = await giftsRes.json();
+
+      // 3. Group gifts by member ID
+      const giftCountsByMember = membersData.members.reduce((acc: Record<string, number>, member: any) => {
+        acc[member.id] = gifts.filter(
+          (gift: any) => 
+            gift.forMemberId === member.id && 
+            !gift.isPurchased
+        ).length;
+        return acc;
+      }, {});
+
+      setMemberGiftCounts(giftCountsByMember);
     } catch (error) {
       console.error('Error fetching data:', error);
       toast.error(dict?.errors.failedToLoad);
     } finally {
       setLoading(false);
     }
-  }, [dict?.errors.failedToLoad, fetchGiftCounts]);
+  }, [dict]);
 
   // Split initialization effect from data fetching
   useEffect(() => {
