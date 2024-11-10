@@ -1,32 +1,6 @@
 import { NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
 import prisma from '@/lib/prisma';
-import { jwtVerify } from 'jose';
-
-async function getGroupIdFromToken(request: Request) {
-  const cookieStore = await cookies();
-  const token = cookieStore.get('auth-token')?.value;
-  if (!token || !process.env.JWT_SECRET) {
-    return null;
-  }
-
-  try {
-    const verified = await jwtVerify(
-      token,
-      new TextEncoder().encode(process.env.JWT_SECRET)
-    );
-
-    const groupName = verified.payload.groupName as string;
-    const group = await prisma.group.findUnique({
-      where: { name: groupName }
-    });
-
-    return group?.id;
-  } catch {
-    return null;
-  }
-}
-
+import { getGroupIdFromToken } from '@/lib/auth-server';
 export async function GET(request: Request) {
   try {
     const groupId = await getGroupIdFromToken(request);

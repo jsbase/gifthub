@@ -9,6 +9,7 @@ export interface Gift {
   url?: string | null;
   isPurchased: boolean;
   createdAt: string;
+  updatedAt: string;
   groupId: string;
   forMemberId: string;
 }
@@ -24,13 +25,17 @@ export interface User {
   id: string;
   name: string;
   password?: string;
-  createdAt?: Date;
+  createdAt: Date;
+  userGroups?: UserGroup[];
 }
 
 export interface UserGroup {
   id: string;
+  userId: string;
+  groupId: string;
   joinedAt: Date;
   user: User;
+  gifts?: Gift[];
 }
 
 // Translation-related interfaces
@@ -236,10 +241,13 @@ export interface ToastTranslations {
   memberAddFailed: string;
   loginSuccess: string;
   registrationSuccess: string;
+  memberDeleted: string;
+  memberDeleteFailed: string;
 }
 
 export interface ConfirmationTranslations {
   deleteGift: string;
+  deleteMember: string;
 }
 
 export interface AddMemberDialogProps {
@@ -401,4 +409,28 @@ export interface GiftApiResponse {
 export interface GiftsApiResponse {
   gifts: Gift[];
   message?: string;
+}
+
+// Add new interface
+export interface DeleteMemberDialogProps {
+  memberId: string;
+  memberName: string;
+  onDelete: () => void;
+  dict: {
+    confirmations: {
+      deleteMember: string;
+    };
+    toasts: {
+      memberDeleted: string;
+      memberDeleteFailed: string;
+    };
+  };
+}
+
+export interface MemberListProps {
+  members: Member[];
+  giftCounts: Record<string, number>;
+  dict: any;
+  onMemberClick: (id: string) => void;
+  onMemberDeleted: () => void;
 }

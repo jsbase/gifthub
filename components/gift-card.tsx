@@ -16,7 +16,10 @@ export const GiftCard = memo(function GiftCard({
 }: GiftCardProps) {
   const debouncedDelete = useDebounce((id: string) => {
     onDelete(id);
-  }, 300);
+  }, 300, {
+    leading: true,
+    trailing: false
+  });
 
   const handleDelete = (e: React.MouseEvent) => {
     e.preventDefault();

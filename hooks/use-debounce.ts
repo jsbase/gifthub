@@ -10,8 +10,8 @@ export function useDebounce<T extends (...args: any[]) => any>(
   const callbackRef = useRef(callback);
   const lastCalledRef = useRef<number>(0);
   const argsRef = useRef<Parameters<T>>();
+  const lastArgsRef = useRef<Parameters<T>>();
 
-  // Update the callback ref when callback changes
   useEffect(() => {
     callbackRef.current = callback;
   }, [callback]);
@@ -21,7 +21,15 @@ export function useDebounce<T extends (...args: any[]) => any>(
       const now = Date.now();
       argsRef.current = args;
 
-      // Immediate execution for maxWait
+      const argsAreEqual = lastArgsRef.current && 
+        args.length === lastArgsRef.current.length &&
+        args.every((arg, index) => arg === lastArgsRef.current![index]);
+      
+      if (timeoutRef.current && argsAreEqual) {
+        return;
+      }
+      lastArgsRef.current = args;
+
       if (
         options.maxWait &&
         lastCalledRef.current &&
@@ -31,18 +39,15 @@ export function useDebounce<T extends (...args: any[]) => any>(
         return callbackRef.current(...args);
       }
 
-      // Clear existing timeout
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
       }
 
-      // Leading edge execution
       if (options.leading && !timeoutRef.current) {
         lastCalledRef.current = now;
         return callbackRef.current(...args);
       }
 
-      // Set new timeout
       timeoutRef.current = setTimeout(() => {
         if (options.trailing !== false && argsRef.current) {
           callbackRef.current(...argsRef.current);
