@@ -8,12 +8,14 @@
     "enterMemberName": "Member's name"
   },
   "confirmations": {
-    "deleteGift": "Are you sure you want to delete this gift?"
+    "deleteGift": "Are you sure you want to delete this gift?",
+    "deleteMember": "Are you sure you want to delete {name} and all their associated gifts?"
   },
   "confirmPassword": "Confirm Password",
   "createGroup": "Register",
   "createGroupBtn": "Create",
   "createGroupDescription": "Please fill out to create a group.",
+  "deleteMember": "Remove",
   "emailAddress": "Email",
   "enterGroupName": "Please fill out to log in.",
   "enterMemberEmail": "Member's Email",
@@ -85,7 +87,9 @@
     "memberAdded": "Member {name} added successfully",
     "memberAddFailed": "Failed to add member",
     "loginSuccess": "Logged in successfully",
-    "registrationSuccess": "Registration successful! Please log in."
+    "registrationSuccess": "Registration successful! Please log in.",
+    "memberDeleted": "Member {name} and their gifts deleted successfully",
+    "memberDeleteFailed": "Failed to delete member"
   },
   "footer": {
     "copyright": "© 2024 GiftHub. All Rights Reserved.",
