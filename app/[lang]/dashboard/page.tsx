@@ -158,14 +158,6 @@ export default function DashboardPage({
         "flex-1"
       )}>
         <section>
-          <h2 className={cn(
-            "text-2xl",
-            "font-bold",
-            "mb-6"
-          )}>
-            {dict.members}
-          </h2>
-
           {members.length > 0 ? (
             <MemberList
               members={members}

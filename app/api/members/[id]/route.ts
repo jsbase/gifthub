@@ -1,12 +1,20 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getGroupIdFromToken } from '@/lib/auth-server';
-import { RouteParams } from '@/types';
 
 export async function DELETE(
-  request: Request,
-  context: RouteParams
-) {
+  request: NextRequest,
+): Promise<NextResponse> {
+  const { pathname } = new URL(request.url);
+  const id = pathname.split('/').pop();
+
+  if (!id) {
+    return NextResponse.json(
+      { message: 'Member ID is required' },
+      { status: 400 }
+    );
+  }
+
   try {
     const groupId = await getGroupIdFromToken(request);
     if (!groupId) {
@@ -16,9 +24,6 @@ export async function DELETE(
       );
     }
 
-    const id = await context.params.id;
-
-    // Get the UserGroup entry to find the associated userId
     const userGroup = await prisma.userGroup.findUnique({
       where: { id },
       select: { userId: true }
@@ -31,8 +36,7 @@ export async function DELETE(
       );
     }
 
-    // Delete in this order to maintain referential integrity:
-    // 1. First delete all gifts associated with the member
+    // Rest of your delete logic remains the same...
     await prisma.gift.deleteMany({
       where: {
         forMemberId: id,
@@ -40,7 +44,6 @@ export async function DELETE(
       },
     });
 
-    // 2. Delete the member's group association
     await prisma.userGroup.delete({
       where: {
         id,
@@ -48,7 +51,6 @@ export async function DELETE(
       },
     });
 
-    // 3. Delete the user (since users are independent per group)
     await prisma.user.delete({
       where: {
         id: userGroup.userId,

@@ -427,8 +427,10 @@ export interface DeleteMemberDialogProps {
   };
 }
 
-export interface RouteParams {
-  params: {
-    id: Promise<string>
-  }
+export interface MemberListProps {
+  members: Member[];
+  giftCounts: Record<string, number>;
+  dict: any;
+  onMemberClick: (id: string) => void;
+  onMemberDeleted: () => void;
 }
