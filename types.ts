@@ -426,3 +426,9 @@ export interface DeleteMemberDialogProps {
     };
   };
 }
+
+export interface RouteParams {
+  params: {
+    id: Promise<string>
+  }
+}

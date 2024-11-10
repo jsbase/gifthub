@@ -1,10 +1,11 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getGroupIdFromToken } from '@/lib/auth-server';
+import { RouteParams } from '@/types';
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  context: RouteParams
 ) {
   try {
     const groupId = await getGroupIdFromToken(request);
@@ -15,7 +16,7 @@ export async function DELETE(
       );
     }
 
-    const { id } = await params;
+    const id = await context.params.id;
 
     // Get the UserGroup entry to find the associated userId
     const userGroup = await prisma.userGroup.findUnique({
