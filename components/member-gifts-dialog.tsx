@@ -43,7 +43,7 @@ export default function MemberGiftsDialog({
     setIsLoading(true);
 
     const formData = new FormData(e.currentTarget);
-    const giftData: Omit<Gift, 'id' | 'createdAt'> = {
+    const giftData: Omit<Gift, 'id' | 'createdAt' | 'updatedAt'> = {
       title: formData.get('title') as string,
       description: formData.get('description') as string,
       url: formData.get('url') as string,

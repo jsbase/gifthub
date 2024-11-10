@@ -2,60 +2,16 @@
 
 import { useEffect, useState, use, useCallback, memo, lazy } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import { Button } from '@/components/ui/button';
 import { Header } from '@/components/header';
 import { Footer } from '@/components/footer';
-import { ChevronRight } from 'lucide-react';
 import { verifyAuth, logout } from '@/lib/auth';
 import { getDictionary } from '../dictionaries';
 import { Member, Gift, Translations } from '@/types';
 import { toast } from 'sonner';
 import LoadingSpinner from '@/components/loading-spinner';
 import { cn } from '@/lib/utils';
+import { MemberList } from '@/components/member-list';
 
-// Memoize the member button component
-const MemberButton = memo(function MemberButton({
-  member,
-  giftCount,
-  dict,
-  onClick
-}: {
-  member: Member,
-  giftCount: number,
-  dict: Translations,
-  onClick: (id: string) => void
-}) {
-  return (
-    <Button
-      variant="ghost"
-      className={cn(
-        "w-full",
-        "pr-0 pl-2",
-        "h-auto",
-        "bg-card",
-        "hover:bg-accent",
-        "flex",
-        "items-center",
-        "justify-between"
-      )}
-      onClick={() => onClick(member.id)}
-    >
-      <div className={cn("flex flex-col", "items-start")}>
-        <p className="font-medium">{member.name}</p>
-        <p className={cn("text-sm", "text-muted-foreground")}>
-          {giftCount === 0 
-            ? dict.giftCount.zero 
-            : giftCount === 1 
-              ? dict.giftCount.one
-              : dict.giftCount.many.replace('{{count}}', String(giftCount))}
-        </p>
-      </div>
-      <ChevronRight className={cn("h-5 w-5", "text-muted-foreground")} />
-    </Button>
-  );
-});
-
-const AddMemberDialog = lazy(() => import('@/components/add-member-dialog'));
 const MemberGiftsDialog = lazy(() => import('@/components/member-gifts-dialog'));
 
 export default function DashboardPage({
@@ -202,33 +158,22 @@ export default function DashboardPage({
         "flex-1"
       )}>
         <section>
-          <div className={cn(
-            "flex",
-            "items-center",
-            "justify-between",
+          <h2 className={cn(
+            "text-2xl",
+            "font-bold",
             "mb-6"
           )}>
-            <h2 className={cn(
-              "text-2xl",
-              "font-bold"
-            )}>
-              {dict.members}
-            </h2>
-            <AddMemberDialog onMemberAdded={fetchData} />
-          </div>
+            {dict.members}
+          </h2>
 
           {members.length > 0 ? (
-            <div className="grid gap-4">
-              {members.map((member) => (
-                <MemberButton
-                  key={member.id}
-                  member={member}
-                  giftCount={memberGiftCounts[member.id] || 0}
-                  dict={dict}
-                  onClick={handleMemberClick}
-                />
-              ))}
-            </div>
+            <MemberList
+              members={members}
+              giftCounts={memberGiftCounts}
+              dict={dict}
+              onMemberClick={handleMemberClick}
+              onMemberDeleted={fetchData}
+            />
           ) : (
             <div className="text-muted-foreground">
               {dict.noMembers}

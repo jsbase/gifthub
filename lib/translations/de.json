@@ -8,12 +8,14 @@
     "enterMemberName": "Name des Mitglieds"
   },
   "confirmations": {
-    "deleteGift": "Sind Sie sicher, dass Sie dieses Geschenk löschen wollen?"
+    "deleteGift": "Sind Sie sicher, dass Sie dieses Geschenk löschen wollen?",
+    "deleteMember": "Sind Sie sicher, dass Sie {name} und alle zugehörigen Geschenke löschen wollen?"
   },
   "confirmPassword": "Passwort bestätigen",
   "createGroup": "Registrieren",
   "createGroupBtn": "Erstellen",
   "createGroupDescription": "Bitte ausfüllen, um eine Gruppe zu erstellen.",
+  "deleteMember": "Entfernen",
   "emailAddress": "E-Mail",
   "enterGroupName": "Bitte ausfüllen, um dich anzumelden.",
   "enterMemberEmail": "E-Mail des Mitglieds",
@@ -85,7 +87,9 @@
     "memberAdded": "Mitglied {name} erfolgreich hinzugefügt",
     "memberAddFailed": "Mitglied konnte nicht hinzugefügt werden",
     "loginSuccess": "Erfolgreich eingeloggt",
-    "registrationSuccess": "Registrierung erfolgreich! Bitte einloggen."
+    "registrationSuccess": "Registrierung erfolgreich! Bitte einloggen.",
+    "memberDeleted": "Mitglied {name} und alle zugehörigen Geschenke erfolgreich gelöscht",
+    "memberDeleteFailed": "Mitglied konnte nicht gelöscht werden"
   },
   "footer": {
     "copyright": "© 2024 GiftHub. Alle Rechte vorbehalten.",

@@ -8,12 +8,14 @@
     "enterMemberName": "Имя участника"
   },
   "confirmations": {
-    "deleteGift": "Вы уверены, что хотите удалить этот подарок?"
+    "deleteGift": "Вы уверены, что хотите удалить этот подарок?",
+    "deleteMember": "Вы уверены, что хотите удалить {name} и все связанные с ним подарки?"
   },
   "confirmPassword": "Подтвердите пароль",
   "createGroup": "Регистрация",
   "createGroupBtn": "Создать",
   "createGroupDescription": "Пожалуйста, заполните, чтобы создать группу.",
+  "deleteMember": "Вынимать",
   "emailAddress": "Электронная почта",
   "enterGroupName": "Пожалуйста, заполните, чтобы войти.",
   "enterMemberEmail": "Электронная почта участника",
@@ -85,7 +87,9 @@
     "memberAdded": "Участник {name} успешно добавлен",
     "memberAddFailed": "Не удалось добавить участника",
     "loginSuccess": "Вход выполнен успешно",
-    "registrationSuccess": "Регистрация успешна! Пожалуйста, войдите."
+    "registrationSuccess": "Регистрация успешна! Пожалуйста, войдите.",
+    "memberDeleted": "Участник {name} и все связанные с ним подарки успешно удалены",
+    "memberDeleteFailed": "Не удалось удалить участника"
   },
   "footer": {
     "copyright": "© 2024 GiftHub. Все права защищены.",

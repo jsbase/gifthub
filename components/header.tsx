@@ -32,7 +32,7 @@ export function Header({
 
     const checkAuth = async () => {
       try {
-        const auth = await verifyAuth();
+        const auth = await verifyAuth(true);
         if (isMounted) {
           setAuthState({
             isAuthenticated: auth?.success ?? false,

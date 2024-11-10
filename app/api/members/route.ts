@@ -1,33 +1,8 @@
 import { NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
 import prisma from '@/lib/prisma';
-import { jwtVerify } from 'jose';
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
-
-async function getGroupIdFromToken(request: Request) {
-  const cookieStore = await cookies();
-  const token = cookieStore.get('auth-token')?.value;
-  if (!token || !process.env.JWT_SECRET) {
-    return null;
-  }
-
-  try {
-    const verified = await jwtVerify(
-      token,
-      new TextEncoder().encode(process.env.JWT_SECRET)
-    );
-
-    const groupName = verified.payload.groupName as string;
-    const group = await prisma.group.findUnique({
-      where: { name: groupName }
-    });
-
-    return group?.id;
-  } catch {
-    return null;
-  }
-}
+import { getGroupIdFromToken } from '@/lib/auth-server';
 
 export async function GET(request: Request) {
   try {
@@ -94,6 +69,7 @@ export async function POST(request: Request) {
       );
     }
 
+    // Check if a member with this name already exists in this specific group
     const existingMember = await prisma.userGroup.findFirst({
       where: {
         group: { id: groupId },
@@ -103,27 +79,20 @@ export async function POST(request: Request) {
 
     if (existingMember) {
       return NextResponse.json(
-        { message: 'User is already a member of this group' },
+        { message: 'A member with this name already exists in this group' },
         { status: 400 }
       );
     }
 
+    // Always create a new user (removed upsert)
     const temporaryPassword = crypto.randomBytes(16).toString('hex');
     const hashedPassword = await bcrypt.hash(temporaryPassword, 10);
     
-    const user = await prisma.user.upsert({
-      where: { name },
-      update: {},
-      create: {
+    const user = await prisma.user.create({
+      data: {
         name,
         password: hashedPassword,
       },
-    }).catch((error) => {
-      // Handle unique constraint violation
-      if (error.code === 'P2002') {
-        throw new Error('A user with this name already exists');
-      }
-      throw error;
     });
 
     const userGroup = await prisma.userGroup.create({
@@ -151,7 +120,7 @@ export async function POST(request: Request) {
         message: error instanceof Error ? error.message : 'Failed to add member',
         success: false 
       },
-      { status: error instanceof Error && error.message.includes('already exists') ? 400 : 500 }
+      { status: 500 }
     );
   }
 }
