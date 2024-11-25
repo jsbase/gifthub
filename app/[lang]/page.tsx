@@ -6,37 +6,30 @@ import { Footer } from '@/components/footer';
 import { FeatureCard } from '@/components/feature-card';
 import { cn } from '@/lib/utils';
 import { Logo } from "@/components/logo";
-import { memo } from 'react';
+import React, { memo } from 'react';
 import { PageProps, Translations } from '@/types';
 
-// Memoize the feature cards section
-const FeatureCards = memo(({ 
-  features 
-}: { 
-  features: Translations['features']
-}) => {
-  return (
-    <div className={cn(
-      "text-center",
-      "my-12",
-      "lg:mb-0",
-      "md:mb-0",
-      "grid",
-      "grid-cols-1",
-      "md:grid-cols-3",
-      "gap-dialog-desktop",
-      "xs:gap-dialog-mobile"
-    )}>
-      {Object.entries(features).map(([key, feature]) => (
-        <FeatureCard
-          key={key}
-          title={feature.title}
-          description={feature.description}
-        />
-      ))}
-    </div>
-  );
-});
+const FeatureCards: React.FC<Pick<Translations, 'features'>> = memo(({ features }) => (
+  <div className={cn(
+    "text-center",
+    "my-12",
+    "lg:mb-0",
+    "md:mb-0",
+    "grid",
+    "grid-cols-1",
+    "md:grid-cols-3",
+    "gap-dialog-desktop",
+    "xs:gap-dialog-mobile"
+  )}>
+    {Object.entries(features).map(([key, feature]) => (
+      <FeatureCard
+        key={key}
+        title={feature.title}
+        description={feature.description}
+      />
+    ))}
+  </div>
+));
 
 const Home: NextPage<PageProps> = async ({ params }) => {
   const { lang } = await params;
