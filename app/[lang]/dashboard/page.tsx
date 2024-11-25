@@ -1,12 +1,13 @@
 'use client';
 
-import { useEffect, useState, use, useCallback, memo, lazy } from 'react';
+import { useEffect, useState, use, useCallback, lazy, Suspense } from 'react';
+import { NextPage } from 'next';
 import { useRouter, usePathname } from 'next/navigation';
 import { Header } from '@/components/header';
 import { Footer } from '@/components/footer';
 import { verifyAuth, logout } from '@/lib/auth';
 import { getDictionary } from '../dictionaries';
-import { Member, Gift, Translations } from '@/types';
+import { Member, Gift, Translations, PageProps } from '@/types';
 import { toast } from 'sonner';
 import LoadingSpinner from '@/components/loading-spinner';
 import { cn } from '@/lib/utils';
@@ -14,11 +15,7 @@ import { MemberList } from '@/components/member-list';
 
 const MemberGiftsDialog = lazy(() => import('@/components/member-gifts-dialog'));
 
-export default function DashboardPage({
-  params,
-}: {
-  params: Promise<{ lang: string }>
-}) {
+const DashboardPage: NextPage<PageProps> = ({ params }) => {
   const { lang } = use(params);
   const [mounted, setMounted] = useState(false);
   const router = useRouter();
@@ -138,7 +135,7 @@ export default function DashboardPage({
 
   if (!mounted) return null;
 
-  return (
+return (
     <div className={cn(
       "min-h-screen",
       "bg-background",
@@ -174,26 +171,30 @@ export default function DashboardPage({
         </section>
       </main>
 
-      <MemberGiftsDialog
-        isOpen={!!selectedMemberId}
-        onClose={() => setSelectedMemberId(null)}
-        memberName={getSelectedMember()?.name ?? ''}
-        memberId={selectedMemberId ?? ''}
-        gifts={memberGifts}
-        onGiftAdded={() => {
-          if (selectedMemberId) {
-            handleMemberClick(selectedMemberId);
-            updateMemberGiftCount(selectedMemberId);
-          }
-        }}
-        dict={{
-          ...dict.memberGifts,
-          toasts: dict.toasts,
-          confirmations: dict.confirmations
-        }}
-      />
+      <Suspense fallback={<LoadingSpinner />}>
+        <MemberGiftsDialog
+          isOpen={!!selectedMemberId}
+          onClose={() => setSelectedMemberId(null)}
+          memberName={getSelectedMember()?.name ?? ''}
+          memberId={selectedMemberId ?? ''}
+          gifts={memberGifts}
+          onGiftAdded={() => {
+            if (selectedMemberId) {
+              handleMemberClick(selectedMemberId);
+              updateMemberGiftCount(selectedMemberId);
+            }
+          }}
+          dict={{
+            ...dict.memberGifts,
+            toasts: dict.toasts,
+            confirmations: dict.confirmations
+          }}
+        />
+      </Suspense>
 
       <Footer dict={dict} />
     </div>
   );
-}
+};
+
+export default DashboardPage;

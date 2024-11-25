@@ -265,9 +265,8 @@ export interface HeaderProps {
   showAuth?: boolean;
 }
 
-export interface HomeProps {
+export interface PageProps {
   params: Promise<{ lang: string }>,
-  searchParams?: Promise<{ [key: string]: string | string[] | undefined }>
 }
 
 export interface FeatureCardProps {
@@ -277,14 +276,6 @@ export interface FeatureCardProps {
 
 export interface FooterProps {
   dict: Translations;
-}
-
-export interface PrivacyPageProps {
-  params: Promise<{ lang: string }>
-}
-
-export interface TermsPageProps {
-  params: Promise<{ lang: string }>
 }
 
 export interface AuthState {
