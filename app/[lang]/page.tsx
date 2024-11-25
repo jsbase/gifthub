@@ -1,20 +1,20 @@
+import { NextPage } from 'next';
 import { getDictionary } from './dictionaries';
-import { Translations } from "@/types";
 import { AuthButtons } from '@/components/auth-buttons';
 import { Header } from "@/components/header";
 import { Footer } from '@/components/footer';
 import { FeatureCard } from '@/components/feature-card';
-import { HomeProps } from '@/types';
 import { cn } from '@/lib/utils';
 import { Logo } from "@/components/logo";
 import { memo } from 'react';
+import { PageProps, Translations } from '@/types';
 
 // Memoize the feature cards section
-const FeatureCards = memo(function FeatureCards({ 
+const FeatureCards = memo(({ 
   features 
 }: { 
   features: Translations['features']
-}) {
+}) => {
   return (
     <div className={cn(
       "text-center",
@@ -38,7 +38,7 @@ const FeatureCards = memo(function FeatureCards({
   );
 });
 
-export default async function Home({ params }: HomeProps) {
+const Home: NextPage<PageProps> = async ({ params }) => {
   const { lang } = await params;
   const dict: Translations = await getDictionary(lang);
 
@@ -86,4 +86,6 @@ export default async function Home({ params }: HomeProps) {
       <Footer dict={dict} />
     </div>
   );
-}
+};
+
+export default Home;
