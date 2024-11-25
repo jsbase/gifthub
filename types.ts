@@ -1,7 +1,5 @@
 import { type DialogProps } from '@radix-ui/react-dialog';
-import { ReactNode } from 'react';
 
-// Gift-related interfaces
 export interface Gift {
   id: string;
   title: string;
@@ -14,7 +12,6 @@ export interface Gift {
   forMemberId: string;
 }
 
-// User and Group-related interfaces
 export interface Member {
   id: string;
   name: string;
@@ -38,7 +35,13 @@ export interface UserGroup {
   gifts?: Gift[];
 }
 
-// Translation-related interfaces
+export interface Features {
+  [key: string]: {
+    title: string;
+    description: string;
+  };
+}
+
 export interface Translations {
   tagline: string;
   login: string;
@@ -57,20 +60,7 @@ export interface Translations {
   addMember: string;
   logout: string;
   noMembers: string;
-  features: {
-    simple: {
-      title: string;
-      description: string;
-    };
-    tracking: {
-      title: string;
-      description: string;
-    };
-    updates: {
-      title: string;
-      description: string;
-    };
-  };
+  features: Features;
   errors: {
     loginRequired: string;
     failedToLoad: string;
@@ -173,7 +163,6 @@ export interface Translations {
   [key: string]: string | { [key: string]: string | { [key: string]: string } } | AddMemberDialogDictionary | MemberGiftsTranslations | ToastTranslations | ConfirmationTranslations | { [key: string]: string };
 }
 
-// Dialog-related interfaces
 export interface MemberGiftsDialogProps {
   isOpen: boolean;
   onClose: () => void;
@@ -189,7 +178,6 @@ export interface MemberGiftsDialogProps {
 
 export interface CommandDialogProps extends DialogProps {}
 
-// Response-related interfaces
 export interface AuthResponse {
   success: boolean;
   message?: string;
@@ -202,7 +190,6 @@ export interface AuthVerifyResponse {
   message?: string;
 }
 
-// Additional interfaces
 export interface AddMemberDialogDictionary {
   addMemberTitle: string;
   addMember: string;
@@ -298,8 +285,6 @@ export type Languages = {
   };
 }
 
-// Add these new interfaces:
-
 export interface GiftCardProps {
   gift: Gift;
   dict: Pick<MemberGiftsTranslations, 'markAsPurchased' | 'markAsAvailable'>;
@@ -308,47 +293,6 @@ export interface GiftCardProps {
   animatedGiftId: string | null;
 }
 
-export interface DialogContentProps {
-  className?: string;
-  children: React.ReactNode;
-}
-
-export interface DialogHeaderProps {
-  className?: string;
-  children: React.ReactNode;
-}
-
-export interface DialogTitleProps {
-  className?: string;
-  children: React.ReactNode;
-}
-
-export interface DialogDescriptionProps {
-  className?: string;
-  children: React.ReactNode;
-}
-
-export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link';
-  size?: 'default' | 'sm' | 'lg' | 'icon';
-  className?: string;
-  children: ReactNode;
-  isLoading?: boolean;
-}
-
-export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
-  className?: string;
-}
-
-export interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
-  className?: string;
-}
-
-export interface LabelProps extends React.LabelHTMLAttributes<HTMLLabelElement> {
-  className?: string;
-}
-
-// Debounce-related types
 export interface DebouncedFunction<T extends (...args: any[]) => any> {
   (...args: Parameters<T>): void;
 }
@@ -358,64 +302,6 @@ export interface DebounceOptions {
   maxWait?: number;
   leading?: boolean;
   trailing?: boolean;
-}
-
-// Add API response type for member addition
-export interface AddMemberResponse {
-  success: boolean;
-  message?: string;
-  member?: Member;
-}
-
-// Add form-related types for the dialog
-export interface AddMemberFormData {
-  name: string;
-}
-
-export interface AddMemberFormProps {
-  onSubmit: (data: AddMemberFormData) => Promise<void>;
-  isLoading: boolean;
-  dict: AddMemberDialogDictionary;
-}
-
-// Rename the local interface to avoid conflict
-export interface CustomDialogProps {
-  open?: boolean;
-  onOpenChange?: (open: boolean) => void;
-  children: ReactNode;
-}
-
-// Add form submission state type
-export interface SubmissionState {
-  isSubmitting: boolean;
-  error: string | null;
-}
-
-export interface GiftApiResponse {
-  success: boolean;
-  gift?: Gift;
-  message?: string;
-}
-
-export interface GiftsApiResponse {
-  gifts: Gift[];
-  message?: string;
-}
-
-// Add new interface
-export interface DeleteMemberDialogProps {
-  memberId: string;
-  memberName: string;
-  onDelete: () => void;
-  dict: {
-    confirmations: {
-      deleteMember: string;
-    };
-    toasts: {
-      memberDeleted: string;
-      memberDeleteFailed: string;
-    };
-  };
 }
 
 export interface MemberListProps {
