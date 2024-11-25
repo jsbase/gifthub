@@ -35,6 +35,13 @@ export interface UserGroup {
   gifts?: Gift[];
 }
 
+export interface Features {
+  [key: string]: {
+    title: string;
+    description: string;
+  };
+}
+
 export interface Translations {
   tagline: string;
   login: string;
@@ -53,20 +60,7 @@ export interface Translations {
   addMember: string;
   logout: string;
   noMembers: string;
-  features: {
-    simple: {
-      title: string;
-      description: string;
-    };
-    tracking: {
-      title: string;
-      description: string;
-    };
-    updates: {
-      title: string;
-      description: string;
-    };
-  };
+  features: Features;
   errors: {
     loginRequired: string;
     failedToLoad: string;
