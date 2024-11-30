@@ -1,35 +1,13 @@
 import { NextPage } from 'next';
+import React from 'react';
 import { getDictionary } from './dictionaries';
-import { AuthButtons } from '@/components/auth-buttons';
 import { Header } from "@/components/header";
-import { Footer } from '@/components/footer';
-import { FeatureCard } from '@/components/feature-card';
-import { cn } from '@/lib/utils';
 import { Logo } from "@/components/logo";
-import React, { memo } from 'react';
+import { AuthButtons } from '@/components/auth-buttons';
+import { Footer } from '@/components/footer';
+import FeatureCards from '@/components/feature-cards';
+import { cn } from '@/lib/utils';
 import { PageProps, Translations } from '@/types';
-
-const FeatureCards: React.FC<Pick<Translations, 'features'>> = memo(({ features }) => (
-  <div className={cn(
-    "text-center",
-    "my-12",
-    "lg:mb-0",
-    "md:mb-0",
-    "grid",
-    "grid-cols-1",
-    "md:grid-cols-3",
-    "gap-dialog-desktop",
-    "xs:gap-dialog-mobile"
-  )}>
-    {Object.entries(features).map(([key, feature]) => (
-      <FeatureCard
-        key={key}
-        title={feature.title}
-        description={feature.description}
-      />
-    ))}
-  </div>
-));
 
 const Home: NextPage<PageProps> = async ({ params }) => {
   const { lang } = await params;

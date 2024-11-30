@@ -3,15 +3,15 @@
 import { useEffect, useState, use, useCallback, lazy, Suspense } from 'react';
 import { NextPage } from 'next';
 import { useRouter, usePathname } from 'next/navigation';
+import { getDictionary } from '../dictionaries';
+import { toast } from 'sonner';
 import { Header } from '@/components/header';
 import { Footer } from '@/components/footer';
-import { verifyAuth, logout } from '@/lib/auth';
-import { getDictionary } from '../dictionaries';
-import { Member, Gift, Translations, PageProps } from '@/types';
-import { toast } from 'sonner';
 import LoadingSpinner from '@/components/loading-spinner';
-import { cn } from '@/lib/utils';
 import { MemberList } from '@/components/member-list';
+import { verifyAuth, logout } from '@/lib/auth';
+import { cn } from '@/lib/utils';
+import { Member, Gift, Translations, PageProps } from '@/types';
 
 const MemberGiftsDialog = lazy(() => import('@/components/member-gifts-dialog'));
 

@@ -1,9 +1,8 @@
-import { memo } from 'react';
+import React, { memo } from 'react';
 import { cn } from '@/lib/utils';
 import { FeatureCardProps } from "@/types";
 
-export const FeatureCard = memo(function FeatureCard({ title, description }: FeatureCardProps) {
-  return (
+const FeatureCard: React.FC<FeatureCardProps> = ({ title, description }) =>
     <div className={cn(
       "block",
       "mb-4",
@@ -30,6 +29,6 @@ export const FeatureCard = memo(function FeatureCard({ title, description }: Fea
       )}>
         {description}
       </p>
-    </div>
-  );
-});
+    </div>;
+
+export default memo(FeatureCard);
