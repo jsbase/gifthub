@@ -2,9 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getGroupIdFromToken } from '@/lib/auth-server';
 
-export async function DELETE(
-  request: NextRequest,
-): Promise<NextResponse> {
+export const DELETE = async (request: NextRequest): Promise<NextResponse> => {
   const { pathname } = new URL(request.url);
   const id = pathname.split('/').pop();
 
@@ -68,4 +66,4 @@ export async function DELETE(
       { status: 500 }
     );
   }
-}
+};

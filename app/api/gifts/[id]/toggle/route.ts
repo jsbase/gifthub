@@ -1,10 +1,8 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getGroupIdFromToken } from '@/lib/auth-server';
 
-export async function PUT(
-  request: Request,
-) {
+export const PUT = async (request: NextRequest): Promise<NextResponse> => {
   try {
     const { id } = await request.json();
     const groupId = await getGroupIdFromToken(request);
@@ -45,4 +43,4 @@ export async function PUT(
       { status: 500 }
     );
   }
-}
+};

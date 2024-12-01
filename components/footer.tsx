@@ -1,78 +1,42 @@
+import FooterLinks from '@/components/footer-links';
 import { cn } from '@/lib/utils';
 import { FooterProps } from "@/types";
-import Link from "next/link";
-import { memo } from 'react';
 
-// Memoize the footer links section
-const FooterLinks = memo(function FooterLinks({ 
-  dict 
-}: Pick<FooterProps, 'dict'>) {
-  return (
+const Footer: ({ dict }: FooterProps) => JSX.Element | null = ({ dict }) => (
+  <footer className={cn(
+    "bg-white",
+    "dark:bg-gray-800",
+    "mt-auto",
+    "w-full"
+  )}>
     <div className={cn(
-      "flex",
-      "space-x-5",
-      "justify-end",
-      "sm:justify-center"
-    )}>
-      <Link
-        href="/privacy"
-        className={cn(
-          "text-gray-500",
-          "hover:text-gray-900",
-          "dark:hover:text-white"
-        )}
-      >
-        {dict.footer.privacyPolicy}
-      </Link>
-      <Link
-        href="/terms"
-        className={cn(
-          "text-gray-500",
-          "hover:text-gray-900",
-          "dark:hover:text-white"
-        )}
-      >
-        {dict.footer.termsConditions}
-      </Link>
-    </div>
-  );
-});
-
-export function Footer({ dict }: FooterProps) {
-  return (
-    <footer className={cn(
-      "bg-white",
-      "dark:bg-gray-800",
-      "mt-auto",
-      "w-full"
+      "container",
+      "mx-auto",
+      "p-4",
+      "py-6",
+      "lg:py-8"
     )}>
       <div className={cn(
-        "container",
-        "mx-auto",
-        "p-4",
-        "py-6",
-        "lg:py-8"
+        "sm:flex",
+        "sm:items-center",
+        "sm:justify-between"
       )}>
-        <div className={cn(
-          "sm:flex",
-          "sm:items-center",
-          "sm:justify-between"
+        <p className={cn(
+          "mb-1",
+          "lg:mb-0",
+          "text-xs",
+          "lg:text-sm",
+          "text-right",
+          "sm:text-left",
+          "text-gray-500",
+          "dark:text-gray-400"
         )}>
-          <p className={cn(
-            "mb-1",
-            "lg:mb-0",
-            "text-xs",
-            "lg:text-sm",
-            "text-right",
-            "sm:text-left",
-            "text-gray-500",
-            "dark:text-gray-400"
-          )}>
-            {dict.footer.copyright}
-          </p>
-          <FooterLinks dict={dict} />
-        </div>
+          {dict.footer.copyright}
+        </p>
+        <FooterLinks dict={dict} />
       </div>
-    </footer>
-  );
-}
+    </div>
+  </footer>
+);
+
+export default Footer;

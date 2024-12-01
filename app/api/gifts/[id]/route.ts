@@ -4,9 +4,7 @@ import { getGroupIdFromToken } from '@/lib/auth-server';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET(
-  request: Request,
-) {
+export const GET = async (request: NextRequest): Promise<NextResponse> => {
   const { id } = await request.json();
 
   if (!id.match(/^[0-9a-fA-F]{24}$/)) {
@@ -47,11 +45,9 @@ export async function GET(
       { status: 500 }
     );
   }
-}
+};
 
-async function POST(
-  request: NextRequest,
-): Promise<NextResponse> {
+export const POST = async (request: NextRequest): Promise<NextResponse> => {
   const { id } = await request.json();
 
   if (!id.match(/^[0-9a-fA-F]{24}$/)) {
@@ -97,11 +93,9 @@ async function POST(
       { status: 500 }
     );
   }
-}
+};
 
-export async function DELETE(
-  request: NextRequest,
-): Promise<NextResponse> {
+export const DELETE = async (request: NextRequest): Promise<NextResponse> => {
   const { pathname } = new URL(request.url);
   const id = pathname.split('/').pop();
 
@@ -153,11 +147,9 @@ export async function DELETE(
       { status: 500 }
     );
   }
-}
+};
 
-export async function PUT(
-  request: NextRequest,
-): Promise<NextResponse> {
+export const PUT = async (request: NextRequest): Promise<NextResponse> => {
   const { id } = await request.json();
 
   if (!id.match(/^[0-9a-fA-F]{24}$/)) {
@@ -209,4 +201,4 @@ export async function PUT(
       { status: 500 }
     );
   }
-}
+};

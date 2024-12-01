@@ -1,10 +1,10 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 import { getGroupIdFromToken } from '@/lib/auth-server';
 
-export async function GET(request: Request) {
+export const GET = async (request: NextRequest): Promise<NextResponse> => {
   try {
     const groupId = await getGroupIdFromToken(request);
     if (!groupId) {
@@ -30,7 +30,6 @@ export async function GET(request: Request) {
       },
     });
 
-    // Transform the data to match your Member interface
     const formattedMembers = members.map(member => ({
       id: member.id,
       name: member.user.name,
@@ -123,4 +122,4 @@ export async function POST(request: Request) {
       { status: 500 }
     );
   }
-}
+};

@@ -5,7 +5,7 @@ import { createPortal } from 'react-dom';
 import { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 
-export default function LoadingSpinner(): JSX.Element | null {
+const LoadingSpinner: () => JSX.Element | null = () => {
   const [isMounted, setIsMounted] = useState<boolean>(false);
 
   useEffect(() => {
@@ -15,7 +15,7 @@ export default function LoadingSpinner(): JSX.Element | null {
   if (!isMounted) {
     return null;
   }
-  
+
   return createPortal(
     <div className={cn(
       "fixed inset-0",
@@ -42,3 +42,5 @@ export default function LoadingSpinner(): JSX.Element | null {
     document.body
   );
 };
+
+export default LoadingSpinner;
