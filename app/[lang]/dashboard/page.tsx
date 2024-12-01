@@ -88,11 +88,11 @@ const DashboardPage: NextPage<PageProps> = ({ params }) => {
     }
   }, [dict, groupName, fetchData]);
 
-  const pathname = usePathname();
+  const path = usePathname();
 
   useEffect(() => {
     setIsRouteChanging(false);
-  }, [pathname]);
+  }, [path]);
 
   const handleMemberClick = async (memberId: string) => {
     try {

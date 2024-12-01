@@ -28,28 +28,29 @@ const LoginForm = memo(function LoginForm({
     )}>
       <div className="space-y-2">
         <Label className="sr-only" htmlFor="groupName">{dict.groupName}</Label>
-        <Input 
-          name="groupName" 
-          id="groupName" 
-          placeholder={dict.groupName} 
-          required 
+        <Input
+          name="groupName"
+          id="groupName"
+          placeholder={dict.groupName}
+          required
         />
       </div>
       <div className="space-y-2">
         <Label className="sr-only" htmlFor="password">{dict.enterPassword}</Label>
-        <Input 
-          name="password" 
-          id="password" 
-          type="password" 
+        <Input
+          name="password"
+          id="password"
+          type="password"
           placeholder={dict.enterPassword}
           autoComplete="current-password"
-          required 
+          required
         />
       </div>
-      <Button 
-        type="submit" 
+      <Button
+        type="submit"
         className={cn("w-full", "xs:text-base", "xs:h-12")}
         disabled={isLoading}
+        aria-label="SubmitLogin"
       >
         {isLoading ? dict.loading : dict.login}
       </Button>
@@ -73,39 +74,40 @@ const RegisterForm = memo(function RegisterForm({
     )}>
       <div className="space-y-2">
         <Label className="sr-only" htmlFor="newGroupName">{dict.groupName}</Label>
-        <Input 
-          name="newGroupName" 
-          id="newGroupName" 
-          placeholder={dict.groupName} 
-          required 
+        <Input
+          name="newGroupName"
+          id="newGroupName"
+          placeholder={dict.groupName}
+          required
         />
       </div>
       <div className="space-y-2">
         <Label className="sr-only" htmlFor="newPassword">{dict.enterPassword}</Label>
-        <Input 
-          name="newPassword" 
-          id="newPassword" 
-          type="password" 
+        <Input
+          name="newPassword"
+          id="newPassword"
+          type="password"
           placeholder={dict.enterPassword}
           autoComplete="new-password"
-          required 
+          required
         />
       </div>
       <div className="space-y-2">
         <Label className="sr-only" htmlFor="confirmPassword">{dict.confirmPassword}</Label>
-        <Input 
-          name="confirmPassword" 
-          id="confirmPassword" 
-          type="password" 
+        <Input
+          name="confirmPassword"
+          id="confirmPassword"
+          type="password"
           placeholder={dict.confirmPassword}
           autoComplete="new-password"
-          required 
+          required
         />
       </div>
-      <Button 
-        type="submit" 
+      <Button
+        type="submit"
         className={cn("w-full", "xs:text-base", "xs:h-12")}
         disabled={isLoading}
+        aria-label="SubmitRegister"
       >
         {isLoading ? dict.loading : dict.createGroupBtn}
       </Button>
@@ -133,11 +135,11 @@ export function AuthButtons({ dict }: { dict: Translations }) {
       toast.success(dict?.toasts.loginSuccess);
       setIsLoginOpen(false);
       router.refresh();
-      
+
       const lang = document.cookie.split('; ')
         .find(row => row.startsWith('NEXT_LOCALE='))
         ?.split('=')[1] || 'en';
-        
+
       router.push(`/${lang}/dashboard`);
     } catch (error) {
       toast.error(dict?.errors.loginFailed);
@@ -186,19 +188,19 @@ export function AuthButtons({ dict }: { dict: Translations }) {
     )}>
       <Dialog open={isLoginOpen} onOpenChange={setIsLoginOpen}>
         <DialogTrigger asChild>
-          <Button size="lg" className="min-w-[200px]">
+          <Button size="lg" className="min-w-[200px]" aria-label="OpenLogin">
             {dict.login}
           </Button>
         </DialogTrigger>
-        <AuthDialog 
-          title={dict.loginToGroup} 
+        <AuthDialog
+          title={dict.loginToGroup}
           description={dict.enterGroupName}
           className={cn(
             "xs:h-[85vh]",
             "xs:max-h-[85vh]"
           )}
         >
-          <LoginForm 
+          <LoginForm
             dict={dict}
             isLoading={isLoading}
             onSubmit={handleLogin}
@@ -208,19 +210,19 @@ export function AuthButtons({ dict }: { dict: Translations }) {
 
       <Dialog open={isRegisterOpen} onOpenChange={setIsRegisterOpen}>
         <DialogTrigger asChild>
-          <Button size="lg" variant="outline" className="min-w-[200px]">
+          <Button size="lg" variant="outline" className="min-w-[200px]" aria-label="OpenRegister">
             {dict.register}
           </Button>
         </DialogTrigger>
-        <AuthDialog 
-          title={dict.createGroup} 
+        <AuthDialog
+          title={dict.createGroup}
           description={dict.createGroupDescription}
           className={cn(
             "xs:h-[85vh]",
             "xs:max-h-[85vh]"
           )}
         >
-          <RegisterForm 
+          <RegisterForm
             dict={dict}
             isLoading={isLoading}
             onSubmit={handleRegister}
@@ -231,11 +233,11 @@ export function AuthButtons({ dict }: { dict: Translations }) {
   );
 }
 
-export function AuthDialog({ 
-  children, 
-  title, 
+export function AuthDialog({
+  children,
+  title,
   description,
-  className 
+  className
 }: {
   children: React.ReactNode,
   title: string,

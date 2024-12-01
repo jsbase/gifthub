@@ -1,5 +1,5 @@
-import Image from 'next/image';
 import { memo } from 'react';
+import Image from 'next/image';
 
 const LanguageFlag = ({
   src,
