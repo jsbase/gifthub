@@ -54,6 +54,7 @@ const LanguageSwitcher: React.FC = () => {
             variant="ghost"
             size="icon"
             className={cn("w-6 h-6", "rounded-full", "overflow-hidden", "p-0")}
+            data-testid="language-switcher"
           >
             <LanguageFlag
               src={selectedLanguage.flag}

@@ -41,3 +41,8 @@ next-env.d.ts
 # tools
 /.bolt
 /.vscode
+node_modules/
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
