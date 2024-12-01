@@ -1,11 +1,11 @@
 import { useCallback, useRef, useEffect } from 'react';
 import { DebouncedFunction, DebounceOptions } from '@/types';
 
-export function useDebounce<T extends (...args: any[]) => any>(
+const useDebounce = <T extends (...args: any[]) => any>(
   callback: T,
   delay: number,
   options: Partial<DebounceOptions> = {}
-): DebouncedFunction<T> {
+): DebouncedFunction<T> => {
   const timeoutRef = useRef<NodeJS.Timeout>();
   const callbackRef = useRef(callback);
   const lastCalledRef = useRef<number>(0);
@@ -21,10 +21,10 @@ export function useDebounce<T extends (...args: any[]) => any>(
       const now = Date.now();
       argsRef.current = args;
 
-      const argsAreEqual = lastArgsRef.current && 
+      const argsAreEqual = lastArgsRef.current &&
         args.length === lastArgsRef.current.length &&
         args.every((arg, index) => arg === lastArgsRef.current![index]);
-      
+
       if (timeoutRef.current && argsAreEqual) {
         return;
       }
@@ -58,4 +58,6 @@ export function useDebounce<T extends (...args: any[]) => any>(
     },
     [delay, options.leading, options.trailing, options.maxWait]
   );
-}
+};
+
+export { useDebounce };
