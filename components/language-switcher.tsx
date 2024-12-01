@@ -2,6 +2,9 @@
 
 import { lazy, memo, Suspense, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
+import { useDebounce } from '@/hooks/use-debounce';
+import { loadTranslations } from '@/app/[lang]/actions';
+import LanguageFlag from '@/components/language-flag';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -9,30 +12,24 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import LanguageFlag from '@/components/language-flag';
-import { loadTranslations } from '@/app/[lang]/actions';
 import { cn } from '@/lib/utils';
-import { useDebounce } from '@/hooks/use-debounce';
-import { LanguageCode, Languages } from '@/types';
-import { defaultLocale, languages } from '@/lib/i18n-config';
+import { getCurrentLanguage, languages } from '@/lib/i18n-config';
+import { LanguageCode } from '@/types';
 
 const LoadingSpinner = lazy(() => import('@/components/loading-spinner'));
 
 const LanguageSwitcher: React.FC = () => {
-  const pathname = usePathname();
+  const path = usePathname();
   const router = useRouter();
   const [isChangingLanguage, setIsChangingLanguage] = useState(false);
-
-  const currentLang = Object.values(languages).find(
-    lang => pathname.startsWith(`/${lang.code}/`) || pathname === `/${lang.code}`
-  ) || languages[defaultLocale];
+  const selectedLanguage = getCurrentLanguage(path);
 
   const switchLanguageBase = async (langCode: LanguageCode) => {
     try {
       setIsChangingLanguage(true);
       document.cookie = `NEXT_LOCALE=${langCode};path=/;max-age=${365 * 24 * 60 * 60};SameSite=Lax`;
       await loadTranslations(langCode);
-      const newPath = pathname.split('/').slice(2).join('/');
+      const newPath = path.split('/').slice(2).join('/');
       await router.push(`/${langCode}${newPath ? `/${newPath}` : ''}`);
     } finally {
       setIsChangingLanguage(false);
@@ -59,8 +56,8 @@ const LanguageSwitcher: React.FC = () => {
             className={cn("w-6 h-6", "rounded-full", "overflow-hidden", "p-0")}
           >
             <LanguageFlag
-              src={currentLang.flag}
-              alt={currentLang.name}
+              src={selectedLanguage.flag}
+              alt={selectedLanguage.name}
               width={30}
               height={30}
               className={cn("w-6", "h-6", "object-cover")}
