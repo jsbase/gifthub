@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
+import { NextRequest } from 'next/server';
 import { jwtVerify } from 'jose';
 import acceptLanguage from 'accept-language';
 import { locales, defaultLocale } from '@/lib/i18n-config';
-import type { LanguageCode } from '@/types';
+import { LanguageCode } from '@/types';
 
 const getLocale = (request: NextRequest): LanguageCode => {
   // First priority: Check cookie

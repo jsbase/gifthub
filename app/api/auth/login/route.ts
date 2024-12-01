@@ -1,11 +1,12 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, NextRequest } from 'next/server';
 import { SignJWT } from 'jose';
 import bcrypt from 'bcryptjs';
 import prisma from '@/lib/prisma';
 import { cookies } from 'next/headers';
-import { defaultLocale } from '@/lib/i18n-config';
+import { defaultLocale, locales } from '@/lib/i18n-config';
+import { LanguageCode } from '@/types';
 
-export async function POST(request: Request) {
+export const POST = async (request: NextRequest): Promise<NextResponse> => {
   try {
     if (!process.env.JWT_SECRET) {
       throw new Error('JWT_SECRET is not set');
@@ -46,7 +47,6 @@ export async function POST(request: Request) {
 
     const response = NextResponse.json({ token, success: true });
 
-    // Set the token as an HTTP-only cookie
     response.cookies.set({
       name: 'auth-token',
       value: token,
@@ -56,14 +56,12 @@ export async function POST(request: Request) {
       maxAge: 60 * 60 * 24 * 7, // 7 days
     });
 
-    // Get the current locale from the request headers
     const acceptLanguage = request.headers.get('accept-language') || '';
-    const preferredLocale = acceptLanguage.split(',')[0].split('-')[0];
-    const validLocales = ['en', 'de', 'ru'];
+    const preferredLocale = acceptLanguage.split(',')[0].split('-')[0] as LanguageCode;
+    const validLocales = locales;
     const locale = validLocales.includes(preferredLocale) ? preferredLocale : defaultLocale;
-
-    // Set locale cookie if it doesn't exist
     const cookieStore = await cookies();
+
     if (!cookieStore.get('NEXT_LOCALE')) {
       response.cookies.set({
         name: 'NEXT_LOCALE',
@@ -86,4 +84,4 @@ export async function POST(request: Request) {
       { status: 500 }
     );
   }
-}
+};

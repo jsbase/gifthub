@@ -7,7 +7,6 @@ import { toast } from '@/hooks/use-toast';
 import { useDebounce } from "@/hooks/use-debounce";
 import { MemberListProps } from '@/types';
 
-// New memoized header component
 const MemberListHeader = memo(function MemberListHeader({
   dict,
   onDeleteClick,
@@ -83,7 +82,6 @@ export function MemberList({
     };
   }, [showDeleteButtons, handleClickOutside]);
 
-  // Create the debounced delete function outside the callback
   const debouncedDelete = useDebounce(async (memberId: string, memberName: string) => {
     if (!confirm(dict.confirmations.deleteMember.replace('{name}', memberName))) {
       return;
@@ -128,7 +126,6 @@ export function MemberList({
     []
   );
 
-  // Memoize the member list items to prevent unnecessary re-renders
   const memberListItems = useMemo(() => (
     (members || []).map((member) => (
       <li

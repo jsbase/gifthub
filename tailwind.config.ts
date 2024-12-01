@@ -1,4 +1,4 @@
-import type { Config } from 'tailwindcss';
+import { Config } from 'tailwindcss';
 
 const animations = {
   keyframes: {

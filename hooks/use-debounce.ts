@@ -1,5 +1,5 @@
 import { useCallback, useRef, useEffect } from 'react';
-import type { DebouncedFunction, DebounceOptions } from '@/types';
+import { DebouncedFunction, DebounceOptions } from '@/types';
 
 export function useDebounce<T extends (...args: any[]) => any>(
   callback: T,

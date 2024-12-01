@@ -3,7 +3,7 @@ import { cn } from '@/lib/utils';
 import FeatureCard from '@/components/feature-card';
 import { Translations } from '@/types';
 
-const FeatureCards: React.FC<Pick<Translations, 'features'>> = ({ features }) =>
+const FeatureCards: React.FC<Pick<Translations, 'features'>> = ({ features }) => (
   <div className={cn(
     "text-center",
     "my-12",
@@ -22,6 +22,7 @@ const FeatureCards: React.FC<Pick<Translations, 'features'>> = ({ features }) =>
         description={feature.description}
       />
     ))}
-  </div>;
+  </div>
+);
 
 export default memo(FeatureCards);

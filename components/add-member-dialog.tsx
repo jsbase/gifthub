@@ -1,51 +1,18 @@
-"use client";
+'use client';
 
-import { useState, useEffect, useCallback, memo } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from "./ui/dialog";
-import { Button } from "./ui/button";
-import { Input } from "./ui/input";
-import { Label } from "./ui/label";
+import React, { useState, useEffect, useCallback } from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import AddMemberForm from "@/components/add-member-form";
 import { UserPlus } from "lucide-react";
 import { toast } from "sonner";
-import { AddMemberDialogProps } from "@/types";
 import { getDictionary } from "@/app/[lang]/dictionaries";
 import { usePathname } from "next/navigation";
-import { AddMemberDialogDictionary, ToastTranslations } from "@/types";
 import { cn } from "@/lib/utils";
 import { useDebounce } from "@/hooks/use-debounce";
+import { AddMemberDialogProps, AddMemberDialogDictionary, ToastTranslations } from "@/types";
 
-// Memoize the form component since it's reused and only depends on specific props
-const AddMemberForm = memo(function AddMemberForm({
-  dict,
-  isLoading,
-  onSubmit
-}: {
-  dict: AddMemberDialogDictionary;
-  isLoading: boolean;
-  onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
-}) {
-  return (
-    <form onSubmit={onSubmit} className="space-y-4">
-      <div className="space-y-2">
-        <Label className="sr-only" htmlFor="name">
-          {dict.enterMemberName}
-        </Label>
-        <Input
-          id="name"
-          name="name"
-          type="text"
-          placeholder={dict.enterMemberName}
-          required
-        />
-      </div>
-      <Button type="submit" className="w-full" disabled={isLoading}>
-        {isLoading ? dict.adding : dict.addMember}
-      </Button>
-    </form>
-  );
-});
-
-export default function AddMemberDialog({ onMemberAdded }: Omit<AddMemberDialogProps, 'dict'>) {
+const AddMemberDialog: React.FC<Omit<AddMemberDialogProps, 'dict'>> = ({ onMemberAdded }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [dict, setDict] = useState<{
@@ -66,7 +33,6 @@ export default function AddMemberDialog({ onMemberAdded }: Omit<AddMemberDialogP
     loadTranslations();
   }, [lang]);
 
-  // Debounce the member addition
   const debouncedAddMember = useDebounce(async (name: string) => {
     try {
       const response = await fetch('/api/members', {
@@ -133,4 +99,6 @@ export default function AddMemberDialog({ onMemberAdded }: Omit<AddMemberDialogP
       </DialogContent>
     </Dialog>
   );
-}
+};
+
+export default AddMemberDialog;

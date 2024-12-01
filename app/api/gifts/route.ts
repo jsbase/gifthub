@@ -1,7 +1,8 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getGroupIdFromToken } from '@/lib/auth-server';
-export async function GET(request: Request) {
+
+export const GET = async (request: NextRequest): Promise<NextResponse> => {
   try {
     const groupId = await getGroupIdFromToken(request);
     if (!groupId) {
@@ -32,9 +33,9 @@ export async function GET(request: Request) {
       { status: 500 }
     );
   }
-}
+};
 
-export async function POST(request: Request) {
+export const POST = async (request: NextRequest): Promise<NextResponse> => {
   try {
     const groupId = await getGroupIdFromToken(request);
     if (!groupId) {
@@ -81,4 +82,4 @@ export async function POST(request: Request) {
       { status: 500 }
     );
   }
-}
+};

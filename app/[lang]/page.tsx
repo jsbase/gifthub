@@ -1,10 +1,10 @@
 import { NextPage } from 'next';
 import React from 'react';
-import { getDictionary } from './dictionaries';
-import { Header } from "@/components/header";
+import { getDictionary } from '@/app/[lang]/dictionaries';
+import Header from "@/components/header";
 import { Logo } from "@/components/logo";
 import { AuthButtons } from '@/components/auth-buttons';
-import { Footer } from '@/components/footer';
+import Footer from '@/components/footer';
 import FeatureCards from '@/components/feature-cards';
 import { cn } from '@/lib/utils';
 import { PageProps, Translations } from '@/types';

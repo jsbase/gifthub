@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { jwtVerify } from 'jose';
 
-export async function GET(request: NextRequest) {
+export const GET = async (request: NextRequest): Promise<NextResponse> => {
   const isSilentAuth = request.headers.get('X-Silent-Auth') === '1';
 
   try {
@@ -34,4 +34,4 @@ export async function GET(request: NextRequest) {
       { status: isSilentAuth ? 200 : 401 }
     );
   }
-}
+};

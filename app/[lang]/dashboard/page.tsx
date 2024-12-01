@@ -3,12 +3,12 @@
 import { useEffect, useState, use, useCallback, lazy, Suspense } from 'react';
 import { NextPage } from 'next';
 import { useRouter, usePathname } from 'next/navigation';
-import { getDictionary } from '../dictionaries';
+import { getDictionary } from '@/app/[lang]/dictionaries';
 import { toast } from 'sonner';
-import { Header } from '@/components/header';
-import { Footer } from '@/components/footer';
+import Header from "@/components/header";
 import LoadingSpinner from '@/components/loading-spinner';
 import { MemberList } from '@/components/member-list';
+import Footer from '@/components/footer';
 import { verifyAuth, logout } from '@/lib/auth';
 import { cn } from '@/lib/utils';
 import { Member, Gift, Translations, PageProps } from '@/types';
@@ -28,21 +28,20 @@ const DashboardPage: NextPage<PageProps> = ({ params }) => {
   const [memberGifts, setMemberGifts] = useState<Gift[]>([]);
   const [isRouteChanging, setIsRouteChanging] = useState(false);
 
-  // Optimize fetchData to only depend on essential dependencies
   const fetchData = useCallback(async () => {
     try {
-      // 1. Get all members
+      // Get all members
       const membersRes = await fetch('/api/members');
       if (!membersRes.ok) throw new Error('Failed to fetch members');
       const membersData = await membersRes.json();
       setMembers(membersData.members);
 
-      // 2. Get all gifts in one call
+      // Get all gifts
       const giftsRes = await fetch('/api/gifts');
       if (!giftsRes.ok) throw new Error('Failed to fetch gifts');
       const { gifts } = await giftsRes.json();
 
-      // 3. Group gifts by member ID
+      // Group gifts by member ID
       const giftCountsByMember = membersData.members.reduce((acc: Record<string, number>, member: any) => {
         acc[member.id] = gifts.filter(
           (gift: any) => 
@@ -61,7 +60,6 @@ const DashboardPage: NextPage<PageProps> = ({ params }) => {
     }
   }, [dict]);
 
-  // Split initialization effect from data fetching
   useEffect(() => {
     setMounted(true);
   }, []);
@@ -84,7 +82,6 @@ const DashboardPage: NextPage<PageProps> = ({ params }) => {
     init();
   }, [lang, router]);
 
-  // Separate effect for data fetching
   useEffect(() => {
     if (dict && groupName) {
       fetchData();
@@ -135,7 +132,7 @@ const DashboardPage: NextPage<PageProps> = ({ params }) => {
 
   if (!mounted) return null;
 
-return (
+  return (
     <div className={cn(
       "min-h-screen",
       "bg-background",

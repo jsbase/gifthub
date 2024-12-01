@@ -3,10 +3,12 @@
 import { useEffect } from 'react';
 import { registerServiceWorker } from '@/app/sw';
 
-export default function ServiceWorkerRegistration() {
+const ServiceWorkerRegistration = () => {
   useEffect(() => {
-    registerServiceWorker()
-  }, [])
+    registerServiceWorker();
+  }, []);
 
-  return null
-}
+  return null;
+};
+
+export default ServiceWorkerRegistration;

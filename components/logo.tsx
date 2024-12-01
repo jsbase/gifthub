@@ -9,7 +9,6 @@ interface LogoProps {
   groupName?: string;
 }
 
-// Move sizes object outside component to prevent recreation
 const SIZES = {
   sm: {
     icon: "h-6 w-6",

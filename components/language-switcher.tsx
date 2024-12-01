@@ -1,63 +1,31 @@
 'use client';
 
 import { lazy, memo, Suspense, useState } from 'react';
-import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
-import { Button } from './ui/button';
+import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from './ui/dropdown-menu';
+} from '@/components/ui/dropdown-menu';
+import LanguageFlag from '@/components/language-flag';
 import { loadTranslations } from '@/app/[lang]/actions';
-import { LanguageCode, Language } from '@/types';
 import { cn } from '@/lib/utils';
 import { useDebounce } from '@/hooks/use-debounce';
+import { LanguageCode, Languages } from '@/types';
+import { defaultLocale, languages } from '@/lib/i18n-config';
 
-const languages: readonly Language[] = [
-  { code: 'de', name: 'Deutsch', flag: '/flags/de.svg' },
-  { code: 'en', name: 'English', flag: '/flags/gb.svg' },
-  { code: 'ru', name: 'Русский', flag: '/flags/ru.svg' },
-] as const;
+const LoadingSpinner = lazy(() => import('@/components/loading-spinner'));
 
-// Lazy load the LoadingSpinner since it's conditionally rendered
-const LoadingSpinner = lazy(() => import('./loading-spinner'));
-
-// Memoize the flag image component since it's used multiple times
-const LanguageFlag = memo(function LanguageFlag({ 
-  src, 
-  alt, 
-  width, 
-  height, 
-  className 
-}: { 
-  src: string; 
-  alt: string; 
-  width: number; 
-  height: number; 
-  className?: string; 
-}) {
-  return (
-    <Image
-      src={src}
-      alt={alt}
-      width={width}
-      height={height}
-      className={className}
-      style={{ objectFit: 'cover' }}
-    />
-  );
-});
-
-export const LanguageSwitcher = memo(function LanguageSwitcher() {
+const LanguageSwitcher: React.FC = () => {
   const pathname = usePathname();
   const router = useRouter();
   const [isChangingLanguage, setIsChangingLanguage] = useState(false);
 
-  const currentLang = languages.find(
+  const currentLang = Object.values(languages).find(
     lang => pathname.startsWith(`/${lang.code}/`) || pathname === `/${lang.code}`
-  ) || languages[0];
+  ) || languages[defaultLocale];
 
   const switchLanguageBase = async (langCode: LanguageCode) => {
     try {
@@ -71,9 +39,6 @@ export const LanguageSwitcher = memo(function LanguageSwitcher() {
     }
   };
 
-  // Debounce the language switch with a 300ms delay
-  // Using leading: true to ensure the first click is immediate
-  // Using trailing: false to prevent delayed execution after the debounce period
   const switchLanguage = useDebounce(switchLanguageBase, 300, {
     leading: true,
     trailing: false,
@@ -103,7 +68,7 @@ export const LanguageSwitcher = memo(function LanguageSwitcher() {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          {languages.map((lang) => (
+          {Object.values(languages).map((lang) => (
             <DropdownMenuItem
               key={lang.code}
               onClick={() => switchLanguage(lang.code)}
@@ -127,4 +92,6 @@ export const LanguageSwitcher = memo(function LanguageSwitcher() {
       </DropdownMenu>
     </>
   );
-});
+};
+
+export default memo(LanguageSwitcher);

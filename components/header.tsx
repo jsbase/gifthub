@@ -1,27 +1,25 @@
-"use client";
+'use client';
 
-import React from 'react';
-import { LogOut } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { LanguageSwitcher } from "@/components/language-switcher";
-import { HeaderProps } from "@/types";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { LogOut } from "lucide-react";
 import { verifyAuth } from "@/lib/auth";
-import { AuthState } from "@/types";
+import { Logo } from "@/components/logo";
+import { Button } from "@/components/ui/button";
+import LanguageSwitcher from "@/components/language-switcher";
 import { usePathname } from "next/navigation";
 import { cn } from '@/lib/utils';
-import { Logo } from "@/components/logo";
+import { AuthState, HeaderProps } from "@/types";
 
-export function Header({
-  groupName: initialGroupName,
+const Header: ({ groupName, dict, onLogout, showAuth }: HeaderProps) => JSX.Element | null = ({
+  groupName,
   dict,
   onLogout,
   showAuth = false
-}: HeaderProps) {
+}) => {
   const [authState, setAuthState] = useState<AuthState>({
     isAuthenticated: false,
-    groupName: initialGroupName
+    groupName
   });
 
   const pathname = usePathname();
@@ -36,7 +34,7 @@ export function Header({
         if (isMounted) {
           setAuthState({
             isAuthenticated: auth?.success ?? false,
-            groupName: auth?.groupName || initialGroupName
+            groupName: auth?.groupName || groupName
           });
         }
       } catch (error) {
@@ -57,7 +55,7 @@ export function Header({
     return () => {
       isMounted = false;
     };
-  }, [initialGroupName, pathname]);
+  }, [groupName, pathname]);
 
   const isDashboardRoute = pathname.includes('/dashboard');
 
@@ -111,4 +109,6 @@ export function Header({
       </div>
     </header>
   );
-}
+};
+
+export default Header;

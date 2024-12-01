@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 
-export async function POST() {
+export const POST = async (): Promise<NextResponse> => {
   const response = NextResponse.json({ success: true });
   
   // Clear the auth cookie
@@ -12,4 +12,4 @@ export async function POST() {
   });
 
   return response;
-}
+};

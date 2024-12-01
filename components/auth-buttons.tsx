@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { useState, useCallback, memo } from "react";
+import { useState, memo } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -12,7 +12,6 @@ import { Translations } from "@/types";
 import { cn } from "@/lib/utils";
 import { useDebounce } from "@/hooks/use-debounce";
 
-// Memoize the login form
 const LoginForm = memo(function LoginForm({
   dict,
   isLoading,
@@ -42,7 +41,8 @@ const LoginForm = memo(function LoginForm({
           name="password" 
           id="password" 
           type="password" 
-          placeholder={dict.enterPassword} 
+          placeholder={dict.enterPassword}
+          autoComplete="current-password"
           required 
         />
       </div>
@@ -57,7 +57,6 @@ const LoginForm = memo(function LoginForm({
   );
 });
 
-// Memoize the register form
 const RegisterForm = memo(function RegisterForm({
   dict,
   isLoading,
@@ -87,7 +86,8 @@ const RegisterForm = memo(function RegisterForm({
           name="newPassword" 
           id="newPassword" 
           type="password" 
-          placeholder={dict.enterPassword} 
+          placeholder={dict.enterPassword}
+          autoComplete="new-password"
           required 
         />
       </div>
@@ -97,7 +97,8 @@ const RegisterForm = memo(function RegisterForm({
           name="confirmPassword" 
           id="confirmPassword" 
           type="password" 
-          placeholder={dict.confirmPassword} 
+          placeholder={dict.confirmPassword}
+          autoComplete="new-password"
           required 
         />
       </div>
