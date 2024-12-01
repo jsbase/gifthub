@@ -46,7 +46,7 @@ export const GET = async (request: NextRequest): Promise<NextResponse> => {
   }
 }
 
-export async function POST(request: Request) {
+export const POST = async (request: NextRequest): Promise<NextResponse> => {
   try {
     const groupId = await getGroupIdFromToken(request);
     if (!groupId) {
