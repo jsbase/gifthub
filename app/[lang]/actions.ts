@@ -1,7 +1,10 @@
-'use server'
+'use server';
 
-import { getDictionary } from './dictionaries';
+import { getDictionary } from '@/app/[lang]/dictionaries';
+import { Translations } from '@/types';
 
-export async function loadTranslations(locale: string) {
+const loadTranslations: (locale: string) => Promise<Translations> = async (locale) => {
   return getDictionary(locale);
-}
+};
+
+export { loadTranslations };

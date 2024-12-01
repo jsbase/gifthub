@@ -1,10 +1,12 @@
-import './globals.css';
-import type { Metadata } from 'next';
+import '@/app/globals.css';
 import { Inter } from 'next/font/google';
+import React from 'react';
+import { Metadata, Viewport } from 'next';
 import { Toaster } from "@/components/ui/sonner";
-import { ThemeProvider } from "@/components/theme-provider";
-import { cn } from '@/lib/utils';
+import ThemeProvider from '@/components/theme-provider';
 import ServiceWorkerRegistration from '@/components/ServiceWorkerRegistration';
+import { cn } from '@/lib/utils';
+import { RootLayoutProps } from '@/types';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -48,45 +50,40 @@ export const metadata: Metadata = {
   manifest: '/site.webmanifest',
 };
 
-export const viewport = {
+export const viewport: Viewport = {
   themeColor: '#ffffff',
   width: 'device-width',
   initialScale: 1.0,
-  minimumWidth: 344,
   viewportFit: 'cover',
   userScalable: false,
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  return (
-    <html lang="en" suppressHydrationWarning>
-      <body className={cn(
-        inter.className,
-        "min-h-screen",
-        "flex",
-        "flex-col"
-      )}>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <div className={cn(
-            "flex-1",
-            "flex",
-            "flex-col"
-          )}>
-            {children}
-          </div>
-          <Toaster />
-          <ServiceWorkerRegistration />
-        </ThemeProvider>
-      </body>
-    </html>
-  );
-}
+const RootLayout: React.FC<RootLayoutProps> = ({ children }) => (
+  <html lang="en" suppressHydrationWarning>
+    <body className={cn(
+      inter.className,
+      "min-h-screen",
+      "flex",
+      "flex-col"
+    )}>
+      <ThemeProvider
+        attribute="class"
+        defaultTheme="system"
+        enableSystem
+        disableTransitionOnChange
+      >
+        <div className={cn(
+          "flex-1",
+          "flex",
+          "flex-col"
+        )}>
+          {children}
+        </div>
+        <Toaster />
+        <ServiceWorkerRegistration />
+      </ThemeProvider>
+    </body>
+  </html>
+);
+
+export default RootLayout;

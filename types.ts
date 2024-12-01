@@ -1,4 +1,5 @@
-import { type DialogProps } from '@radix-ui/react-dialog';
+import { DialogProps } from '@radix-ui/react-dialog';
+import { ReactNode } from 'react';
 
 export interface Gift {
   id: string;
@@ -198,6 +199,12 @@ export interface AddMemberDialogDictionary {
   enterMemberName: string;
 }
 
+export interface AddMemberFormProps {
+  dict: AddMemberDialogDictionary;
+  isLoading: boolean;
+  onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
+}
+
 export interface MemberGiftsTranslations {
   title: string;
   description: string;
@@ -245,6 +252,10 @@ export interface AddMemberDialogProps {
   };
 }
 
+export interface RootLayoutProps {
+  children: ReactNode;
+}
+
 export interface HeaderProps {
   groupName?: string;
   dict?: Pick<Translations, 'logout'>;
@@ -270,7 +281,7 @@ export interface AuthState {
   groupName: string | undefined;
 }
 
-export type LanguageCode = 'en' | 'de' | 'ru';
+export type LanguageCode = 'de' | 'en' | 'ru';
 
 export interface Language {
   code: LanguageCode;
@@ -280,10 +291,11 @@ export interface Language {
 
 export type Languages = {
   [key in LanguageCode]: {
+    code: LanguageCode;
     name: string;
     flag: string;
   };
-}
+};
 
 export interface GiftCardProps {
   gift: Gift;

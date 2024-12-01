@@ -1,8 +1,8 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import prisma from '@/lib/prisma';
 
-export async function POST(request: Request) {
+export const POST = async (request: NextRequest): Promise<NextResponse> => {
   try {
     // Validate environment variables
     if (!process.env.MONGODB_URI) {
@@ -113,4 +113,4 @@ export async function POST(request: Request) {
       { status: 500 }
     );
   }
-}
+};
