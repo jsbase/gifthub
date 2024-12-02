@@ -12,4 +12,4 @@ jobs:
       - name: Run tests
         run: npx playwright test
         env:
-          BASE_URL: ${{ github.event.deployment_status.environment_url }}
+          NEXT_BASE_URL: ${{ github.event.deployment_status.environment_url }}
