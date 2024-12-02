@@ -1,3 +1,7 @@
+[![Playwright](https://github.com/jsbase/gifthub/actions/workflows/playwright.yml/badge.svg)](https://github.com/jsbase/gifthub/actions/workflows/playwright.yml)
+[![CodeQL](https://github.com/jsbase/gifthub/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/jsbase/gifthub/actions/workflows/github-code-scanning/codeql)
+[![Dependabot Updates](https://github.com/jsbase/gifthub/actions/workflows/dependabot/dependabot-updates/badge.svg)](https://github.com/jsbase/gifthub/actions/workflows/dependabot/dependabot-updates)
+
 # 🎁 GiftHub
 
 > The smart way to organize and track gifts for your family, friends, and groups! Never buy duplicate presents or miss a special occasion again.
