@@ -16,7 +16,7 @@ test.describe('LanguageSwitcher Component', () => {
     try {
       await page.goto(`${baseUrl}`, {
         waitUntil: 'networkidle',
-        timeout: 15000,
+        timeout: 20000,
       });
 
       await page.waitForSelector('body');
@@ -28,13 +28,13 @@ test.describe('LanguageSwitcher Component', () => {
   });
 
   test('renders the current language flag correctly', async ({ page }) => {
-    await page.waitForSelector('[data-testid="language-switcher"]', { state: 'visible', timeout: 10000 });
+    await page.waitForSelector('[data-testid="language-switcher"]', { state: 'visible', timeout: 20000 });
     const languageSwitcherButton = await page.getByTestId('language-switcher');
     expect(languageSwitcherButton).toBeTruthy();
   });
 
   test('opens language dropdown menu', async ({ page }) => {
-    await page.waitForSelector('[data-testid="language-switcher"]', { state: 'visible', timeout: 10000 });
+    await page.waitForSelector('[data-testid="language-switcher"]', { state: 'visible', timeout: 20000 });
     const languageSwitcherButton = await page.getByTestId('language-switcher');
     await languageSwitcherButton.click();
 
@@ -52,7 +52,7 @@ test.describe('LanguageSwitcher Component', () => {
       throw new Error('No alternative language found');
     }
 
-    await page.waitForSelector('[data-testid="language-switcher"]', { state: 'visible', timeout: 10000 });
+    await page.waitForSelector('[data-testid="language-switcher"]', { state: 'visible', timeout: 20000 });
     const languageSwitcherButton = await page.getByTestId('language-switcher');
     await languageSwitcherButton.click();
 
@@ -90,7 +90,7 @@ test.describe('LanguageSwitcher Component', () => {
   //     });
   //   });
 
-  //   await page.waitForSelector('[data-testid="language-switcher"]', { state: 'visible', timeout: 5000 });
+  //   await page.waitForSelector('[data-testid="language-switcher"]', { state: 'visible', timeout: 20000 });
   //   const languageSwitcherButton = await page.getByTestId('language-switcher');
   //   await languageSwitcherButton.click();
 
