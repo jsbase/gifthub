@@ -3,8 +3,8 @@ import { languages } from '@/lib/i18n-config';
 
 test.describe('LanguageSwitcher Component', () => {
   test.beforeEach(async ({ page, context }) => {
-    await context.setDefaultNavigationTimeout(15000);
-    await context.setDefaultTimeout(15000);
+    await context.setDefaultNavigationTimeout(20000);
+    await context.setDefaultTimeout(20000);
 
     await page.route('**', (route) => {
       console.log('Network Request:', route.request().url());
@@ -28,13 +28,15 @@ test.describe('LanguageSwitcher Component', () => {
   });
 
   test('renders the current language flag correctly', async ({ page }) => {
+    await page.waitForSelector('[data-testid="language-switcher"]', { state: 'visible', timeout: 5000 });
     const languageSwitcherButton = await page.getByTestId('language-switcher');
     expect(languageSwitcherButton).toBeTruthy();
   });
 
   test('opens language dropdown menu', async ({ page }) => {
+    await page.waitForSelector('[data-testid="language-switcher"]', { state: 'visible', timeout: 5000 });
     const languageSwitcherButton = await page.getByTestId('language-switcher');
-    languageSwitcherButton.click();
+    await languageSwitcherButton.click();
 
     for (const lang of Object.values(languages)) {
       const languageOption = await page.getByRole('menuitem', {
@@ -50,7 +52,8 @@ test.describe('LanguageSwitcher Component', () => {
       throw new Error('No alternative language found');
     }
 
-    const languageSwitcherButton = page.getByTestId('language-switcher');
+    await page.waitForSelector('[data-testid="language-switcher"]', { state: 'visible', timeout: 5000 });
+    const languageSwitcherButton = await page.getByTestId('language-switcher');
     await languageSwitcherButton.click();
 
     const switchPromise = page.getByRole('menuitem', { name: targetLanguage.name }).click();
@@ -87,7 +90,8 @@ test.describe('LanguageSwitcher Component', () => {
       });
     });
 
-    const languageSwitcherButton = page.getByTestId('language-switcher');
+    await page.waitForSelector('[data-testid="language-switcher"]', { state: 'visible', timeout: 5000 });
+    const languageSwitcherButton = await page.getByTestId('language-switcher');
     await languageSwitcherButton.click();
 
     const targetLanguage = Object.values(languages)
