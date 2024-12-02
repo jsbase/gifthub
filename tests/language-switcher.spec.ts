@@ -22,7 +22,7 @@ test.describe('LanguageSwitcher Component', () => {
       });
 
       await page.waitForSelector('body');
-      console.log('Current URL after navigation:', page.url());
+      console.log('Test completed on:', page.url());
     } catch (error) {
       console.error('Navigation Error:', error);
       throw error;
