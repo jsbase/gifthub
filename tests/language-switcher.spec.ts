@@ -5,24 +5,24 @@ test.describe('LanguageSwitcher Component', () => {
   test.beforeEach(async ({ page, context }) => {
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
 
-    await context.setDefaultNavigationTimeout(20000);
-    await context.setDefaultTimeout(20000);
+    await context.setDefaultNavigationTimeout(10000);
+    await context.setDefaultTimeout(10000);
 
     // Optionally log network requests for debugging
-    await page.route('**', (route) => {
-      // console.log('NEXT_PUBLIC_BASE_URL:', baseUrl);
-      console.log('Network Request:', route.request().url());
-      return route.continue();
-    });
+    // await page.route('**', (route) => {
+    // console.log('NEXT_PUBLIC_BASE_URL:', baseUrl);
+    // console.log('Network Request:', route.request().url());
+    // return route.continue();
+    // });
 
     try {
       await page.goto(`${baseUrl}`, {
         waitUntil: 'networkidle',
-        timeout: 20000,
+        timeout: 10000,
       });
 
       await page.waitForSelector('body');
-      console.log('Current URL after navigation:', page.url());
+      // console.log('Current URL after navigation:', page.url());
     } catch (error) {
       console.error('Navigation Error:', error);
       throw error;
@@ -30,13 +30,13 @@ test.describe('LanguageSwitcher Component', () => {
   });
 
   test('renders the current language flag correctly', async ({ page }) => {
-    await page.waitForSelector('[data-testid="language-switcher"]', { state: 'visible', timeout: 20000 });
+    await page.waitForSelector('[data-testid="language-switcher"]', { state: 'visible', timeout: 5000 });
     const languageSwitcherButton = await page.getByTestId('language-switcher');
     expect(languageSwitcherButton).toBeTruthy();
   });
 
   test('opens language dropdown menu', async ({ page }) => {
-    await page.waitForSelector('[data-testid="language-switcher"]', { state: 'visible', timeout: 20000 });
+    await page.waitForSelector('[data-testid="language-switcher"]', { state: 'visible', timeout: 5000 });
     const languageSwitcherButton = await page.getByTestId('language-switcher');
     await languageSwitcherButton.click();
 
@@ -54,7 +54,7 @@ test.describe('LanguageSwitcher Component', () => {
       throw new Error('No alternative language found');
     }
 
-    await page.waitForSelector('[data-testid="language-switcher"]', { state: 'visible', timeout: 20000 });
+    await page.waitForSelector('[data-testid="language-switcher"]', { state: 'visible', timeout: 5000 });
     const languageSwitcherButton = await page.getByTestId('language-switcher');
     await languageSwitcherButton.click();
 
@@ -92,7 +92,7 @@ test.describe('LanguageSwitcher Component', () => {
       });
     });
 
-    await page.waitForSelector('[data-testid="language-switcher"]', { state: 'visible', timeout: 20000 });
+    await page.waitForSelector('[data-testid="language-switcher"]', { state: 'visible', timeout: 5000 });
     const languageSwitcherButton = await page.getByTestId('language-switcher');
     await languageSwitcherButton.click();
 
