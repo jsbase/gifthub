@@ -17,14 +17,16 @@ const LoadingSpinner: () => JSX.Element | null = () => {
   }
 
   return createPortal(
-    <div className={cn(
-      "fixed inset-0",
-      "bg-background/80",
-      "backdrop-blur-sm",
-      "z-50",
-      "flex",
-      "items-center",
-      "justify-center"
+    <div
+      data-testid="loading-spinner"
+      className={cn(
+        "fixed inset-0",
+        "bg-background/80",
+        "backdrop-blur-sm",
+        "z-50",
+        "flex",
+        "items-center",
+        "justify-center"
       )}
     >
       <Image

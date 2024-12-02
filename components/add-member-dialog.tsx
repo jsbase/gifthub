@@ -1,15 +1,16 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from "react";
+import { usePathname } from "next/navigation";
+import { toast } from "sonner";
+import { UserPlus } from "lucide-react";
+import { useDebounce } from "@/hooks/use-debounce";
+import { getDictionary } from "@/app/[lang]/dictionaries";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import AddMemberForm from "@/components/add-member-form";
-import { UserPlus } from "lucide-react";
-import { toast } from "sonner";
-import { getDictionary } from "@/app/[lang]/dictionaries";
-import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { useDebounce } from "@/hooks/use-debounce";
+import { getLocaleFromPath } from "@/lib/i18n-config";
 import { AddMemberDialogProps, AddMemberDialogDictionary, ToastTranslations } from "@/types";
 
 const AddMemberDialog: React.FC<Omit<AddMemberDialogProps, 'dict'>> = ({ onMemberAdded }) => {
@@ -19,19 +20,19 @@ const AddMemberDialog: React.FC<Omit<AddMemberDialogProps, 'dict'>> = ({ onMembe
     addMemberDialog: AddMemberDialogDictionary;
     toasts: ToastTranslations;
   } | null>(null);
-  const pathname = usePathname();
-  const lang = pathname.split('/')[1];
+  const path = usePathname();
+  const locale = getLocaleFromPath(path);
 
   useEffect(() => {
     const loadTranslations = async () => {
-      const translations = await getDictionary(lang);
+      const translations = await getDictionary(locale);
       setDict({
         addMemberDialog: translations.addMemberDialog,
         toasts: translations.toasts
       });
     };
     loadTranslations();
-  }, [lang]);
+  }, [locale]);
 
   const debouncedAddMember = useDebounce(async (name: string) => {
     try {

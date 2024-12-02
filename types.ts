@@ -1,5 +1,6 @@
 import { DialogProps } from '@radix-ui/react-dialog';
 import { ReactNode } from 'react';
+import { ToastActionElement, ToastProps } from '@/components/ui/toast';
 
 export interface Gift {
   id: string;
@@ -177,7 +178,7 @@ export interface MemberGiftsDialogProps {
   };
 }
 
-export interface CommandDialogProps extends DialogProps {}
+export interface CommandDialogProps extends DialogProps { }
 
 export interface AuthResponse {
   success: boolean;
@@ -295,7 +296,7 @@ export type Languages = {
     name: string;
     flag: string;
   };
-};
+}
 
 export interface GiftCardProps {
   gift: Gift;
@@ -322,4 +323,44 @@ export interface MemberListProps {
   dict: any;
   onMemberClick: (id: string) => void;
   onMemberDeleted: () => void;
+}
+
+export type ToasterToast = ToastProps & {
+  id: string;
+  title?: React.ReactNode;
+  description?: React.ReactNode;
+  action?: ToastActionElement;
+}
+
+export type Toast = Omit<ToasterToast, 'id'>;
+
+const actionTypes = {
+  ADD_TOAST: 'ADD_TOAST',
+  UPDATE_TOAST: 'UPDATE_TOAST',
+  DISMISS_TOAST: 'DISMISS_TOAST',
+  REMOVE_TOAST: 'REMOVE_TOAST',
+} as const;
+
+export type ActionType = typeof actionTypes;
+
+export type Action =
+  | {
+    type: ActionType['ADD_TOAST'];
+    toast: ToasterToast;
+  }
+  | {
+    type: ActionType['UPDATE_TOAST'];
+    toast: Partial<ToasterToast>;
+  }
+  | {
+    type: ActionType['DISMISS_TOAST'];
+    toastId?: ToasterToast['id'];
+  }
+  | {
+    type: ActionType['REMOVE_TOAST'];
+    toastId?: ToasterToast['id'];
+  };
+
+export interface State {
+  toasts: ToasterToast[];
 }
