@@ -1,9 +1,9 @@
 import { test, expect } from '@playwright/test';
-import dict from '@/lib/translations/en.json';
+import * as dict from '@/lib/translations/en.json';
 
 const locale = 'en';
 
-test.describe('Login and Registration Modal', () => {
+test.describe('Login and Registration', () => {
   test.beforeEach(async ({ page, context }) => {
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
 
@@ -17,16 +17,56 @@ test.describe('Login and Registration Modal', () => {
       });
 
       await page.waitForSelector('body');
-      console.log('Test completed on:', page.url());
+      console.log(`Test completed for component "auth-buttons" on ${page.url()}`);
     } catch (error) {
       console.error('Navigation Error:', error);
       throw error;
     }
   });
 
-  test('Login with valid credentials', async ({ page }) => {
-    await page.goto(`/${locale}`);
+  test('Login dialog opens and closes correctly', async ({ page }) => {
+    const loginButton = page.getByRole('button', { name: dict.login });
+    await loginButton.click();
 
+    const dialog = page.locator('[role="dialog"]');
+    await expect(dialog).toBeVisible();
+
+    const closeIcon = dialog.locator('[data-testid="dialog-close"]');
+    await closeIcon.click();
+    await expect(dialog).not.toBeVisible({ timeout: 5000 });
+
+    await loginButton.click();
+    await expect(dialog).toBeVisible();
+
+    // const overlay = page.locator('[data-testid="dialog-overlay"]');
+    // await overlay.click({ force: true });
+    // await expect(dialog).not.toBeVisible({ timeout: 5000 });
+  });
+
+  // TODO: enable and adjust this test after implementing a "remove group" functionality
+  // test('Register dialog opens and closes correctly', async ({ page }) => {
+  //   await page.goto(`/${locale}`);
+
+  //   const registerButton = page.getByRole('button', { name: dict.register });
+  //   await registerButton.click();
+
+  //   const dialog = page.locator('[role="dialog"]');
+  //   await expect(dialog).toBeVisible();
+
+  //   const closeIcon = dialog.locator('[data-testid="dialog-close"]');
+  //   await closeIcon.click();
+  //   await expect(dialog).not.toBeVisible();
+
+  //   await registerButton.click();
+  //   await expect(dialog).toBeVisible();
+
+  //   const overlay = page.locator('[data-testid="dialog-overlay"]');
+  //   await overlay.click({ force: true });
+
+  //   await expect(dialog).not.toBeVisible();
+  // });
+
+  test('Login with valid credentials', async ({ page }) => {
     const loginButton = page.getByRole('button', { name: dict.login });
     await loginButton.click();
 
@@ -57,8 +97,8 @@ test.describe('Login and Registration Modal', () => {
   //   const registerButton = page.getByRole('button', { name: dict.register });
   //   await registerButton.click();
 
-  //   const registerModal = page.locator('[role="dialog"]');
-  //   await expect(registerModal).toBeVisible();
+  //   const dialog = page.locator('[role="dialog"]');
+  //   await expect(dialog).toBeVisible();
 
   //   await page.fill('#newGroupName', 'NewTestGroup');
   //   await page.fill('#newPassword', 'newpassword123');
@@ -67,7 +107,7 @@ test.describe('Login and Registration Modal', () => {
   //   const submitButton = page.getByRole('button', { name: dict.createGroupBtn });
   //   await submitButton.click();
 
-  //   await expect(registerModal).not.toBeVisible();
+  //   await expect(dialog).not.toBeVisible();
   //   await page.waitForNavigation();
 
   //   await expect(page).toHaveURL(/login/);

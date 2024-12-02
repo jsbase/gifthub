@@ -176,7 +176,6 @@ export function AuthButtons({ dict }: { dict: Translations }) {
     }
   };
 
-  // Debounce the form handlers with a 500ms delay
   const handleLogin = useDebounce(handleLoginBase, 500, { leading: true });
   const handleRegister = useDebounce(handleRegisterBase, 500, { leading: true });
 

@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { languages } from '@/lib/i18n-config';
 
-test.describe('LanguageSwitcher Component', () => {
+test.describe('Switch language', () => {
   test.beforeEach(async ({ page, context }) => {
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
 
@@ -22,19 +22,19 @@ test.describe('LanguageSwitcher Component', () => {
       });
 
       await page.waitForSelector('body');
-      // console.log('Test completed on:', page.url());
+      console.log(`Test completed for component "language-switcher" on ${page.url()}`);
     } catch (error) {
       console.error('Navigation Error:', error);
       throw error;
     }
   });
 
-  test('renders the current language flag correctly', async ({ page }) => {
+  test('Renders the current language flag correctly', async ({ page }) => {
     const languageSwitcherButton = await page.getByTestId('language-switcher');
     expect(languageSwitcherButton).toBeTruthy();
   });
 
-  test('opens language dropdown menu', async ({ page }) => {
+  test('Opens language dropdown menu', async ({ page }) => {
     const languageSwitcherButton = await page.getByTestId('language-switcher');
     await languageSwitcherButton.click();
 
@@ -46,7 +46,7 @@ test.describe('LanguageSwitcher Component', () => {
     }
   });
 
-  test('switches language successfully', async ({ page }) => {
+  test('Switches language successfully', async ({ page }) => {
     const targetLanguage = Object.values(languages).find(lang => lang.code !== 'de');
     if (!targetLanguage) {
       throw new Error('No alternative language found');
@@ -65,7 +65,7 @@ test.describe('LanguageSwitcher Component', () => {
     expect(localeCookie).toBeTruthy();
   });
 
-  test('shows loading spinner during language switch when logged in', async ({ page }) => {
+  test('Shows loading spinner during language switch when logged in', async ({ page }) => {
     await page.goto('/');
     await page.waitForLoadState('load');
 
