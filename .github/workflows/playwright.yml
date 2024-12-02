@@ -1,7 +1,7 @@
 name: E2E Tests
 on:
   deployment_status:
-    branches: [ main, preview ]
+    branches: [ main, preview, development]
 jobs:
   run-e2es:
     if: github.event_name == 'deployment_status' && github.event.deployment_status.state == 'success'

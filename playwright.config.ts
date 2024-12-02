@@ -18,7 +18,6 @@ export default defineConfig({
   use: {
     baseURL: process.env.NEXT_PUBLIC_BASE_URL,
     trace: 'on-first-retry',
-    viewport: { width: 1280, height: 720 },
   },
   projects: [
     {
@@ -42,9 +41,9 @@ export default defineConfig({
       use: { ...devices['iPhone 12'] },
     },
   ],
-  webServer: {
+  webServer: !process.env.CI ? {
     command: 'npm run dev',
-    url: process.env.NEXT_PUBLIC_BASE_URL,
-    reuseExistingServer: !process.env.CI,
-  },
+    port: 3000,
+    reuseExistingServer: true,
+  } : undefined,
 });
