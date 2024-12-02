@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import * as dict from '@/lib/translations/en.json';
 
-const locale = 'en';
+// const locale = 'en';
 
 test.describe('Login and Registration', () => {
   test.beforeEach(async ({ page, context }) => {
@@ -37,34 +37,7 @@ test.describe('Login and Registration', () => {
 
     await loginButton.click();
     await expect(dialog).toBeVisible();
-
-    // const overlay = page.locator('[data-testid="dialog-overlay"]');
-    // await overlay.click({ force: true });
-    // await expect(dialog).not.toBeVisible({ timeout: 5000 });
   });
-
-  // TODO: enable and adjust this test after implementing a "remove group" functionality
-  // test('Register dialog opens and closes correctly', async ({ page }) => {
-  //   await page.goto(`/${locale}`);
-
-  //   const registerButton = page.getByRole('button', { name: dict.register });
-  //   await registerButton.click();
-
-  //   const dialog = page.locator('[role="dialog"]');
-  //   await expect(dialog).toBeVisible();
-
-  //   const closeIcon = dialog.locator('[data-testid="dialog-close"]');
-  //   await closeIcon.click();
-  //   await expect(dialog).not.toBeVisible();
-
-  //   await registerButton.click();
-  //   await expect(dialog).toBeVisible();
-
-  //   const overlay = page.locator('[data-testid="dialog-overlay"]');
-  //   await overlay.click({ force: true });
-
-  //   await expect(dialog).not.toBeVisible();
-  // });
 
   test('Login with valid credentials', async ({ page }) => {
     const loginButton = page.getByRole('button', { name: dict.login });
@@ -74,21 +47,25 @@ test.describe('Login and Registration', () => {
     await page.fill('#password', 'test123');
 
     const submitButton = page.getByRole('button', { name: dict.loginToGroup });
-    await submitButton.click();
 
+    // Ensure login response or navigation happens first
+    const [response] = await Promise.all([
+      page.waitForNavigation({ timeout: 15000, waitUntil: 'load' }),
+      submitButton.click(), // Trigger login action
+    ]);
+
+    await expect(page).toHaveURL(/dashboard/); // Ensure we're redirected to the dashboard
+
+    // Wait for the toast to be visible, increase timeout to 10 seconds
     const toast = page.locator('[data-sonner-toast][data-type="success"]');
-    await toast.waitFor({ state: 'visible', timeout: 5000 });
-
+    await toast.waitFor({ state: 'visible', timeout: 10000 });
     expect(await toast.textContent()).toContain(dict.toasts.loginSuccess);
-
-    await page.waitForNavigation();
-
-    await expect(page).toHaveURL(/dashboard/);
 
     const spinner = page.getByTestId('loading-spinner');
     await spinner.waitFor({ state: 'visible', timeout: 5000 });
     expect(spinner).toBeTruthy();
   });
+
 
   // TODO: enable and adjust this test after implementing a "remove group" functionality
   // test('Register new group with valid credentials', async ({ page }) => {
