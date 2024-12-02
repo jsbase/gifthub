@@ -6,6 +6,7 @@ test.describe('LanguageSwitcher Component', () => {
     await context.setDefaultNavigationTimeout(20000);
     await context.setDefaultTimeout(20000);
 
+    // Optionally log network requests for debugging
     await page.route('**', (route) => {
       console.log('Network Request:', route.request().url());
       return route.continue();
@@ -28,21 +29,21 @@ test.describe('LanguageSwitcher Component', () => {
   });
 
   test('renders the current language flag correctly', async ({ page }) => {
-    await page.waitForSelector('[data-testid="language-switcher"]', { state: 'visible', timeout: 20000 });
-    const languageSwitcherButton = await page.getByTestId('language-switcher');
-    expect(languageSwitcherButton).toBeTruthy();
+    const languageSwitcherButton = page.locator('[data-testid="language-switcher"]');
+
+    await expect(languageSwitcherButton).toBeVisible({ timeout: 20000 });
   });
 
   test('opens language dropdown menu', async ({ page }) => {
-    await page.waitForSelector('[data-testid="language-switcher"]', { state: 'visible', timeout: 20000 });
-    const languageSwitcherButton = await page.getByTestId('language-switcher');
+    const languageSwitcherButton = page.locator('[data-testid="language-switcher"]');
+
+    await expect(languageSwitcherButton).toBeVisible({ timeout: 20000 });
+
     await languageSwitcherButton.click();
 
     for (const lang of Object.values(languages)) {
-      const languageOption = await page.getByRole('menuitem', {
-        name: lang.name
-      });
-      expect(languageOption).toBeTruthy();
+      const languageOption = page.locator('[role="menuitem"][name="' + lang.name + '"]');
+      await expect(languageOption).toBeVisible({ timeout: 10000 });
     }
   });
 
@@ -52,12 +53,13 @@ test.describe('LanguageSwitcher Component', () => {
       throw new Error('No alternative language found');
     }
 
-    await page.waitForSelector('[data-testid="language-switcher"]', { state: 'visible', timeout: 20000 });
-    const languageSwitcherButton = await page.getByTestId('language-switcher');
+    const languageSwitcherButton = page.locator('[data-testid="language-switcher"]');
+
+    await expect(languageSwitcherButton).toBeVisible({ timeout: 20000 });
     await languageSwitcherButton.click();
 
-    const switchPromise = page.getByRole('menuitem', { name: targetLanguage.name }).click();
-    await switchPromise;
+    const targetLanguageOption = page.locator('[role="menuitem"][name="' + targetLanguage.name + '"]');
+    await targetLanguageOption.click();
 
     const cookies = await page.context().cookies();
     const localeCookie = cookies.find(
