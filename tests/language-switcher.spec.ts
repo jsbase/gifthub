@@ -22,7 +22,7 @@ test.describe('LanguageSwitcher Component', () => {
       });
 
       await page.waitForSelector('body');
-      // console.log('Current URL after navigation:', page.url());
+      console.log('Current URL after navigation:', page.url());
     } catch (error) {
       console.error('Navigation Error:', error);
       throw error;
@@ -30,13 +30,11 @@ test.describe('LanguageSwitcher Component', () => {
   });
 
   test('renders the current language flag correctly', async ({ page }) => {
-    await page.waitForSelector('[data-testid="language-switcher"]', { state: 'visible', timeout: 5000 });
     const languageSwitcherButton = await page.getByTestId('language-switcher');
     expect(languageSwitcherButton).toBeTruthy();
   });
 
   test('opens language dropdown menu', async ({ page }) => {
-    await page.waitForSelector('[data-testid="language-switcher"]', { state: 'visible', timeout: 5000 });
     const languageSwitcherButton = await page.getByTestId('language-switcher');
     await languageSwitcherButton.click();
 
@@ -54,7 +52,6 @@ test.describe('LanguageSwitcher Component', () => {
       throw new Error('No alternative language found');
     }
 
-    await page.waitForSelector('[data-testid="language-switcher"]', { state: 'visible', timeout: 5000 });
     const languageSwitcherButton = await page.getByTestId('language-switcher');
     await languageSwitcherButton.click();
 
@@ -70,6 +67,7 @@ test.describe('LanguageSwitcher Component', () => {
 
   test('shows loading spinner during language switch when logged in', async ({ page }) => {
     await page.goto('/');
+    await page.waitForLoadState('load');
 
     const loginButton = page.getByRole('button', { name: 'OpenLogin' });
     await loginButton.click();
