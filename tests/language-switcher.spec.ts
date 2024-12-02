@@ -8,13 +8,6 @@ test.describe('Switch language', () => {
     await context.setDefaultNavigationTimeout(10000);
     await context.setDefaultTimeout(10000);
 
-    // Optionally log network requests for debugging
-    // await page.route('**', (route) => {
-    // console.log('NEXT_PUBLIC_BASE_URL:', baseUrl);
-    // console.log('Network Request:', route.request().url());
-    // return route.continue();
-    // });
-
     try {
       await page.goto(`${baseUrl}`, {
         waitUntil: 'networkidle',
@@ -67,7 +60,6 @@ test.describe('Switch language', () => {
 
   test('Shows loading spinner during language switch when logged in', async ({ page }) => {
     await page.goto('/');
-    await page.waitForLoadState('load');
 
     const loginButton = page.getByRole('button', { name: 'OpenLogin' });
     await loginButton.click();
@@ -101,11 +93,12 @@ test.describe('Switch language', () => {
       throw new Error('No alternative language found');
     }
 
-    const switchPromise = page.getByRole('menuitem', { name: targetLanguage.name }).click();
-
     const spinner = await page.getByTestId('loading-spinner');
     expect(spinner).toBeTruthy();
 
+    const switchPromise = page.getByRole('menuitem', { name: targetLanguage.name }).click();
     await switchPromise;
+
+    await page.waitForSelector('[data-testid="loading-spinner"]', { state: 'hidden', timeout: 5000 });
   });
 });
