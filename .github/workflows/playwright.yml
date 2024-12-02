@@ -1,5 +1,9 @@
 name: E2E Tests
 on:
+  push:
+    branches: [ main, preview ]
+  pull_request:
+    branches: [ main, preview ]
   deployment_status:
 jobs:
   run-e2es:
@@ -12,4 +16,4 @@ jobs:
       - name: Run tests
         run: npx playwright test
         env:
-          NEXT_BASE_URL: ${{ github.event.deployment_status.environment_url }}
+          NEXT_PUBLIC_BASE_URL: ${{ github.event.deployment_status.environment_url }}
