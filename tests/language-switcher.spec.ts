@@ -15,6 +15,7 @@ test.describe('LanguageSwitcher Component', () => {
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
 
     try {
+      console.log('NEXT_PUBLIC_BASE_URL:', baseUrl);
       await page.goto(`${baseUrl}`, {
         waitUntil: 'networkidle',
         timeout: 20000,
