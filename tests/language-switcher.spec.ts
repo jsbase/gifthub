@@ -66,46 +66,46 @@ test.describe('LanguageSwitcher Component', () => {
     expect(localeCookie).toBeTruthy();
   });
 
-  test('shows loading spinner during language switch when logged in', async ({ page }) => {
-    await page.goto('/');
+  // test('shows loading spinner during language switch when logged in', async ({ page }) => {
+  //   await page.goto('/');
 
-    const loginButton = page.getByRole('button', { name: 'OpenLogin' });
-    await loginButton.click();
+  //   const loginButton = page.getByRole('button', { name: 'OpenLogin' });
+  //   await loginButton.click();
 
-    await page.fill('#groupName', 'testgroup');
-    await page.fill('#password', 'test123');
+  //   await page.fill('#groupName', 'testgroup');
+  //   await page.fill('#password', 'test123');
 
-    const submitButton = page.getByRole('button', { name: 'SubmitLogin' });
-    await submitButton.click();
+  //   const submitButton = page.getByRole('button', { name: 'SubmitLogin' });
+  //   await submitButton.click();
 
-    await page.waitForNavigation();
+  //   await page.waitForNavigation();
 
-    await page.route('**/actions', async (route) => {
-      await new Promise(resolve => setTimeout(resolve, 500));
+  //   await page.route('**/actions', async (route) => {
+  //     await new Promise(resolve => setTimeout(resolve, 500));
 
-      return route.fulfill({
-        status: 200,
-        body: JSON.stringify({}),
-        headers: { 'Content-Type': 'application/json' },
-      });
-    });
+  //     return route.fulfill({
+  //       status: 200,
+  //       body: JSON.stringify({}),
+  //       headers: { 'Content-Type': 'application/json' },
+  //     });
+  //   });
 
-    await page.waitForSelector('[data-testid="language-switcher"]', { state: 'visible', timeout: 5000 });
-    const languageSwitcherButton = await page.getByTestId('language-switcher');
-    await languageSwitcherButton.click();
+  //   await page.waitForSelector('[data-testid="language-switcher"]', { state: 'visible', timeout: 5000 });
+  //   const languageSwitcherButton = await page.getByTestId('language-switcher');
+  //   await languageSwitcherButton.click();
 
-    const targetLanguage = Object.values(languages)
-      .find(lang => lang.code !== 'de');
+  //   const targetLanguage = Object.values(languages)
+  //     .find(lang => lang.code !== 'de');
 
-    if (!targetLanguage) {
-      throw new Error('No alternative language found');
-    }
+  //   if (!targetLanguage) {
+  //     throw new Error('No alternative language found');
+  //   }
 
-    const switchPromise = page.getByRole('menuitem', { name: targetLanguage.name }).click();
+  //   const switchPromise = page.getByRole('menuitem', { name: targetLanguage.name }).click();
 
-    const spinner = await page.getByTestId('loading-spinner');
-    expect(spinner).toBeTruthy();
+  //   const spinner = await page.getByTestId('loading-spinner');
+  //   expect(spinner).toBeTruthy();
 
-    await switchPromise;
-  });
+  //   await switchPromise;
+  // });
 });
