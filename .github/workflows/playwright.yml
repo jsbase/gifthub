@@ -10,7 +10,16 @@ jobs:
       - uses: actions/checkout@v2
       - name: Install dependencies
         run: npm ci && npx playwright install --with-deps
+      - name: Set Environment URL
+        run: |
+          if [[ "${{ github.ref }}" == "refs/heads/development" ]]; then
+            echo "NEXT_PUBLIC_BASE_URL=https://gifthub-git-development-jsbases-projects.vercel.app/" >> $GITHUB_ENV
+          elif [[ "${{ github.ref }}" == "refs/heads/preview" ]]; then
+            echo "NEXT_PUBLIC_BASE_URL=https://gifthub-git-preview-jsbases-projects.vercel.app/" >> $GITHUB_ENV
+          elif [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+            echo "NEXT_PUBLIC_BASE_URL=https://gifthub-wishlist.vercel.app/" >> $GITHUB_ENV
+          fi
       - name: Run tests
         run: npx playwright test
         env:
-          NEXT_PUBLIC_BASE_URL: ${{ github.event.deployment_status.environment_url }}
+          NEXT_PUBLIC_BASE_URL: ${{ env.NEXT_PUBLIC_BASE_URL }} # ${{ github.event.deployment_status.environment_url }}
