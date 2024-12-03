@@ -1,10 +1,10 @@
 import { NextResponse, NextRequest } from 'next/server';
+import { cookies } from 'next/headers';
 import { SignJWT } from 'jose';
 import bcrypt from 'bcryptjs';
 import prisma from '@/lib/prisma';
-import { cookies } from 'next/headers';
 import { defaultLocale, locales } from '@/lib/i18n-config';
-import { LanguageCode } from '@/types';
+import type { LanguageCode } from '@/types';
 
 export const POST = async (request: NextRequest): Promise<NextResponse> => {
   try {

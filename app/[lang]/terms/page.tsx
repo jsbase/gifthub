@@ -1,9 +1,9 @@
 import { NextPage } from 'next';
-import { PageProps } from '@/types';
-import { cn } from '@/lib/utils';
 import { getDictionary } from '@/app/[lang]/dictionaries';
 import Header from '@/components/header';
 import Footer from '@/components/footer';
+import { cn } from '@/lib/utils';
+import type { PageProps } from '@/types';
 
 const TermsConditions: NextPage<PageProps> = async ({ params }) => {
   const { lang } = await params;

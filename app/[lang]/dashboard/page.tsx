@@ -11,7 +11,7 @@ import { MemberList } from '@/components/member-list';
 import Footer from '@/components/footer';
 import { verifyAuth, logout } from '@/lib/auth';
 import { cn } from '@/lib/utils';
-import { Member, Gift, Translations, PageProps } from '@/types';
+import type { Member, Gift, Translations, PageProps } from '@/types';
 
 const MemberGiftsDialog = lazy(() => import('@/components/member-gifts-dialog'));
 
@@ -44,8 +44,8 @@ const DashboardPage: NextPage<PageProps> = ({ params }) => {
       // Group gifts by member ID
       const giftCountsByMember = membersData.members.reduce((acc: Record<string, number>, member: any) => {
         acc[member.id] = gifts.filter(
-          (gift: any) => 
-            gift.forMemberId === member.id && 
+          (gift: any) =>
+            gift.forMemberId === member.id &&
             !gift.isPurchased
         ).length;
         return acc;

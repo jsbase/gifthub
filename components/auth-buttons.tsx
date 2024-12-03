@@ -1,16 +1,16 @@
 'use client';
 
-import { useState, memo } from "react";
-import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { toast } from "sonner";
+import { useState, memo } from 'react';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
-import { login, register } from "@/lib/auth";
-import { Translations } from "@/types";
-import { cn } from "@/lib/utils";
-import { useDebounce } from "@/hooks/use-debounce";
+import { login, register } from '@/lib/auth';
+import { cn } from '@/lib/utils';
+import { useDebounce } from '@/hooks/use-debounce';
+import type { Translations } from '@/types';
 
 const LoginForm = memo(function LoginForm({
   dict,

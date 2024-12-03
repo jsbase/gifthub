@@ -5,7 +5,7 @@ import { createPortal } from 'react-dom';
 import { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 
-const LoadingSpinner: () => JSX.Element | null = () => {
+const LoadingSpinner: React.FC = () => {
   const [isMounted, setIsMounted] = useState<boolean>(false);
 
   useEffect(() => {
