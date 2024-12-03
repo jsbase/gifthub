@@ -1,20 +1,22 @@
 import { useState, useEffect, useRef, useCallback, useMemo, memo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Trash2, ChevronRight } from 'lucide-react';
-import { cn } from '@/lib/utils';
 import AddMemberDialog from '@/components/add-member-dialog';
 import { toast } from '@/hooks/use-toast';
 import { useDebounce } from '@/hooks/use-debounce';
+import { cn } from '@/lib/utils';
 import type { MemberListProps } from '@/types';
 
 const MemberListHeader = memo(function MemberListHeader({
   dict,
   onDeleteClick,
-  onMemberAdded
+  onMemberAdded,
+  hasMembers
 }: {
   dict: any;
   onDeleteClick: () => void;
   onMemberAdded: () => void;
+  hasMembers: boolean;
 }) {
   return (
     <div className={cn(
@@ -37,11 +39,13 @@ const MemberListHeader = memo(function MemberListHeader({
         <Button
           variant="outline"
           onClick={onDeleteClick}
+          disabled={!hasMembers}
           className={cn(
             "flex",
             "items-center",
             "justify-center",
-            "gap-2"
+            "gap-2",
+            !hasMembers && "opacity-50 cursor-not-allowed"
           )}
         >
           <Trash2 className="h-4 w-4" />
@@ -189,11 +193,18 @@ export function MemberList({
         dict={dict}
         onDeleteClick={toggleDeleteButtons}
         onMemberAdded={onMemberDeleted}
+        hasMembers={members.length > 0}
       />
 
-      <ul className="space-y-2" data-testid="memberList">
-        {memberListItems}
-      </ul>
+      {members.length > 0 ? (
+        <ul className="space-y-2" data-testid="memberList">
+          {memberListItems}
+        </ul>
+      ) : (
+        <div className="text-muted-foreground">
+          {dict.noMembers}
+        </div>
+      )}
     </div>
   );
 }
