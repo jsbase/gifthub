@@ -101,7 +101,7 @@ const DialogContent = React.forwardRef<
           "data-[state=open]:bg-accent",
           "data-[state=open]:text-muted-foreground"
         )}
-        data-testid="dialog-close"
+        data-testid="dialogClose"
       >
         <X className="h-4 w-4" />
         <span className="sr-only">Close</span>

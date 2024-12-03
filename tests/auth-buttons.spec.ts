@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import * as dict from '@/lib/translations/en.json';
 
-// const locale = 'en';
+// const lang = 'en';
 
 test.describe('Login and Registration', () => {
   test.beforeEach(async ({ page, context }) => {
@@ -25,28 +25,28 @@ test.describe('Login and Registration', () => {
   });
 
   test('Login dialog opens and closes correctly', async ({ page }) => {
-    const loginButton = page.getByRole('button', { name: dict.login });
+    const loginButton = page.getByTestId('OpenLogin');
     await loginButton.click();
 
     const dialog = page.locator('[role="dialog"]');
     await expect(dialog).toBeVisible();
 
-    const closeIcon = dialog.locator('[data-testid="dialog-close"]');
+    const closeIcon = dialog.getByTestId('dialogClose');
     await closeIcon.click();
-    await expect(dialog).not.toBeVisible({ timeout: 5000 });
+    await expect(dialog).not.toBeVisible({ timeout: 2000 });
 
     await loginButton.click();
     await expect(dialog).toBeVisible();
   });
 
   test('Login with valid credentials', async ({ page }) => {
-    const loginButton = page.getByRole('button', { name: dict.login });
+    const loginButton = page.getByTestId('OpenLogin');
     await loginButton.click();
 
     await page.fill('#groupName', 'testgroup');
     await page.fill('#password', 'test123');
 
-    const submitButton = page.getByRole('button', { name: dict.loginToGroup });
+    const submitButton = page.getByTestId('SubmitLogin');
 
     const [response] = await Promise.all([
       page.waitForNavigation({ timeout: 15000, waitUntil: 'load' }),
@@ -59,16 +59,16 @@ test.describe('Login and Registration', () => {
     await toast.waitFor({ state: 'visible', timeout: 10000 });
     expect(await toast.textContent()).toContain(dict.toasts.loginSuccess);
 
-    const spinner = page.getByTestId('loading-spinner');
-    await spinner.waitFor({ state: 'visible', timeout: 5000 });
+    const spinner = page.getByTestId('loadingSpinner');
+    await spinner.waitFor({ state: 'visible', timeout: 2000 });
     expect(spinner).toBeTruthy();
   });
 
   // TODO: enable and adjust this test after implementing a "remove group" functionality
   // test('Register new group with valid credentials', async ({ page }) => {
-  //   await page.goto(`/${locale}`);
+  //   await page.goto(`/${lang}`);
 
-  //   const registerButton = page.getByRole('button', { name: dict.register });
+  //   const registerButton = page.getByTestId('OpenRegister');
   //   await registerButton.click();
 
   //   const dialog = page.locator('[role="dialog"]');
@@ -78,16 +78,16 @@ test.describe('Login and Registration', () => {
   //   await page.fill('#newPassword', 'newpassword123');
   //   await page.fill('#confirmPassword', 'newpassword123');
 
-  //   const submitButton = page.getByRole('button', { name: dict.createGroupBtn });
+  //   const submitButton = page.getByTestId('SubmitRegister');
   //   await submitButton.click();
 
   //   await expect(dialog).not.toBeVisible();
   //   await page.waitForNavigation();
 
-  //   await expect(page).toHaveURL(/login/);
+  //   await expect(page).toHaveURL(`/${lang}`);
 
   //   const toast = page.locator('[data-sonner-toast][data-type="success"]');
-  //   await toast.waitFor({ state: 'visible', timeout: 5000 });
+  //   await toast.waitFor({ state: 'visible', timeout: 2000 });
 
   //   expect(await toast.textContent()).toContain(dict.toasts.registrationSuccess);
   // });

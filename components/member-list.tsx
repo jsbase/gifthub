@@ -150,6 +150,7 @@ export function MemberList({
             "justify-between"
           )}
           onClick={() => onMemberClick(member.id)}
+          data-testid="showGiftsDialog"
         >
           <div className={cn("flex flex-col", "items-start")}>
             <p className="font-medium">{member.name}</p>
@@ -190,7 +191,7 @@ export function MemberList({
         onMemberAdded={onMemberDeleted}
       />
 
-      <ul className="space-y-2">
+      <ul className="space-y-2" data-testid="memberList">
         {memberListItems}
       </ul>
     </div>

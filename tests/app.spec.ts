@@ -30,7 +30,7 @@ test.describe('Start page Functionality', () => {
     expect(await header.isVisible()).toBeTruthy();
     expect(await footer.isVisible()).toBeTruthy();
 
-    await header.locator('[data-testid="logo"]').click();
+    await header.getByTestId('logo').click();
     await expect(page).toHaveURL(`/${lang}`);
   });
 
@@ -41,13 +41,13 @@ test.describe('Start page Functionality', () => {
     expect(await header.isVisible()).toBeTruthy();
     expect(await footer.isVisible()).toBeTruthy();
 
-    await footer.locator('[data-testid="linkPrivacy"]').click();
+    await footer.getByTestId('linkPrivacy').click();
     await expect(page).toHaveURL(`${lang}/privacy`);
 
     expect(await header.isVisible()).toBeTruthy();
     expect(await footer.isVisible()).toBeTruthy();
 
-    await header.locator('[data-testid="logo"]').click();
+    await header.getByTestId('logo').click();
     await expect(page).toHaveURL(`/${lang}`);
   });
 
@@ -55,13 +55,13 @@ test.describe('Start page Functionality', () => {
     const header = page.locator('header');
     const footer = page.locator('footer');
 
-    await footer.locator('[data-testid="linkTerms"]').click();
+    await footer.getByTestId('linkTerms').click();
     await expect(page).toHaveURL(`${lang}/terms`);
 
     expect(await header.isVisible()).toBeTruthy();
     expect(await footer.isVisible()).toBeTruthy();
 
-    await header.locator('[data-testid="logo"]').click();
+    await header.getByTestId('logo').click();
     await expect(page).toHaveURL(`/${lang}`);
   });
 });

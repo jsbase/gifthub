@@ -42,14 +42,12 @@ export const GiftCard = memo(function GiftCard({
       "p-4 pb-2 mt-1",
       "border-b",
       "block",
-      "cursor-pointer"
     )
   } : {
     className: cn(
       "p-4 pb-2 mt-1",
       "border-b",
       "block",
-      "cursor-default"
     )
   };
 
@@ -62,8 +60,8 @@ export const GiftCard = memo(function GiftCard({
       "bg-card",
       "relative"
     )}>
-      <ContentWrapper {...wrapperProps}>
-        <div className="flex flex-row">
+      <ContentWrapper {...wrapperProps} data-testid="giftCard">
+        <div className={cn("flex flex-row")}>
           <div className="flex-1">
             <h3 className={cn(
               "font-medium",
@@ -82,7 +80,7 @@ export const GiftCard = memo(function GiftCard({
           </div>
           <div className="flex-none">
             {gift.isPurchased ? (
-              <CheckCircle className="inline-block mr-2 text-green-500" />
+              <CheckCircle className={cn("inline-block mr-2 text-green-500")} />
             ) : (
               <Circle className={cn(
                 "inline-block mr-2 text-gray-500",
@@ -93,12 +91,13 @@ export const GiftCard = memo(function GiftCard({
         </div>
       </ContentWrapper>
 
-      <div className="flex flex-row space-x-2">
+      <div className={cn("flex flex-row space-x-2")}>
         <Button
           variant="ghost"
           size="sm"
           onClick={handleDelete}
-          className="flex-1 text-red-600 hover:text-red-700 border-r rounded-none"
+          className={cn("flex-1 text-red-600 hover:text-red-700 border-r rounded-none")}
+          data-testid="giftDelete"
         >
           <Trash2 className="h-4 w-4" />
         </Button>
@@ -106,7 +105,8 @@ export const GiftCard = memo(function GiftCard({
           variant="ghost"
           size="sm"
           onClick={handleTogglePurchased}
-          className="flex-1 transition-transform duration-300 ease-in-out rounded-none"
+          className={cn("flex-1 transition-transform duration-300 ease-in-out rounded-none")}
+          data-testid="giftStrikethrough"
         >
           {gift.isPurchased ? dict.markAsAvailable : dict.markAsPurchased}
         </Button>

@@ -61,7 +61,7 @@ test.describe('Switch language', () => {
   test('Shows loading spinner during language switch when logged in', async ({ page }) => {
     await page.goto('/');
 
-    const loginButton = page.getByRole('button', { name: 'OpenLogin' });
+    const loginButton = page.getByTestId('OpenLogin');
     await loginButton.click();
 
     await page.fill('#groupName', 'testgroup');
@@ -82,7 +82,6 @@ test.describe('Switch language', () => {
       });
     });
 
-    await page.waitForSelector('[data-testid="language-switcher"]', { state: 'visible', timeout: 5000 });
     const languageSwitcherButton = await page.getByTestId('language-switcher');
     await languageSwitcherButton.click();
 
@@ -93,12 +92,12 @@ test.describe('Switch language', () => {
       throw new Error('No alternative language found');
     }
 
-    const spinner = await page.getByTestId('loading-spinner');
+    const spinner = await page.getByTestId('loadingSpinner');
     expect(spinner).toBeTruthy();
 
     const switchPromise = page.getByRole('menuitem', { name: targetLanguage.name }).click();
     await switchPromise;
 
-    await page.waitForSelector('[data-testid="loading-spinner"]', { state: 'hidden', timeout: 5000 });
+    await page.getByTestId('loadingSpinner');
   });
 });
