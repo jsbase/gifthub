@@ -31,7 +31,6 @@ test.describe('Start page Functionality', () => {
     expect(await footer.isVisible()).toBeTruthy();
 
     await header.getByTestId('logo').click();
-    await page.waitForLoadState('networkidle');
     await expect(page).toHaveURL(`/${lang}`);
   });
 
@@ -43,14 +42,15 @@ test.describe('Start page Functionality', () => {
     expect(await footer.isVisible()).toBeTruthy();
 
     await page.getByTestId('linkPrivacy').click();
-    // await page.waitForLoadState('networkidle');
-    await expect(page).toHaveURL(`${lang}/privacy`);
+    await page.waitForLoadState('networkidle');
+    await expect(page).toHaveURL(`${lang}/privacy`, { timeout: 2000 });
 
     expect(await header.isVisible()).toBeTruthy();
     expect(await footer.isVisible()).toBeTruthy();
 
     await header.getByTestId('logo').click();
-    await expect(page).toHaveURL(`/${lang}`);
+    await page.waitForLoadState('networkidle');
+    await expect(page).toHaveURL(`/${lang}`, { timeout: 2000 });
   });
 
   test('Header and Footer are visible on Terms & Conditions page', async ({ page }) => {
@@ -58,13 +58,14 @@ test.describe('Start page Functionality', () => {
     const footer = page.locator('footer');
 
     await page.getByTestId('linkTerms').click();
-    // await page.waitForLoadState('networkidle');
-    await expect(page).toHaveURL(`${lang}/terms`);
+    await page.waitForLoadState('networkidle');
+    await expect(page).toHaveURL(`${lang}/terms`, { timeout: 2000 });
 
     expect(await header.isVisible()).toBeTruthy();
     expect(await footer.isVisible()).toBeTruthy();
 
     await page.getByTestId('logo').click();
-    await expect(page).toHaveURL(`/${lang}`);
+    await page.waitForLoadState('networkidle');
+    await expect(page).toHaveURL(`/${lang}`, { timeout: 2000 });
   });
 });
