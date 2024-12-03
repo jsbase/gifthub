@@ -1,4 +1,4 @@
-import { Translations } from '@/types';
+import type { Translations } from '@/types';
 
 const dictionaryCache: Record<string, Promise<Translations>> = {};
 

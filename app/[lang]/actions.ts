@@ -1,7 +1,7 @@
 'use server';
 
 import { getDictionary } from '@/app/[lang]/dictionaries';
-import { Translations } from '@/types';
+import type { Translations } from '@/types';
 
 const loadTranslations: (locale: string) => Promise<Translations> = async (locale) => {
   return getDictionary(locale);

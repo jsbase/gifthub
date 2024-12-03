@@ -6,7 +6,7 @@ import { Toaster } from "@/components/ui/sonner";
 import ThemeProvider from '@/components/theme-provider';
 import ServiceWorkerRegistration from '@/components/ServiceWorkerRegistration';
 import { cn } from '@/lib/utils';
-import { RootLayoutProps } from '@/types';
+import type { RootLayoutProps } from '@/types';
 
 const inter = Inter({ subsets: ['latin'] });
 

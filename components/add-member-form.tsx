@@ -2,7 +2,7 @@ import React, { memo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { AddMemberFormProps } from '@/types';
+import type { AddMemberFormProps } from '@/types';
 
 const AddMemberForm: React.FC<AddMemberFormProps> = ({
   dict,

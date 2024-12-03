@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { Action, State, Toast, ToasterToast } from '@/types';
+import type { Action, State, Toast, ToasterToast } from '@/types';
 
 const TOAST_LIMIT = 1;
 const TOAST_REMOVE_DELAY = 1000000;

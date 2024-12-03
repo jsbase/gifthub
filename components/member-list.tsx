@@ -1,11 +1,11 @@
-import { useState, useEffect, useRef, useCallback, useMemo, memo } from "react";
-import { Button } from "@/components/ui/button";
-import { Trash2, ChevronRight } from "lucide-react";
-import { cn } from "@/lib/utils";
-import AddMemberDialog from "@/components/add-member-dialog";
+import { useState, useEffect, useRef, useCallback, useMemo, memo } from 'react';
+import { Button } from '@/components/ui/button';
+import { Trash2, ChevronRight } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import AddMemberDialog from '@/components/add-member-dialog';
 import { toast } from '@/hooks/use-toast';
-import { useDebounce } from "@/hooks/use-debounce";
-import { MemberListProps } from '@/types';
+import { useDebounce } from '@/hooks/use-debounce';
+import type { MemberListProps } from '@/types';
 
 const MemberListHeader = memo(function MemberListHeader({
   dict,
@@ -109,7 +109,7 @@ export function MemberList({
         variant: "destructive"
       });
     }
-  }, 300, { 
+  }, 300, {
     leading: true,
     trailing: false
   });
@@ -184,7 +184,7 @@ export function MemberList({
 
   return (
     <div className="space-y-4" ref={containerRef}>
-      <MemberListHeader 
+      <MemberListHeader
         dict={dict}
         onDeleteClick={toggleDeleteButtons}
         onMemberAdded={onMemberDeleted}

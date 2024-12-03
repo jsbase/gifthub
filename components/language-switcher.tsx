@@ -12,9 +12,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { cn } from '@/lib/utils';
 import { getCurrentLanguage, languages } from '@/lib/i18n-config';
-import { LanguageCode } from '@/types';
+import { cn } from '@/lib/utils';
+import type { LanguageCode } from '@/types';
 
 const LoadingSpinner = lazy(() => import('@/components/loading-spinner'));
 

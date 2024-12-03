@@ -7,7 +7,7 @@ import { AuthButtons } from '@/components/auth-buttons';
 import Footer from '@/components/footer';
 import FeatureCards from '@/components/feature-cards';
 import { cn } from '@/lib/utils';
-import { PageProps, Translations } from '@/types';
+import type { PageProps, Translations } from '@/types';
 
 const Home: NextPage<PageProps> = async ({ params }) => {
   const { lang } = await params;

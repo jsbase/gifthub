@@ -1,11 +1,11 @@
 'use client';
 
-import { memo } from "react";
-import { Button } from "@/components/ui/button";
-import { Trash2, CheckCircle, Circle } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { useDebounce } from "@/hooks/use-debounce";
-import { GiftCardProps } from "@/types";
+import { memo } from 'react';
+import { Trash2, CheckCircle, Circle } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { useDebounce } from '@/hooks/use-debounce';
+import { cn } from '@/lib/utils';
+import type { GiftCardProps } from '@/types';
 
 export const GiftCard = memo(function GiftCard({
   gift,
