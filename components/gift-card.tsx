@@ -63,7 +63,7 @@ export const GiftCard = memo(function GiftCard({
       <ContentWrapper {...wrapperProps} data-testid="giftCard">
         <div className={cn("flex flex-row")}>
           <div className="flex-1">
-            <h3 className={cn(
+            <h3 data-testid="giftTitle" className={cn(
               "font-medium",
               gift.isPurchased ? 'line-through text-gray-200' : ''
             )}>
