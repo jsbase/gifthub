@@ -152,19 +152,13 @@ const DashboardPage: NextPage<PageProps> = ({ params }) => {
         "flex-1"
       )}>
         <section>
-          {members.length > 0 ? (
-            <MemberList
-              members={members}
-              giftCounts={memberGiftCounts}
-              dict={dict}
-              onMemberClick={handleMemberClick}
-              onMemberDeleted={fetchData}
-            />
-          ) : (
-            <div className="text-muted-foreground">
-              {dict.noMembers}
-            </div>
-          )}
+          <MemberList
+            members={members}
+            giftCounts={memberGiftCounts}
+            dict={dict}
+            onMemberClick={handleMemberClick}
+            onMemberDeleted={fetchData}
+          />
         </section>
       </main>
 

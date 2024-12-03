@@ -51,6 +51,7 @@ const LoginForm = memo(function LoginForm({
         className={cn("w-full", "xs:text-base", "xs:h-12")}
         disabled={isLoading}
         aria-label="SubmitLogin"
+        data-testid="SubmitLogin"
       >
         {isLoading ? dict.loading : dict.login}
       </Button>
@@ -108,6 +109,7 @@ const RegisterForm = memo(function RegisterForm({
         className={cn("w-full", "xs:text-base", "xs:h-12")}
         disabled={isLoading}
         aria-label="SubmitRegister"
+        data-testid="SubmitRegister"
       >
         {isLoading ? dict.loading : dict.createGroupBtn}
       </Button>
@@ -187,7 +189,7 @@ export function AuthButtons({ dict }: { dict: Translations }) {
     )}>
       <Dialog open={isLoginOpen} onOpenChange={setIsLoginOpen}>
         <DialogTrigger asChild>
-          <Button size="lg" className="min-w-[200px]" aria-label="OpenLogin">
+          <Button size="lg" className="min-w-[200px]" aria-label="OpenLogin" data-testid="OpenLogin">
             {dict.login}
           </Button>
         </DialogTrigger>
@@ -209,7 +211,7 @@ export function AuthButtons({ dict }: { dict: Translations }) {
 
       <Dialog open={isRegisterOpen} onOpenChange={setIsRegisterOpen}>
         <DialogTrigger asChild>
-          <Button size="lg" variant="outline" className="min-w-[200px]" aria-label="OpenRegister">
+          <Button size="lg" variant="outline" className="min-w-[200px]" aria-label="OpenRegister" data-testid="OpenRegister">
             {dict.register}
           </Button>
         </DialogTrigger>

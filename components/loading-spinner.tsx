@@ -18,7 +18,6 @@ const LoadingSpinner: React.FC = () => {
 
   return createPortal(
     <div
-      data-testid="loading-spinner"
       className={cn(
         "fixed inset-0",
         "bg-background/80",
@@ -28,6 +27,7 @@ const LoadingSpinner: React.FC = () => {
         "items-center",
         "justify-center"
       )}
+      data-testid="loadingSpinner"
     >
       <Image
         src="/loading.svg"
