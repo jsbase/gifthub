@@ -31,6 +31,7 @@ test.describe('Start page Functionality', () => {
     expect(await footer.isVisible()).toBeTruthy();
 
     await header.getByTestId('logo').click();
+    await page.waitForLoadState('networkidle');
     await expect(page).toHaveURL(`/${lang}`);
   });
 
@@ -41,7 +42,8 @@ test.describe('Start page Functionality', () => {
     expect(await header.isVisible()).toBeTruthy();
     expect(await footer.isVisible()).toBeTruthy();
 
-    await footer.getByTestId('linkPrivacy').click();
+    await page.getByTestId('linkPrivacy').click();
+    // await page.waitForLoadState('networkidle');
     await expect(page).toHaveURL(`${lang}/privacy`);
 
     expect(await header.isVisible()).toBeTruthy();
@@ -55,13 +57,14 @@ test.describe('Start page Functionality', () => {
     const header = page.locator('header');
     const footer = page.locator('footer');
 
-    await footer.getByTestId('linkTerms').click();
+    await page.getByTestId('linkTerms').click();
+    // await page.waitForLoadState('networkidle');
     await expect(page).toHaveURL(`${lang}/terms`);
 
     expect(await header.isVisible()).toBeTruthy();
     expect(await footer.isVisible()).toBeTruthy();
 
-    await header.getByTestId('logo').click();
+    await page.getByTestId('logo').click();
     await expect(page).toHaveURL(`/${lang}`);
   });
 });

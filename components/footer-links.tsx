@@ -1,11 +1,17 @@
-import { memo } from 'react';
+'use client';
+
+import { memo, useState } from 'react';
+import { usePathname } from 'next/navigation';
 import Link from 'next/link';
+import { getCurrentLanguage } from '@/lib/i18n-config';
 import { cn } from '@/lib/utils';
 import type { FooterProps } from '@/types';
 
-const FooterLinks = function FooterLinks({
-  dict
-}: Pick<FooterProps, 'dict'>) {
+const FooterLinks = ({ dict }: Pick<FooterProps, 'dict'>) => {
+  const path = usePathname();
+  const currentLanguage = getCurrentLanguage(path);
+  const [lang] = useState(currentLanguage.code);
+
   return (
     <div className={cn(
       "flex",
@@ -14,7 +20,7 @@ const FooterLinks = function FooterLinks({
       "sm:justify-center"
     )}>
       <Link
-        href="/privacy"
+        href={`/${lang}/privacy`}
         className={cn(
           "text-gray-500",
           "hover:text-gray-900",
@@ -25,7 +31,7 @@ const FooterLinks = function FooterLinks({
         {dict.footer.privacyPolicy}
       </Link>
       <Link
-        href="/terms"
+        href={`/${lang}/terms`}
         className={cn(
           "text-gray-500",
           "hover:text-gray-900",
