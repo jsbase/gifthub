@@ -150,6 +150,7 @@ export default function MemberGiftsDialog({
                   "w-full",
                   "my-4"
                 )}
+                data-testid="addGiftButton"
               >
                 <PlusCircle className={cn(
                   "h-4",
@@ -249,6 +250,7 @@ export default function MemberGiftsDialog({
                     "xs:w-full",
                     "xs:text-sm"
                   )}
+                  data-testid="addGiftSubmit"
                 >
                   {isLoading ? dict.adding : dict.addGift}
                 </Button>
