@@ -78,6 +78,7 @@ const Header: React.FC<HeaderProps> = ({
             "hover:opacity-80",
             "transition-opacity"
           )}
+          data-testid="logo"
         >
           <Logo
             size="sm"

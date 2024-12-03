@@ -17,7 +17,7 @@ test.describe('Login and Registration', () => {
       });
 
       await page.waitForSelector('body');
-      console.log(`Test completed for component "auth-buttons" on ${page.url()}`);
+      console.log(`Test "auth-buttons" started for page: ${page.url()}`);
     } catch (error) {
       console.error('Navigation Error:', error);
       throw error;
@@ -48,15 +48,13 @@ test.describe('Login and Registration', () => {
 
     const submitButton = page.getByRole('button', { name: dict.loginToGroup });
 
-    // Ensure login response or navigation happens first
     const [response] = await Promise.all([
       page.waitForNavigation({ timeout: 15000, waitUntil: 'load' }),
-      submitButton.click(), // Trigger login action
+      submitButton.click(),
     ]);
 
-    await expect(page).toHaveURL(/dashboard/); // Ensure we're redirected to the dashboard
+    await expect(page).toHaveURL(/dashboard/);
 
-    // Wait for the toast to be visible, increase timeout to 10 seconds
     const toast = page.locator('[data-sonner-toast][data-type="success"]');
     await toast.waitFor({ state: 'visible', timeout: 10000 });
     expect(await toast.textContent()).toContain(dict.toasts.loginSuccess);
@@ -65,7 +63,6 @@ test.describe('Login and Registration', () => {
     await spinner.waitFor({ state: 'visible', timeout: 5000 });
     expect(spinner).toBeTruthy();
   });
-
 
   // TODO: enable and adjust this test after implementing a "remove group" functionality
   // test('Register new group with valid credentials', async ({ page }) => {

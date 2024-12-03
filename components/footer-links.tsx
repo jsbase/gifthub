@@ -20,6 +20,7 @@ const FooterLinks = function FooterLinks({
           "hover:text-gray-900",
           "dark:hover:text-white"
         )}
+        data-testid="linkPrivacy"
       >
         {dict.footer.privacyPolicy}
       </Link>
@@ -30,6 +31,7 @@ const FooterLinks = function FooterLinks({
           "hover:text-gray-900",
           "dark:hover:text-white"
         )}
+        data-testid="linkTerms"
       >
         {dict.footer.termsConditions}
       </Link>

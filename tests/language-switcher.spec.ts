@@ -15,7 +15,7 @@ test.describe('Switch language', () => {
       });
 
       await page.waitForSelector('body');
-      console.log(`Test completed for component "language-switcher" on ${page.url()}`);
+      console.log(`Test "language-switcher" started for page: ${page.url()}`);
     } catch (error) {
       console.error('Navigation Error:', error);
       throw error;
