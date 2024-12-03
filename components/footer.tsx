@@ -1,8 +1,10 @@
 import FooterLinks from '@/components/footer-links';
 import { cn } from '@/lib/utils';
-import { FooterProps } from "@/types";
+import type { FooterProps } from '@/types';
 
-const Footer: ({ dict }: FooterProps) => JSX.Element | null = ({ dict }) => (
+const Footer: React.FC<FooterProps> | null = ({ dict }) => {
+  if (!dict) return null;
+
   <footer className={cn(
     "bg-white",
     "dark:bg-gray-800",
@@ -37,6 +39,6 @@ const Footer: ({ dict }: FooterProps) => JSX.Element | null = ({ dict }) => (
       </div>
     </div>
   </footer>
-);
+};
 
 export default Footer;

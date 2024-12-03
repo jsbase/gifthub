@@ -1,7 +1,7 @@
 import React, { memo } from 'react';
-import { cn } from '@/lib/utils';
 import FeatureCard from '@/components/feature-card';
-import { Translations } from '@/types';
+import { cn } from '@/lib/utils';
+import type { Translations } from '@/types';
 
 const FeatureCards: React.FC<Pick<Translations, 'features'>> = ({ features }) => (
   <div className={cn(

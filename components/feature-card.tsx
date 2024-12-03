@@ -1,6 +1,6 @@
 import React, { memo } from 'react';
 import { cn } from '@/lib/utils';
-import { FeatureCardProps } from "@/types";
+import type { FeatureCardProps } from '@/types';
 
 const FeatureCard: React.FC<FeatureCardProps> = ({ title, description }) => (
   <div className={cn(

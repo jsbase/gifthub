@@ -1,4 +1,4 @@
-import { LanguageCode, Languages } from '@/types';
+import type { LanguageCode, Languages } from '@/types';
 
 export const defaultLocale: LanguageCode = 'de';
 export const locales: LanguageCode[] = ['de', 'en', 'ru'];

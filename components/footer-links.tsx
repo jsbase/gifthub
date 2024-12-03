@@ -1,7 +1,7 @@
 import { memo } from 'react';
-import Link from "next/link";
+import Link from 'next/link';
 import { cn } from '@/lib/utils';
-import { FooterProps } from "@/types";
+import type { FooterProps } from '@/types';
 
 const FooterLinks = function FooterLinks({
   dict

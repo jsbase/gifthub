@@ -1,4 +1,4 @@
-import { AuthResponse, AuthVerifyResponse } from '@/types';
+import type { AuthResponse, AuthVerifyResponse } from '@/types';
 
 const isClient = typeof window !== 'undefined';
 
@@ -25,7 +25,7 @@ export async function verifyAuth(silent: boolean = false): Promise<AuthVerifyRes
 
 export async function login(groupName: string, password: string): Promise<AuthResponse> {
   if (!isClient) throw new Error('This method can only be used in the browser');
-  
+
   const lang = document.cookie.split('; ').find(row => row.startsWith('NEXT_LOCALE='))
     ?.split('=')[1] || 'en';
 
@@ -47,7 +47,7 @@ export async function login(groupName: string, password: string): Promise<AuthRe
 
 export async function logout() {
   if (!isClient) return;
-  
+
   try {
     await fetch('/api/auth/logout', {
       method: 'POST',

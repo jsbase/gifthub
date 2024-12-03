@@ -1,21 +1,21 @@
 'use client';
 
-import React, { useEffect, useState } from "react";
-import Link from "next/link";
-import { LogOut } from "lucide-react";
-import { verifyAuth } from "@/lib/auth";
-import { Logo } from "@/components/logo";
-import { Button } from "@/components/ui/button";
-import LanguageSwitcher from "@/components/language-switcher";
-import { usePathname } from "next/navigation";
+import React, { useEffect, useState } from 'react';
+import Link from 'next/link';
+import { LogOut } from 'lucide-react';
+import { verifyAuth } from '@/lib/auth';
+import { Logo } from '@/components/logo';
+import { Button } from '@/components/ui/button';
+import LanguageSwitcher from '@/components/language-switcher';
+import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import { AuthState, HeaderProps } from "@/types";
+import type { AuthState, HeaderProps } from '@/types';
 
-const Header: ({ groupName, dict, onLogout, showAuth }: HeaderProps) => JSX.Element | null = ({
+const Header: React.FC<HeaderProps> = ({
   groupName,
   dict,
   onLogout,
-  showAuth = false
+  showAuth = false,
 }) => {
   const [authState, setAuthState] = useState<AuthState>({
     isAuthenticated: false,
