@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import * as dict from '@/lib/translations/en.json';
 
 const lang = 'en';
 
@@ -56,11 +57,11 @@ test.describe('Dashboard Page Functionality', () => {
 
     const giftCard = page.getByTestId('giftCard');
     await expect(giftCard).toBeVisible();
-    expect(await giftCard.locator('h3').textContent()).toBe('PlayStation 5');
+    expect(await giftCard.getByTestId('giftTitle').textContent()).toBe('PlayStation 5');
 
     // Step 3: Delete the Gift
     page.on('dialog', async (dialog) => {
-      expect(dialog.message()).toBe('Are you sure you want to delete this gift?');
+      expect(dialog.message()).toBe(dict.confirmations.deleteGift);
       await dialog.accept();
     });
 
