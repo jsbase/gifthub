@@ -3,13 +3,12 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
-  images: { unoptimized: true },
-  webpack: (config, { dev }) => {
-    if (dev) {
-      config.cache = false
-    }
-    return config
+  assetPrefix: process.env.NODE_ENV === 'production' ? undefined : '',
+  experimental: {
+    // optimizePackageImports: ['@/app/globals.css'],
+    optimizeCss: true,
   },
+  images: { unoptimized: true },
   headers: async () => {
     return [
       {
@@ -23,7 +22,13 @@ const nextConfig = {
       },
     ];
   },
-  assetPrefix: process.env.NODE_ENV === 'production' ? undefined : '',
+  webpack: (config, { dev }) => {
+    if (dev) {
+      config.cache = false
+    }
+
+    return config
+  },
 };
 
 module.exports = nextConfig;

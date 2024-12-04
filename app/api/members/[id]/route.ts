@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getGroupIdFromToken } from '@/lib/auth-server';
 
-export const DELETE = async (request: NextRequest): Promise<NextResponse> => {
+export const DELETE: (request: NextRequest) => Promise<NextResponse> = async request => {
   const { pathname } = new URL(request.url);
   const id = pathname.split('/').pop();
 
@@ -34,7 +34,6 @@ export const DELETE = async (request: NextRequest): Promise<NextResponse> => {
       );
     }
 
-    // Rest of your delete logic remains the same...
     await prisma.gift.deleteMany({
       where: {
         forMemberId: id,

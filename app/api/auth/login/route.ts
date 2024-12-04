@@ -6,7 +6,7 @@ import prisma from '@/lib/prisma';
 import { defaultLocale, locales } from '@/lib/i18n-config';
 import type { LanguageCode } from '@/types';
 
-export const POST = async (request: NextRequest): Promise<NextResponse> => {
+export const POST: (request: NextRequest) => Promise<NextResponse> = async request => {
   try {
     if (!process.env.JWT_SECRET) {
       throw new Error('JWT_SECRET is not set');
