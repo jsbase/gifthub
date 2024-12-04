@@ -1,6 +1,6 @@
 import React, { memo } from 'react';
-import { Button } from '@/components/ui/button';
 import { Trash2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import AddMemberDialog from '@/components/add-member-dialog';
 import { cn } from '@/lib/utils';
 import type { MemberListHeaderProps } from '@/types';
