@@ -1,130 +1,22 @@
 'use client';
 
-import { useState, memo } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import {
   Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import AuthDialog from '@/components/auth-dialog';
+import LoginForm from '@/components/login-form';
+import RegisterForm from '@/components/register-form';
 import { login, register } from '@/lib/auth';
 import { cn } from '@/lib/utils';
 import { useDebounce } from '@/hooks/use-debounce';
-import type { Translations } from '@/types';
+import type { AuthButtonsProps } from '@/types';
 
-const LoginForm = memo(function LoginForm({
-  dict,
-  isLoading,
-  onSubmit
-}: {
-  dict: Translations;
-  isLoading: boolean;
-  onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
-}) {
-  return (
-    <form onSubmit={onSubmit} className={cn(
-      "space-y-dialog-desktop",
-      "xs:space-y-dialog-mobile"
-    )}>
-      <div className="space-y-2">
-        <Label className="sr-only" htmlFor="groupName">{dict.groupName}</Label>
-        <Input
-          name="groupName"
-          id="groupName"
-          placeholder={dict.groupName}
-          required
-        />
-      </div>
-      <div className="space-y-2">
-        <Label className="sr-only" htmlFor="password">{dict.enterPassword}</Label>
-        <Input
-          name="password"
-          id="password"
-          type="password"
-          placeholder={dict.enterPassword}
-          autoComplete="current-password"
-          required
-        />
-      </div>
-      <Button
-        type="submit"
-        className={cn("w-full", "xs:text-base", "xs:h-12")}
-        disabled={isLoading}
-        aria-label="SubmitLogin"
-        data-testid="SubmitLogin"
-      >
-        {isLoading ? dict.loading : dict.login}
-      </Button>
-    </form>
-  );
-});
-
-const RegisterForm = memo(function RegisterForm({
-  dict,
-  isLoading,
-  onSubmit
-}: {
-  dict: Translations;
-  isLoading: boolean;
-  onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
-}) {
-  return (
-    <form onSubmit={onSubmit} className={cn(
-      "space-y-dialog-desktop",
-      "xs:space-y-dialog-mobile"
-    )}>
-      <div className="space-y-2">
-        <Label className="sr-only" htmlFor="newGroupName">{dict.groupName}</Label>
-        <Input
-          name="newGroupName"
-          id="newGroupName"
-          placeholder={dict.groupName}
-          required
-        />
-      </div>
-      <div className="space-y-2">
-        <Label className="sr-only" htmlFor="newPassword">{dict.enterPassword}</Label>
-        <Input
-          name="newPassword"
-          id="newPassword"
-          type="password"
-          placeholder={dict.enterPassword}
-          autoComplete="new-password"
-          required
-        />
-      </div>
-      <div className="space-y-2">
-        <Label className="sr-only" htmlFor="confirmPassword">{dict.confirmPassword}</Label>
-        <Input
-          name="confirmPassword"
-          id="confirmPassword"
-          type="password"
-          placeholder={dict.confirmPassword}
-          autoComplete="new-password"
-          required
-        />
-      </div>
-      <Button
-        type="submit"
-        className={cn("w-full", "xs:text-base", "xs:h-12")}
-        disabled={isLoading}
-        aria-label="SubmitRegister"
-        data-testid="SubmitRegister"
-      >
-        {isLoading ? dict.loading : dict.createGroupBtn}
-      </Button>
-    </form>
-  );
-});
-
-export function AuthButtons({ dict }: { dict: Translations }) {
+const AuthButtons: React.FC<AuthButtonsProps> = ({ dict }) => {
   const router = useRouter();
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isRegisterOpen, setIsRegisterOpen] = useState(false);
@@ -239,30 +131,6 @@ export function AuthButtons({ dict }: { dict: Translations }) {
       </Dialog>
     </div>
   );
-}
+};
 
-export function AuthDialog({
-  children,
-  title,
-  description,
-  className
-}: {
-  children: React.ReactNode,
-  title: string,
-  description: string,
-  className?: string
-}) {
-  return (
-    <DialogContent className={cn(
-      "max-w-dialog",
-      "xs:p-dialog-mobile p-dialog-desktop",
-      className
-    )}>
-      <DialogHeader>
-        <DialogTitle>{title}</DialogTitle>
-        <DialogDescription>{description}</DialogDescription>
-      </DialogHeader>
-      {children}
-    </DialogContent>
-  );
-}
+export default AuthButtons;

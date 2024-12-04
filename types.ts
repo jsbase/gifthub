@@ -180,6 +180,10 @@ export interface MemberGiftsDialogProps {
 
 export interface CommandDialogProps extends DialogProps { }
 
+export interface AuthButtonsProps {
+  dict: Translations;
+}
+
 export interface AuthResponse {
   success: boolean;
   message?: string;
@@ -277,6 +281,13 @@ export interface FooterProps {
   dict: Translations;
 }
 
+export interface AuthDialogProps {
+  children: React.ReactNode;
+  title: string;
+  description: string;
+  className?: string;
+}
+
 export interface AuthState {
   isAuthenticated: boolean;
   groupName: string | undefined;
@@ -304,6 +315,18 @@ export interface LanguageFlagProps {
   width: number;
   height: number;
   className?: string;
+}
+
+export interface LoginFormProps {
+  dict: Translations;
+  isLoading: boolean;
+  onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
+}
+
+export interface RegisterFormProps {
+  dict: Translations;
+  isLoading: boolean;
+  onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
 }
 
 export interface LogoProps {
