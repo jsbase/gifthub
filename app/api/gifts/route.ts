@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getGroupIdFromToken } from '@/lib/auth-server';
 
-export const GET = async (request: NextRequest): Promise<NextResponse> => {
+export const GET: (request: NextRequest) => Promise<NextResponse> = async request => {
   try {
     const groupId = await getGroupIdFromToken(request);
     if (!groupId) {
@@ -35,7 +35,7 @@ export const GET = async (request: NextRequest): Promise<NextResponse> => {
   }
 };
 
-export const POST = async (request: NextRequest): Promise<NextResponse> => {
+export const POST: (request: NextRequest) => Promise<NextResponse> = async request => {
   try {
     const groupId = await getGroupIdFromToken(request);
     if (!groupId) {

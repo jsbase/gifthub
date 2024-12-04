@@ -2,9 +2,10 @@ import { cookies } from 'next/headers';
 import { jwtVerify } from 'jose';
 import prisma from '@/lib/prisma';
 
-export async function getGroupIdFromToken(request: Request) {
+export const getGroupIdFromToken: (request: Request) => Promise<string | undefined | null> = async request => {
   const cookieStore = await cookies();
   const token = cookieStore.get('auth-token')?.value;
+
   if (!token || !process.env.JWT_SECRET) {
     return null;
   }
@@ -24,4 +25,4 @@ export async function getGroupIdFromToken(request: Request) {
   } catch {
     return null;
   }
-}
+};

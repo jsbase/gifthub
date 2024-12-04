@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getGroupIdFromToken } from '@/lib/auth-server';
 
-export const PUT = async (request: NextRequest): Promise<NextResponse> => {
+export const PUT: (request: NextRequest) => Promise<NextResponse> = async request => {
   try {
     const { id } = await request.json();
     const groupId = await getGroupIdFromToken(request);
@@ -28,7 +28,7 @@ export const PUT = async (request: NextRequest): Promise<NextResponse> => {
     }
 
     const updatedGift = await prisma.gift.update({
-      where: { 
+      where: {
         id,
         groupId,
       },

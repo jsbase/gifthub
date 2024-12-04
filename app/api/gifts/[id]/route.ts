@@ -4,7 +4,7 @@ import { getGroupIdFromToken } from '@/lib/auth-server';
 
 export const dynamic = 'force-dynamic';
 
-export const GET = async (request: NextRequest): Promise<NextResponse> => {
+export const GET: (request: NextRequest) => Promise<NextResponse> = async request => {
   const { id } = await request.json();
 
   if (!id.match(/^[0-9a-fA-F]{24}$/)) {
@@ -47,7 +47,7 @@ export const GET = async (request: NextRequest): Promise<NextResponse> => {
   }
 };
 
-export const POST = async (request: NextRequest): Promise<NextResponse> => {
+export const POST: (request: NextRequest) => Promise<NextResponse> = async request => {
   const { id } = await request.json();
 
   if (!id.match(/^[0-9a-fA-F]{24}$/)) {
@@ -95,7 +95,7 @@ export const POST = async (request: NextRequest): Promise<NextResponse> => {
   }
 };
 
-export const DELETE = async (request: NextRequest): Promise<NextResponse> => {
+export const DELETE: (request: NextRequest) => Promise<NextResponse> = async request => {
   const { pathname } = new URL(request.url);
   const id = pathname.split('/').pop();
 
@@ -149,7 +149,7 @@ export const DELETE = async (request: NextRequest): Promise<NextResponse> => {
   }
 };
 
-export const PUT = async (request: NextRequest): Promise<NextResponse> => {
+export const PUT: (request: NextRequest) => Promise<NextResponse> = async request => {
   const { id } = await request.json();
 
   if (!id.match(/^[0-9a-fA-F]{24}$/)) {
