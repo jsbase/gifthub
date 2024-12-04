@@ -28,7 +28,10 @@
   "orientation": "portrait",
   "scope": "/",
   "prefer_related_applications": false,
-  "categories": ["productivity", "lifestyle"],
+  "categories": [
+    "productivity",
+    "lifestyle"
+  ],
   "lang": "en",
   "dir": "ltr"
 }

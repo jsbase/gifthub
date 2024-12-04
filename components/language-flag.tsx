@@ -2,7 +2,13 @@ import React, { memo } from 'react';
 import Image from 'next/image';
 import type { LanguageFlagProps } from '@/types';
 
-const LanguageFlag: React.FC<LanguageFlagProps> = ({ src, alt, width, height, className }) => {
+const LanguageFlag: React.FC<LanguageFlagProps> = ({
+  src,
+  alt,
+  width,
+  height,
+  className,
+}) => {
   return (
     <Image
       src={src}

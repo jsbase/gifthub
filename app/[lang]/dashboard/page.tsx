@@ -1,13 +1,6 @@
 'use client';
 
-import {
-  useEffect,
-  useState,
-  use,
-  useCallback,
-  lazy,
-  Suspense,
-} from 'react';
+import { useEffect, useState, use, useCallback, lazy, Suspense } from 'react';
 import { NextPage } from 'next';
 import { useRouter, usePathname } from 'next/navigation';
 import getDictionary from '@/app/[lang]/dictionaries';
@@ -18,14 +11,11 @@ import MemberList from '@/components/member-list';
 import Footer from '@/components/footer';
 import { verifyAuth, logout } from '@/lib/auth';
 import { cn } from '@/lib/utils';
-import type {
-  Member,
-  Gift,
-  Translations,
-  PageProps,
-} from '@/types';
+import type { Member, Gift, Translations, PageProps } from '@/types';
 
-const MemberGiftsDialog = lazy(() => import('@/components/member-gifts-dialog'));
+const MemberGiftsDialog = lazy(
+  () => import('@/components/member-gifts-dialog')
+);
 
 const DashboardPage: NextPage<PageProps> = ({ params }) => {
   const { lang } = use(params);
@@ -34,7 +24,9 @@ const DashboardPage: NextPage<PageProps> = ({ params }) => {
   const [dict, setDict] = useState<Translations | null>(null);
   const [groupName, setGroupName] = useState('');
   const [members, setMembers] = useState<Member[]>([]);
-  const [memberGiftCounts, setMemberGiftCounts] = useState<Record<string, number>>({});
+  const [memberGiftCounts, setMemberGiftCounts] = useState<
+    Record<string, number>
+  >({});
   const [loading, setLoading] = useState(true);
   const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
   const [memberGifts, setMemberGifts] = useState<Gift[]>([]);
@@ -54,14 +46,15 @@ const DashboardPage: NextPage<PageProps> = ({ params }) => {
       const { gifts } = await giftsRes.json();
 
       // Group gifts by member ID
-      const giftCountsByMember = membersData.members.reduce((acc: Record<string, number>, member: any) => {
-        acc[member.id] = gifts.filter(
-          (gift: any) =>
-            gift.forMemberId === member.id &&
-            !gift.isPurchased
-        ).length;
-        return acc;
-      }, {});
+      const giftCountsByMember = membersData.members.reduce(
+        (acc: Record<string, number>, member: any) => {
+          acc[member.id] = gifts.filter(
+            (gift: any) => gift.forMemberId === member.id && !gift.isPurchased
+          ).length;
+          return acc;
+        },
+        {}
+      );
 
       setMemberGiftCounts(giftCountsByMember);
     } catch (error) {
@@ -78,7 +71,7 @@ const DashboardPage: NextPage<PageProps> = ({ params }) => {
 
   useEffect(() => {
     const init = async () => {
-      const translations = await getDictionary(lang) as Translations;
+      const translations = (await getDictionary(lang)) as Translations;
       setDict(translations);
 
       const auth = await verifyAuth();
@@ -125,15 +118,16 @@ const DashboardPage: NextPage<PageProps> = ({ params }) => {
     toast.success(dict?.success.loggedOut);
   };
 
-  const getSelectedMember = () => members.find(m => m.id === selectedMemberId);
+  const getSelectedMember = () =>
+    members.find((m) => m.id === selectedMemberId);
 
   const updateMemberGiftCount = useCallback(async (memberId: string) => {
     const response = await fetch(`/api/gifts?memberId=${memberId}`);
     if (response.ok) {
       const data = await response.json();
-      setMemberGiftCounts(prev => ({
+      setMemberGiftCounts((prev) => ({
         ...prev,
-        [memberId]: data.gifts.filter((gift: Gift) => !gift.isPurchased).length
+        [memberId]: data.gifts.filter((gift: Gift) => !gift.isPurchased).length,
       }));
     }
   }, []);
@@ -145,11 +139,7 @@ const DashboardPage: NextPage<PageProps> = ({ params }) => {
   if (!mounted) return null;
 
   return (
-    <div className={cn(
-      "min-h-screen",
-      "bg-background",
-      "flex flex-col"
-    )}>
+    <div className={cn('min-h-screen', 'bg-background', 'flex flex-col')}>
       <Header
         groupName={groupName}
         dict={dict}
@@ -157,12 +147,7 @@ const DashboardPage: NextPage<PageProps> = ({ params }) => {
         showAuth={true}
       />
 
-      <main className={cn(
-        "container",
-        "mx-auto",
-        "px-4 py-8",
-        "flex-1"
-      )}>
+      <main className={cn('container', 'mx-auto', 'px-4 py-8', 'flex-1')}>
         <section>
           <MemberList
             members={members}
@@ -190,7 +175,7 @@ const DashboardPage: NextPage<PageProps> = ({ params }) => {
           dict={{
             ...dict.memberGifts,
             toasts: dict.toasts,
-            confirmations: dict.confirmations
+            confirmations: dict.confirmations,
           }}
         />
       </Suspense>

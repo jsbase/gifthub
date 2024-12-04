@@ -7,42 +7,42 @@ import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 import type { LoginFormProps } from '@/types';
 
-const LoginForm: React.FC<LoginFormProps> = ({
-  dict,
-  isLoading,
-  onSubmit
-}) => {
+const LoginForm: React.FC<LoginFormProps> = ({ dict, isLoading, onSubmit }) => {
   return (
-    <form onSubmit={onSubmit} className={cn(
-      "space-y-dialog-desktop",
-      "xs:space-y-dialog-mobile"
-    )}>
-      <div className="space-y-2">
-        <Label className="sr-only" htmlFor="groupName">{dict.groupName}</Label>
+    <form
+      onSubmit={onSubmit}
+      className={cn('space-y-dialog-desktop', 'xs:space-y-dialog-mobile')}
+    >
+      <div className='space-y-2'>
+        <Label className='sr-only' htmlFor='groupName'>
+          {dict.groupName}
+        </Label>
         <Input
-          name="groupName"
-          id="groupName"
+          name='groupName'
+          id='groupName'
           placeholder={dict.groupName}
           required
         />
       </div>
-      <div className="space-y-2">
-        <Label className="sr-only" htmlFor="password">{dict.enterPassword}</Label>
+      <div className='space-y-2'>
+        <Label className='sr-only' htmlFor='password'>
+          {dict.enterPassword}
+        </Label>
         <Input
-          name="password"
-          id="password"
-          type="password"
+          name='password'
+          id='password'
+          type='password'
           placeholder={dict.enterPassword}
-          autoComplete="current-password"
+          autoComplete='current-password'
           required
         />
       </div>
       <Button
-        type="submit"
-        className={cn("w-full", "xs:text-base", "xs:h-12")}
+        type='submit'
+        className={cn('w-full', 'xs:text-base', 'xs:h-12')}
         disabled={isLoading}
-        aria-label="SubmitLogin"
-        data-testid="SubmitLogin"
+        aria-label='SubmitLogin'
+        data-testid='SubmitLogin'
       >
         {isLoading ? dict.loading : dict.login}
       </Button>

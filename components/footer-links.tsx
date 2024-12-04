@@ -13,31 +13,28 @@ const FooterLinks = ({ dict }: Pick<FooterProps, 'dict'>) => {
   const [lang] = useState(currentLanguage.code);
 
   return (
-    <div className={cn(
-      "flex",
-      "space-x-5",
-      "justify-end",
-      "sm:justify-center"
-    )}>
+    <div
+      className={cn('flex', 'space-x-5', 'justify-end', 'sm:justify-center')}
+    >
       <Link
         href={`/${lang}/privacy`}
         className={cn(
-          "text-gray-500",
-          "hover:text-gray-900",
-          "dark:hover:text-white"
+          'text-gray-500',
+          'hover:text-gray-900',
+          'dark:hover:text-white'
         )}
-        data-testid="linkPrivacy"
+        data-testid='linkPrivacy'
       >
         {dict.footer.privacyPolicy}
       </Link>
       <Link
         href={`/${lang}/terms`}
         className={cn(
-          "text-gray-500",
-          "hover:text-gray-900",
-          "dark:hover:text-white"
+          'text-gray-500',
+          'hover:text-gray-900',
+          'dark:hover:text-white'
         )}
-        data-testid="linkTerms"
+        data-testid='linkTerms'
       >
         {dict.footer.termsConditions}
       </Link>

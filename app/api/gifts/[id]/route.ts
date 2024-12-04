@@ -4,7 +4,9 @@ import { getGroupIdFromToken } from '@/lib/auth-server';
 
 export const dynamic = 'force-dynamic';
 
-export const GET: (request: NextRequest) => Promise<NextResponse> = async request => {
+export const GET: (request: NextRequest) => Promise<NextResponse> = async (
+  request
+) => {
   const { id } = await request.json();
 
   if (!id.match(/^[0-9a-fA-F]{24}$/)) {
@@ -17,10 +19,7 @@ export const GET: (request: NextRequest) => Promise<NextResponse> = async reques
   try {
     const groupId = await getGroupIdFromToken(request);
     if (!groupId) {
-      return NextResponse.json(
-        { message: 'Unauthorized' },
-        { status: 401 }
-      );
+      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
 
     const gift = await prisma.gift.findFirst({
@@ -31,10 +30,7 @@ export const GET: (request: NextRequest) => Promise<NextResponse> = async reques
     });
 
     if (!gift) {
-      return NextResponse.json(
-        { message: 'Gift not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ message: 'Gift not found' }, { status: 404 });
     }
 
     return NextResponse.json(gift);
@@ -47,7 +43,9 @@ export const GET: (request: NextRequest) => Promise<NextResponse> = async reques
   }
 };
 
-export const POST: (request: NextRequest) => Promise<NextResponse> = async request => {
+export const POST: (request: NextRequest) => Promise<NextResponse> = async (
+  request
+) => {
   const { id } = await request.json();
 
   if (!id.match(/^[0-9a-fA-F]{24}$/)) {
@@ -60,10 +58,7 @@ export const POST: (request: NextRequest) => Promise<NextResponse> = async reque
   try {
     const groupId = await getGroupIdFromToken(request);
     if (!groupId) {
-      return NextResponse.json(
-        { message: 'Unauthorized' },
-        { status: 401 }
-      );
+      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
 
     const data = await request.json();
@@ -95,7 +90,9 @@ export const POST: (request: NextRequest) => Promise<NextResponse> = async reque
   }
 };
 
-export const DELETE: (request: NextRequest) => Promise<NextResponse> = async request => {
+export const DELETE: (request: NextRequest) => Promise<NextResponse> = async (
+  request
+) => {
   const { pathname } = new URL(request.url);
   const id = pathname.split('/').pop();
 
@@ -109,10 +106,7 @@ export const DELETE: (request: NextRequest) => Promise<NextResponse> = async req
   try {
     const groupId = await getGroupIdFromToken(request);
     if (!groupId) {
-      return NextResponse.json(
-        { message: 'Unauthorized' },
-        { status: 401 }
-      );
+      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
 
     const gift = await prisma.gift.findFirst({
@@ -123,10 +117,7 @@ export const DELETE: (request: NextRequest) => Promise<NextResponse> = async req
     });
 
     if (!gift) {
-      return NextResponse.json(
-        { message: 'Gift not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ message: 'Gift not found' }, { status: 404 });
     }
 
     await prisma.gift.delete({
@@ -149,7 +140,9 @@ export const DELETE: (request: NextRequest) => Promise<NextResponse> = async req
   }
 };
 
-export const PUT: (request: NextRequest) => Promise<NextResponse> = async request => {
+export const PUT: (request: NextRequest) => Promise<NextResponse> = async (
+  request
+) => {
   const { id } = await request.json();
 
   if (!id.match(/^[0-9a-fA-F]{24}$/)) {
@@ -162,10 +155,7 @@ export const PUT: (request: NextRequest) => Promise<NextResponse> = async reques
   try {
     const groupId = await getGroupIdFromToken(request);
     if (!groupId) {
-      return NextResponse.json(
-        { message: 'Unauthorized' },
-        { status: 401 }
-      );
+      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
 
     const gift = await prisma.gift.findFirst({
@@ -176,10 +166,7 @@ export const PUT: (request: NextRequest) => Promise<NextResponse> = async reques
     });
 
     if (!gift) {
-      return NextResponse.json(
-        { message: 'Gift not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ message: 'Gift not found' }, { status: 404 });
     }
 
     const updatedGift = await prisma.gift.update({

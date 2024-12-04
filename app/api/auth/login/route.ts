@@ -6,7 +6,9 @@ import prisma from '@/lib/prisma';
 import { defaultLocale, locales } from '@/lib/i18n-config';
 import type { LanguageCode } from '@/types';
 
-export const POST: (request: NextRequest) => Promise<NextResponse> = async request => {
+export const POST: (request: NextRequest) => Promise<NextResponse> = async (
+  request
+) => {
   try {
     if (!process.env.JWT_SECRET) {
       throw new Error('JWT_SECRET is not set');
@@ -22,14 +24,11 @@ export const POST: (request: NextRequest) => Promise<NextResponse> = async reque
     }
 
     const group = await prisma.group.findUnique({
-      where: { name: groupName }
+      where: { name: groupName },
     });
 
     if (!group) {
-      return NextResponse.json(
-        { message: 'Group not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ message: 'Group not found' }, { status: 404 });
     }
 
     const isValid = await bcrypt.compare(password, group.password);
@@ -57,9 +56,13 @@ export const POST: (request: NextRequest) => Promise<NextResponse> = async reque
     });
 
     const acceptLanguage = request.headers.get('accept-language') || '';
-    const preferredLocale = acceptLanguage.split(',')[0].split('-')[0] as LanguageCode;
+    const preferredLocale = acceptLanguage
+      .split(',')[0]
+      .split('-')[0] as LanguageCode;
     const validLocales = locales;
-    const locale = validLocales.includes(preferredLocale) ? preferredLocale : defaultLocale;
+    const locale = validLocales.includes(preferredLocale)
+      ? preferredLocale
+      : defaultLocale;
     const cookieStore = await cookies();
 
     if (!cookieStore.get('NEXT_LOCALE')) {
@@ -73,13 +76,15 @@ export const POST: (request: NextRequest) => Promise<NextResponse> = async reque
     }
 
     return response;
-
   } catch (error) {
     console.error('Login error:', error);
     return NextResponse.json(
       {
         message: 'Login failed',
-        details: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined
+        details:
+          process.env.NODE_ENV === 'development'
+            ? (error as Error).message
+            : undefined,
       },
       { status: 500 }
     );

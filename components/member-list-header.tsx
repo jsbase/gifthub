@@ -9,39 +9,35 @@ const MemberListHeader: React.FC<MemberListHeaderProps> = ({
   dict,
   onDeleteClick,
   onMemberAdded,
-  hasMembers
+  hasMembers,
 }) => {
   return (
-    <div className={cn(
-      "flex",
-      "flex-col sm:flex-row",
-      "sm:items-center",
-      "sm:justify-between",
-      "gap-2"
-    )}>
-      <h2 className="text-2xl font-bold">
-        {dict.members}
-      </h2>
-      <div className={cn(
-        "grid",
-        "grid-cols-2",
-        "gap-2",
-        "w-full",
-        "sm:w-auto"
-      )}>
+    <div
+      className={cn(
+        'flex',
+        'flex-col sm:flex-row',
+        'sm:items-center',
+        'sm:justify-between',
+        'gap-2'
+      )}
+    >
+      <h2 className='text-2xl font-bold'>{dict.members}</h2>
+      <div
+        className={cn('grid', 'grid-cols-2', 'gap-2', 'w-full', 'sm:w-auto')}
+      >
         <Button
-          variant="outline"
+          variant='outline'
           onClick={onDeleteClick}
           disabled={!hasMembers}
           className={cn(
-            "flex",
-            "items-center",
-            "justify-center",
-            "gap-2",
-            !hasMembers && "opacity-50 cursor-not-allowed"
+            'flex',
+            'items-center',
+            'justify-center',
+            'gap-2',
+            !hasMembers && 'opacity-50 cursor-not-allowed'
           )}
         >
-          <Trash2 className="h-4 w-4" />
+          <Trash2 className='h-4 w-4' />
           {dict.deleteMember}
         </Button>
         <AddMemberDialog onMemberAdded={onMemberAdded} />

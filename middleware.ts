@@ -5,19 +5,25 @@ import acceptLanguage from 'accept-language';
 import { locales, defaultLocale, hasLocaleInPath } from '@/lib/i18n-config';
 import type { LanguageCode } from '@/types';
 
-const getLocale: (request: NextRequest) => LanguageCode = request => {
+const getLocale: (request: NextRequest) => LanguageCode = (request) => {
   // First priority: Check cookie
   const localeCookie = request.cookies.get('NEXT_LOCALE');
-  if (localeCookie?.value && locales.includes(localeCookie.value as LanguageCode)) {
+  if (
+    localeCookie?.value &&
+    locales.includes(localeCookie.value as LanguageCode)
+  ) {
     return localeCookie.value as LanguageCode;
   }
 
   // Second priority: Check browser's accept-language header
   acceptLanguage.languages([...locales] as LanguageCode[]);
-  return (acceptLanguage.get(request.headers.get('accept-language')) || defaultLocale) as LanguageCode;
+  return (acceptLanguage.get(request.headers.get('accept-language')) ||
+    defaultLocale) as LanguageCode;
 };
 
-export const middleware: (request: NextRequest) => Promise<NextResponse> = async request => {
+export const middleware: (
+  request: NextRequest
+) => Promise<NextResponse> = async (request) => {
   const { pathname } = request.nextUrl;
 
   // Skip section
@@ -53,11 +59,12 @@ export const middleware: (request: NextRequest) => Promise<NextResponse> = async
     }
   }
 
-  // TODO: check why this is not working even if this is the same function
+  // TODO:Check why this is not working even if this is the same function
   // const matchedLocale = getLocaleFromPath(pathname);
+
   // Check if the current path has a locale
   const matchedLocale = locales.find(
-    locale => pathname.startsWith(`/${locale}/`) || pathname === `/${locale}`
+    (locale) => pathname.startsWith(`/${locale}/`) || pathname === `/${locale}`
   );
 
   // Always update the cookie when there's a locale in the URL
@@ -90,6 +97,6 @@ export const config = {
     '/dashboard/:path*',
     '/:locale',
     '/:locale/:path*',
-    '/:path*'
-  ]
+    '/:path*',
+  ],
 };

@@ -3,10 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import {
-  Dialog,
-  DialogTrigger,
-} from '@/components/ui/dialog';
+import { Dialog, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import AuthDialog from '@/components/auth-dialog';
 import LoginForm from '@/components/login-form';
@@ -37,9 +34,11 @@ const AuthButtons: React.FC<AuthButtonsProps> = ({ dict }) => {
       setIsLoginOpen(false);
       router.refresh();
 
-      const lang = document.cookie.split('; ')
-        .find(row => row.startsWith('NEXT_LOCALE='))
-        ?.split('=')[1] || 'en';
+      const lang =
+        document.cookie
+          .split('; ')
+          .find((row) => row.startsWith('NEXT_LOCALE='))
+          ?.split('=')[1] || 'en';
 
       router.push(`/${lang}/dashboard`);
     } catch (error) {
@@ -78,49 +77,48 @@ const AuthButtons: React.FC<AuthButtonsProps> = ({ dict }) => {
   };
 
   const handleLogin = useDebounce(handleLoginBase, 500, { leading: true });
-  const handleRegister = useDebounce(handleRegisterBase, 500, { leading: true });
+  const handleRegister = useDebounce(handleRegisterBase, 500, {
+    leading: true,
+  });
 
   return (
-    <div className={cn(
-      "flex",
-      "flex-col sm:flex-row",
-      "gap-4 justify-center"
-    )}>
+    <div className={cn('flex', 'flex-col sm:flex-row', 'gap-4 justify-center')}>
       <Dialog open={isLoginOpen} onOpenChange={setIsLoginOpen}>
         <DialogTrigger asChild>
-          <Button size="lg" className="min-w-[200px]" aria-label="OpenLogin" data-testid="OpenLogin">
+          <Button
+            size='lg'
+            className='min-w-[200px]'
+            aria-label='OpenLogin'
+            data-testid='OpenLogin'
+          >
             {dict.login}
           </Button>
         </DialogTrigger>
         <AuthDialog
           title={dict.loginToGroup}
           description={dict.enterGroupName}
-          className={cn(
-            "xs:h-[85vh]",
-            "xs:max-h-[85vh]"
-          )}
+          className={cn('xs:h-[85vh]', 'xs:max-h-[85vh]')}
         >
-          <LoginForm
-            dict={dict}
-            isLoading={isLoading}
-            onSubmit={handleLogin}
-          />
+          <LoginForm dict={dict} isLoading={isLoading} onSubmit={handleLogin} />
         </AuthDialog>
       </Dialog>
 
       <Dialog open={isRegisterOpen} onOpenChange={setIsRegisterOpen}>
         <DialogTrigger asChild>
-          <Button size="lg" variant="outline" className="min-w-[200px]" aria-label="OpenRegister" data-testid="OpenRegister">
+          <Button
+            size='lg'
+            variant='outline'
+            className='min-w-[200px]'
+            aria-label='OpenRegister'
+            data-testid='OpenRegister'
+          >
             {dict.register}
           </Button>
         </DialogTrigger>
         <AuthDialog
           title={dict.createGroup}
           description={dict.createGroupDescription}
-          className={cn(
-            "xs:h-[85vh]",
-            "xs:max-h-[85vh]"
-          )}
+          className={cn('xs:h-[85vh]', 'xs:max-h-[85vh]')}
         >
           <RegisterForm
             dict={dict}

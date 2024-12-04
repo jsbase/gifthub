@@ -7,7 +7,7 @@ const STATIC_ASSETS = [
   '/android-chrome-512x512.png',
   '/apple-touch-icon.png',
   '/maskable_icon.png',
-  '/site.webmanifest'
+  '/site.webmanifest',
 ];
 
 // Install event
@@ -15,7 +15,7 @@ self.addEventListener('install', (event) => {
   event.waitUntil(
     Promise.all([
       caches.open(CACHE_NAME).then((cache) => cache.addAll(STATIC_ASSETS)),
-      self.skipWaiting()
+      self.skipWaiting(),
     ])
   );
 });
@@ -31,7 +31,7 @@ self.addEventListener('activate', (event) => {
             .map((cacheName) => caches.delete(cacheName))
         );
       }),
-      self.clients.claim() // Take control of all clients immediately
+      self.clients.claim(), // Take control of all clients immediately
     ])
   );
 });
@@ -39,11 +39,13 @@ self.addEventListener('activate', (event) => {
 // Fetch event with network-first strategy for dynamic content
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
-  
+
   // Only handle requests from our own origin and http(s) schemes
-  if (event.request.method !== 'GET' || 
-      !['http:', 'https:'].includes(url.protocol) ||
-      !url.origin.includes(self.location.origin)) {
+  if (
+    event.request.method !== 'GET' ||
+    !['http:', 'https:'].includes(url.protocol) ||
+    !url.origin.includes(self.location.origin)
+  ) {
     return;
   }
 
@@ -56,9 +58,13 @@ self.addEventListener('fetch', (event) => {
     fetch(event.request)
       .then((response) => {
         // Only cache successful responses for static assets from our origin
-        if (response.ok && 
-            url.origin === self.location.origin && 
-            url.pathname.match(/\.(js|css|png|jpg|jpeg|gif|ico|json|webmanifest)$/)) {
+        if (
+          response.ok &&
+          url.origin === self.location.origin &&
+          url.pathname.match(
+            /\.(js|css|png|jpg|jpeg|gif|ico|json|webmanifest)$/
+          )
+        ) {
           const responseClone = response.clone();
           caches.open(CACHE_NAME).then((cache) => {
             cache.put(event.request, responseClone);
@@ -71,7 +77,7 @@ self.addEventListener('fetch', (event) => {
         if (cachedResponse) {
           return cachedResponse;
         }
-        
+
         // If the request is for a page navigation, return the offline page
         if (event.request.mode === 'navigate') {
           const offlineResponse = await caches.match('/offline.html');
@@ -79,7 +85,7 @@ self.addEventListener('fetch', (event) => {
             return offlineResponse;
           }
         }
-        
+
         return new Response('Network error happened', {
           status: 408,
           headers: { 'Content-Type': 'text/plain' },
@@ -91,8 +97,10 @@ self.addEventListener('fetch', (event) => {
 // Handle push notifications
 self.addEventListener('push', async (event) => {
   // Check if we have permission first
-  const hasPermission = await self.registration.pushManager.permissionState({ userVisibleOnly: true });
-  
+  const hasPermission = await self.registration.pushManager.permissionState({
+    userVisibleOnly: true,
+  });
+
   if (hasPermission !== 'granted') {
     console.log('Notification permission not granted');
     return;
@@ -101,10 +109,8 @@ self.addEventListener('push', async (event) => {
   const options = {
     body: event.data?.text() ?? 'New update available',
     icon: '/android-chrome-192x192.png',
-    badge: '/maskable_icon.png'
+    badge: '/maskable_icon.png',
   };
 
-  event.waitUntil(
-    self.registration.showNotification('GiftHub', options)
-  );
+  event.waitUntil(self.registration.showNotification('GiftHub', options));
 });

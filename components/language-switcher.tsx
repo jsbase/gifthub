@@ -27,7 +27,9 @@ const LanguageSwitcher: React.FC = () => {
   const switchLanguageBase = async (langCode: LanguageCode) => {
     try {
       setIsChangingLanguage(true);
-      document.cookie = `NEXT_LOCALE=${langCode};path=/;max-age=${365 * 24 * 60 * 60};SameSite=Lax`;
+      document.cookie = `NEXT_LOCALE=${langCode};path=/;max-age=${
+        365 * 24 * 60 * 60
+      };SameSite=Lax`;
       await loadTranslations(langCode);
       const newPath = path.split('/').slice(2).join('/');
       await router.push(`/${langCode}${newPath ? `/${newPath}` : ''}`);
@@ -51,29 +53,34 @@ const LanguageSwitcher: React.FC = () => {
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button
-            variant="ghost"
-            size="icon"
-            className={cn("w-6 h-6", "rounded-full", "overflow-hidden", "p-0")}
-            data-testid="language-switcher"
+            variant='ghost'
+            size='icon'
+            className={cn('w-6 h-6', 'rounded-full', 'overflow-hidden', 'p-0')}
+            data-testid='language-switcher'
           >
             <LanguageFlag
               src={selectedLanguage.flag}
               alt={selectedLanguage.name}
               width={30}
               height={30}
-              className={cn("w-6", "h-6", "object-cover")}
+              className={cn('w-6', 'h-6', 'object-cover')}
             />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
+        <DropdownMenuContent align='end'>
           {Object.values(languages).map((lang) => (
             <DropdownMenuItem
               key={lang.code}
               onClick={() => switchLanguage(lang.code)}
               className={cn(
-                "flex", "items-center", "gap-2", "cursor-pointer",
-                "hover:bg-accent", "active:bg-accent/80",
-                "focus:bg-accent/80", "py-3"
+                'flex',
+                'items-center',
+                'gap-2',
+                'cursor-pointer',
+                'hover:bg-accent',
+                'active:bg-accent/80',
+                'focus:bg-accent/80',
+                'py-3'
               )}
             >
               <LanguageFlag
@@ -81,7 +88,7 @@ const LanguageSwitcher: React.FC = () => {
                 alt={lang.name}
                 width={20}
                 height={20}
-                className={cn("w-5", "h-5")}
+                className={cn('w-5', 'h-5')}
               />
               <span>{lang.name}</span>
             </DropdownMenuItem>
