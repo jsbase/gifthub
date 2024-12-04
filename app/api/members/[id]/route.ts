@@ -2,7 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getGroupIdFromToken } from '@/lib/auth-server';
 
-export const DELETE: (request: NextRequest) => Promise<NextResponse> = async request => {
+export const DELETE: (request: NextRequest) => Promise<NextResponse> = async (
+  request
+) => {
   const { pathname } = new URL(request.url);
   const id = pathname.split('/').pop();
 
@@ -16,15 +18,12 @@ export const DELETE: (request: NextRequest) => Promise<NextResponse> = async req
   try {
     const groupId = await getGroupIdFromToken(request);
     if (!groupId) {
-      return NextResponse.json(
-        { message: 'Unauthorized' },
-        { status: 401 }
-      );
+      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
 
     const userGroup = await prisma.userGroup.findUnique({
       where: { id },
-      select: { userId: true }
+      select: { userId: true },
     });
 
     if (!userGroup) {

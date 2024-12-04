@@ -7,9 +7,11 @@
 > The smart way to organize and track gifts for your family, friends, and groups! Never buy duplicate presents or miss a special occasion again.
 
 ## 🎯 What is GiftHub?
+
 GiftHub helps you manage gift-giving within your family or other groups. Create wishlists, track who's buying what, and ensure everyone gets something special - all while keeping the surprise! Perfect for birthdays, holidays, or any gift-giving occasion.
 
 ## ✨ Features
+
 - 👨‍👩‍👧‍👦 Create and manage family/group gift lists
 - 🎯 Add items to wishlists
 - 🤫 Secretly mark items as "being bought"
@@ -26,11 +28,13 @@ Built with [Next.js](https://nextjs.org) and bootstrapped using [`create-next-ap
 ## 🚀 Quick Start
 
 1. Install dependencies:
+
 ```bash
 npm install
 ```
 
 2. Fire up the dev server:
+
 ```bash
 npm run dev
 ```

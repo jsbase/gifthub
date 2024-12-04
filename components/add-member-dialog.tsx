@@ -24,7 +24,9 @@ import type {
   ToastTranslations,
 } from '@/types';
 
-const AddMemberDialog: React.FC<Omit<AddMemberDialogProps, 'dict'>> = ({ onMemberAdded }) => {
+const AddMemberDialog: React.FC<Omit<AddMemberDialogProps, 'dict'>> = ({
+  onMemberAdded,
+}) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [dict, setDict] = useState<{
@@ -39,7 +41,7 @@ const AddMemberDialog: React.FC<Omit<AddMemberDialogProps, 'dict'>> = ({ onMembe
       const translations = await getDictionary(locale);
       setDict({
         addMemberDialog: translations.addMemberDialog,
-        toasts: translations.toasts
+        toasts: translations.toasts,
       });
     };
     loadTranslations();
@@ -69,22 +71,28 @@ const AddMemberDialog: React.FC<Omit<AddMemberDialogProps, 'dict'>> = ({ onMembe
         onMemberAdded();
       }
     } catch (error) {
-      console.error('Error adding member:', error instanceof Error ? error.message : error);
+      console.error(
+        'Error adding member:',
+        error instanceof Error ? error.message : error
+      );
       toast.error(dict?.toasts.memberAddFailed);
     } finally {
       setIsLoading(false);
     }
   }, 300);
 
-  const handleSubmit = useCallback(async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setIsLoading(true);
+  const handleSubmit = useCallback(
+    async (e: React.FormEvent<HTMLFormElement>) => {
+      e.preventDefault();
+      setIsLoading(true);
 
-    const formData = new FormData(e.currentTarget);
-    const name = formData.get('name') as string;
+      const formData = new FormData(e.currentTarget);
+      const name = formData.get('name') as string;
 
-    debouncedAddMember(name);
-  }, [debouncedAddMember]);
+      debouncedAddMember(name);
+    },
+    [debouncedAddMember]
+  );
 
   if (!dict) return null;
 
@@ -92,14 +100,14 @@ const AddMemberDialog: React.FC<Omit<AddMemberDialogProps, 'dict'>> = ({ onMembe
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <Button>
-          <UserPlus className={cn("h-4 w-4", "mr-2")} />
+          <UserPlus className={cn('h-4 w-4', 'mr-2')} />
           {dict.addMemberDialog.addMember}
         </Button>
       </DialogTrigger>
-      <DialogContent className={cn("xs:p-4", "xs:h-[85vh]", "xs:max-h-[85vh]")}>
+      <DialogContent className={cn('xs:p-4', 'xs:h-[85vh]', 'xs:max-h-[85vh]')}>
         <DialogHeader>
           <DialogTitle>{dict.addMemberDialog.addMemberTitle}</DialogTitle>
-          <DialogDescription className="sr-only">
+          <DialogDescription className='sr-only'>
             {dict.addMemberDialog.enterMemberName}
           </DialogDescription>
         </DialogHeader>

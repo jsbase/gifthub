@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { jwtVerify } from 'jose';
 
-export const GET: (request: NextRequest) => Promise<NextResponse> = async request => {
+export const GET: (request: NextRequest) => Promise<NextResponse> = async (
+  request
+) => {
   const isSilentAuth = request.headers.get('X-Silent-Auth') === '1';
 
   try {
@@ -25,9 +27,8 @@ export const GET: (request: NextRequest) => Promise<NextResponse> = async reques
 
     return NextResponse.json({
       groupName: verified.payload.groupName,
-      success: true
+      success: true,
     });
-
   } catch (error) {
     return NextResponse.json(
       { success: false },

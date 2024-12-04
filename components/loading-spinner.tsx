@@ -20,25 +20,22 @@ const LoadingSpinner: React.FC = () => {
   return createPortal(
     <div
       className={cn(
-        "fixed inset-0",
-        "bg-background/80",
-        "backdrop-blur-sm",
-        "z-50",
-        "flex",
-        "items-center",
-        "justify-center"
+        'fixed inset-0',
+        'bg-background/80',
+        'backdrop-blur-sm',
+        'z-50',
+        'flex',
+        'items-center',
+        'justify-center'
       )}
-      data-testid="loadingSpinner"
+      data-testid='loadingSpinner'
     >
       <Image
-        src="/loading.svg"
-        alt="Loading..."
+        src='/loading.svg'
+        alt='Loading...'
         width={48}
         height={48}
-        className={cn(
-          "animate-spin",
-          "dark:invert"
-        )}
+        className={cn('animate-spin', 'dark:invert')}
         priority
       />
     </div>,

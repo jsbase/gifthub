@@ -17,51 +17,51 @@ const animations = {
     'slide-out-bottom': {
       '0%': {
         transform: 'translateY(0)',
-        opacity: '1'
+        opacity: '1',
       },
       '100%': {
         transform: 'translateY(8px)',
-        opacity: '0'
+        opacity: '0',
       },
     },
     'slide-in-from-top-small': {
       '0%': {
         transform: 'translateY(-8px)',
-        opacity: '0'
+        opacity: '0',
       },
       '100%': {
         transform: 'translateY(0)',
-        opacity: '1'
+        opacity: '1',
       },
     },
     'slide-out-top': {
       '0%': {
         transform: 'translateY(0)',
-        opacity: '1'
+        opacity: '1',
       },
       '100%': {
         transform: 'translateY(-100%)',
-        opacity: '0'
+        opacity: '0',
       },
     },
     'slide-out-top-small': {
       '0%': {
         transform: 'translateY(0)',
-        opacity: '1'
+        opacity: '1',
       },
       '100%': {
         transform: 'translateY(-8px)',
-        opacity: '0'
+        opacity: '0',
       },
     },
     'slide-in-bottom': {
       '0%': {
         transform: 'translateY(8px)',
-        opacity: '0'
+        opacity: '0',
       },
       '100%': {
         transform: 'translateY(0)',
-        opacity: '1'
+        opacity: '1',
       },
     },
     'fade-in': {
@@ -69,21 +69,21 @@ const animations = {
       to: { opacity: '1' },
     },
     'spinner-rotate': {
-      to: { transform: 'rotate(360deg)' }
+      to: { transform: 'rotate(360deg)' },
     },
     'spinner-dash': {
       '0%': {
         'stroke-dasharray': '0 150',
-        'stroke-dashoffset': '0'
+        'stroke-dashoffset': '0',
       },
       '47.5%': {
         'stroke-dasharray': '42 150',
-        'stroke-dashoffset': '-16'
+        'stroke-dashoffset': '-16',
       },
       '95%, 100%': {
         'stroke-dasharray': '42 150',
-        'stroke-dashoffset': '-59'
-      }
+        'stroke-dashoffset': '-59',
+      },
     },
   },
   animation: {
@@ -173,7 +173,7 @@ const config: Config = {
 
       // Screen sizes
       screens: {
-        'xs': { 'max': '639px' },
+        xs: { max: '639px' },
       },
 
       // Container styles
@@ -195,18 +195,18 @@ const config: Config = {
 
       // Add custom spacing for consistent gaps
       spacing: {
-        'dialog-mobile': '0.5rem',  // xs:space-y-2
-        'dialog-desktop': '1rem',   // space-y-4
+        'dialog-mobile': '0.5rem', // xs:space-y-2
+        'dialog-desktop': '1rem', // space-y-4
       },
 
       // Add custom max-width for dialogs
       maxWidth: {
-        'dialog': '42rem',  // max-w-2xl
+        dialog: '42rem', // max-w-2xl
       },
 
       // Add custom padding for dialogs
       padding: {
-        'dialog-mobile': '1rem',    // xs:p-4
+        'dialog-mobile': '1rem', // xs:p-4
         'dialog-desktop': '1.5rem', // default dialog padding
       },
     },

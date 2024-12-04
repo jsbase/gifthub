@@ -57,7 +57,9 @@ test.describe('Dashboard Page Functionality', () => {
 
     const giftCard = page.getByTestId('giftCard');
     await expect(giftCard).toBeVisible();
-    expect(await giftCard.getByTestId('giftTitle').textContent()).toBe('PlayStation 5');
+    expect(await giftCard.getByTestId('giftTitle').textContent()).toBe(
+      'PlayStation 5'
+    );
 
     // Step 3: Delete the Gift
     page.on('dialog', async (dialog) => {

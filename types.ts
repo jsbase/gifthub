@@ -162,7 +162,14 @@ export interface Translations {
     one: string;
     many: string;
   };
-  [key: string]: string | { [key: string]: string | { [key: string]: string } } | AddMemberDialogDictionary | MemberGiftsTranslations | ToastTranslations | ConfirmationTranslations | { [key: string]: string };
+  [key: string]:
+    | string
+    | { [key: string]: string | { [key: string]: string } }
+    | AddMemberDialogDictionary
+    | MemberGiftsTranslations
+    | ToastTranslations
+    | ConfirmationTranslations
+    | { [key: string]: string };
 }
 
 export interface MemberGiftsDialogProps {
@@ -178,7 +185,7 @@ export interface MemberGiftsDialogProps {
   };
 }
 
-export interface CommandDialogProps extends DialogProps { }
+export interface CommandDialogProps extends DialogProps {}
 
 export interface AuthButtonsProps {
   dict: Translations;
@@ -269,7 +276,7 @@ export interface HeaderProps {
 }
 
 export interface PageProps {
-  params: Promise<{ lang: string }>,
+  params: Promise<{ lang: string }>;
 }
 
 export interface FeatureCardProps {
@@ -307,7 +314,7 @@ export type Languages = {
     name: string;
     flag: string;
   };
-}
+};
 
 export interface LanguageFlagProps {
   src: string;
@@ -374,7 +381,7 @@ export type ToasterToast = ToastProps & {
   title?: React.ReactNode;
   description?: React.ReactNode;
   action?: ToastActionElement;
-}
+};
 
 export type Toast = Omit<ToasterToast, 'id'>;
 
@@ -389,21 +396,21 @@ export type ActionType = typeof actionTypes;
 
 export type Action =
   | {
-    type: ActionType['ADD_TOAST'];
-    toast: ToasterToast;
-  }
+      type: ActionType['ADD_TOAST'];
+      toast: ToasterToast;
+    }
   | {
-    type: ActionType['UPDATE_TOAST'];
-    toast: Partial<ToasterToast>;
-  }
+      type: ActionType['UPDATE_TOAST'];
+      toast: Partial<ToasterToast>;
+    }
   | {
-    type: ActionType['DISMISS_TOAST'];
-    toastId?: ToasterToast['id'];
-  }
+      type: ActionType['DISMISS_TOAST'];
+      toastId?: ToasterToast['id'];
+    }
   | {
-    type: ActionType['REMOVE_TOAST'];
-    toastId?: ToasterToast['id'];
-  };
+      type: ActionType['REMOVE_TOAST'];
+      toastId?: ToasterToast['id'];
+    };
 
 export interface State {
   toasts: ToasterToast[];

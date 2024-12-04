@@ -33,14 +33,16 @@ test.describe('Switch language', () => {
 
     for (const lang of Object.values(languages)) {
       const languageOption = await page.getByRole('menuitem', {
-        name: lang.name
+        name: lang.name,
       });
       expect(languageOption).toBeTruthy();
     }
   });
 
   test('Switches language successfully', async ({ page }) => {
-    const targetLanguage = Object.values(languages).find(lang => lang.code !== 'de');
+    const targetLanguage = Object.values(languages).find(
+      (lang) => lang.code !== 'de'
+    );
     if (!targetLanguage) {
       throw new Error('No alternative language found');
     }
@@ -48,17 +50,22 @@ test.describe('Switch language', () => {
     const languageSwitcherButton = await page.getByTestId('language-switcher');
     await languageSwitcherButton.click();
 
-    const switchPromise = page.getByRole('menuitem', { name: targetLanguage.name }).click();
+    const switchPromise = page
+      .getByRole('menuitem', { name: targetLanguage.name })
+      .click();
     await switchPromise;
 
     const cookies = await page.context().cookies();
     const localeCookie = cookies.find(
-      cookie => cookie.name === 'NEXT_LOCALE' && cookie.value === targetLanguage.code
+      (cookie) =>
+        cookie.name === 'NEXT_LOCALE' && cookie.value === targetLanguage.code
     );
     expect(localeCookie).toBeTruthy();
   });
 
-  test('Shows loading spinner during language switch when logged in', async ({ page }) => {
+  test('Shows loading spinner during language switch when logged in', async ({
+    page,
+  }) => {
     await page.goto('/');
 
     const loginButton = page.getByTestId('OpenLogin');
@@ -73,7 +80,7 @@ test.describe('Switch language', () => {
     await page.waitForNavigation();
 
     await page.route('**/actions', async (route) => {
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise((resolve) => setTimeout(resolve, 500));
 
       return route.fulfill({
         status: 200,
@@ -85,8 +92,9 @@ test.describe('Switch language', () => {
     const languageSwitcherButton = await page.getByTestId('language-switcher');
     await languageSwitcherButton.click();
 
-    const targetLanguage = Object.values(languages)
-      .find(lang => lang.code !== 'de');
+    const targetLanguage = Object.values(languages).find(
+      (lang) => lang.code !== 'de'
+    );
 
     if (!targetLanguage) {
       throw new Error('No alternative language found');
@@ -95,7 +103,9 @@ test.describe('Switch language', () => {
     const spinner = await page.getByTestId('loadingSpinner');
     expect(spinner).toBeTruthy();
 
-    const switchPromise = page.getByRole('menuitem', { name: targetLanguage.name }).click();
+    const switchPromise = page
+      .getByRole('menuitem', { name: targetLanguage.name })
+      .click();
     await switchPromise;
 
     await page.getByTestId('loadingSpinner');

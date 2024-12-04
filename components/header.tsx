@@ -19,7 +19,7 @@ const Header: React.FC<HeaderProps> = ({
 }) => {
   const [authState, setAuthState] = useState<AuthState>({
     isAuthenticated: false,
-    groupName
+    groupName,
   });
 
   const pathname = usePathname();
@@ -34,14 +34,14 @@ const Header: React.FC<HeaderProps> = ({
         if (isMounted) {
           setAuthState({
             isAuthenticated: auth?.success ?? false,
-            groupName: auth?.groupName || groupName
+            groupName: auth?.groupName || groupName,
           });
         }
       } catch (error) {
         if (isMounted) {
-          setAuthState(prev => ({
+          setAuthState((prev) => ({
             ...prev,
-            isAuthenticated: false
+            isAuthenticated: false,
           }));
           if (process.env.NODE_ENV === 'development') {
             console.error('Auth check failed:', error);
@@ -59,50 +59,45 @@ const Header: React.FC<HeaderProps> = ({
 
   const isDashboardRoute = pathname.includes('/dashboard');
 
-  const homeRoute = `/${currentLang}${isDashboardRoute && !authState.isAuthenticated ? '' : authState.isAuthenticated ? '/dashboard' : ''}`;
+  const homeRoute = `/${currentLang}${
+    isDashboardRoute && !authState.isAuthenticated
+      ? ''
+      : authState.isAuthenticated
+      ? '/dashboard'
+      : ''
+  }`;
 
   return (
-    <header className="border-b">
-      <div className={cn(
-        "container",
-        "mx-auto",
-        "px-4",
-        "py-4",
-        "flex",
-        "items-center",
-        "justify-between"
-      )}>
+    <header className='border-b'>
+      <div
+        className={cn(
+          'container',
+          'mx-auto',
+          'px-4',
+          'py-4',
+          'flex',
+          'items-center',
+          'justify-between'
+        )}
+      >
         <Link
           href={homeRoute}
-          className={cn(
-            "hover:opacity-80",
-            "transition-opacity"
-          )}
-          data-testid="logo"
+          className={cn('hover:opacity-80', 'transition-opacity')}
+          data-testid='logo'
         >
           <Logo
-            size="sm"
-            groupName={authState.isAuthenticated ? authState.groupName : undefined}
+            size='sm'
+            groupName={
+              authState.isAuthenticated ? authState.groupName : undefined
+            }
           />
         </Link>
 
-        <div className={cn(
-          "flex",
-          "items-center",
-          "space-x-4"
-        )}>
+        <div className={cn('flex', 'items-center', 'space-x-4')}>
           <LanguageSwitcher />
           {showAuth && authState.isAuthenticated && dict && onLogout && (
-            <Button
-              variant="ghost"
-              onClick={onLogout}
-              className="pl-2"
-            >
-              <LogOut className={cn(
-                "h-4",
-                "w-4",
-                "mr-2"
-              )} />
+            <Button variant='ghost' onClick={onLogout} className='pl-2'>
+              <LogOut className={cn('h-4', 'w-4', 'mr-2')} />
               {dict.logout}
             </Button>
           )}
