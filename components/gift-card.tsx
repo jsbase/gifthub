@@ -1,19 +1,19 @@
 'use client';
 
-import { memo } from 'react';
+import React, { memo } from 'react';
 import { Trash2, CheckCircle, Circle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useDebounce } from '@/hooks/use-debounce';
 import { cn } from '@/lib/utils';
 import type { GiftCardProps } from '@/types';
 
-export const GiftCard = memo(function GiftCard({
+const GiftCard: React.FC<GiftCardProps> = ({
   gift,
   dict,
   onDelete,
   onTogglePurchased,
   animatedGiftId
-}: GiftCardProps) {
+}) => {
   const debouncedDelete = useDebounce((id: string) => {
     onDelete(id);
   }, 300, {
@@ -113,4 +113,6 @@ export const GiftCard = memo(function GiftCard({
       </div>
     </div>
   );
-});
+};
+
+export default memo(GiftCard);

@@ -1,5 +1,5 @@
 import { NextPage } from 'next';
-import { getDictionary } from '@/app/[lang]/dictionaries';
+import getDictionary from '@/app/[lang]/dictionaries';
 import Header from '@/components/header';
 import Footer from '@/components/footer';
 import { cn } from '@/lib/utils';

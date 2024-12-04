@@ -1,6 +1,6 @@
 'use client';
 
-import { lazy, memo, Suspense, useState } from 'react';
+import React, { lazy, memo, Suspense, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useDebounce } from '@/hooks/use-debounce';
 import { loadTranslations } from '@/app/[lang]/actions';

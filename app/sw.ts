@@ -2,7 +2,25 @@
 
 let deferredPrompt: any = null;
 
-export function registerServiceWorker() {
+const showInstallPrompt = async () => {
+  if (!deferredPrompt) {
+    console.log('No installation prompt available');
+    return;
+  }
+
+  try {
+    deferredPrompt.prompt();
+
+    const { outcome } = await deferredPrompt.userChoice;
+    console.log(`User ${outcome === 'accepted' ? 'accepted' : 'dismissed'} the install prompt`);
+
+    deferredPrompt = null;
+  } catch (error) {
+    console.error('Error showing the install prompt:', error);
+  }
+};
+
+const registerServiceWorker = () => {
   const register = async () => {
     try {
       const registration = await navigator.serviceWorker.register('/sw.js', {
@@ -40,22 +58,6 @@ export function registerServiceWorker() {
       window.addEventListener('load', registerWhenIdle);
     }
   }
-}
+};
 
-export async function showInstallPrompt() {
-  if (!deferredPrompt) {
-    console.log('No installation prompt available');
-    return;
-  }
-
-  try {
-    deferredPrompt.prompt();
-
-    const { outcome } = await deferredPrompt.userChoice;
-    console.log(`User ${outcome === 'accepted' ? 'accepted' : 'dismissed'} the install prompt`);
-
-    deferredPrompt = null;
-  } catch (error) {
-    console.error('Error showing the install prompt:', error);
-  }
-}
+export default registerServiceWorker;

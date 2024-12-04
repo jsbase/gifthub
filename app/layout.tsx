@@ -1,9 +1,9 @@
 import '@/app/globals.css';
-import { Inter } from 'next/font/google';
 import React from 'react';
 import { Metadata, Viewport } from 'next';
-import { Toaster } from "@/components/ui/sonner";
+import { Inter } from 'next/font/google';
 import ThemeProvider from '@/components/theme-provider';
+import { Toaster } from '@/components/ui/sonner';
 import ServiceWorkerRegistration from '@/components/ServiceWorkerRegistration';
 import { cn } from '@/lib/utils';
 import type { RootLayoutProps } from '@/types';

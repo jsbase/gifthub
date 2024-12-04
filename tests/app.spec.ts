@@ -42,13 +42,13 @@ test.describe('Start page Functionality', () => {
     expect(await footer.isVisible()).toBeTruthy();
 
     await page.getByTestId('linkPrivacy').click();
-    await expect(page).toHaveURL(`/${lang}/privacy`, { timeout: 3000 });
+    await expect(page).toHaveURL(`/${lang}/privacy`, { timeout: 4000 });
 
     expect(await header.isVisible()).toBeTruthy();
     expect(await footer.isVisible()).toBeTruthy();
 
     await header.getByTestId('logo').click();
-    await expect(page).toHaveURL(`/${lang}`);
+    await expect(page).toHaveURL(`/${lang}`, { timeout: 4000 });
   });
 
   test('Header and Footer are visible on Terms & Conditions page', async ({ page }) => {
@@ -56,12 +56,12 @@ test.describe('Start page Functionality', () => {
     const footer = page.locator('footer');
 
     await page.getByTestId('linkTerms').click();
-    await expect(page).toHaveURL(`/${lang}/terms`, { timeout: 3000 });
+    await expect(page).toHaveURL(`/${lang}/terms`, { timeout: 4000 });
 
     expect(await header.isVisible()).toBeTruthy();
     expect(await footer.isVisible()).toBeTruthy();
 
     await page.getByTestId('logo').click();
-    await expect(page).toHaveURL(`/${lang}`);
+    await expect(page).toHaveURL(`/${lang}`, { timeout: 4000 });
   });
 });

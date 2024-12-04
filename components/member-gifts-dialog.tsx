@@ -1,18 +1,28 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import React, {
+  useState,
+  useEffect,
+  useCallback,
+} from 'react';
+import { toast } from 'sonner';
+import { PlusCircle } from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { PlusCircle } from 'lucide-react';
-import { toast } from 'sonner';
+import GiftCard from '@/components/gift-card';
 import { cn } from '@/lib/utils';
-import { GiftCard } from '@/components/gift-card';
 import type { MemberGiftsDialogProps, Gift } from '@/types';
 
-export default function MemberGiftsDialog({
+const MemberGiftsDialog: React.FC<MemberGiftsDialogProps> = ({
   isOpen,
   onClose,
   memberId,
@@ -20,7 +30,7 @@ export default function MemberGiftsDialog({
   gifts,
   onGiftAdded,
   dict
-}: MemberGiftsDialogProps) {
+}) => {
   const [showAddGiftForm, setShowAddGiftForm] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [animatedGiftId, setAnimatedGiftId] = useState<string | null>(null);
@@ -272,4 +282,6 @@ export default function MemberGiftsDialog({
       </DialogContent>
     </Dialog>
   );
-}
+};
+
+export default MemberGiftsDialog;

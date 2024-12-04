@@ -2,7 +2,10 @@ import React, { memo } from 'react';
 import { cn } from '@/lib/utils';
 import type { FeatureCardProps } from '@/types';
 
-const FeatureCard: React.FC<FeatureCardProps> = ({ title, description }) => (
+const FeatureCard: React.FC<FeatureCardProps> = ({
+  title,
+  description,
+}) => (
   <div className={cn(
     "block",
     "mb-4",

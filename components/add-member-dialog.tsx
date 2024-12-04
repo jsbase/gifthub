@@ -5,13 +5,24 @@ import { usePathname } from 'next/navigation';
 import { toast } from 'sonner';
 import { UserPlus } from 'lucide-react';
 import { useDebounce } from '@/hooks/use-debounce';
-import { getDictionary } from '@/app/[lang]/dictionaries';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from '@/components/ui/dialog';
+import getDictionary from '@/app/[lang]/dictionaries';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogTrigger,
+} from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import AddMemberForm from '@/components/add-member-form';
 import { cn } from '@/lib/utils';
 import { getLocaleFromPath } from '@/lib/i18n-config';
-import type { AddMemberDialogProps, AddMemberDialogDictionary, ToastTranslations } from '@/types';
+import type {
+  AddMemberDialogProps,
+  AddMemberDialogDictionary,
+  ToastTranslations,
+} from '@/types';
 
 const AddMemberDialog: React.FC<Omit<AddMemberDialogProps, 'dict'>> = ({ onMemberAdded }) => {
   const [isOpen, setIsOpen] = useState(false);

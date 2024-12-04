@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { LogOut } from 'lucide-react';
 import { verifyAuth } from '@/lib/auth';
-import { Logo } from '@/components/logo';
+import Logo from '@/components/logo';
 import { Button } from '@/components/ui/button';
 import LanguageSwitcher from '@/components/language-switcher';
 import { usePathname } from 'next/navigation';
