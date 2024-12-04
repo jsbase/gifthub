@@ -1,13 +1,13 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { LogOut } from 'lucide-react';
-import { verifyAuth } from '@/lib/auth';
-import Logo from '@/components/logo';
 import { Button } from '@/components/ui/button';
+import Logo from '@/components/logo';
 import LanguageSwitcher from '@/components/language-switcher';
-import { usePathname } from 'next/navigation';
+import { verifyAuth } from '@/lib/auth';
 import { cn } from '@/lib/utils';
 import type { AuthState, HeaderProps } from '@/types';
 
