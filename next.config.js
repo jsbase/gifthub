@@ -4,10 +4,6 @@ const nextConfig = {
     ignoreDuringBuilds: true,
   },
   assetPrefix: process.env.NODE_ENV === 'production' ? undefined : '',
-  experimental: {
-    // optimizePackageImports: ['@/app/globals.css'],
-    optimizeCss: true,
-  },
   images: { unoptimized: true },
   headers: async () => {
     return [
