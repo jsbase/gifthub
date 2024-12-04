@@ -1,3 +1,4 @@
+import React from 'react';
 import FooterLinks from '@/components/footer-links';
 import { cn } from '@/lib/utils';
 import type { FooterProps } from '@/types';

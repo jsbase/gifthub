@@ -8,9 +8,11 @@ const dictionaries = {
   ru: () => import('@/lib/translations/ru.json').then((module) => module.default as Translations),
 };
 
-export const getDictionary = async (locale: string): Promise<Translations> => {
+const getDictionary = async (locale: string): Promise<Translations> => {
   if (!dictionaryCache[locale]) {
     dictionaryCache[locale] = dictionaries[locale as keyof typeof dictionaries]();
   }
   return dictionaryCache[locale];
 };
+
+export default getDictionary;

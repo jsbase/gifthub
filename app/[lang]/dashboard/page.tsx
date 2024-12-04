@@ -1,17 +1,29 @@
 'use client';
 
-import { useEffect, useState, use, useCallback, lazy, Suspense } from 'react';
+import {
+  useEffect,
+  useState,
+  use,
+  useCallback,
+  lazy,
+  Suspense,
+} from 'react';
 import { NextPage } from 'next';
 import { useRouter, usePathname } from 'next/navigation';
-import { getDictionary } from '@/app/[lang]/dictionaries';
+import getDictionary from '@/app/[lang]/dictionaries';
 import { toast } from 'sonner';
-import Header from "@/components/header";
+import Header from '@/components/header';
 import LoadingSpinner from '@/components/loading-spinner';
-import { MemberList } from '@/components/member-list';
+import MemberList from '@/components/member-list';
 import Footer from '@/components/footer';
 import { verifyAuth, logout } from '@/lib/auth';
 import { cn } from '@/lib/utils';
-import type { Member, Gift, Translations, PageProps } from '@/types';
+import type {
+  Member,
+  Gift,
+  Translations,
+  PageProps,
+} from '@/types';
 
 const MemberGiftsDialog = lazy(() => import('@/components/member-gifts-dialog'));
 

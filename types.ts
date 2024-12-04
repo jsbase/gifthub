@@ -306,6 +306,12 @@ export interface LanguageFlagProps {
   className?: string;
 }
 
+export interface LogoProps {
+  size?: 'sm' | 'md' | 'lg';
+  className?: string;
+  groupName?: string;
+}
+
 export interface GiftCardProps {
   gift: Gift;
   dict: Pick<MemberGiftsTranslations, 'markAsPurchased' | 'markAsAvailable'>;
@@ -331,6 +337,13 @@ export interface MemberListProps {
   dict: any;
   onMemberClick: (id: string) => void;
   onMemberDeleted: () => void;
+}
+
+export interface MemberListHeaderProps {
+  dict: any;
+  onDeleteClick: () => void;
+  onMemberAdded: () => void;
+  hasMembers: boolean;
 }
 
 export type ToasterToast = ToastProps & {
