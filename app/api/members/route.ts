@@ -4,14 +4,13 @@ import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 import { getGroupIdFromToken } from '@/lib/auth-server';
 
-export const GET: (request: NextRequest) => Promise<NextResponse> = async request => {
+export const GET: (request: NextRequest) => Promise<NextResponse> = async (
+  request
+) => {
   try {
     const groupId = await getGroupIdFromToken(request);
     if (!groupId) {
-      return NextResponse.json(
-        { message: 'Unauthorized' },
-        { status: 401 }
-      );
+      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
 
     const members = await prisma.userGroup.findMany({
@@ -30,7 +29,7 @@ export const GET: (request: NextRequest) => Promise<NextResponse> = async reques
       },
     });
 
-    const formattedMembers = members.map(member => ({
+    const formattedMembers = members.map((member) => ({
       id: member.id,
       name: member.user.name,
       joinedAt: member.joinedAt.toISOString(),
@@ -46,14 +45,13 @@ export const GET: (request: NextRequest) => Promise<NextResponse> = async reques
   }
 };
 
-export const POST: (request: NextRequest) => Promise<NextResponse> = async request => {
+export const POST: (request: NextRequest) => Promise<NextResponse> = async (
+  request
+) => {
   try {
     const groupId = await getGroupIdFromToken(request);
     if (!groupId) {
-      return NextResponse.json(
-        { message: 'Unauthorized' },
-        { status: 401 }
-      );
+      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
 
     const body = await request.json();
@@ -63,7 +61,10 @@ export const POST: (request: NextRequest) => Promise<NextResponse> = async reque
     const nameRegex = /^[a-zA-Z0-9\s.\-]+$/;
     if (!name || !nameRegex.test(name)) {
       return NextResponse.json(
-        { message: 'Invalid name format. Only letters, numbers, spaces, dots, and hyphens are allowed.' },
+        {
+          message:
+            'Invalid name format. Only letters, numbers, spaces, dots, and hyphens are allowed.',
+        },
         { status: 400 }
       );
     }
@@ -116,8 +117,9 @@ export const POST: (request: NextRequest) => Promise<NextResponse> = async reque
     console.error('Detailed error in POST /api/members:', error);
     return NextResponse.json(
       {
-        message: error instanceof Error ? error.message : 'Failed to add member',
-        success: false
+        message:
+          error instanceof Error ? error.message : 'Failed to add member',
+        success: false,
       },
       { status: 500 }
     );

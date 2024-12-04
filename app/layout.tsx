@@ -14,7 +14,13 @@ export const metadata: Metadata = {
   title: 'GiftHub - Family Gift Management',
   description: 'Manage gift ideas for your family and groups',
   authors: [{ name: 'GiftHub' }],
-  keywords: ['gift', 'gift ideas', 'family gifts', 'group gifts', 'gift management'],
+  keywords: [
+    'gift',
+    'gift ideas',
+    'family gifts',
+    'group gifts',
+    'gift management',
+  ],
   robots: 'index, follow',
   openGraph: {
     title: 'GiftHub - Family Gift Management',
@@ -34,12 +40,18 @@ export const metadata: Metadata = {
       { url: '/favicon.ico' },
       { url: '/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
       { url: '/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
-      { url: '/android-chrome-192x192.png', sizes: '192x192', type: 'image/png' },
-      { url: '/android-chrome-512x512.png', sizes: '512x512', type: 'image/png' },
+      {
+        url: '/android-chrome-192x192.png',
+        sizes: '192x192',
+        type: 'image/png',
+      },
+      {
+        url: '/android-chrome-512x512.png',
+        sizes: '512x512',
+        type: 'image/png',
+      },
     ],
-    apple: [
-      { url: '/apple-touch-icon.png' },
-    ],
+    apple: [{ url: '/apple-touch-icon.png' }],
     other: [
       {
         rel: 'manifest',
@@ -59,26 +71,15 @@ export const viewport: Viewport = {
 };
 
 const RootLayout: React.FC<RootLayoutProps> = ({ children }) => (
-  <html lang="en" suppressHydrationWarning>
-    <body className={cn(
-      inter.className,
-      "min-h-screen",
-      "flex",
-      "flex-col"
-    )}>
+  <html lang='en' suppressHydrationWarning>
+    <body className={cn(inter.className, 'min-h-screen', 'flex', 'flex-col')}>
       <ThemeProvider
-        attribute="class"
-        defaultTheme="system"
+        attribute='class'
+        defaultTheme='system'
         enableSystem
         disableTransitionOnChange
       >
-        <div className={cn(
-          "flex-1",
-          "flex",
-          "flex-col"
-        )}>
-          {children}
-        </div>
+        <div className={cn('flex-1', 'flex', 'flex-col')}>{children}</div>
         <Toaster />
         <ServiceWorkerRegistration />
       </ThemeProvider>

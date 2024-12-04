@@ -12,7 +12,11 @@ const showInstallPrompt = async () => {
     deferredPrompt.prompt();
 
     const { outcome } = await deferredPrompt.userChoice;
-    console.log(`User ${outcome === 'accepted' ? 'accepted' : 'dismissed'} the install prompt`);
+    console.log(
+      `User ${
+        outcome === 'accepted' ? 'accepted' : 'dismissed'
+      } the install prompt`
+    );
 
     deferredPrompt = null;
   } catch (error) {
@@ -24,7 +28,7 @@ const registerServiceWorker = () => {
   const register = async () => {
     try {
       const registration = await navigator.serviceWorker.register('/sw.js', {
-        scope: '/'
+        scope: '/',
       });
       console.log('SW registered:', registration);
 
@@ -37,7 +41,6 @@ const registerServiceWorker = () => {
       } else {
         console.log('beforeinstallprompt is not supported in this browser');
       }
-
     } catch (error) {
       console.error('SW registration failed:', error);
     }

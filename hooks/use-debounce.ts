@@ -1,12 +1,5 @@
-import {
-  useCallback,
-  useRef,
-  useEffect,
-} from 'react';
-import type {
-  DebouncedFunction,
-  DebounceOptions,
-} from '@/types';
+import { useCallback, useRef, useEffect } from 'react';
+import type { DebouncedFunction, DebounceOptions } from '@/types';
 
 const useDebounce = <T extends (...args: any[]) => any>(
   callback: T,
@@ -28,7 +21,8 @@ const useDebounce = <T extends (...args: any[]) => any>(
       const now = Date.now();
       argsRef.current = args;
 
-      const argsAreEqual = lastArgsRef.current &&
+      const argsAreEqual =
+        lastArgsRef.current &&
         args.length === lastArgsRef.current.length &&
         args.every((arg, index) => arg === lastArgsRef.current![index]);
 

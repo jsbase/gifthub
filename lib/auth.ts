@@ -1,11 +1,10 @@
-import type {
-  AuthResponse,
-  AuthVerifyResponse,
-} from '@/types';
+import type { AuthResponse, AuthVerifyResponse } from '@/types';
 
 const isClient = typeof window !== 'undefined';
 
-export const verifyAuth: (silent?: boolean) => Promise<AuthVerifyResponse> = async (silent = false) => {
+export const verifyAuth: (
+  silent?: boolean
+) => Promise<AuthVerifyResponse> = async (silent = false) => {
   if (!isClient) throw new Error('This method can only be used in the browser');
 
   try {
@@ -19,18 +18,24 @@ export const verifyAuth: (silent?: boolean) => Promise<AuthVerifyResponse> = asy
     const data = await response.json();
     return {
       success: data.success,
-      groupName: data.groupName
+      groupName: data.groupName,
     };
   } catch (error) {
     return { success: false };
   }
 };
 
-export const login: (groupName: string, password: string) => Promise<AuthResponse> = async (groupName, password) => {
+export const login: (
+  groupName: string,
+  password: string
+) => Promise<AuthResponse> = async (groupName, password) => {
   if (!isClient) throw new Error('This method can only be used in the browser');
 
-  const lang = document.cookie.split('; ').find(row => row.startsWith('NEXT_LOCALE='))
-    ?.split('=')[1] || 'en';
+  const lang =
+    document.cookie
+      .split('; ')
+      .find((row) => row.startsWith('NEXT_LOCALE='))
+      ?.split('=')[1] || 'en';
 
   const response = await fetch('/api/auth/login', {
     method: 'POST',
@@ -61,7 +66,10 @@ export const logout: () => Promise<void> = async () => {
   }
 };
 
-export const register: (groupName: string, password: string) => Promise<AuthResponse> = async (groupName, password) => {
+export const register: (
+  groupName: string,
+  password: string
+) => Promise<AuthResponse> = async (groupName, password) => {
   if (!isClient) throw new Error('This method can only be used in the browser');
 
   const response = await fetch('/api/auth/register', {

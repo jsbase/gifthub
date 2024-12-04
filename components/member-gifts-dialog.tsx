@@ -1,10 +1,6 @@
 'use client';
 
-import React, {
-  useState,
-  useEffect,
-  useCallback,
-} from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { toast } from 'sonner';
 import { PlusCircle } from 'lucide-react';
 import {
@@ -29,7 +25,7 @@ const MemberGiftsDialog: React.FC<MemberGiftsDialogProps> = ({
   memberName,
   gifts,
   onGiftAdded,
-  dict
+  dict,
 }) => {
   const [showAddGiftForm, setShowAddGiftForm] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -48,81 +44,104 @@ const MemberGiftsDialog: React.FC<MemberGiftsDialogProps> = ({
     }
   }, [isOpen]);
 
-  const handleAddGift = useCallback(async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setIsLoading(true);
+  const handleAddGift = useCallback(
+    async (e: React.FormEvent<HTMLFormElement>) => {
+      e.preventDefault();
+      setIsLoading(true);
 
-    const formData = new FormData(e.currentTarget);
-    const giftData: Omit<Gift, 'id' | 'createdAt' | 'updatedAt'> = {
-      title: formData.get('title') as string,
-      description: formData.get('description') as string,
-      url: formData.get('url') as string,
-      isPurchased: false,
-      groupId: "",
-      forMemberId: memberId,
-    };
+      const formData = new FormData(e.currentTarget);
+      const giftData: Omit<Gift, 'id' | 'createdAt' | 'updatedAt'> = {
+        title: formData.get('title') as string,
+        description: formData.get('description') as string,
+        url: formData.get('url') as string,
+        isPurchased: false,
+        groupId: '',
+        forMemberId: memberId,
+      };
 
-    try {
-      const response = await fetch('/api/gifts', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(giftData),
-      });
+      try {
+        const response = await fetch('/api/gifts', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(giftData),
+        });
 
-      if (!response.ok) throw new Error('Failed to add gift');
+        if (!response.ok) throw new Error('Failed to add gift');
 
-      toast.success(dict?.toasts.giftAdded);
-      setShowAddGiftForm(false);
-      onGiftAdded();
-      (e.target as HTMLFormElement).reset();
-    } catch {
-      toast.error(dict?.toasts.giftAddFailed);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [dict?.toasts.giftAdded, dict?.toasts.giftAddFailed, memberId, onGiftAdded]);
+        toast.success(dict?.toasts.giftAdded);
+        setShowAddGiftForm(false);
+        onGiftAdded();
+        (e.target as HTMLFormElement).reset();
+      } catch {
+        toast.error(dict?.toasts.giftAddFailed);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [dict?.toasts.giftAdded, dict?.toasts.giftAddFailed, memberId, onGiftAdded]
+  );
 
-  const handleTogglePurchased = useCallback(async (giftId: string) => {
-    try {
-      setAnimatedGiftId(giftId);
-      const response = await fetch(`/api/gifts/${giftId}/toggle`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: giftId }),
-      });
+  const handleTogglePurchased = useCallback(
+    async (giftId: string) => {
+      try {
+        setAnimatedGiftId(giftId);
+        const response = await fetch(`/api/gifts/${giftId}/toggle`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id: giftId }),
+        });
 
-      if (!response.ok) throw new Error('Failed to update gift status');
+        if (!response.ok) throw new Error('Failed to update gift status');
 
-      const data = await response.json();
-      toast.success(data.isPurchased ? dict?.toasts.giftStatusPurchased : dict?.toasts.giftStatusBackToList);
-      onGiftAdded();
-    } catch (error) {
-      toast.error(dict?.toasts.giftStatusUpdateFailed);
-    } finally {
-      setAnimatedGiftId(null);
-    }
-  }, [dict?.toasts.giftStatusPurchased, dict?.toasts.giftStatusBackToList, dict?.toasts.giftStatusUpdateFailed, onGiftAdded]);
+        const data = await response.json();
+        toast.success(
+          data.isPurchased
+            ? dict?.toasts.giftStatusPurchased
+            : dict?.toasts.giftStatusBackToList
+        );
+        onGiftAdded();
+      } catch (error) {
+        toast.error(dict?.toasts.giftStatusUpdateFailed);
+      } finally {
+        setAnimatedGiftId(null);
+      }
+    },
+    [
+      dict?.toasts.giftStatusPurchased,
+      dict?.toasts.giftStatusBackToList,
+      dict?.toasts.giftStatusUpdateFailed,
+      onGiftAdded,
+    ]
+  );
 
-  const handleDeleteGift = useCallback(async (giftId: string) => {
-    if (!confirm(dict?.confirmations.deleteGift)) {
-      return;
-    }
-
-    try {
-      const response = await fetch(`/api/gifts/${giftId}`, {
-        method: 'DELETE',
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to delete gift');
+  const handleDeleteGift = useCallback(
+    async (giftId: string) => {
+      if (!confirm(dict?.confirmations.deleteGift)) {
+        return;
       }
 
-      toast.success(dict?.toasts.giftDeleted);
-      onGiftAdded();
-    } catch (error) {
-      toast.error(dict?.toasts.giftDeleteFailed);
-    }
-  }, [dict?.confirmations.deleteGift, dict?.toasts.giftDeleted, dict?.toasts.giftDeleteFailed, onGiftAdded]);
+      try {
+        const response = await fetch(`/api/gifts/${giftId}`, {
+          method: 'DELETE',
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to delete gift');
+        }
+
+        toast.success(dict?.toasts.giftDeleted);
+        onGiftAdded();
+      } catch (error) {
+        toast.error(dict?.toasts.giftDeleteFailed);
+      }
+    },
+    [
+      dict?.confirmations.deleteGift,
+      dict?.toasts.giftDeleted,
+      dict?.toasts.giftDeleteFailed,
+      onGiftAdded,
+    ]
+  );
 
   if (!mounted) {
     return null;
@@ -132,46 +151,40 @@ const MemberGiftsDialog: React.FC<MemberGiftsDialogProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className={cn(
-        "max-w-dialog",
-        "xs:p-dialog-mobile",
-        "xs:h-[85vh]",
-        "xs:max-h-[85vh]",
-        isFullScreen ? "xs:w-full xs:h-full" : "xs:w-auto xs:h-auto"
-      )}>
+      <DialogContent
+        className={cn(
+          'max-w-dialog',
+          'xs:p-dialog-mobile',
+          'xs:h-[85vh]',
+          'xs:max-h-[85vh]',
+          isFullScreen ? 'xs:w-full xs:h-full' : 'xs:w-auto xs:h-auto'
+        )}
+      >
         <DialogHeader>
-          <DialogTitle className="xs:text-base">
+          <DialogTitle className='xs:text-base'>
             {dict.title} {memberName}
           </DialogTitle>
-          <DialogDescription className="sr-only">
+          <DialogDescription className='sr-only'>
             {dict.manageGifts}
           </DialogDescription>
         </DialogHeader>
 
-        <div className={cn(
-          "space-y-dialog-desktop",
-          "xs:space-y-dialog-mobile"
-        )}>
+        <div
+          className={cn('space-y-dialog-desktop', 'xs:space-y-dialog-mobile')}
+        >
           {!showAddGiftForm && (
             <>
               <Button
                 onClick={() => setShowAddGiftForm(true)}
-                className={cn(
-                  "w-full",
-                  "my-4"
-                )}
-                data-testid="addGiftButton"
+                className={cn('w-full', 'my-4')}
+                data-testid='addGiftButton'
               >
-                <PlusCircle className={cn(
-                  "h-4",
-                  "w-4",
-                  "mr-2"
-                )} />
+                <PlusCircle className={cn('h-4', 'w-4', 'mr-2')} />
                 {dict.addGift}
               </Button>
 
               {gifts.length > 0 ? (
-                <div className="space-y-4">
+                <div className='space-y-4'>
                   {gifts.map((gift) => (
                     <GiftCard
                       key={gift.id}
@@ -184,11 +197,13 @@ const MemberGiftsDialog: React.FC<MemberGiftsDialogProps> = ({
                   ))}
                 </div>
               ) : (
-                <p className={cn(
-                  "text-center",
-                  "text-muted-foreground",
-                  "xs:text-sm"
-                )}>
+                <p
+                  className={cn(
+                    'text-center',
+                    'text-muted-foreground',
+                    'xs:text-sm'
+                  )}
+                >
                   {dict.noGifts}
                 </p>
               )}
@@ -196,82 +211,69 @@ const MemberGiftsDialog: React.FC<MemberGiftsDialogProps> = ({
           )}
 
           {showAddGiftForm && (
-            <form onSubmit={handleAddGift} className={cn(
-              "space-y-4",
-              "xs:space-y-3"
-            )}>
-              <div className={cn(
-                "space-y-2",
-                "xs:space-y-1"
-              )}>
-                <Label htmlFor="title" className="sr-only">
+            <form
+              onSubmit={handleAddGift}
+              className={cn('space-y-4', 'xs:space-y-3')}
+            >
+              <div className={cn('space-y-2', 'xs:space-y-1')}>
+                <Label htmlFor='title' className='sr-only'>
                   {dict.enterGiftTitle}
                 </Label>
                 <Input
-                  id="title"
-                  name="title"
+                  id='title'
+                  name='title'
                   placeholder={dict.enterGiftTitle}
                   required
                 />
               </div>
 
-              <div className={cn(
-                "space-y-2",
-                "xs:space-y-1"
-              )}>
-                <Label className="sr-only" htmlFor="description">
+              <div className={cn('space-y-2', 'xs:space-y-1')}>
+                <Label className='sr-only' htmlFor='description'>
                   {dict.enterDescription}
                 </Label>
                 <Textarea
-                  id="description"
-                  name="description"
+                  id='description'
+                  name='description'
                   placeholder={`${dict.enterDescription} (${dict.optional})`}
                   rows={3}
                 />
               </div>
 
-              <div className={cn(
-                "space-y-2",
-                "xs:space-y-1"
-              )}>
-                <Label className="sr-only" htmlFor="url">
+              <div className={cn('space-y-2', 'xs:space-y-1')}>
+                <Label className='sr-only' htmlFor='url'>
                   {dict.enterUrl}
                 </Label>
                 <Input
-                  id="url"
-                  name="url"
-                  type="url"
+                  id='url'
+                  name='url'
+                  type='url'
                   placeholder={`${dict.enterUrl} (${dict.optional})`}
                 />
               </div>
 
-              <div className={cn(
-                "flex",
-                "flex-row",
-                "space-x-2",
-                "xs:flex-col",
-                "xs:space-x-0",
-                "xs:space-y-2"
-              )}>
+              <div
+                className={cn(
+                  'flex',
+                  'flex-row',
+                  'space-x-2',
+                  'xs:flex-col',
+                  'xs:space-x-0',
+                  'xs:space-y-2'
+                )}
+              >
                 <Button
-                  type="submit"
+                  type='submit'
                   disabled={isLoading}
-                  className={cn(
-                    "xs:w-full",
-                    "xs:text-sm"
-                  )}
-                  data-testid="addGiftSubmit"
+                  className={cn('xs:w-full', 'xs:text-sm')}
+                  data-testid='addGiftSubmit'
                 >
                   {isLoading ? dict.adding : dict.addGift}
                 </Button>
                 <Button
-                  type="button"
-                  variant="outline"
+                  type='button'
+                  variant='outline'
                   onClick={() => setShowAddGiftForm(false)}
-                  className={cn(
-                    "xs:w-full",
-                    "xs:text-sm"
-                  )}
+                  className={cn('xs:w-full', 'xs:text-sm')}
                 >
                   {dict.cancel}
                 </Button>

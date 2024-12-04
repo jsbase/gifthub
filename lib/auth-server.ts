@@ -2,7 +2,9 @@ import { cookies } from 'next/headers';
 import { jwtVerify } from 'jose';
 import prisma from '@/lib/prisma';
 
-export const getGroupIdFromToken: (request: Request) => Promise<string | undefined | null> = async request => {
+export const getGroupIdFromToken: (
+  request: Request
+) => Promise<string | undefined | null> = async (request) => {
   const cookieStore = await cookies();
   const token = cookieStore.get('auth-token')?.value;
 
@@ -18,7 +20,7 @@ export const getGroupIdFromToken: (request: Request) => Promise<string | undefin
 
     const groupName = verified.payload.groupName as string;
     const group = await prisma.group.findUnique({
-      where: { name: groupName }
+      where: { name: groupName },
     });
 
     return group?.id;

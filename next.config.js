@@ -20,10 +20,10 @@ const nextConfig = {
   },
   webpack: (config, { dev }) => {
     if (dev) {
-      config.cache = false
+      config.cache = false;
     }
 
-    return config
+    return config;
   },
 };
 

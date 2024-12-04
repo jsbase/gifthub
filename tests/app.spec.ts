@@ -51,7 +51,9 @@ test.describe('Start page Functionality', () => {
     await expect(page).toHaveURL(`/${lang}`, { timeout: 4000 });
   });
 
-  test('Header and Footer are visible on Terms & Conditions page', async ({ page }) => {
+  test('Header and Footer are visible on Terms & Conditions page', async ({
+    page,
+  }) => {
     const header = page.locator('header');
     const footer = page.locator('footer');
 

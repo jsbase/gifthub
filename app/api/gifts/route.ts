@@ -2,14 +2,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getGroupIdFromToken } from '@/lib/auth-server';
 
-export const GET: (request: NextRequest) => Promise<NextResponse> = async request => {
+export const GET: (request: NextRequest) => Promise<NextResponse> = async (
+  request
+) => {
   try {
     const groupId = await getGroupIdFromToken(request);
     if (!groupId) {
-      return NextResponse.json(
-        { message: 'Unauthorized' },
-        { status: 401 }
-      );
+      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
 
     const { searchParams } = new URL(request.url);
@@ -35,14 +34,13 @@ export const GET: (request: NextRequest) => Promise<NextResponse> = async reques
   }
 };
 
-export const POST: (request: NextRequest) => Promise<NextResponse> = async request => {
+export const POST: (request: NextRequest) => Promise<NextResponse> = async (
+  request
+) => {
   try {
     const groupId = await getGroupIdFromToken(request);
     if (!groupId) {
-      return NextResponse.json(
-        { message: 'Unauthorized' },
-        { status: 401 }
-      );
+      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
 
     const { title, description, url, forMemberId } = await request.json();

@@ -9,7 +9,9 @@ type ToasterProps = React.ComponentProps<typeof Sonner>;
 
 const Toaster = ({ ...props }: ToasterProps) => {
   const { theme = 'system' } = useTheme();
-  const [position, setPosition] = useState<'top-center' | 'bottom-right'>('top-center');
+  const [position, setPosition] = useState<'top-center' | 'bottom-right'>(
+    'top-center'
+  );
 
   useEffect(() => {
     setPosition(window.innerWidth >= 640 ? 'bottom-right' : 'top-center');
@@ -18,10 +20,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
   return (
     <Sonner
       theme={theme as ToasterProps['theme']}
-      className={cn(
-        "toaster",
-        "group"
-      )}
+      className={cn('toaster', 'group')}
       position={position}
       toastOptions={{
         classNames: {

@@ -2,15 +2,14 @@ import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getGroupIdFromToken } from '@/lib/auth-server';
 
-export const PUT: (request: NextRequest) => Promise<NextResponse> = async request => {
+export const PUT: (request: NextRequest) => Promise<NextResponse> = async (
+  request
+) => {
   try {
     const { id } = await request.json();
     const groupId = await getGroupIdFromToken(request);
     if (!groupId) {
-      return NextResponse.json(
-        { message: 'Unauthorized' },
-        { status: 401 }
-      );
+      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
 
     const gift = await prisma.gift.findFirst({
@@ -21,10 +20,7 @@ export const PUT: (request: NextRequest) => Promise<NextResponse> = async reques
     });
 
     if (!gift) {
-      return NextResponse.json(
-        { message: 'Gift not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ message: 'Gift not found' }, { status: 404 });
     }
 
     const updatedGift = await prisma.gift.update({
