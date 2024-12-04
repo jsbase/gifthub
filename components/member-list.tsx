@@ -5,13 +5,13 @@ import React, {
   useCallback,
   useMemo,
 } from 'react';
-import { Button } from '@/components/ui/button';
 import { Trash2, ChevronRight } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import MemberListHeader from '@/components/member-list-header';
 import { toast } from '@/hooks/use-toast';
 import { useDebounce } from '@/hooks/use-debounce';
 import { cn } from '@/lib/utils';
 import type { MemberListProps } from '@/types'
-import MemberListHeader from '@/components/member-list-header';
 
 const MemberList: React.FC<MemberListProps> = ({
   members = [],

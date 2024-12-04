@@ -5,7 +5,7 @@ import acceptLanguage from 'accept-language';
 import { locales, defaultLocale, hasLocaleInPath } from '@/lib/i18n-config';
 import type { LanguageCode } from '@/types';
 
-const getLocale = (request: NextRequest): LanguageCode => {
+const getLocale: (request: NextRequest) => LanguageCode = request => {
   // First priority: Check cookie
   const localeCookie = request.cookies.get('NEXT_LOCALE');
   if (localeCookie?.value && locales.includes(localeCookie.value as LanguageCode)) {
@@ -17,7 +17,7 @@ const getLocale = (request: NextRequest): LanguageCode => {
   return (acceptLanguage.get(request.headers.get('accept-language')) || defaultLocale) as LanguageCode;
 };
 
-export const middleware = async (request: NextRequest) => {
+export const middleware: (request: NextRequest) => Promise<NextResponse> = async request => {
   const { pathname } = request.nextUrl;
 
   // Skip section
@@ -57,7 +57,7 @@ export const middleware = async (request: NextRequest) => {
   // const matchedLocale = getLocaleFromPath(pathname);
   // Check if the current path has a locale
   const matchedLocale = locales.find(
-    (locale: LanguageCode) => pathname.startsWith(`/${locale}/`) || pathname === `/${locale}`
+    locale => pathname.startsWith(`/${locale}/`) || pathname === `/${locale}`
   );
 
   // Always update the cookie when there's a locale in the URL
@@ -73,7 +73,9 @@ export const middleware = async (request: NextRequest) => {
     return response;
   }
 
-  if (hasLocale) return NextResponse.next();
+  if (hasLocale) {
+    return NextResponse.next();
+  }
 
   const locale: LanguageCode = getLocale(request);
   request.nextUrl.pathname = `/${locale}${pathname}`;
