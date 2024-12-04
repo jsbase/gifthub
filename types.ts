@@ -180,6 +180,10 @@ export interface MemberGiftsDialogProps {
 
 export interface CommandDialogProps extends DialogProps { }
 
+export interface AuthButtonsProps {
+  dict: Translations;
+}
+
 export interface AuthResponse {
   success: boolean;
   message?: string;
@@ -277,6 +281,13 @@ export interface FooterProps {
   dict: Translations;
 }
 
+export interface AuthDialogProps {
+  children: React.ReactNode;
+  title: string;
+  description: string;
+  className?: string;
+}
+
 export interface AuthState {
   isAuthenticated: boolean;
   groupName: string | undefined;
@@ -306,6 +317,24 @@ export interface LanguageFlagProps {
   className?: string;
 }
 
+export interface LoginFormProps {
+  dict: Translations;
+  isLoading: boolean;
+  onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
+}
+
+export interface RegisterFormProps {
+  dict: Translations;
+  isLoading: boolean;
+  onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
+}
+
+export interface LogoProps {
+  size?: 'sm' | 'md' | 'lg';
+  className?: string;
+  groupName?: string;
+}
+
 export interface GiftCardProps {
   gift: Gift;
   dict: Pick<MemberGiftsTranslations, 'markAsPurchased' | 'markAsAvailable'>;
@@ -331,6 +360,13 @@ export interface MemberListProps {
   dict: any;
   onMemberClick: (id: string) => void;
   onMemberDeleted: () => void;
+}
+
+export interface MemberListHeaderProps {
+  dict: any;
+  onDeleteClick: () => void;
+  onMemberAdded: () => void;
+  hasMembers: boolean;
 }
 
 export type ToasterToast = ToastProps & {

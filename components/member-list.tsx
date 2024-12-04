@@ -1,69 +1,25 @@
-import { useState, useEffect, useRef, useCallback, useMemo, memo } from 'react';
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+  useMemo,
+} from 'react';
 import { Button } from '@/components/ui/button';
 import { Trash2, ChevronRight } from 'lucide-react';
-import AddMemberDialog from '@/components/add-member-dialog';
 import { toast } from '@/hooks/use-toast';
 import { useDebounce } from '@/hooks/use-debounce';
 import { cn } from '@/lib/utils';
-import type { MemberListProps } from '@/types';
+import type { MemberListProps } from '@/types'
+import MemberListHeader from '@/components/member-list-header';
 
-const MemberListHeader = memo(function MemberListHeader({
-  dict,
-  onDeleteClick,
-  onMemberAdded,
-  hasMembers
-}: {
-  dict: any;
-  onDeleteClick: () => void;
-  onMemberAdded: () => void;
-  hasMembers: boolean;
-}) {
-  return (
-    <div className={cn(
-      "flex",
-      "flex-col sm:flex-row",
-      "sm:items-center",
-      "sm:justify-between",
-      "gap-2"
-    )}>
-      <h2 className="text-2xl font-bold">
-        {dict.members}
-      </h2>
-      <div className={cn(
-        "grid",
-        "grid-cols-2",
-        "gap-2",
-        "w-full",
-        "sm:w-auto"
-      )}>
-        <Button
-          variant="outline"
-          onClick={onDeleteClick}
-          disabled={!hasMembers}
-          className={cn(
-            "flex",
-            "items-center",
-            "justify-center",
-            "gap-2",
-            !hasMembers && "opacity-50 cursor-not-allowed"
-          )}
-        >
-          <Trash2 className="h-4 w-4" />
-          {dict.deleteMember}
-        </Button>
-        <AddMemberDialog onMemberAdded={onMemberAdded} />
-      </div>
-    </div>
-  );
-});
-
-export function MemberList({
+const MemberList: React.FC<MemberListProps> = ({
   members = [],
   giftCounts,
   dict,
   onMemberClick,
   onMemberDeleted
-}: MemberListProps) {
+}) => {
   const [showDeleteButtons, setShowDeleteButtons] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -207,4 +163,6 @@ export function MemberList({
       )}
     </div>
   );
-}
+};
+
+export default MemberList;

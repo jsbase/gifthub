@@ -1,4 +1,7 @@
-import type { AuthResponse, AuthVerifyResponse } from '@/types';
+import type {
+  AuthResponse,
+  AuthVerifyResponse,
+} from '@/types';
 
 const isClient = typeof window !== 'undefined';
 

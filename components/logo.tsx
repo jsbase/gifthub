@@ -1,13 +1,7 @@
-import React from 'react';
-import { GiftIcon } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { useMemo } from "react";
-
-interface LogoProps {
-  size?: 'sm' | 'md' | 'lg';
-  className?: string;
-  groupName?: string;
-}
+import React, { memo, useMemo } from 'react';
+import { GiftIcon } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import type { LogoProps } from '@/types';
 
 const SIZES = {
   sm: {
@@ -24,11 +18,11 @@ const SIZES = {
   }
 } as const;
 
-export const Logo = React.memo(function Logo({ 
-  size = 'md', 
-  className, 
-  groupName 
-}: LogoProps) {
+const Logo: React.FC<LogoProps> = ({
+  size = 'md',
+  className,
+  groupName
+}) => {
   const containerClasses = useMemo(() => cn(
     "flex",
     "items-center",
@@ -57,4 +51,6 @@ export const Logo = React.memo(function Logo({
       </h1>
     </div>
   );
-});
+};
+
+export default memo(Logo);

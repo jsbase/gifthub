@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import { registerServiceWorker } from '@/app/sw';
+import registerServiceWorker from '@/app/sw';
 
 const ServiceWorkerRegistration = () => {
   useEffect(() => {
