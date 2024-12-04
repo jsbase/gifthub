@@ -5,7 +5,7 @@ import type {
 
 const isClient = typeof window !== 'undefined';
 
-export const verifyAuth: (silent: boolean | void) => Promise<AuthVerifyResponse> = async (silent = false) => {
+export const verifyAuth: (silent: boolean | undefined) => Promise<AuthVerifyResponse> = async (silent = false) => {
   if (!isClient) throw new Error('This method can only be used in the browser');
 
   try {
