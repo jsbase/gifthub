@@ -1,5 +1,8 @@
 name: Playwright
 on:
+  push:
+    branches:
+      - development
   deployment_status:
 jobs:
   run-e2e-tests:
@@ -8,12 +11,12 @@ jobs:
     steps:
       - uses: actions/checkout@v2
         with:
-          ref: ${{ github.event.deployment.ref }}
-      - name: Install node v20
+          ref: ${{ github.event_name == 'push' && github.ref || github.event.deployment.ref }}
+      - name: Install Node.js
         uses: actions/setup-node@v3
         with:
           node-version: 20
-      - name: Cache npm modules
+      - name: Cache Node.js modules
         uses: actions/cache@v3
         with:
           path: ~/.npm
@@ -25,4 +28,4 @@ jobs:
       - name: Run tests
         run: npx playwright test
         env:
-          NEXT_PUBLIC_BASE_URL: ${{ github.event.deployment_status.environment_url }}
+          NEXT_PUBLIC_BASE_URL: ${{ github.event_name == 'push' && 'http://localhost:3000' || github.event.deployment_status.environment_url }}
