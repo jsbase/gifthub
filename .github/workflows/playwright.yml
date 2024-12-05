@@ -11,7 +11,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
         with:
-          ref: ${{ github.event.deployment.ref }} # Explicitly check out the branch from the deployment
+          ref: ${{ github.event.deployment.ref }}
       - name: Install node v20
         uses: actions/setup-node@v3
         with:
