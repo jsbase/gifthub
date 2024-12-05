@@ -32,4 +32,4 @@ jobs:
       - name: Run tests
         run: npx playwright test
         env:
-          NEXT_PUBLIC_BASE_URL: ${{ github.event_name == 'push' && 'http://localhost:3000' || github.event.deployment_status.environment_url }}
+          NEXT_PUBLIC_BASE_URL: ${{ github.event.deployment_status.environment_url }}
