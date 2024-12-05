@@ -36,6 +36,7 @@ const MemberListHeader: React.FC<MemberListHeaderProps> = ({
             'gap-2',
             !hasMembers && 'opacity-50 cursor-not-allowed'
           )}
+          data-testid='showRemoveMemberButtons'
         >
           <Trash2 className='h-4 w-4' />
           {dict.deleteMember}

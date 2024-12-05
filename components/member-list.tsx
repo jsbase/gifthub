@@ -145,6 +145,7 @@ const MemberList: React.FC<MemberListProps> = ({
                 variant='destructive'
                 size='icon'
                 onClick={() => handleDeleteMember(member.id, member.name)}
+                data-testid='removeMemberButton'
               >
                 <Trash2 className={cn('h-4', 'w-4')} />
               </Button>
@@ -176,7 +177,9 @@ const MemberList: React.FC<MemberListProps> = ({
           {memberListItems}
         </ul>
       ) : (
-        <div className='text-muted-foreground'>{dict.noMembers}</div>
+        <div className='text-muted-foreground' data-testid='noMembers'>
+          {dict.noMembers}
+        </div>
       )}
     </div>
   );
