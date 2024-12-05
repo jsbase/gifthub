@@ -99,7 +99,7 @@ const AddMemberDialog: React.FC<Omit<AddMemberDialogProps, 'dict'>> = ({
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button>
+        <Button data-testid='addMemberButton'>
           <UserPlus className={cn('h-4 w-4', 'mr-2')} />
           {dict.addMemberDialog.addMember}
         </Button>

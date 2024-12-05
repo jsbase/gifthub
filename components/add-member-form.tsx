@@ -22,7 +22,12 @@ const AddMemberForm: React.FC<AddMemberFormProps> = ({
         required
       />
     </div>
-    <Button type='submit' className='w-full' disabled={isLoading}>
+    <Button
+      type='submit'
+      className='w-full'
+      disabled={isLoading}
+      data-testid='memberNameSubmit'
+    >
       {isLoading ? dict.adding : dict.addMember}
     </Button>
   </form>

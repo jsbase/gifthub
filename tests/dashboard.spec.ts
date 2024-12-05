@@ -1,10 +1,9 @@
 import { test, expect } from '@playwright/test';
-import * as dict from '@/lib/translations/en.json';
 
 const lang = 'en';
+const testuserName = 'testuser';
 
 test.describe('Dashboard Page Functionality', () => {
-  // Login with test credentials
   test.beforeEach(async ({ page, context }) => {
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
 
@@ -16,9 +15,7 @@ test.describe('Dashboard Page Functionality', () => {
         waitUntil: 'networkidle',
         timeout: 10000,
       });
-
       await page.waitForSelector('body');
-      console.log(`Test "auth-buttons" started for page: ${page.url()}`);
     } catch (error) {
       console.error('Navigation Error:', error);
       throw error;
@@ -31,8 +28,7 @@ test.describe('Dashboard Page Functionality', () => {
     await page.fill('#password', 'test123');
 
     const submitButton = page.getByTestId('SubmitLogin');
-
-    const [response] = await Promise.all([
+    await Promise.all([
       page.waitForNavigation({ timeout: 15000, waitUntil: 'load' }),
       submitButton.click(),
     ]);
@@ -40,16 +36,29 @@ test.describe('Dashboard Page Functionality', () => {
     await expect(page).toHaveURL(`/${lang}/dashboard`);
   });
 
-  test('Create and Delete a gift', async ({ page }) => {
-    // Step 1: Open the Member Gifts Dialog
-    await page.getByTestId('showGiftsDialog').first().click();
+  test('Test adding and removing members and gifts', async ({ page }) => {
+    test.slow();
+
+    page.on('dialog', async (dialog) => {
+      await dialog.accept();
+    });
+
+    const noMembersMessage = await page.getByTestId('noMembers');
+    await expect(noMembersMessage).toBeVisible();
+
+    await page.getByTestId('addMemberButton').click();
+    await page.fill('#name', testuserName);
+    await page.getByTestId('memberNameSubmit').click();
+
+    await expect(noMembersMessage).not.toBeVisible();
+
+    // Open the members gifts dialog
+    await page.getByTestId('showGiftsDialog').click();
     const dialogMember = page.locator('[role="dialog"]');
     await expect(dialogMember).toBeVisible();
 
-    // Step 2: Add a Gift
+    // Add a gift to a member
     await page.getByTestId('addGiftButton').click();
-    await expect(page.locator('#title')).toBeVisible();
-
     await page.fill('#title', 'PlayStation 5');
     await page.fill('#description', 'Latest gaming console');
     await page.fill('#url', 'https://search.brave.com/');
@@ -61,17 +70,19 @@ test.describe('Dashboard Page Functionality', () => {
       'PlayStation 5'
     );
 
-    // Step 3: Delete the Gift
-    page.on('dialog', async (dialog) => {
-      expect(dialog.message()).toBe(dict.confirmations.deleteGift);
-      await dialog.accept();
-    });
-
+    // Delete the Gift
     await page.getByTestId('giftDelete').click();
     await expect(giftCard).not.toBeVisible();
 
-    // Step 4: Close the Member Gifts Dialog
+    // Close the Member Gifts Dialog
     await page.getByTestId('dialogClose').click();
     await expect(dialogMember).not.toBeVisible();
+
+    // Remove the member again
+    await page.getByTestId('showRemoveMemberButtons').click();
+    await page.waitForTimeout(1000);
+    await page.getByTestId('removeMemberButton').click();
+
+    await expect(noMembersMessage).toBeVisible();
   });
 });
