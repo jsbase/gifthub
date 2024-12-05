@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 const lang = 'en';
 const testuserName = 'testuser';
 
-test.describe('Dashboard Page Functionality', () => {
+test.describe('Dashboard functionality', () => {
   test.beforeEach(async ({ page, context }) => {
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
 
@@ -36,7 +36,7 @@ test.describe('Dashboard Page Functionality', () => {
     await expect(page).toHaveURL(`/${lang}/dashboard`);
   });
 
-  test('Test adding and removing members and gifts', async ({ page }) => {
+  test('Add and remove members and gifts', async ({ page }) => {
     test.slow();
 
     page.on('dialog', async (dialog) => {
