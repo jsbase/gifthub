@@ -1,5 +1,8 @@
 name: Playwright
 on:
+  push:
+    branches:
+      - '*'
   deployment_status:
 jobs:
   run-e2e-tests:
@@ -12,7 +15,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
         with:
-          ref: ${{ github.event_name == 'push' && github.ref || github.event.deployment.ref || 'refs/heads/development' }}
+          ref: ${{ github.event_name == 'push' && github.ref || github.event.deployment.ref || 'refs/heads/main' }}
       - name: Install Node.js
         uses: actions/setup-node@v3
         with:
