@@ -16,6 +16,7 @@ test.describe('Dashboard functionality', () => {
         timeout: 10000,
       });
       await page.waitForSelector('body');
+      console.log(`Test "dashboard" started for page: ${page.url()}`);
     } catch (error) {
       console.error('Navigation Error:', error);
       throw error;
