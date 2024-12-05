@@ -1,8 +1,5 @@
 name: Playwright
 on:
-  push:
-    branches:
-      - development
   deployment_status:
 jobs:
   run-e2e-tests:
