@@ -185,7 +185,7 @@ export interface MemberGiftsDialogProps {
   };
 }
 
-export interface CommandDialogProps extends DialogProps {}
+export type CommandDialogProps = DialogProps;
 
 export interface AuthButtonsProps {
   dict: Translations;

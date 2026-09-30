@@ -21,7 +21,7 @@ const getLocale: (request: NextRequest) => LanguageCode = (request) => {
     defaultLocale) as LanguageCode;
 };
 
-export const middleware: (
+export const proxy: (
   request: NextRequest
 ) => Promise<NextResponse> = async (request) => {
   const { pathname } = request.nextUrl;
