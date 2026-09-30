@@ -4,12 +4,18 @@ import { getGroupIdFromToken } from '@/lib/auth-server';
 
 export const dynamic = 'force-dynamic';
 
+// Gift ids are Prisma cuids (e.g. "clx0a1b2c3d4e5f6g7h8i9j0k1").
+const ID_PATTERN = /^[A-Za-z0-9_-]{1,64}$/;
+
+const isValidId = (value: unknown): value is string =>
+  typeof value === 'string' && ID_PATTERN.test(value);
+
 export const GET: (request: NextRequest) => Promise<NextResponse> = async (
   request
 ) => {
   const { id } = await request.json();
 
-  if (!id.match(/^[0-9a-fA-F]{24}$/)) {
+  if (!isValidId(id)) {
     return NextResponse.json(
       { message: 'Invalid gift ID format' },
       { status: 400 }
@@ -48,7 +54,7 @@ export const POST: (request: NextRequest) => Promise<NextResponse> = async (
 ) => {
   const { id } = await request.json();
 
-  if (!id.match(/^[0-9a-fA-F]{24}$/)) {
+  if (!isValidId(id)) {
     return NextResponse.json(
       { message: 'Invalid gift ID format' },
       { status: 400 }
@@ -145,7 +151,7 @@ export const PUT: (request: NextRequest) => Promise<NextResponse> = async (
 ) => {
   const { id } = await request.json();
 
-  if (!id.match(/^[0-9a-fA-F]{24}$/)) {
+  if (!isValidId(id)) {
     return NextResponse.json(
       { message: 'Invalid gift ID format' },
       { status: 400 }

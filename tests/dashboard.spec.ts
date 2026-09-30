@@ -1,11 +1,34 @@
 import { test, expect } from '@playwright/test';
+import { PrismaClient } from '@prisma/client';
 
 const lang = 'en';
 const testuserName = 'testuser';
 
+const prisma = new PrismaClient();
+
 test.describe('Dashboard functionality', () => {
   test.beforeEach(async ({ page, context }) => {
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
+
+    // Own the fixture: wipe any members left in `testgroup` by the seed or by a
+    // previous run, so the assertions below do not depend on initial DB state.
+    const group = await prisma.group.findUnique({
+      where: { name: 'testgroup' },
+    });
+    if (group) {
+      const memberships = await prisma.userGroup.findMany({
+        where: { groupId: group.id },
+        select: { id: true, userId: true },
+      });
+      await prisma.gift.deleteMany({
+        where: { forMemberId: { in: memberships.map((m) => m.id) } },
+      });
+      await prisma.userGroup.deleteMany({ where: { groupId: group.id } });
+      await prisma.user.deleteMany({
+        where: { id: { in: memberships.map((m) => m.userId) } },
+      });
+    }
+    await prisma.$disconnect();
 
     await context.setDefaultNavigationTimeout(10000);
     await context.setDefaultTimeout(10000);

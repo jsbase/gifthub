@@ -38,6 +38,12 @@ next-env.d.ts
 # generated
 /prisma/generated
 
+# local database (SQLite)
+/prisma/*.db
+/prisma/*.db-journal
+*.db
+*.db-journal
+
 # tools
 /.bolt
 /.vscode
@@ -46,3 +52,9 @@ node_modules/
 /playwright-report/
 /blob-report/
 /playwright/.cache/
+.kilo/
+
+# agent tooling
+/.agents
+/.claude
+/skills-lock.json

@@ -6,8 +6,8 @@ export const POST: (request: NextRequest) => Promise<NextResponse> = async (
   request
 ) => {
   try {
-    if (!process.env.MONGODB_URI) {
-      console.error('MONGODB_URI is not set');
+    if (!process.env.DATABASE_URL) {
+      console.error('DATABASE_URL is not set');
       return NextResponse.json(
         { success: false, message: 'Service configuration error' },
         { status: 503 }
@@ -86,7 +86,10 @@ export const POST: (request: NextRequest) => Promise<NextResponse> = async (
     console.error('Registration error:', error);
 
     if (error instanceof Error) {
-      if (error.message.includes('P2002')) {
+      if (
+        error.message.includes('P2002') ||
+        error.message.includes('Unique constraint failed')
+      ) {
         return NextResponse.json(
           { success: false, message: 'A group with this name already exists' },
           { status: 400 }
@@ -94,9 +97,9 @@ export const POST: (request: NextRequest) => Promise<NextResponse> = async (
       }
 
       if (
-        error.message.includes('MONGODB_URI') ||
-        error.message.includes('connect ECONNREFUSED') ||
-        error.message.includes('Connection time out')
+        error.message.includes('DATABASE_URL') ||
+        error.message.includes('SQLITE_CANTOPEN') ||
+        error.message.includes('unable to open database file')
       ) {
         return NextResponse.json(
           { success: false, message: 'Database connection error' },
