@@ -6,11 +6,11 @@ const useDebounce = <T extends (...args: any[]) => any>(
   delay: number,
   options: Partial<DebounceOptions> = {}
 ): DebouncedFunction<T> => {
-  const timeoutRef = useRef<NodeJS.Timeout>();
+  const timeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
   const callbackRef = useRef(callback);
   const lastCalledRef = useRef<number>(0);
-  const argsRef = useRef<Parameters<T>>();
-  const lastArgsRef = useRef<Parameters<T>>();
+  const argsRef = useRef<Parameters<T> | undefined>(undefined);
+  const lastArgsRef = useRef<Parameters<T> | undefined>(undefined);
 
   useEffect(() => {
     callbackRef.current = callback;
