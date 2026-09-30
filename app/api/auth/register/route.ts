@@ -96,11 +96,7 @@ export const POST: (request: NextRequest) => Promise<NextResponse> = async (
         );
       }
 
-      if (
-        error.message.includes('DATABASE_URL') ||
-        error.message.includes('SQLITE_CANTOPEN') ||
-        error.message.includes('unable to open database file')
-      ) {
+      if (error.message.includes('DATABASE_URL')) {
         return NextResponse.json(
           { success: false, message: 'Database connection error' },
           { status: 503 }

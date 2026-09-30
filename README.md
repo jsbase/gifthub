@@ -25,6 +25,32 @@ GiftHub helps you manage gift-giving within your family or other groups. Create 
 
 Built with [Next.js](https://nextjs.org) and bootstrapped using [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## 🛠 Setup
+
+GiftHub keeps its data in PostgreSQL. Start from `.env.example` and copy it
+to **both** `.env` and `.env.local`, then fill in the values: Next.js reads
+`.env.local`, while the Prisma CLI reads `.env`, so a value that exists in
+only one of the two works in one tool and fails in the other. Both files are
+gitignored and have to stay that way — a filled-in copy is a secret.
+
+- `DATABASE_URL` — pooled connection string, used by the running app
+- `DIRECT_URL` — non-pooled connection string to the same database, used by
+  `prisma migrate`; the pooled endpoint breaks the advisory locks it needs
+- `JWT_SECRET` — secret used to sign the session JWT
+- `NEXT_PUBLIC_BASE_URL` — base URL the app and the end-to-end tests talk to
+
+Once the values are in place, set the database up:
+
+```bash
+npm install
+npx prisma generate
+npx prisma migrate deploy
+npx prisma db seed
+```
+
+The seed creates the group `testgroup` with the password `test123` and three
+members, so there is something to log in to right away.
+
 ## 🚀 Quick Start
 
 1. Install dependencies:
