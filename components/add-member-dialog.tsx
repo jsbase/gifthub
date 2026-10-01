@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { usePathname } from 'next/navigation';
 import { toast } from 'sonner';
 import { UserPlus } from 'lucide-react';
@@ -37,8 +37,19 @@ const AddMemberDialog: React.FC<Omit<AddMemberDialogProps, 'dict'>> = ({
     errors: Pick<Translations['errors'], 'invalidNameFormat'>;
     close: string;
   } | null>(null);
+  /*
+    Whether the sheet is up, as of the last commit. A ref rather than `isOpen`
+    itself because the only reader is an async callback that fires 300ms and a
+    round trip later, and a guard is only worth having if it cannot be a stale
+    copy of the thing it guards.
+  */
+  const isOpenRef = useRef(isOpen);
   const path = usePathname();
   const locale = getLocaleFromPath(path);
+
+  useEffect(() => {
+    isOpenRef.current = isOpen;
+  }, [isOpen]);
 
   useEffect(() => {
     const loadTranslations = async () => {
@@ -71,9 +82,17 @@ const AddMemberDialog: React.FC<Omit<AddMemberDialogProps, 'dict'>> = ({
         toast, which is true of every failure and explains none of them. The
         route's English `message` is still in the body and still means
         something to whoever reads the network tab.
+
+        Only while the sheet is up. Esc inside the debounce or the round trip is
+        all it takes for this 400 to come back to a closed dialog, and an error
+        written into a surface nobody is looking at is the next open's problem.
+        Refused silently: the request did its job, the user has left, and the
+        next time they type the name they get the sentence then.
       */
       if (response.status === 400 && data?.code === 'invalid_name_format') {
-        setNameError(dict?.errors.invalidNameFormat ?? data.message);
+        if (isOpenRef.current) {
+          setNameError(dict?.errors.invalidNameFormat ?? data.message);
+        }
         return;
       }
 
@@ -116,10 +135,29 @@ const AddMemberDialog: React.FC<Omit<AddMemberDialogProps, 'dict'>> = ({
     [debouncedAddMember]
   );
 
+  /*
+    `nameError` is state that outlives the thing that displays it: the sheet
+    below unmounts on close, this component does not. So it is cleared on the way
+    out rather than on the way in - otherwise an Esc close leaves the verdict
+    standing, and the next open puts it back on an empty field as an
+    `aria-invalid` the user never earned.
+
+    `isLoading` is deliberately not cleared here. It can outlive a close too, but
+    only until the request it is waiting on settles, and a request that succeeds
+    closes whatever sheet is open when it lands - re-enabling the button on a
+    reopened sheet would only invite a second POST for the same name.
+  */
+  const handleOpenChange = useCallback((open: boolean) => {
+    setIsOpen(open);
+    if (!open) {
+      setNameError(null);
+    }
+  }, []);
+
   if (!dict) return null;
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         <Button
           variant='outline'
