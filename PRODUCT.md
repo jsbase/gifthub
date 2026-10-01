@@ -36,9 +36,9 @@ The shared-password group is not a security model; it is a low-friction admissio
 ## Operating Context
 
 - **Moments of use:** standing in a shop with a half-formed idea, and at a desk or sofa planning a group occasion. The first moment is why inputs are sized for a thumb and the form is three short fields; the second is why the dashboard is a scannable list of names and counts rather than a per-member detail view.
-- **The physical object this resembles:** a list written on paper, passed around, where everyone ticks things off. The interface follows that: a sheet, a list, one kind of mark. This is the standing visual metaphor and it is already fixed in the codebase's token comments.
+- **The physical object this resembles:** a bound family album, one sheet per person, with ideas written into a grid of cells. The interface follows that: a board, a sheet, a grid, one kind of mark. This is the standing visual metaphor; `DESIGN.md` holds the system.
 - **Who writes what:** any member of the group can add an idea to any member's list. The list is not the recipient's property.
-- **Ritual:** the strike. Marking an idea bought is the one moment in the product with ceremony attached, and it is the only place the warm accent colour is spent.
+- **Ritual:** the mark. Marking an idea bought is the one moment in the product with ceremony attached: the cell inverts, and the row's rule fills further. It is the only place colour changes meaning, and it is a shared, permanent mark rather than a personal tick.
 - **Environment:** deployed on Vercel against a Postgres database (Neon in practice). Local development requires the same environment values in both `.env` and `.env.local` because Next.js and the Prisma CLI read different files.
 
 ## Capabilities and Constraints
@@ -100,5 +100,5 @@ The shared-password group is not a security model; it is a low-friction admissio
 - **Reduced motion is honoured globally.** All animation and transition collapses to a state change under `prefers-reduced-motion`, with the single exception of the loading spinner, which keeps spinning because a stopped spinner is a broken affordance.
 - **One app-wide focus mechanism, two-tone by construction.** Every interactive element inherits a visible keyboard focus, and no single flat colour can meet contrast against both the light page and the red destructive fill — the indicator is a gap tone plus a ring tone. Do not introduce a second focus treatment per component.
 - **Real touch-target minimums.** Form controls are 44px and primary dialog actions are 48px, because the product is used one-handed on a phone. This is a floor, not a preference.
-- **Forms carry placeholder instructions with screen-reader-only labels.** This works today but is a known weak pattern: anything that must remain readable once a field is filled needs a visible label instead.
-- **No colour-only state.** A bought gift is distinguished by a strike, a filled box *and* a receded text tone, so the state survives a monochrome or colour-vision difference.
+- **Forms carry visible printed labels.** Every field has a small tracked label above it, not just a placeholder. A placeholder vanishes the moment the field is filled and a screen reader meets it only once; that was a known weakness of the previous design and it is fixed. Do not regress to placeholder-only.
+- **No colour-only state.** A bought gift is distinguished by the inverted cell, the cart in the member's ink, and the rule's fill — three channels, so the state survives a monochrome or colour-vision difference. The green check on a sheet with nothing left is likewise never the only signal.

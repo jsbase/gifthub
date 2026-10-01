@@ -100,11 +100,19 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  // The two page grounds, and the two values the token block in globals.css
-  // actually renders: buff album board by day, and dark warm board at night.
+  /*
+    The two page grounds, and the two values the token block in globals.css
+    actually renders. These are duplicated here because `themeColor` is a static
+    metadata value, not a token reference, so it cannot follow the theme block
+    when either changes — these two hexes and the two `--board` declarations are
+    the same colour written twice, and they have to be kept in step by hand.
+
+      light  --board: 40 26% 89%  ->  #E3DACA
+      dark   --board: 28 15%  7%  ->  #100C09
+  */
   themeColor: [
     { media: '(prefers-color-scheme: light)', color: '#E3DACA' },
-    { media: '(prefers-color-scheme: dark)', color: '#17110D' },
+    { media: '(prefers-color-scheme: dark)', color: '#100C09' },
   ],
   width: 'device-width',
   initialScale: 1.0,

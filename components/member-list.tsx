@@ -135,7 +135,20 @@ const MemberList: React.FC<MemberListProps> = ({
         return (
           <li
             key={member.id}
-            style={memberInkStyle(member.id)}
+            /*
+              The delay belongs in `style`, not in `cn()`. `cn` is clsx plus
+              twMerge: clsx stringifies an object into a class token, so passing
+              `{ animationDelay }` there produced a garbage class name and the
+              stagger never applied at all - the list appeared with no sequence.
+
+              The index is capped rather than guarded by a conditional, so the
+              tenth row and beyond share the last delay instead of queueing
+              behind a long list.
+            */
+            style={{
+              ...memberInkStyle(member.id),
+              animationDelay: `${Math.min(index, 9) * 45}ms`,
+            }}
             className={cn(
               'relative',
               'grid',
@@ -143,11 +156,8 @@ const MemberList: React.FC<MemberListProps> = ({
               'gap-6',
               'items-center',
               'py-5',
-              // The contents page arriving, once, in order. Capped in CSS by the
-              // animation-delay ceiling; the tenth row and beyond share the last
-              // delay rather than queueing behind a long list.
-              'animate-reveal-in',
-              index < 10 && { animationDelay: `${index * 45}ms` }
+              // The contents page arriving, once, in order.
+              'animate-reveal-in'
             )}
           >
             <Button

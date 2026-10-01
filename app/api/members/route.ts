@@ -20,9 +20,16 @@ const MEMBER_NAME_REGEX = /^(?=[^\p{L}]*\p{L})[\p{L}\p{M}\p{N} .\-'’]{1,100}$/
  * `U+200D`, `U+FEFF`, `U+2028`, `U+2029` - stay rejected: they make two
  * *different* names render identically, which is a support problem rather than
  * a formatting one, and no amount of normalising recovers what was typed.
+ *
+ * NFC comes first, and it is not optional. The two normal forms of "Müller" are
+ * byte-different and identical on screen: `ü` as one code point, or `u` plus a
+ * combining diaeresis. macOS filesystems hand out the decomposed form routinely,
+ * so the same person can be typed twice and pass the regex both times as two
+ * different members. Composing first makes the comparison - and the stored value
+ * - the same either way.
  */
 const normalizeMemberName = (name: string): string =>
-  name.replace(/\u00A0/g, ' ').replace(/\u2011/g, '-');
+  name.normalize('NFC').replace(/\u00A0/g, ' ').replace(/\u2011/g, '-');
 
 export const GET: (request: NextRequest) => Promise<NextResponse> = async (
   request

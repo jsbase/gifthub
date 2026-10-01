@@ -116,7 +116,10 @@ const LandingPreview: React.FC<
                   about the same person.
                 */}
                 {giftCountLabel(
-                  { unbought: member.count, total: member.count },
+                  {
+                    unbought: member.count,
+                    total: member.count + member.collected,
+                  },
                   { giftCount }
                 )}
               </span>
