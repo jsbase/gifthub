@@ -54,8 +54,13 @@ members, so there is something to log in to right away.
 `SEED_ALLOW_WIPE=1` is required because the seed empties `gift`, `userGroup`,
 `user` and `group` before it writes anything, with no filter of any kind. It is
 there to make that deletion a decision rather than a side effect of typing one
-command, and to make it impossible for CI to do it to a database it should not
-have.
+command.
+
+It asserts *intent*, though, and intent can be wrong. If you also set
+`SEED_EXPECT_HOST` to the hostname your `DATABASE_URL` points at, the seed
+additionally refuses to run when the two disagree — so a connection string that
+has been repointed by accident is caught rather than obeyed. CI always sets it;
+locally it is optional.
 
 ## 🚀 Quick Start
 

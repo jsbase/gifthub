@@ -111,7 +111,7 @@ jobs:
         if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
         run: |
           missing=0
-          for pair in CI_DATABASE_URL:DATABASE_URL CI_DIRECT_URL:DIRECT_URL JWT_SECRET:JWT_SECRET; do
+          for pair in CI_DATABASE_URL:DATABASE_URL CI_DIRECT_URL:DIRECT_URL JWT_SECRET:JWT_SECRET CI_SEED_EXPECTED_HOST:SEED_EXPECT_HOST; do
             secret="${pair%%:*}"
             variable="${pair##*:}"
             if [ -z "${!variable}" ]; then
@@ -131,12 +131,16 @@ jobs:
         if: steps.db-secrets.outputs.configured == 'true'
         run: npx prisma migrate deploy
       - name: Seed database
-        # prisma/seed.mjs refuses to run its unfiltered deleteMany sweep without
-        # this marker, so pointing CI_DATABASE_URL at the parent database the
-        # deployed app uses fails here instead of emptying it.
+        # prisma/seed.mjs runs four unfiltered deleteMany calls, so this step can
+        # destroy whatever DATABASE_URL names. Two independent guards, both fatal:
+        # SEED_ALLOW_WIPE asserts intent, and SEED_EXPECT_HOST makes it falsifiable
+        # by requiring the connection to actually be the host the operator named.
+        # A misconfigured CI_DATABASE_URL therefore fails here instead of emptying
+        # the database the deployed app reads.
         if: steps.db-secrets.outputs.configured == 'true'
         env:
           SEED_ALLOW_WIPE: '1'
+          SEED_EXPECT_HOST: ${{ secrets.CI_SEED_EXPECTED_HOST }}
         run: npx prisma db seed
       - name: Cache Playwright browsers
         if: steps.db-secrets.outputs.configured == 'true'
