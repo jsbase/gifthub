@@ -94,11 +94,20 @@ const AuthButtons: React.FC<AuthButtonsProps> = ({ dict }) => {
             {dict.login}
           </Button>
         </DialogTrigger>
+        {/*
+          No height class of any kind. The primitive already sizes the sheet to
+          its own contents under `xs` (`xs:h-auto` with a max-height cap), so a
+          caller that asks for a height here is asking a question the sheet has
+          already answered. These two classes were the last survivors of a bug
+          where the primitive anchored both vertical edges and `height: auto`
+          could not bind; the over-constraint outlived the fix, and on a 390x844
+          phone it pinned the sheet at 717px with 389px of empty label stock
+          under a 209px form.
+        */}
         <AuthDialog
           title={dict.loginToGroup}
           description={dict.enterGroupName}
           closeLabel={dict.close}
-          className={cn('xs:h-[85vh]', 'xs:max-h-[85vh]')}
         >
           <LoginForm dict={dict} isLoading={isLoading} onSubmit={handleLogin} />
         </AuthDialog>
@@ -120,7 +129,6 @@ const AuthButtons: React.FC<AuthButtonsProps> = ({ dict }) => {
           title={dict.createGroup}
           description={dict.createGroupDescription}
           closeLabel={dict.close}
-          className={cn('xs:h-[85vh]', 'xs:max-h-[85vh]')}
         >
           <RegisterForm
             dict={dict}
