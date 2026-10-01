@@ -1,5 +1,5 @@
 import React, { memo, useMemo } from 'react';
-import { Tag } from 'lucide-react';
+import { IconTag } from '@tabler/icons-react';
 import { cn } from '@/lib/utils';
 import type { LogoProps } from '@/types';
 
@@ -44,9 +44,18 @@ const Logo: React.FC<LogoProps> = ({ size = 'md', className, groupName }) => {
         A tag rather than a present: the app's whole subject is a list of things
         other people are going to wrap and hand over.
       */}
-      <Tag
+      {/*
+        `stroke`, not `strokeWidth`. Tabler reads `stroke` as the numeric
+        stroke-width and maps it onto the attribute; `strokeWidth` still typechecks
+        and still works, because the component spreads the rest of its props last
+        and so silently overrides `stroke` - which means a missed conversion here
+        does not throw, it just draws the glyph 12.5% heavier than intended. The
+        1.75 is deliberate in both libraries: Lucide's default is 2 on the same
+        24px grid, so this thins the tag rather than the serif wordmark beside it.
+      */}
+      <IconTag
         className={cn(SIZES[size].icon, 'shrink-0', 'text-ink')}
-        strokeWidth={1.75}
+        stroke={1.75}
         aria-hidden='true'
       />
       <h1 className={textClasses}>{groupName || 'wishy'}</h1>

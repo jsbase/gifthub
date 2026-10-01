@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { LogOut } from 'lucide-react';
+import { IconLogout } from '@tabler/icons-react';
 import { Button } from '@/components/ui/button';
 import Logo from '@/components/logo';
 import LanguageSwitcher from '@/components/language-switcher';
@@ -103,7 +103,7 @@ const Header: React.FC<HeaderProps> = ({
               data-testid='logout'
               className='px-2'
             >
-              <LogOut className={cn('h-4', 'w-4')} />
+              <IconLogout className={cn('h-4', 'w-4')} />
               {dict.logout}
             </Button>
           )}

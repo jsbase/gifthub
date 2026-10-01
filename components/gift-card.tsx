@@ -1,7 +1,7 @@
 'use client';
 
 import React, { memo } from 'react';
-import { Trash2, ExternalLink } from 'lucide-react';
+import { IconExternalLink, IconSquareRounded, IconSquareRoundedCheck, IconSquareRoundedCheckFilled, IconTrash } from '@tabler/icons-react';
 import { Button } from '@/components/ui/button';
 import { useDebounce } from '@/hooks/use-debounce';
 import { cn } from '@/lib/utils';
@@ -97,8 +97,8 @@ const GiftCard: React.FC<GiftCardProps> = ({
         'transition-colors',
         'duration-200',
         isCollected ? 'bg-collected text-collected-foreground' : 'bg-cell text-ink',
-        // The sheet takes a press as the ring lands on it.
-        justChanged && isCollected && 'animate-cancel-settle'
+        // The sheet takes a press as the mark lands on it.
+        justChanged && isCollected && 'animate-collect-settle'
       )}
     >
       {/*
@@ -106,6 +106,12 @@ const GiftCard: React.FC<GiftCardProps> = ({
         button doing the same job. It sits in the left margin of the cell with a
         44px target, because that target was 20x20 in the previous system and it
         is the control the whole product exists for.
+
+        `group/buy` is the hover group for the mark only. The cell already has a
+        group (`group/cell`) for its own wash, and that group covers the whole
+        row - so a mark that filled on it would fill while the pointer was
+        anywhere in the cell, including on the body text a good 200px away from
+        the mark itself.
       */}
       <button
         type='button'
@@ -118,6 +124,7 @@ const GiftCard: React.FC<GiftCardProps> = ({
         aria-label={isCollected ? dict.markAsAvailable : dict.markAsPurchased}
         data-testid='giftStrikethrough'
         className={cn(
+          'group/buy',
           'grid',
           'h-11',
           'w-11',
@@ -128,24 +135,74 @@ const GiftCard: React.FC<GiftCardProps> = ({
           'transition-colors',
           'duration-150',
           isCollected
-            ? 'text-collected-foreground'
+            ? 'text-[var(--member-ink-on-collected)]'
             : 'text-caption hover:bg-wash hover:text-ink',
           isPending && 'pointer-events-none opacity-60'
         )}
       >
-        {/* An empty square drawn in the margin: the cell is waiting. */}
-        <span
-          aria-hidden='true'
-          className={cn(
-            'block',
-            'h-3.5',
-            'w-3.5',
-            'border',
-            isCollected
-              ? 'border-collected-foreground/60 bg-collected-foreground'
-              : 'border-rule bg-transparent group-hover/cell:border-ink'
-          )}
-        />
+        {isCollected ? (
+          /*
+            The collected mark, in three states that a single glance separates:
+
+                open                     a bare rounded square
+                bought                   that square with a check, in outline
+                bought + a pointer       the same check, filled
+
+            Filled against empty needs no decoding, which is the point: the cell
+            is the loudest signal in the product and the mark is the quiet one
+            that says which. The check is what makes "bought" legible in the
+            margin while the title recedes into the inversion.
+
+            Both glyphs sit in the button's single grid cell (`col-start-1
+            row-start-1`) and only ever one of them is displayed, so the swap is
+            a display change and not a reflow - the 44px target never moves.
+
+            The hover fill is the affordance that says "this is undoable" before
+            the click, and it is gated on a real pointer rather than on
+            Tailwind's `hover:`. `hover` can latch after a tap on a touch device,
+            which would leave a bought mark looking half-undoable with no pointer
+            anywhere near it - so the same media query that gates `cursor: pointer`
+            in `globals.css` gates this, spelled out rather than inherited. (That
+            is also not what Tailwind's `hover:` does: v4 gates it on
+            `(hover: hover)` alone, without the `pointer: fine` half.)
+
+            The underscores are Tailwind's own escape for a space in an arbitrary
+            variant, and they are load-bearing: written as a bare
+            `(hover:hover)and(pointer:fine)` the emitted rule is
+            `@media (hover:hover)and(pointer:fine)`, which no CSS parser accepts,
+            and the whole stylesheet fails to build.
+          */
+          <>
+            <IconSquareRoundedCheck
+              aria-hidden='true'
+              className={cn(
+                'col-start-1',
+                'row-start-1',
+                'h-5',
+                'w-5',
+                '[@media(hover:hover)_and_(pointer:fine)]:group-hover/buy:hidden'
+              )}
+            />
+            <IconSquareRoundedCheckFilled
+              aria-hidden='true'
+              className={cn(
+                'col-start-1',
+                'row-start-1',
+                'h-5',
+                'w-5',
+                'hidden',
+                '[@media(hover:hover)_and_(pointer:fine)]:group-hover/buy:block'
+              )}
+            />
+          </>
+        ) : (
+          /*
+            Unfilled on purpose. A control the product exists for has to be
+            visible before it is used; a mark that only appears once something is
+            bought is a mark nobody can find the first time.
+          */
+          <IconSquareRounded aria-hidden='true' className='h-5 w-5' />
+        )}
       </button>
 
       {gift.url ? (
@@ -155,11 +212,11 @@ const GiftCard: React.FC<GiftCardProps> = ({
           rel='noopener noreferrer'
           className={interactiveClasses}
         >
-          <GiftCardBody gift={gift} justChanged={justChanged} />
+          <GiftCardBody gift={gift} />
         </a>
       ) : (
         <div className={interactiveClasses}>
-          <GiftCardBody gift={gift} justChanged={justChanged} />
+          <GiftCardBody gift={gift} />
         </div>
       )}
 
@@ -179,7 +236,7 @@ const GiftCard: React.FC<GiftCardProps> = ({
         data-testid='giftDelete'
         aria-label={dict.deleteGift}
       >
-        <Trash2 className='h-4 w-4' />
+        <IconTrash className='h-4 w-4' />
       </Button>
     </li>
   );
@@ -189,57 +246,43 @@ const GiftCard: React.FC<GiftCardProps> = ({
  * The printed content of a cell, shared by the linked and unlinked variants so
  * the two cannot diverge.
  *
- * The cancellation is the signature moment of the whole app, so it lives here:
- * the member's own ink, a ring that comes down askew and settles square, over a
- * cell that has already gone to ink. One-shot, gated on `justChanged`, so
- * opening a list of five collected ideas stamps nothing.
+ * It carries no state of its own any more. The one thing that used to live here
+ * - the cancellation ring - moved into the left margin, where the control it
+ * belonged to already was, so the signature moment is now a 2px settle on the
+ * cell (`animate-collect-settle`, above) rather than something drawn in here.
  */
 const GiftCardBody: React.FC<{
   gift: GiftCardProps['gift'];
-  justChanged: boolean;
-}> = ({ gift, justChanged }) => (
+}> = ({ gift }) => (
   <div
     className={cn(
-      'relative',
       'min-w-0',
       'flex-1',
-      'px-4',
       /*
-        The right-hand lane, kept clear for the cell's own corner furniture.
+        The measure, and nothing more.
 
-        This used to be documented as room for a numeral that never rendered,
-        which is why it looked like dead space: 36px of a cell's measure that
-        bought nothing. It does buy something, and the arithmetic is exact:
+        This box used to reserve a 52px lane at its trailing edge, sized so the
+        text stopped exactly on the left stroke of the cancellation ring in the
+        corner. Measured at 390px, the last line of the longest description in
+        the fixture reached 52.16px from this edge - 0.16px of clearance, a
+        coincidence that becomes an intersection on any machine whose font
+        metrics differ by a hundredth of a pixel. Two repairs on this branch have
+        already been spent on that class of coupling.
 
-            px-4                     16px either side
-            pr-[52px]                52px at the end   (replaces px-4's 16px there)
-                                    ─────
-            every line of text stops  52px from this box's right edge
-            ring  right-5 + w-8      20px + 32px = 52px from the same edge
+        The ring is gone, so the lane is re-cut from what actually occupies the
+        cell's right end: the delete button, and nothing else. The collected mark
+        is in the left margin, so it is not in this lane at all. The button is
+        this box's own flex sibling, so its left edge IS this box's right edge,
+        and the widest thing in the lane is the 16px `px-4` on the other side of
+        the cell.
 
-        So the ring's left stroke lands exactly on the text's right edge: 0px
-        clearance, measured rather than assumed, and it is the whole reason the
-        reservation is load-bearing. The ring is positioned against this box's
-        padding box, so the padding here cannot move it - which is what makes it
-        safe to take the lane off the `h3` and give it to the box itself.
-
-        It has to live here, not on the heading. The description and the URL
-        row are siblings of the `h3` inside this same box, so a lane on the
-        heading protected the title and nothing else: on a collected cell - the
-        only kind that carries a ring - a long note or a long URL ran straight
-        underneath the cancellation. Measured at 390px before this move, the
-        description intersected the ring's box by 32x11.75px and the URL row by
-        32x12.5px, which is the ring's full 32px width in both cases.
-
-        52 rather than 36 is the point, twice over. It is `px-4`'s 16px plus the
-        36px the `h3` used to carry, so the title keeps the exact measure and the
-        exact wrap points it had when the lane lived on the `h3`; and it is also
-        exactly where the ring's left stroke sits. Move either side of that sum
-        and the collision comes back at a width nobody is looking at - so
-        re-measure before touching `right-5`, `w-8`, this box's `px-4`, or the
-        lane itself.
+        Which makes the answer the simple one: `px-4` on both sides, 16px of
+        clearance to the delete button against a required minimum of 4, and a
+        cell that is finally symmetric. It is unconditional, so collecting an idea
+        does not reflow the cell - the failure mode that a lane on collected
+        cells only would have had. Re-measure before widening or narrowing it.
       */
-      'pr-[52px]',
+      'px-4',
       'py-3'
     )}
   >
@@ -289,7 +332,6 @@ const GiftCardBody: React.FC<{
           'flex',
           'items-center',
           'gap-1.5',
-          'truncate',
           'font-label',
           'text-[0.6875rem]',
           'font-bold',
@@ -301,43 +343,22 @@ const GiftCardBody: React.FC<{
             : 'text-caption group-hover/cell:text-ink'
         )}
       >
-        <ExternalLink className='h-3 w-3 shrink-0' strokeWidth={2.5} />
-        {gift.url.replace(/^https?:\/\//, '').replace(/\/$/, '')}
+        <IconExternalLink className='h-3 w-3 shrink-0' stroke={2.5} />
+        {/*
+          `truncate` lives here and not on the flex row above, and the reason is
+          the whole of Finding 6. `text-overflow: ellipsis` needs a block box to
+          act on a text node, and on the row itself the address is an anonymous
+          flex item - so the row's own `truncate` never reached it and a long URL
+          was cut off mid-glyph with no ellipsis and nothing to say there was
+          more. As its own flex item the address still refuses to shrink, because
+          a flex item's `min-width: auto` floors it at its min-content width and
+          `nowrap` makes that the whole string. `min-w-0` is what releases that
+          floor, and with it `truncate` works: the address now visibly runs out.
+        */}
+        <span className='min-w-0 truncate'>
+          {gift.url.replace(/^https?:\/\//, '').replace(/\/$/, '')}
+        </span>
       </span>
-    )}
-
-    {gift.isPurchased && (
-      <span
-        aria-hidden='true'
-        className={cn(
-          'pointer-events-none',
-          'absolute',
-          'right-5',
-          'bottom-4',
-          'block',
-          'h-8',
-          'w-8',
-          'rounded-full',
-          'border-[1.5px]',
-          /*
-            The member's own ink, resolved for THIS ground.
-
-            A collected cell is the one surface in the app that is near-black in
-            the light theme, and the tray under a name on the contents page is
-            tuned for light paper: the same six values measure 2.06-3.78:1 here
-            and read as faint outlines rather than stamps. So the ring reads
-            `--member-ink-on-collected` - the same six hues lightened, which is
-            what `--member-ink` already resolves to in the dark theme, so nothing
-            about the dark ring changes. Measured after the change on the
-            collected ground: 5.41-9.16:1 in light, and 5.88-9.97:1 in dark both
-            before and after. The ring is `aria-hidden` (the tick carries
-            `aria-pressed`), so this is legibility, not a contrast requirement -
-            but redundancy still has to be legible.
-          */
-          'border-[var(--member-ink-on-collected)]',
-          justChanged && 'animate-cancel-stamp'
-        )}
-      />
     )}
   </div>
 );

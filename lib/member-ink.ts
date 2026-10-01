@@ -10,7 +10,7 @@
  * The discipline that keeps this from becoming confetti: an ink never fills a
  * region. It appears in exactly two places, always at the same weight of
  * ink - the rule under that member's name on the contents page, and the
- * cancellation ring on a collected idea in their sheet. Six members on one
+ * collected mark in the margin of a cell on their sheet. Six members on one
  * page therefore read as one printed sheet with six annotations, not as six
  * colours.
  *
@@ -34,21 +34,22 @@ export const MEMBER_INKS = [
  *
  * `MEMBER_INKS` is tuned for light ground, where it measures 4.64-8.51:1 under a
  * name on the contents page. A collected cell inverts, so in the light theme the
- * ring lands on near-black (#1e1610) instead - and the same six values measure
+ * mark lands on near-black (#1e1610) instead - and the same six values measure
  * 2.06-3.78:1 there, which reads as a faint outline rather than as a stamp.
  * WCAG luminance mis-ranks exactly this case, because it ignores chroma: violet
  * measures higher than oxblood and still looks weaker, violet-slate being 28%
  * saturation. The inversion itself is 17.5:1 and `aria-pressed` carries the
- * state, so this is a visible defect rather than a 1.4.11 failure - the ring is
+ * state, so this is a visible defect rather than a 1.4.11 failure - the mark is
  * `aria-hidden` redundancy, and redundancy still has to be legible.
  *
  * So the tray gets a second resolution rather than a second palette. These are
  * the lightened inks `app/globals.css` already declares for `.dark` - the same
- * six hues at the same chroma intent, nothing new invented - measured 5.41-9.16:1
- * on the light theme's collected ground (#1e1610) and 5.88-9.97:1 on the dark
- * theme's (#0f0d0a). In the dark theme they are exactly what `--member-ink-*`
- * already resolves to, so the ring there is untouched to the digit; in the light
- * theme they are what the inverted cell asks for.
+ * six hues at the same chroma intent, nothing new invented. Measured against the
+ * two collected grounds that ship today, `--collected` #1e1610 in the light
+ * theme and #0b0706 in the dark one: 5.41-9.16:1 and 6.08-10.30:1. In the dark
+ * theme they are exactly what `--member-ink-*` already resolves to, so the mark
+ * there is untouched to the digit; in the light theme they are what the inverted
+ * cell asks for.
  *
  * The two arrays are one tray: same length, same order, index-locked, and these
  * six values must be kept in step with the `.dark` block they are copied from.
@@ -97,10 +98,10 @@ export function memberInk(id: string): string {
  *
  * Two properties, one tray slot. `--member-ink` is the resolution for light
  * ground and the only thing the contents page reads; `--member-ink-on-collected`
- * is the same slot resolved for an inverted cell, read by the cancellation ring.
- * Emitting both here rather than at each use site is the point: a caller that
- * needs the ring to hold up on a collected cell should not have to know that the
- * ground changed.
+ * is the same slot resolved for an inverted cell, read by the collected mark in
+ * `gift-card.tsx`. Emitting both here rather than at each use site is the point:
+ * a caller that needs the mark to hold up on a collected cell should not have to
+ * know that the ground changed.
  */
 export function memberInkStyle(
   id: string

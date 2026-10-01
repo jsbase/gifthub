@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { usePathname } from 'next/navigation';
 import { toast } from 'sonner';
-import { UserPlus } from 'lucide-react';
+import { IconUserPlus } from '@tabler/icons-react';
 import { useDebounce } from '@/hooks/use-debounce';
 import getDictionary from '@/app/[lang]/dictionaries';
 import {
@@ -219,7 +219,7 @@ const AddMemberDialog: React.FC<Omit<AddMemberDialogProps, 'dict'>> = ({
           data-testid='addMemberButton'
           className='justify-center text-[0.875rem]'
         >
-          <UserPlus className={cn('h-4', 'w-4')} />
+          <IconUserPlus className={cn('h-4', 'w-4')} />
           {dict.addMemberDialog.addMember}
         </Button>
       </DialogTrigger>

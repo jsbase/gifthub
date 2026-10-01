@@ -1,5 +1,5 @@
 import React, { memo } from 'react';
-import { Trash2 } from 'lucide-react';
+import { IconTrash } from '@tabler/icons-react';
 import { Button } from '@/components/ui/button';
 import AddMemberDialog from '@/components/add-member-dialog';
 import { cn } from '@/lib/utils';
@@ -61,7 +61,7 @@ const MemberListHeader: React.FC<MemberListHeaderProps> = ({
           )}
           data-testid='showRemoveMemberButtons'
         >
-          <Trash2 className='h-4 w-4' />
+          <IconTrash className='h-4 w-4' />
           {dict.deleteMember}
         </Button>
         <AddMemberDialog onMemberAdded={onMemberAdded} />

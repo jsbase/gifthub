@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu';
-import { Check, ChevronRight, Circle } from 'lucide-react';
+import { IconCheck, IconChevronRight, IconCircleFilled } from '@tabler/icons-react';
 
 import { cn } from '@/lib/utils';
 
@@ -44,7 +44,7 @@ const DropdownMenuSubTrigger = React.forwardRef<
     {...props}
   >
     {children}
-    <ChevronRight className='ml-auto h-4 w-4' />
+    <IconChevronRight className='ml-auto h-4 w-4' />
   </DropdownMenuPrimitive.SubTrigger>
 ));
 DropdownMenuSubTrigger.displayName =
@@ -112,7 +112,7 @@ const DropdownMenuCheckboxItem = React.forwardRef<
   >
     <span className='absolute left-3 flex h-3.5 w-3.5 items-center justify-center'>
       <DropdownMenuPrimitive.ItemIndicator>
-        <Check className='h-4 w-4' />
+        <IconCheck className='h-4 w-4' />
       </DropdownMenuPrimitive.ItemIndicator>
     </span>
     {children}
@@ -136,7 +136,19 @@ const DropdownMenuRadioItem = React.forwardRef<
   >
     <span className='absolute left-3 flex h-3.5 w-3.5 items-center justify-center'>
       <DropdownMenuPrimitive.ItemIndicator>
-        <Circle className='h-2 w-2 fill-current' />
+      {/*
+        The radio dot, and the one icon in this file where a name-preserving swap
+        is the wrong answer. Lucide's `Circle` + `fill-current` was a *solid* 8px
+        disc; Tabler's outline `circle` is a stroked r=9 ring drawn with
+        `fill: none`, so pairing it with `fill-current` fills the whole 8px box
+        and pairing it without fills nothing. `circle-filled` is the faithful
+        target - an r=10 filled disc, i.e. the same shape Lucide was faking with
+        a fill - so `fill-current` comes off with it and the colour arrives
+        through `currentColor` on its own, the same way every other icon here.
+
+        A filled variant also ignores `stroke`, so nothing on this one sets it.
+      */}
+      <IconCircleFilled className='h-2 w-2' />
       </DropdownMenuPrimitive.ItemIndicator>
     </span>
     {children}

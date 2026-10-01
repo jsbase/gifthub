@@ -5,7 +5,7 @@ import React, {
   useCallback,
   useMemo,
 } from 'react';
-import { Trash2 } from 'lucide-react';
+import { IconTrash } from '@tabler/icons-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import MemberListHeader from '@/components/member-list-header';
@@ -230,7 +230,7 @@ const MemberList: React.FC<MemberListProps> = ({
                   )}
                   data-testid='removeMemberButton'
                 >
-                  <Trash2 className='h-4 w-4' />
+                  <IconTrash className='h-4 w-4' />
                   <span className='sr-only'>{dict.deleteMember}</span>
                 </Button>
               </div>

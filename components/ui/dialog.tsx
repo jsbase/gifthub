@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
-import { X } from 'lucide-react';
+import { IconX } from '@tabler/icons-react';
 import { cn } from '@/lib/utils';
 
 const Dialog = DialogPrimitive.Root;
@@ -177,7 +177,7 @@ const DialogContent = React.forwardRef<
           )}
           data-testid='dialogClose'
         >
-          <X className='h-4 w-4' />
+          <IconX className='h-4 w-4' />
           <span className='sr-only'>{closeLabel}</span>
         </DialogPrimitive.Close>
       )}

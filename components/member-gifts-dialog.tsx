@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { toast } from 'sonner';
-import { PlusCircle } from 'lucide-react';
+import { IconCirclePlus } from '@tabler/icons-react';
 import {
   Dialog,
   DialogContent,
@@ -77,8 +77,8 @@ const MemberGiftsDialog: React.FC<MemberGiftsDialogProps> = ({
   const [showAddGiftForm, setShowAddGiftForm] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   /* The row whose toggle is in flight, and the row that actually changed. They
-     are separate because the cancellation is a one-shot: gating it on the
-     request alone would either replay on every dialog open or never fire. */
+     are separate because the settle is a one-shot: gating it on the request
+     alone would either replay on every dialog open or never fire. */
   const [togglingId, setTogglingId] = useState<string | null>(null);
   const [changedId, setChangedId] = useState<string | null>(null);
   const [pendingDeletion, setPendingDeletion] = useState<Gift | null>(null);
@@ -419,7 +419,17 @@ const MemberGiftsDialog: React.FC<MemberGiftsDialogProps> = ({
                 )}
                 data-testid='addGiftButton'
               >
-                <PlusCircle className='h-4 w-4' strokeWidth={1.75} />
+                {/*
+                  `stroke`, not `strokeWidth` - see the same note on the wordmark
+                  in `logo.tsx`. Tabler reads `stroke` as the stroke width;
+                  `strokeWidth` would still work and still typecheck, by way of
+                  the spread order, and would silently win. 1.75 on a 16px icon
+                  is 1.17px of ink against the 1.33px its neighbours draw, which
+                  is a pre-existing inconsistency rather than one this swap
+                  introduces; it is carried over verbatim so the migration stays
+                  visual-only.
+                */}
+                <IconCirclePlus className='h-4 w-4' stroke={1.75} />
                 <span className='label-print'>{dict.addGift}</span>
               </Button>
             </div>

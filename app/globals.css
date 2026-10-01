@@ -10,9 +10,10 @@
   wishy is a bound album of collected objects. The ground is buff album board;
   every idea is a sheet of printer's-white label stock mounted on it, ruled into
   a printed grid. The mark that says somebody bought this thing is the one a
-  philatelist knows: the cell inverts and a cancellation ring stamps over it.
-  Permanent, visible to everyone holding the album, which is the whole reason
-  nobody buys the same present twice.
+  collector reads without being taught it: the cell inverts, and a check in the
+  cell's left margin goes from outline to solid under the pointer. Permanent,
+  visible to everyone holding the album, which is the whole reason nobody buys
+  the same present twice.
 
   Every token a component references is defined here in both themes. Under
   Tailwind v4 a utility for an undefined token emits no rule at all, so a gap in
@@ -85,16 +86,16 @@
 
   /*
     The ink tray. Each member owns one stamped ink, and it is confined to two
-    places: the rule under their name, and the cancellation ring on a collected
-    cell. No ink ever fills a region, so a page can show six of them and still
+    places: the rule under their name, and the collected mark on a cell of their
+    sheet. No ink ever fills a region, so a page can show six of them and still
     read as one printed sheet.
 
-    These are the light-ground values. The ring reads a second resolution of the
-    same six hues, `MEMBER_INKS_ON_COLLECTED` in `lib/member-ink.ts`, because a
-    collected cell is the one ground here that is near-black in the light theme;
-    the lightened profile these already carry for `.dark` below is what that
-    ground asks for. No token is duplicated: both resolutions are the two blocks
-    below, read at two grounds.
+    These are the light-ground values. The collected mark reads a second
+    resolution of the same six hues, `MEMBER_INKS_ON_COLLECTED` in
+    `lib/member-ink.ts`, because a collected cell is the one ground here that is
+    near-black in the light theme; the lightened profile these already carry for
+    `.dark` below is what that ground asks for. No token is duplicated: both
+    resolutions are the two blocks below, read at two grounds.
   */
   --color-ink-1: hsl(var(--member-ink-1));
   --color-ink-2: hsl(var(--member-ink-2));
@@ -137,10 +138,9 @@
 
   --height-header: var(--header-height);
 
-  /* Motion. One authored moment in this world is the cancellation; the rest are
-     state feedback and the list arriving once. */
-  --animate-cancel-stamp: cancel-stamp 320ms cubic-bezier(0.16, 1, 0.3, 1) both;
-  --animate-cancel-settle: cancel-settle 260ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  /* Motion. One authored moment in this world is the cell settling under a
+     collection; the rest are state feedback and the list arriving once. */
+  --animate-collect-settle: collect-settle 260ms cubic-bezier(0.16, 1, 0.3, 1) both;
   --animate-reveal-in: reveal-in 340ms cubic-bezier(0.16, 1, 0.3, 1) both;
   --animate-count-flash: count-flash 520ms ease-out both;
   --animate-row-reveal: row-reveal 180ms ease-out both;
@@ -348,35 +348,20 @@
 */
 
 /*
-  THE CANCEL. The one moment in this app worth animating, and it is not a
-  highlighter drawing a line across a title - a philatelist cancels a stamp, so
-  this ring comes down askew and slightly too large, overshoots, and settles
-  square. It lands on a cell that has already inverted, because a stamp lands
-  instantly; only the ring takes its 320ms.
+  THE SETTLE. The one moment in this app worth animating, and it is not a
+  highlighter drawing a line across a title - it is the cell taking a press. A
+  collected cell has already gone to ink and its mark has already changed, so the
+  only thing left to author is the 2px the sheet moves as it takes the weight:
+  it lifts, and comes down square.
 
   Gated on the one row that changed, so opening a list of five collected ideas
-  stamps nothing.
-*/
-@keyframes cancel-stamp {
-  0% {
-    opacity: 0;
-    transform: scale(1.5) rotate(-14deg);
-    filter: blur(2px);
-  }
-  55% {
-    opacity: 1;
-    transform: scale(0.94) rotate(2.5deg);
-    filter: blur(0);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1) rotate(0deg);
-    filter: blur(0);
-  }
-}
+  settles nothing.
 
-/* The cell settling under the stamp: a 2px drop, as if the sheet took a press. */
-@keyframes cancel-settle {
+  It was `cancel-stamp` / `cancel-settle`, which named a thing this file no
+  longer draws: a philatelic cancellation came down askew, overshot and settled,
+  and its keyframe is gone with the ring. `collect-settle` is what happens.
+*/
+@keyframes collect-settle {
   0% {
     transform: translateY(-2px);
   }
@@ -497,8 +482,8 @@
 
 /*
   Reduced motion. Everything collapses to a state change with no movement - the
-  collected cell still inverts and the cancellation still appears, it just
-  arrives already stamped. The one exception is the loading spinner, selected by
+  collected cell still inverts and its mark still changes, it just arrives
+  already settled. The one exception is the loading spinner, selected by
   the class that animates it rather than by a test id: a spinner that has
   stopped spinning is a broken affordance, not a decorative one.
 */
