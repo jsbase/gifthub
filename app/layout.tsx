@@ -5,6 +5,7 @@ import { Literata, Onest } from 'next/font/google';
 import ThemeProvider from '@/components/theme-provider';
 import { Toaster } from '@/components/ui/sonner';
 import ServiceWorkerRegistration from '@/components/service-worker';
+import { Analytics } from '@vercel/analytics/next';
 import { cn } from '@/lib/utils';
 import type { RootLayoutProps } from '@/types';
 
@@ -113,6 +114,7 @@ const RootLayout: React.FC<RootLayoutProps> = ({ children }) => (
         <div className={cn('flex-1', 'flex', 'flex-col')}>{children}</div>
         <Toaster />
         <ServiceWorkerRegistration />
+        <Analytics />
       </ThemeProvider>
     </body>
   </html>
