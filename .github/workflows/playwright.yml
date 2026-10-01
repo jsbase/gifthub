@@ -1,19 +1,94 @@
-name: Playwright
+name: CI
+
+# Runs on pushes and pull requests to `development` instead of on Vercel
+# deployments. Two reasons:
+#   1. A `deployment_status` trigger cannot gate a merge. The checks only ran
+#      after a deploy, which is how a long-standing type error in the dashboard
+#      page survived.
+#   2. The datasource is a hosted Postgres shared with the deployed app, so a
+#      deploy-triggered suite would run the database-writing tests against the
+#      data a human is looking at.
 on:
-  deployment_status:
+  push:
+    branches: [development]
+  pull_request:
+    branches: [development]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  run-e2e-tests:
-    if: github.event_name == 'deployment_status' && github.event.deployment_status.state == 'success'
+  build-test-lint:
+    # Pull requests from forks get no repository secrets, so the database steps
+    # below cannot run there. Skipping them is better than a red run that looks
+    # like a code defect.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-24.04
+    env:
+      # A database of this job's own. `prisma db seed` deletes every row and the
+      # end-to-end suite writes, so pointing these at the database the deployed
+      # app uses would wipe it on every run. A Neon branch is the cheapest
+      # separate database that a real Postgres schema migrates cleanly onto.
+      DATABASE_URL: ${{ secrets.CI_DATABASE_URL }}
+      # The non-pooled endpoint of the same database: Prisma Migrate cannot run
+      # through a connection pooler.
+      DIRECT_URL: ${{ secrets.CI_DIRECT_URL }}
+      # Signs the session cookie. The app refuses to log in without it, so the
+      # dashboard test cannot run if it is missing.
+      JWT_SECRET: ${{ secrets.JWT_SECRET }}
+      # Not a secret: the suite runs against the server this job starts itself,
+      # which playwright.config.ts launches from `npm run start`.
+      NEXT_PUBLIC_BASE_URL: http://localhost:3000
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Install Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: 20
+          # Node 20 is past EOL. Next 16 needs >=20.9 and jose 6 needs >=20.19.
+          node-version: 22
+          cache: npm
+      - name: Check required secrets
+        run: |
+          for name in CI_DATABASE_URL CI_DIRECT_URL JWT_SECRET; do
+            if [ -z "${!name}" ]; then
+              echo "::error::Repository secret $name is not set; this job needs it"
+              exit 1
+            fi
+          done
       - name: Install dependencies
-        run: npm ci && npx playwright install --with-deps
+        run: npm ci
+      - name: Typecheck
+        run: npx tsc --noEmit
+      - name: Lint
+        # Exit-code based, deliberately without `--max-warnings`: ESLint fails on
+        # errors, and the warn-only rules in eslint.config.mjs are the accepted
+        # baseline. A cap would make this red for pre-existing debt rather than
+        # for new defects, and it would break on every dependency bump that
+        # reshuffles the count.
+        run: npm run lint
+      # Before the build: the build regenerates the Prisma client and Prisma
+      # validates the datasource, and a half-applied schema fails the build for
+      # a reason that has nothing to do with the code.
+      - name: Apply migrations
+        run: npx prisma migrate deploy
+      - name: Seed database
+        run: npx prisma db seed
+      - name: Build
+        run: npm run build
+      - name: Install Playwright browser
+        # Only chromium, matching the suite below. Last of the install steps so a
+        # type or lint error fails in seconds instead of after a browser download.
+        run: npx playwright install --with-deps chromium
       - name: Run tests
-        run: npx playwright test
-        env:
-          NEXT_PUBLIC_BASE_URL: ${{ github.event.deployment_status.environment_url }}
+        run: npx playwright test --project=chromium
+      - name: Upload report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7
+          if-no-files-found: ignore

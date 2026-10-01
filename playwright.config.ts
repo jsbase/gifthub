@@ -41,11 +41,13 @@ export default defineConfig({
       use: { ...devices['iPhone 12'] },
     },
   ],
-  webServer: !process.env.CI
-    ? {
-        command: 'npm run dev',
-        port: 3000,
-        reuseExistingServer: true,
-      }
-    : undefined,
+  // Playwright owns the server in CI too, so the suite is self-contained instead
+  // of depending on an already-deployed URL: it starts the production server
+  // built by the same workflow and waits for a page that actually renders.
+  // Locally it still starts `next dev` and adopts whatever is on :3000.
+  webServer: {
+    command: process.env.CI ? 'npm run start' : 'npm run dev',
+    url: 'http://localhost:3000/en',
+    reuseExistingServer: !process.env.CI,
+  },
 });
