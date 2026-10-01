@@ -21,6 +21,7 @@
   "errors": {
     "failedToLoad": "Mitglieder nicht geladen",
     "failedToLoadGifts": "Geschenkideen nicht geladen",
+    "invalidNameFormat": "Namen dürfen Buchstaben, Zahlen, Leerzeichen, Punkte, Bindestriche und Apostrophe enthalten, höchstens 100 Zeichen.",
     "loginFailed": "Anmeldung fehlgeschlagen",
     "loginRequired": "Anmeldung erforderlich",
     "passwordMismatch": "Passwörter stimmen nicht überein",

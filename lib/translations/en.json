@@ -21,6 +21,7 @@
   "errors": {
     "failedToLoad": "Members not loaded",
     "failedToLoadGifts": "Gift ideas not loaded",
+    "invalidNameFormat": "Names may contain letters, numbers, spaces, dots, hyphens and apostrophes, up to 100 characters.",
     "loginFailed": "Log in failed",
     "loginRequired": "Log in required",
     "passwordMismatch": "Passwords do not match",

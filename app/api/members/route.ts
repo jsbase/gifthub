@@ -10,6 +10,20 @@ import { getGroupIdFromToken } from '@/lib/auth-server';
 // zero-width and other invisible characters: they are neither letters nor marks.
 const MEMBER_NAME_REGEX = /^(?=[^\p{L}]*\p{L})[\p{L}\p{M}\p{N} .\-'’]{1,100}$/u;
 
+/**
+ * Pasted text arrives with the wrong space and the wrong hyphen. Rewriting them
+ * is the point, not accepting them: a name carrying `U+00A0` and the same name
+ * typed plainly have to be the same member, or the duplicate check below stops
+ * recognising them and the list grows a second row that looks identical.
+ *
+ * Only these two are rewritten. The genuinely invisible characters - `U+200B`,
+ * `U+200D`, `U+FEFF`, `U+2028`, `U+2029` - stay rejected: they make two
+ * *different* names render identically, which is a support problem rather than
+ * a formatting one, and no amount of normalising recovers what was typed.
+ */
+const normalizeMemberName = (name: string): string =>
+  name.replace(/\u00A0/g, ' ').replace(/\u2011/g, '-');
+
 export const GET: (request: NextRequest) => Promise<NextResponse> = async (
   request
 ) => {
@@ -63,12 +77,19 @@ export const POST: (request: NextRequest) => Promise<NextResponse> = async (
     const body = await request.json();
     const { name } = body;
 
-    // Validate name format
-    if (!name || !MEMBER_NAME_REGEX.test(name)) {
+    // Normalize before validating and before every use below. The name that is
+    // tested, de-duplicated and stored is the same value, so a pasted U+00A0
+    // cannot slip past the test and then sit in the database as a second,
+    // visually identical member.
+    const normalizedName =
+      typeof name === 'string' ? normalizeMemberName(name) : name;
+
+    if (!name || !MEMBER_NAME_REGEX.test(normalizedName)) {
       return NextResponse.json(
         {
           message:
-            'Invalid name format. Only letters, numbers, spaces, dots, and hyphens are allowed.',
+            'Invalid name format. Names may contain letters from any alphabet, marks, numbers, spaces, dots, hyphens and apostrophes, up to 100 characters.',
+          code: 'invalid_name_format',
         },
         { status: 400 }
       );
@@ -78,7 +99,7 @@ export const POST: (request: NextRequest) => Promise<NextResponse> = async (
     const existingMember = await prisma.userGroup.findFirst({
       where: {
         group: { id: groupId },
-        user: { name: name },
+        user: { name: normalizedName },
       },
     });
 
@@ -95,7 +116,7 @@ export const POST: (request: NextRequest) => Promise<NextResponse> = async (
 
     const user = await prisma.user.create({
       data: {
-        name,
+        name: normalizedName,
         password: hashedPassword,
       },
     });

@@ -22,6 +22,7 @@ import type {
   AddMemberDialogProps,
   AddMemberDialogDictionary,
   ToastTranslations,
+  Translations,
 } from '@/types';
 
 const AddMemberDialog: React.FC<Omit<AddMemberDialogProps, 'dict'>> = ({
@@ -29,9 +30,11 @@ const AddMemberDialog: React.FC<Omit<AddMemberDialogProps, 'dict'>> = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [nameError, setNameError] = useState<string | null>(null);
   const [dict, setDict] = useState<{
     addMemberDialog: AddMemberDialogDictionary;
     toasts: ToastTranslations;
+    errors: Pick<Translations['errors'], 'invalidNameFormat'>;
     close: string;
   } | null>(null);
   const path = usePathname();
@@ -43,6 +46,7 @@ const AddMemberDialog: React.FC<Omit<AddMemberDialogProps, 'dict'>> = ({
       setDict({
         addMemberDialog: translations.addMemberDialog,
         toasts: translations.toasts,
+        errors: { invalidNameFormat: translations.errors.invalidNameFormat },
         close: translations.close,
       });
     };
@@ -59,6 +63,20 @@ const AddMemberDialog: React.FC<Omit<AddMemberDialogProps, 'dict'>> = ({
 
       const data = await response.json();
 
+      /*
+        A name the server will not accept is not a failed request, it is a form
+        with a wrong value in it. It gets the localized sentence on the field
+        itself, which persists until the name changes and is attached to the
+        input for a screen reader - rather than the generic "member not added"
+        toast, which is true of every failure and explains none of them. The
+        route's English `message` is still in the body and still means
+        something to whoever reads the network tab.
+      */
+      if (response.status === 400 && data?.code === 'invalid_name_format') {
+        setNameError(dict?.errors.invalidNameFormat ?? data.message);
+        return;
+      }
+
       if (!response.ok) {
         throw new Error(data.message || `Error: ${response.status}`);
       }
@@ -68,6 +86,7 @@ const AddMemberDialog: React.FC<Omit<AddMemberDialogProps, 'dict'>> = ({
       }
 
       toast.success(dict?.toasts.memberAdded.replace('{name}', name));
+      setNameError(null);
       setIsOpen(false);
       if (onMemberAdded) {
         onMemberAdded();
@@ -87,6 +106,7 @@ const AddMemberDialog: React.FC<Omit<AddMemberDialogProps, 'dict'>> = ({
     async (e: React.FormEvent<HTMLFormElement>) => {
       e.preventDefault();
       setIsLoading(true);
+      setNameError(null);
 
       const formData = new FormData(e.currentTarget);
       const name = formData.get('name') as string;
@@ -127,6 +147,8 @@ const AddMemberDialog: React.FC<Omit<AddMemberDialogProps, 'dict'>> = ({
           dict={dict.addMemberDialog}
           isLoading={isLoading}
           onSubmit={handleSubmit}
+          nameError={nameError}
+          onNameChange={() => setNameError(null)}
         />
       </DialogContent>
     </Dialog>

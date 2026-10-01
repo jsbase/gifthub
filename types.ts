@@ -69,6 +69,7 @@ export interface Translations {
     loginRequired: string;
     failedToLoad: string;
     failedToLoadGifts: string;
+    invalidNameFormat: string;
     loginFailed: string;
     passwordMismatch: string;
     registrationFailed: string;
@@ -240,6 +241,9 @@ export interface AddMemberFormProps {
   dict: AddMemberDialogDictionary;
   isLoading: boolean;
   onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
+  /** Localized reason the server refused the name, shown against the field. */
+  nameError?: string | null;
+  onNameChange?: () => void;
 }
 
 export interface MemberGiftsTranslations {
