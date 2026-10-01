@@ -20,7 +20,7 @@ const AuthDialog: React.FC<AuthDialogProps> = ({
     <DialogContent
       className={cn(
         'max-w-dialog',
-        'xs:p-dialog-mobile p-dialog-desktop',
+        'xs:p-dialog-pad-mobile p-dialog-pad-desktop',
         className
       )}
     >

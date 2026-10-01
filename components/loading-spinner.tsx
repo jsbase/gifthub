@@ -22,7 +22,7 @@ const LoadingSpinner: React.FC = () => {
       className={cn(
         'fixed inset-0',
         'bg-background/80',
-        'backdrop-blur-sm',
+        'backdrop-blur-xs',
         'z-50',
         'flex',
         'items-center',

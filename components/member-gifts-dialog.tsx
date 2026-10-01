@@ -154,7 +154,7 @@ const MemberGiftsDialog: React.FC<MemberGiftsDialogProps> = ({
       <DialogContent
         className={cn(
           'max-w-dialog',
-          'xs:p-dialog-mobile',
+          'xs:p-dialog-pad-mobile',
           'xs:h-[85vh]',
           'xs:max-h-[85vh]',
           isFullScreen ? 'xs:w-full xs:h-full' : 'xs:w-auto xs:h-auto'
