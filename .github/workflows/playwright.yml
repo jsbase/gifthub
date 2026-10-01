@@ -109,11 +109,17 @@ jobs:
         # non-zero from above them would cancel them, which is precisely the
         # regression this position avoids. Everything it feeds is below it.
         if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+        # Repository secrets are reachable through the secrets context, not as
+        # bare environment variables. Without this mapping the loop below tests
+        # variables that do not exist and reports every secret as missing, which
+        # is what the first three runs did.
+        env:
+          CI_DATABASE_URL: ${{ secrets.CI_DATABASE_URL }}
+          CI_DIRECT_URL: ${{ secrets.CI_DIRECT_URL }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          CI_SEED_EXPECTED_HOST: ${{ secrets.CI_SEED_EXPECTED_HOST }}
         run: |
           missing=0
-          # Check the secret's own name. Actions exposes each secret as an env
-          # var named after the secret, so an alias like SEED_EXPECT_HOST is
-          # never in the environment and would report missing forever.
           for secret in CI_DATABASE_URL CI_DIRECT_URL JWT_SECRET CI_SEED_EXPECTED_HOST; do
             if [ -z "${!secret}" ]; then
               echo "::error::Repository secret $secret is not set; the end-to-end half of this job needs it"
