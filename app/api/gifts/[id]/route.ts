@@ -52,11 +52,35 @@ export const GET: (request: NextRequest) => Promise<NextResponse> = async (
 export const POST: (request: NextRequest) => Promise<NextResponse> = async (
   request
 ) => {
-  const { id } = await request.json();
+  // Read the body once. Reading it a second time throws "Body is unusable",
+  // and spreading the parsed object would let a caller rewrite `forMemberId`
+  // or `id` — so pick the editable fields out explicitly.
+  let body: unknown;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ message: 'Invalid gift data' }, { status: 400 });
+  }
+
+  if (!body || typeof body !== 'object' || Array.isArray(body)) {
+    return NextResponse.json({ message: 'Invalid gift data' }, { status: 400 });
+  }
+
+  const { id, title, description, url, isPurchased } = body as Record<
+    string,
+    unknown
+  >;
 
   if (!isValidId(id)) {
     return NextResponse.json(
       { message: 'Invalid gift ID format' },
+      { status: 400 }
+    );
+  }
+
+  if (typeof title !== 'string' || title.trim().length === 0) {
+    return NextResponse.json(
+      { message: 'A gift needs a title' },
       { status: 400 }
     );
   }
@@ -67,22 +91,17 @@ export const POST: (request: NextRequest) => Promise<NextResponse> = async (
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
 
-    const data = await request.json();
-    if (!data || typeof data !== 'object') {
-      return NextResponse.json(
-        { message: 'Invalid gift data' },
-        { status: 400 }
-      );
-    }
-
     const gift = await prisma.gift.update({
       where: {
         id,
         groupId,
       },
       data: {
-        ...data,
-        groupId,
+        title: title.trim(),
+        description: typeof description === 'string' ? description : null,
+        url: typeof url === 'string' && url.length > 0 ? url : null,
+        isPurchased:
+          typeof isPurchased === 'boolean' ? isPurchased : undefined,
       },
     });
 

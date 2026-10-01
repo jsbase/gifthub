@@ -90,6 +90,10 @@ const GiftCard: React.FC<GiftCardProps> = ({
       <button
         type='button'
         onClick={handleTogglePurchased}
+        // `pointer-events-none` below only stops the mouse. Without `disabled`
+        // the button stays keyboard-activatable, so Enter or Space during an
+        // in-flight toggle fires a second request.
+        disabled={isPending}
         aria-pressed={gift.isPurchased}
         aria-label={gift.isPurchased ? dict.markAsAvailable : dict.markAsPurchased}
         data-testid='giftStrikethrough'

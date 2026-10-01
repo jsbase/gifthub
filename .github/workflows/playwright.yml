@@ -126,7 +126,7 @@ jobs:
       - name: Note the skipped end-to-end half
         if: steps.db-secrets.outputs.configured != 'true'
         run: |
-          echo "::notice::No CI database is configured, so migrations, seeding and the end-to-end tests are skipped for this event. Set the CI_DATABASE_URL, CI_DIRECT_URL and JWT_SECRET repository secrets to run them."
+          echo "::notice::No CI database is configured, so migrations, seeding and the end-to-end tests are skipped for this event. Set the CI_DATABASE_URL, CI_DIRECT_URL, CI_SEED_EXPECTED_HOST and JWT_SECRET repository secrets to run them."
       - name: Apply migrations
         if: steps.db-secrets.outputs.configured == 'true'
         run: npx prisma migrate deploy
