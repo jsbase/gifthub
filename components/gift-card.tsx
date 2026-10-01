@@ -308,12 +308,22 @@ const GiftCardBody: React.FC<{
           'right-5',
           'bottom-4',
           'block',
-          'h-7',
-          'w-7',
+          'h-8',
+          'w-8',
           'rounded-full',
           'border-[1.5px]',
+          // The member's own ink at full strength, raised out of the 70% wash
+          // it used to carry. Measured on the collected cell, not assumed: at
+          // 70% the ring came out at 2.5:1 against its own ground in light
+          // theme, which is under the 3:1 that makes a shape rather than a
+          // smudge, and it read as a decorative outline. At full strength the
+          // same ring is 3.8:1 in light and 10:1 in dark, which is what the
+          // world contract means when it lets the ring be the loudest small
+          // element on a collected cell - on a collected cell there is nothing
+          // else left to read. The declared 1.5px is unchanged, so this adds
+          // no second border weight; Chrome paints it as one device pixel at
+          // 1x and three at 2x.
           'border-[var(--member-ink)]',
-          'opacity-70',
           justChanged && 'animate-cancel-stamp'
         )}
       />

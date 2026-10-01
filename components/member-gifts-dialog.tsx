@@ -21,6 +21,38 @@ import { memberInkStyle } from '@/lib/member-ink';
 import type { MemberGiftsDialogProps, Gift } from '@/types';
 
 /**
+ * The section head: a printed label, a rule, and the count. This is the
+ * furniture that turns a list of rows into a page of an album.
+ *
+ * At module scope, not inside the dialog. As a nested component it was
+ * remounted on every render of the sheet, which React flagged, and it is a
+ * fixed piece of furniture anyway - it has no state and reads only its props.
+ */
+const SectionHead = ({
+  label,
+  count,
+}: {
+  label: string;
+  count: number;
+}) => (
+  <div className='flex items-baseline justify-between gap-3 pt-2'>
+    <h3 className='label-print text-caption'>{label}</h3>
+    <span
+      className={cn(
+        'font-label',
+        'text-[0.6875rem]',
+        'font-bold',
+        'tabular-nums',
+        'tracking-[0.1em]',
+        'text-caption'
+      )}
+    >
+      {String(count).padStart(2, '0')}
+    </span>
+  </div>
+);
+
+/**
  * One sheet of the album: a person's page, its cells divided into the ones still
  * waiting and the ones already stamped.
  *
@@ -154,7 +186,7 @@ const MemberGiftsDialog: React.FC<MemberGiftsDialogProps> = ({
         );
         setChangedId(giftId);
         onGiftAdded();
-      } catch (error) {
+      } catch {
         toast.error(dict?.toasts.giftStatusUpdateFailed);
       } finally {
         setTogglingId(null);
@@ -181,7 +213,7 @@ const MemberGiftsDialog: React.FC<MemberGiftsDialogProps> = ({
 
         toast.success(dict?.toasts.giftDeleted);
         onGiftAdded();
-      } catch (error) {
+      } catch {
         toast.error(dict?.toasts.giftDeleteFailed);
       }
     },
@@ -202,36 +234,6 @@ const MemberGiftsDialog: React.FC<MemberGiftsDialogProps> = ({
     return null;
   }
 
-  const isFullScreen = gifts.length > 5;
-
-  /*
-    The section head: a printed label, a rule, and the count. This is the
-    furniture that turns a list of rows into a page of an album.
-  */
-  const SectionHead = ({
-    label,
-    count,
-  }: {
-    label: string;
-    count: number;
-  }) => (
-    <div className='flex items-baseline justify-between gap-3 pt-2'>
-      <h3 className='label-print text-caption'>{label}</h3>
-      <span
-        className={cn(
-          'font-label',
-          'text-[0.6875rem]',
-          'font-bold',
-          'tabular-nums',
-          'tracking-[0.1em]',
-          'text-caption'
-        )}
-      >
-        {String(count).padStart(2, '0')}
-      </span>
-    </div>
-  );
-
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent
@@ -240,11 +242,29 @@ const MemberGiftsDialog: React.FC<MemberGiftsDialogProps> = ({
           // The wide sheet, spelled with the same modifier as the default in
           // the primitive so the caller's value wins.
           'sm:max-w-sheet',
-          // Below sm the sheet hugs its content instead of standing open at a
-          // fixed 85vh: the previous version left most of a phone screen empty
-          // below a four-cell list.
-          'xs:h-auto xs:max-h-[calc(100dvh-var(--header-height)-1rem)]',
-          isFullScreen && 'xs:h-[calc(100dvh-var(--header-height)-1px)] xs:max-h-none'
+          /*
+            A sheet is as tall as what is written on it, up to a cap.
+
+            The primitive anchors the sheet below the header with BOTH
+            `xs:top-[calc(var(--header-height)+1px)]` and `xs:bottom-0`, and a
+            fixed box with a top and a bottom resolves `height: auto` to the gap
+            between them. So `xs:h-auto` on its own could not make the sheet hug
+            its contents: it stood at the full height of the remaining page with
+            a void under the last cell, on a phone as much as on a desktop. The
+            fix is to release the bottom edge - `xs:bottom-auto` - and then
+            `h-auto` with a `max-h` is exactly "hug it, and scroll once it hits
+            the cap".
+
+            The `isFullScreen` escape hatch that used to sit here is gone: for
+            more than five cells it re-declared the very same
+            `xs:h-[calc(100dvh-...)]` the primitive already sets, so all it ever
+            did was put the fixed full-page height back for the long lists -
+            the opposite of what it was named for. One rule now covers every
+            number of cells.
+          */
+          'xs:bottom-auto',
+          'xs:h-auto',
+          'xs:max-h-[calc(100dvh-var(--header-height)-1rem)]'
         )}
         style={memberInkStyle(memberId)}
       >
@@ -289,9 +309,49 @@ const MemberGiftsDialog: React.FC<MemberGiftsDialogProps> = ({
             )}
 
             {gifts.length === 0 ? (
-              <p className='max-w-[44ch] py-6 text-[0.9375rem] leading-relaxed text-caption'>
-                {dict.noGifts}
-              </p>
+              /*
+                A blank page waiting to be written on, and it is built out of
+                the sheet's own parts rather than out of a new shape: the same
+                section head, the same printed count, the same cell-shaped
+                ground, and the same add action at the same place at the foot.
+
+                The previous version was a sentence floating between two pieces
+                of whitespace with a full-height sheet around it, which is
+                precisely the silhouette of a dialog whose content failed to
+                load - the first thing a new group ever sees. Here the page is
+                the same page it becomes the moment the first idea is written:
+                a head, a count of `00`, one cell's worth of stock with nothing
+                on it, and the invitation written on that stock. Nothing is
+                invented, and no language gains a sentence it did not have.
+
+                The plate is dashed rather than ruled on purpose, following the
+                convention the contents page already uses for a member with no
+                ideas: a printed rule means there is a cell, a dashed one means
+                there is room for one. A row of empty dashed rectangles would
+                read as a loading skeleton, which is the thing being escaped.
+              */
+              <>
+                <SectionHead label={dict.openIdeas} count={0} />
+                <p
+                  data-testid='noGifts'
+                  className={cn(
+                    // Full content width, because a cell on this sheet is
+                    // always full content width: a blank cell that stops two
+                    // thirds of the way across would be a different shape from
+                    // the cell it is standing in for.
+                    'border',
+                    'border-dashed',
+                    'border-rule',
+                    'px-5',
+                    'py-8',
+                    'text-[0.9375rem]',
+                    'leading-relaxed',
+                    'text-caption'
+                  )}
+                >
+                  {dict.noGifts}
+                </p>
+              </>
             ) : (
               <div className='flex flex-col gap-1'>
                 {openGifts.length > 0 && (
