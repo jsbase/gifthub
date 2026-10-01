@@ -112,5 +112,5 @@ self.addEventListener('push', async (event) => {
     badge: '/maskable_icon.png',
   };
 
-  event.waitUntil(self.registration.showNotification('GiftHub', options));
+  event.waitUntil(self.registration.showNotification('wishy', options));
 });

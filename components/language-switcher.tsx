@@ -62,8 +62,8 @@ const LanguageSwitcher: React.FC = () => {
               'overflow-hidden',
               'p-0',
               'ring-1',
-              'ring-border',
-              'hover:ring-foreground/40'
+              'ring-rule',
+              'hover:ring-ink/40'
             )}
             data-testid='language-switcher'
             aria-label={selectedLanguage.name}

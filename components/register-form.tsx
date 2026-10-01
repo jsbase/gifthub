@@ -15,10 +15,10 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
   return (
     <form
       onSubmit={onSubmit}
-      className={cn('mt-4', 'space-y-dialog-desktop', 'xs:space-y-dialog-mobile')}
+      className={cn('mt-4', 'flex', 'flex-col', 'gap-3')}
     >
-      <div className='space-y-2'>
-        <Label className='sr-only' htmlFor='newGroupName'>
+      <div className='flex flex-col gap-1.5'>
+        <Label className='label-print text-caption' htmlFor='newGroupName'>
           {dict.groupName}
         </Label>
         <Input
@@ -28,8 +28,8 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
           required
         />
       </div>
-      <div className='space-y-2'>
-        <Label className='sr-only' htmlFor='newPassword'>
+      <div className='flex flex-col gap-1.5'>
+        <Label className='label-print text-caption' htmlFor='newPassword'>
           {dict.enterPassword}
         </Label>
         <Input
@@ -41,8 +41,8 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
           required
         />
       </div>
-      <div className='space-y-2'>
-        <Label className='sr-only' htmlFor='confirmPassword'>
+      <div className='flex flex-col gap-1.5'>
+        <Label className='label-print text-caption' htmlFor='confirmPassword'>
           {dict.confirmPassword}
         </Label>
         <Input

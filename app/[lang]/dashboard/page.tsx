@@ -9,6 +9,7 @@ import Header from '@/components/header';
 import LoadingSpinner from '@/components/loading-spinner';
 import MemberList from '@/components/member-list';
 import Footer from '@/components/footer';
+import { CropMarks } from '@/components/ui/dialog';
 import { verifyAuth, logout } from '@/lib/auth';
 import { cn } from '@/lib/utils';
 import type {
@@ -155,7 +156,7 @@ const DashboardPage: NextPage<PageProps> = ({ params }) => {
   if (!mounted) return null;
 
   return (
-    <div className={cn('min-h-screen', 'bg-background', 'flex flex-col')}>
+    <div className={cn('min-h-screen', 'bg-board', 'flex flex-col')}>
       <Header
         groupName={groupName}
         dict={dict}
@@ -165,21 +166,57 @@ const DashboardPage: NextPage<PageProps> = ({ params }) => {
 
       <main className={cn('flex', 'flex-1', 'flex-col')}>
         {/*
-          The member list is written on a full-bleed band of Frost, square
-          corners and no shadow: a sheet of paper, not a card. The band takes the
-          remaining height so the footer sits at the foot of the page instead of
-          floating behind a field of empty background.
+          THE DESK AND THE SHEET. The board is the album lying open, and the
+          contents are a sheet of label stock mounted on it: the sheet is bounded
+          by a printed rule and sits inset from every edge, so the board shows
+          around it on all four sides. That figure/ground pair is what this route
+          was missing. Bare rows printed straight onto the board left the empty
+          board below them reading as a page whose contents had run out; the same
+          rows on a sheet read as what they are - a short contents list on a piece
+          of paper lying on a desk, with the desk visible around the paper.
+
+          The sheet is not stretched. It hugs its contents, because a sheet sized
+          to the window would be a panel, and a panel with three rows in it is the
+          same unfinished screen with a border drawn round it. The board between
+          the sheet and the footer is the rest of the desk, and the footer sits at
+          the foot of it.
         */}
-        <section className={cn('flex-1', 'bg-band')}>
+        <section className={cn('flex-1', 'bg-board')}>
           <div className={cn('container', 'mx-auto')}>
-            <div className={cn('mx-auto', 'max-w-2xl', 'py-8', 'sm:py-12')}>
-              <MemberList
-                members={members}
-                giftCounts={memberGiftCounts}
-                dict={dict}
-                onMemberClick={handleMemberClick}
-                onMemberDeleted={fetchData}
-              />
+            <div
+              className={cn(
+                'mx-auto',
+                'max-w-5xl',
+                'px-4',
+                'py-8',
+                'sm:px-6',
+                'sm:py-12'
+              )}
+            >
+              <div
+                className={cn(
+                  'relative',
+                  'border',
+                  'border-rule',
+                  'bg-sheet',
+                  'px-5',
+                  'py-6',
+                  'sm:px-8',
+                  'sm:py-7'
+                )}
+              >
+                {/* The same corner furniture the floating sheets carry: four
+                    printers' crop marks, and the only thing on this page that
+                    says "printed" rather than "styled". */}
+                <CropMarks />
+                <MemberList
+                  members={members}
+                  giftCounts={memberGiftCounts}
+                  dict={dict}
+                  onMemberClick={handleMemberClick}
+                  onMemberDeleted={fetchData}
+                />
+              </div>
             </div>
           </div>
         </section>
@@ -203,6 +240,7 @@ const DashboardPage: NextPage<PageProps> = ({ params }) => {
             toasts: dict.toasts,
             confirmations: dict.confirmations,
             close: dict.close,
+            giftCount: dict.giftCount,
           }}
         />
       </Suspense>

@@ -9,10 +9,10 @@ import type { FooterProps } from '@/types';
 
 const linkClasses = cn(
   'text-[0.8125rem]',
-  'text-muted-foreground',
+  'text-caption',
   'underline-offset-4',
   'transition-colors',
-  'hover:text-foreground',
+  'hover:text-ink',
   'hover:underline'
 );
 
