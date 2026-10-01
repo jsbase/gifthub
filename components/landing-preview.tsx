@@ -14,7 +14,10 @@ import type { Translations } from '@/types';
 const LandingPreview: React.FC<
   Pick<Translations, 'preview' | 'giftCount' | 'members'>
 > = ({ preview, giftCount, members: membersHeading }) => (
-  <figure className={cn('mt-auto', 'pt-12')}>
+  // The `pt-12` is the gap, and it is the whole mechanism by which this block
+  // fills what used to be an empty lower third: there is no auto margin and no
+  // flex growth behind it, just the content.
+  <figure className={cn('pt-12')}>
     <figcaption
       className={cn(
         'max-w-[52ch]',

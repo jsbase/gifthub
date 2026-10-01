@@ -37,15 +37,15 @@ const GiftCard: React.FC<GiftCardProps> = ({
     }
   );
 
-  const handleDelete = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
+  // The tick and the delete button are siblings of the link, not children of
+  // it, so there is no nested-interactive default to suppress and no ancestor
+  // click handler to stop: the row is a plain flex of three independent
+  // controls.
+  const handleDelete = () => {
     debouncedDelete(gift.id);
   };
 
-  const handleTogglePurchased = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
+  const handleTogglePurchased = () => {
     onTogglePurchased(gift.id);
   };
 
@@ -53,6 +53,20 @@ const GiftCard: React.FC<GiftCardProps> = ({
   // The state is persistent - a bought gift idea stays struck and stays
   // receded - but the motion is one-shot, confined to the row that changed.
   const justChanged = changedId === gift.id;
+
+  /*
+    Shared by the linked and unlinked variants so the two cannot drift. The
+    hover is `--color-accent`, the same 8% ink wash every other interactive
+    surface in the app uses, so there is one hover value rather than three.
+  */
+  const interactiveClasses = cn(
+    'min-w-0',
+    'flex-1',
+    'rounded-md',
+    'transition-colors',
+    'duration-150',
+    'hover:bg-accent'
+  );
 
   return (
     <li
@@ -104,30 +118,13 @@ const GiftCard: React.FC<GiftCardProps> = ({
           href={gift.url}
           target='_blank'
           rel='noopener noreferrer'
-          className={cn(
-            'min-w-0',
-            'flex-1',
-            'rounded-md',
-            'transition-colors',
-            'duration-150',
-            'hover:bg-foreground/[0.04]'
-          )}
+          className={interactiveClasses}
           data-testid='giftCard'
         >
           <GiftCardBody gift={gift} justChanged={justChanged} />
         </a>
       ) : (
-        <div
-          className={cn(
-            'min-w-0',
-            'flex-1',
-            'rounded-md',
-            'transition-colors',
-            'duration-150',
-            'hover:bg-foreground/[0.04]'
-          )}
-          data-testid='giftCard'
-        >
+        <div className={interactiveClasses} data-testid='giftCard'>
           <GiftCardBody gift={gift} justChanged={justChanged} />
         </div>
       )}

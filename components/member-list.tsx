@@ -159,7 +159,7 @@ const MemberList: React.FC<MemberListProps> = ({
                 'text-foreground',
                 'transition-colors',
                 'duration-150',
-                'hover:bg-foreground/[0.05]',
+                'hover:bg-accent',
                 'hover:text-foreground'
               )}
               onClick={() => onMemberClick(member.id)}

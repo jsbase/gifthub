@@ -8,10 +8,11 @@ import ServiceWorkerRegistration from '@/components/service-worker';
 import { cn } from '@/lib/utils';
 import type { RootLayoutProps } from '@/types';
 
-// Literata carries the people and the occasion: the wordmark, page titles,
-// member names, the member's name as a dialog title. Onest carries the
-// mechanism: buttons, inputs, gift titles, counts, legal copy. Both ship Latin
-// and Cyrillic, which de/en/ru from one component tree requires.
+// Literata carries names and only names: the wordmark, a group's name in the
+// header, a member's name in the list, and a member's name as a dialog title.
+// Onest carries everything else - every heading that is not a name, every
+// control, every gift title, every count, and the whole of the legal copy. Both
+// ship Latin and Cyrillic, which de/en/ru from one component tree requires.
 const literata = Literata({
   subsets: ['latin', 'cyrillic'],
   weight: ['500', '600'],

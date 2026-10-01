@@ -19,11 +19,20 @@ const Home: NextPage<PageProps> = async ({ params }) => {
       <Header dict={dict} />
       <main className={cn('flex', 'flex-1', 'flex-col')}>
         {/*
-          `container` is the outer element and the narrow column nests inside
-          it, so the hand-written container ladder in globals.css is never
-          fought by a max-width utility on the same element. The column is a flex
-          column so the preview can take the slack with `mt-auto`: the space below
-          the features becomes a deliberate gap above something, not a hole.
+          `container` is the outer element and the narrow column nests inside it,
+          so the hand-written container ladder in globals.css is never fought by a
+          max-width utility on the same element.
+
+          The column is a flex column for one reason: flex items do not collapse
+          their margins, so the gap between the features and the preview is the
+          sum of the two margins rather than the larger of the two.
+
+          What fills the space below the features is the preview's own content,
+          not a layout trick. An earlier version had `flex-1` on this column and
+          `mt-auto` on the preview and both were inert - the container utility is
+          `display: block`, so the column was a block child with a
+          content-derived height, `flex-1` had no free space to distribute, and
+          `mt-auto` computed to 0px. Removing them moves the preview 0.00px.
         */}
         <div className={cn('container', 'mx-auto')}>
           <div
@@ -31,7 +40,6 @@ const Home: NextPage<PageProps> = async ({ params }) => {
               'mx-auto',
               'max-w-2xl',
               'flex',
-              'flex-1',
               'flex-col',
               'pt-12',
               'pb-8',
