@@ -4,8 +4,14 @@ import { cva, type VariantProps } from 'class-variance-authority';
 
 import { cn } from '@/lib/utils';
 
+/**
+ * Focus is not handled here. A single `outline` in `@layer base` covers every
+ * focusable element in the app, so a new control cannot be added without
+ * inheriting a visible keyboard focus, and there is no second ring to keep in
+ * sync with this one.
+ */
 const buttonVariants = cva(
-  'inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50',
+  'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md font-medium transition-[background-color,border-color,color,opacity] duration-150 disabled:pointer-events-none disabled:opacity-50',
   {
     variants: {
       variant: {
@@ -13,16 +19,16 @@ const buttonVariants = cva(
         destructive:
           'bg-destructive text-destructive-foreground hover:bg-destructive/90',
         outline:
-          'border border-input bg-background hover:bg-accent hover:text-accent-foreground',
+          'border border-border bg-transparent text-foreground hover:bg-accent hover:text-accent-foreground',
         secondary:
-          'bg-secondary text-secondary-foreground hover:bg-secondary/80',
-        ghost: 'hover:bg-accent hover:text-accent-foreground',
-        link: 'text-primary underline-offset-4 hover:underline',
+          'bg-secondary text-secondary-foreground hover:bg-secondary/70',
+        ghost: 'text-muted-foreground hover:bg-accent hover:text-foreground',
+        link: 'text-foreground underline underline-offset-4 hover:text-muted-foreground',
       },
       size: {
-        default: 'h-10 px-4 py-2',
-        sm: 'h-9 rounded-md px-3',
-        lg: 'h-11 rounded-md px-8',
+        default: 'h-10 px-4 text-[0.9375rem]',
+        sm: 'h-9 rounded-md px-3 text-[0.875rem]',
+        lg: 'h-12 px-6 text-base',
         icon: 'h-10 w-10',
       },
     },

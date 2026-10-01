@@ -15,7 +15,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
   return (
     <form
       onSubmit={onSubmit}
-      className={cn('space-y-dialog-desktop', 'xs:space-y-dialog-mobile')}
+      className={cn('mt-4', 'space-y-dialog-desktop', 'xs:space-y-dialog-mobile')}
     >
       <div className='space-y-2'>
         <Label className='sr-only' htmlFor='newGroupName'>
@@ -24,7 +24,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
         <Input
           name='newGroupName'
           id='newGroupName'
-          placeholder={dict.groupName}
+          placeholder={dict.enterGroupName}
           required
         />
       </div>

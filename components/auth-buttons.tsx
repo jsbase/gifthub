@@ -82,12 +82,12 @@ const AuthButtons: React.FC<AuthButtonsProps> = ({ dict }) => {
   });
 
   return (
-    <div className={cn('flex', 'flex-col sm:flex-row', 'gap-4 justify-center')}>
+    <div className={cn('flex', 'flex-col', 'gap-3', 'sm:flex-row', 'sm:gap-4')}>
       <Dialog open={isLoginOpen} onOpenChange={setIsLoginOpen}>
         <DialogTrigger asChild>
           <Button
             size='lg'
-            className='min-w-[200px]'
+            className='w-full sm:w-auto sm:min-w-44'
             aria-label='OpenLogin'
             data-testid='OpenLogin'
           >
@@ -108,7 +108,7 @@ const AuthButtons: React.FC<AuthButtonsProps> = ({ dict }) => {
           <Button
             size='lg'
             variant='outline'
-            className='min-w-[200px]'
+            className='w-full sm:w-auto sm:min-w-44'
             aria-label='OpenRegister'
             data-testid='OpenRegister'
           >

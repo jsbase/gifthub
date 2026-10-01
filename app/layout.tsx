@@ -1,14 +1,30 @@
 import '@/app/globals.css';
 import React from 'react';
 import { Metadata, Viewport } from 'next';
-import { Inter } from 'next/font/google';
+import { Literata, Onest } from 'next/font/google';
 import ThemeProvider from '@/components/theme-provider';
 import { Toaster } from '@/components/ui/sonner';
 import ServiceWorkerRegistration from '@/components/service-worker';
 import { cn } from '@/lib/utils';
 import type { RootLayoutProps } from '@/types';
 
-const inter = Inter({ subsets: ['latin'] });
+// Literata carries the people and the occasion: the wordmark, page titles,
+// member names, the member's name as a dialog title. Onest carries the
+// mechanism: buttons, inputs, gift titles, counts, legal copy. Both ship Latin
+// and Cyrillic, which de/en/ru from one component tree requires.
+const literata = Literata({
+  subsets: ['latin', 'cyrillic'],
+  weight: ['500', '600'],
+  display: 'swap',
+  variable: '--font-literata',
+});
+
+const onest = Onest({
+  subsets: ['latin', 'cyrillic'],
+  weight: ['400', '500', '600'],
+  display: 'swap',
+  variable: '--font-onest',
+});
 
 export const metadata: Metadata = {
   title: 'GiftHub - Family Gift Management',
@@ -63,7 +79,10 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: '#ffffff',
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#F7F9F8' },
+    { media: '(prefers-color-scheme: dark)', color: '#0C1F23' },
+  ],
   width: 'device-width',
   initialScale: 1.0,
   viewportFit: 'cover',
@@ -72,7 +91,15 @@ export const viewport: Viewport = {
 
 const RootLayout: React.FC<RootLayoutProps> = ({ children }) => (
   <html lang='en' suppressHydrationWarning>
-    <body className={cn(inter.className, 'min-h-screen', 'flex', 'flex-col')}>
+    <body
+      className={cn(
+        literata.variable,
+        onest.variable,
+        'min-h-screen',
+        'flex',
+        'flex-col'
+      )}
+    >
       <ThemeProvider
         attribute='class'
         defaultTheme='system'

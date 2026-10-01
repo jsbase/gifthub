@@ -22,11 +22,13 @@ const DialogOverlay = React.forwardRef<
     className={cn(
       'fixed inset-0',
       'z-50',
-      'bg-black/80',
+      'bg-foreground/45',
+      'backdrop-blur-[2px]',
       'data-[state=open]:animate-in',
       'data-[state=closed]:animate-out',
       'data-[state=closed]:fade-out-0',
       'data-[state=open]:fade-in-0',
+      'duration-200',
       className
     )}
     data-testid='dialog-overlay'
@@ -49,12 +51,18 @@ const DialogContent = React.forwardRef<
         'w-full',
         'gap-2',
         'border',
-        'bg-background',
+        'border-border',
+        'bg-surface',
+        'text-foreground',
         'p-6',
-        'shadow-lg',
+        // The one shadow in the app: a dialog has to separate from its scrim,
+        // and this is a long soft falloff rather than the generic card shadow.
+        'shadow-[0_18px_50px_-12px_rgb(0_0_0/0.28)]',
         'duration-200',
         'overflow-y-auto',
         'overflow-x-hidden',
+        // Below sm the dialog becomes a full-height sheet, squared off at the
+        // top, sitting directly under the header.
         'xs:h-[calc(100dvh-var(--header-height)-1px)]',
         'xs:w-screen',
         'xs:gap-2',
@@ -78,6 +86,7 @@ const DialogContent = React.forwardRef<
         'data-[state=closed]:animate-out',
         'data-[state=closed]:fade-out-0',
         'data-[state=open]:fade-in-0',
+        'data-[state=open]:zoom-in-95',
         className
       )}
       {...props}
@@ -88,16 +97,12 @@ const DialogContent = React.forwardRef<
           'absolute',
           'right-4',
           'top-4',
-          'rounded-sm',
-          'opacity-70',
-          'ring-offset-background',
-          'transition-opacity',
-          'hover:opacity-100',
-          'focus:outline-none',
-          'focus:ring-2',
-          'focus:ring-ring',
-          'focus:ring-offset-2',
-          'disabled:pointer-events-none',
+          'rounded-md',
+          'p-1.5',
+          'text-muted-foreground',
+          'transition-colors',
+          'hover:bg-accent',
+          'hover:text-foreground',
           'data-[state=open]:bg-accent',
           'data-[state=open]:text-muted-foreground'
         )}
@@ -111,6 +116,8 @@ const DialogContent = React.forwardRef<
 ));
 DialogContent.displayName = DialogPrimitive.Content.displayName;
 
+// Left aligned, not centred: a centred title has to be re-found on every line,
+// and the only thing in this app worth centring is the loading spinner.
 const DialogHeader = ({
   className,
   ...props
@@ -120,9 +127,8 @@ const DialogHeader = ({
       'flex',
       'flex-col',
       'space-y-1.5',
-      'text-center',
+      'text-left',
       'xs:space-y-1',
-      'xs:pt-0 sm:pt-0',
       className
     )}
     {...props}
@@ -155,12 +161,12 @@ const DialogTitle = React.forwardRef<
   <DialogPrimitive.Title
     ref={ref}
     className={cn(
-      'text-lg',
+      'font-serif',
+      'text-2xl',
       'font-semibold',
-      'leading-none',
-      'tracking-tight',
-      'xs:max-w-[95%]',
-      'max-w-[98%]',
+      'leading-tight',
+      'tracking-[-0.01em]',
+      'pr-8',
       className
     )}
     {...props}
@@ -174,7 +180,7 @@ const DialogDescription = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <DialogPrimitive.Description
     ref={ref}
-    className={cn('text-sm', 'text-muted-foreground', className)}
+    className={cn('text-[0.9375rem]', 'text-muted-foreground', className)}
     {...props}
   />
 ));

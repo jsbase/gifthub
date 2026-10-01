@@ -147,15 +147,25 @@ const DashboardPage: NextPage<PageProps> = ({ params }) => {
         showAuth={true}
       />
 
-      <main className={cn('container', 'mx-auto', 'px-4 py-8', 'flex-1')}>
-        <section>
-          <MemberList
-            members={members}
-            giftCounts={memberGiftCounts}
-            dict={dict}
-            onMemberClick={handleMemberClick}
-            onMemberDeleted={fetchData}
-          />
+      <main className={cn('flex', 'flex-1', 'flex-col')}>
+        {/*
+          The member list is written on a full-bleed band of Frost, square
+          corners and no shadow: a sheet of paper, not a card. The band takes the
+          remaining height so the footer sits at the foot of the page instead of
+          floating behind a field of empty background.
+        */}
+        <section className={cn('flex-1', 'bg-band')}>
+          <div className={cn('container', 'mx-auto')}>
+            <div className={cn('mx-auto', 'max-w-2xl', 'py-8', 'sm:py-12')}>
+              <MemberList
+                members={members}
+                giftCounts={memberGiftCounts}
+                dict={dict}
+                onMemberClick={handleMemberClick}
+                onMemberDeleted={fetchData}
+              />
+            </div>
+          </div>
         </section>
       </main>
 

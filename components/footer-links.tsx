@@ -7,33 +7,32 @@ import { getCurrentLanguage } from '@/lib/i18n-config';
 import { cn } from '@/lib/utils';
 import type { FooterProps } from '@/types';
 
+const linkClasses = cn(
+  'text-[0.8125rem]',
+  'text-muted-foreground',
+  'underline-offset-4',
+  'transition-colors',
+  'hover:text-foreground',
+  'hover:underline'
+);
+
 const FooterLinks = ({ dict }: Pick<FooterProps, 'dict'>) => {
   const path = usePathname();
   const currentLanguage = getCurrentLanguage(path);
   const [lang] = useState(currentLanguage.code);
 
   return (
-    <div
-      className={cn('flex', 'space-x-5', 'justify-end', 'sm:justify-center')}
-    >
+    <div className={cn('flex', 'flex-wrap', 'gap-x-5', 'gap-y-1')}>
       <Link
         href={`/${lang}/privacy`}
-        className={cn(
-          'text-gray-500',
-          'hover:text-gray-900',
-          'dark:hover:text-white'
-        )}
+        className={linkClasses}
         data-testid='linkPrivacy'
       >
         {dict.footer.privacyPolicy}
       </Link>
       <Link
         href={`/${lang}/terms`}
-        className={cn(
-          'text-gray-500',
-          'hover:text-gray-900',
-          'dark:hover:text-white'
-        )}
+        className={linkClasses}
         data-testid='linkTerms'
       >
         {dict.footer.termsConditions}

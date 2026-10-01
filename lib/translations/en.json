@@ -1,100 +1,101 @@
 {
-  "addMember": "Add Member",
+  "addMember": "Add member",
   "addMemberDialog": {
-    "addMemberTitle": "Add Member",
-    "addMember": "Add",
+    "addMemberTitle": "Add a member",
+    "addMember": "Add member",
     "adding": "Adding...",
     "enterGroupName": "Please fill out to add someone",
     "enterMemberName": "Member's name"
   },
   "confirmations": {
-    "deleteGift": "Are you sure you want to delete this gift?",
-    "deleteMember": "Are you sure you want to delete {name} and all their associated gifts?"
+    "deleteGift": "Delete this gift idea?",
+    "deleteMember": "Delete {name} and all of their gift ideas?"
   },
-  "confirmPassword": "Confirm Password",
-  "createGroup": "Register",
-  "createGroupBtn": "Create",
-  "createGroupDescription": "Please fill out to create a group.",
-  "deleteMember": "Remove",
+  "confirmPassword": "Confirm password",
+  "createGroup": "Create a group",
+  "createGroupBtn": "Create group",
+  "createGroupDescription": "Name your group and pick a password. Everyone in the group signs in with the same two.",
+  "deleteMember": "Remove member",
   "emailAddress": "Email",
-  "enterGroupName": "Please fill out to log in.",
-  "enterMemberEmail": "Member's Email",
+  "enterGroupName": "Group name",
+  "enterMemberEmail": "Member's email",
   "enterPassword": "Password",
   "errors": {
-    "failedToLoad": "Failed to load",
-    "failedToLoadGifts": "Gifts not loaded",
-    "loginFailed": "Login failed",
-    "loginRequired": "Login required",
+    "failedToLoad": "Members not loaded",
+    "failedToLoadGifts": "Gift ideas not loaded",
+    "loginFailed": "Log in failed",
+    "loginRequired": "Log in required",
     "passwordMismatch": "Passwords do not match",
-    "registrationFailed": "Registration failed"
+    "registrationFailed": "Creating the group failed"
   },
   "features": {
     "simple": {
-      "description": "Easily manage gifts",
-      "title": "Simple Group Management"
+      "description": "Write down an idea in a few seconds, before it is forgotten.",
+      "title": "Add ideas as they come up"
     },
     "tracking": {
-      "description": "Keep track, avoid duplicate purchases",
-      "title": "Track Gifts"
+      "description": "Mark an idea as bought and the whole group can see it.",
+      "title": "Nobody buys it twice"
     },
     "updates": {
-      "description": "Easily organize and coordinate shared gift ideas",
-      "title": "Shared Planning"
+      "description": "Only the group can see the list, so the person being celebrated finds out on the day.",
+      "title": "The surprise stays a surprise"
     }
   },
   "groupName": "Group",
   "giftCount": {
-    "zero": "no gift ideas",
-    "one": "1 gift idea",
-    "many": "{{count}} gift ideas"
+    "zero": "nothing left to buy",
+    "one": "1 gift idea left to buy",
+    "many": "{{count}} gift ideas left to buy"
   },
   "loading": "Loading...",
-  "login": "Login",
-  "loginToGroup": "Login",
-  "logout": "Logout",
+  "login": "Log in",
+  "loginToGroup": "Log in",
+  "logout": "Log out",
   "memberGifts": {
-    "addGift": "Add Gift",
-    "adding": "Loading",
+    "addGift": "Add gift idea",
+    "adding": "Adding...",
     "cancel": "Cancel",
     "description": "Description",
-    "enterDescription": "Small description",
-    "enterGiftTitle": "What gift?",
+    "deleteGift": "Delete gift idea",
+    "enterDescription": "Add a note",
+    "enterGiftTitle": "Gift idea",
     "enterUrl": "Link",
     "giftTitle": "Gift",
+    "listHint": "Everyone in the group can add to this list.",
     "manageGifts": "All gifts are managed here.",
-    "noGifts": "No gifts available",
+    "noGifts": "No gift ideas yet. Add the first one.",
     "optional": "Optional",
-    "title": "Wishlist from",
-    "markAsPurchased": "Strikethrough",
-    "markAsAvailable": "Unlock"
+    "markAsPurchased": "Mark as bought",
+    "markAsAvailable": "Move back to the list"
   },
   "members": "Members",
-  "noMembers": "No members. Add the first member",
+  "noMembers": "No members yet. Add the first one.",
   "password": "Password",
-  "register": "Register",
+  "register": "Create a group",
   "success": {
     "loggedOut": "Logged out"
   },
-  "tagline": "Easily organize gifts",
+  "tagline": "One list for everyone in your group, so nobody buys the same gift twice.",
   "toasts": {
-    "giftAdded": "Gift added successfully",
-    "giftAddFailed": "Failed to add gift",
-    "giftStatusPurchased": "Purchased",
-    "giftStatusBackToList": "Back on the Wishlist",
-    "giftStatusUpdateFailed": "Failed to update gift status",
-    "giftDeleted": "Gift deleted successfully",
-    "giftDeleteFailed": "Failed to delete gift",
-    "memberAdded": "Member {name} added successfully",
-    "memberAddFailed": "Failed to add member",
+    "giftAdded": "Gift idea added",
+    "giftAddFailed": "Gift idea not added",
+    "giftStatusPurchased": "Marked as bought",
+    "giftStatusBackToList": "Back on the list",
+    "giftStatusUpdateFailed": "Gift idea not updated",
+    "giftDeleted": "Gift idea deleted",
+    "giftDeleteFailed": "Gift idea not deleted",
+    "memberAdded": "{name} added",
+    "memberAddFailed": "Member not added",
     "loginSuccess": "Logged in successfully",
-    "registrationSuccess": "Registration successful! Please log in.",
-    "memberDeleted": "Member {name} and their gifts deleted successfully",
-    "memberDeleteFailed": "Failed to delete member"
+    "registrationSuccess": "Group created. Log in to continue.",
+    "memberDeleted": "{name} and their gift ideas deleted",
+    "memberDeleteFailed": "Member not deleted"
   },
   "footer": {
-    "copyright": "© 2024 GiftHub. All Rights Reserved.",
-    "privacyPolicy": "Privacy Policy",
-    "termsConditions": "Terms & Conditions"
+    "copyright": "© 2026 GiftHub",
+    "privacyPolicy": "Privacy policy",
+    "termsConditions": "Terms"
   },
   "privacy": {
     "title": "Privacy Policy",

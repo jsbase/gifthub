@@ -26,7 +26,9 @@ const AuthDialog: React.FC<AuthDialogProps> = ({
     >
       <DialogHeader>
         <DialogTitle>{title}</DialogTitle>
-        <DialogDescription>{description}</DialogDescription>
+        <DialogDescription className='pr-6'>
+          {description}
+        </DialogDescription>
       </DialogHeader>
       {children}
     </DialogContent>

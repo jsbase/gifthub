@@ -55,15 +55,25 @@ const LanguageSwitcher: React.FC = () => {
           <Button
             variant='ghost'
             size='icon'
-            className={cn('w-6 h-6', 'rounded-full', 'overflow-hidden', 'p-0')}
+            className={cn(
+              'h-9',
+              'w-9',
+              'rounded-full',
+              'overflow-hidden',
+              'p-0',
+              'ring-1',
+              'ring-border',
+              'hover:ring-foreground/40'
+            )}
             data-testid='language-switcher'
+            aria-label={selectedLanguage.name}
           >
             <LanguageFlag
               src={selectedLanguage.flag}
               alt={selectedLanguage.name}
-              width={30}
-              height={30}
-              className={cn('w-6', 'h-6', 'object-cover')}
+              width={24}
+              height={24}
+              className={cn('h-6', 'w-6', 'object-cover')}
             />
           </Button>
         </DropdownMenuTrigger>
@@ -75,12 +85,8 @@ const LanguageSwitcher: React.FC = () => {
               className={cn(
                 'flex',
                 'items-center',
-                'gap-2',
-                'cursor-pointer',
-                'hover:bg-accent',
-                'active:bg-accent/80',
-                'focus:bg-accent/80',
-                'py-3'
+                'gap-2.5',
+                'cursor-pointer'
               )}
             >
               <LanguageFlag

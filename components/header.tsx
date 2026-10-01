@@ -67,37 +67,43 @@ const Header: React.FC<HeaderProps> = ({
       : ''
   }`;
 
+  const currentGroupName = authState.isAuthenticated
+    ? authState.groupName
+    : undefined;
+
   return (
-    <header className='border-b'>
+    <header className='border-b border-border'>
       <div
         className={cn(
           'container',
           'mx-auto',
-          'px-4',
-          'py-4',
+          'h-header',
           'flex',
           'items-center',
-          'justify-between'
+          'justify-between',
+          'gap-4'
         )}
       >
         <Link
           href={homeRoute}
-          className={cn('hover:opacity-80', 'transition-opacity')}
+          className={cn('rounded-sm', '-ml-1', 'px-1', 'py-1')}
           data-testid='logo'
+          aria-label={currentGroupName || 'GiftHub'}
         >
-          <Logo
-            size='sm'
-            groupName={
-              authState.isAuthenticated ? authState.groupName : undefined
-            }
-          />
+          <Logo size='sm' groupName={currentGroupName} />
         </Link>
 
-        <div className={cn('flex', 'items-center', 'space-x-4')}>
+        <div className={cn('flex', 'items-center', 'gap-1', 'sm:gap-3')}>
           <LanguageSwitcher />
           {showAuth && authState.isAuthenticated && dict && onLogout && (
-            <Button variant='ghost' onClick={onLogout} className='pl-2'>
-              <LogOut className={cn('h-4', 'w-4', 'mr-2')} />
+            <Button
+              variant='ghost'
+              size='sm'
+              onClick={onLogout}
+              data-testid='logout'
+              className='px-2'
+            >
+              <LogOut className={cn('h-4', 'w-4')} />
               {dict.logout}
             </Button>
           )}

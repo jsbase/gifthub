@@ -161,30 +161,25 @@ const MemberGiftsDialog: React.FC<MemberGiftsDialogProps> = ({
         )}
       >
         <DialogHeader>
-          <DialogTitle className='xs:text-base'>
-            {dict.title} {memberName}
-          </DialogTitle>
-          <DialogDescription className='sr-only'>
-            {dict.manageGifts}
-          </DialogDescription>
+          {/* The person's name is the title: this list belongs to them. */}
+          <DialogTitle className='xs:text-2xl'>{memberName}</DialogTitle>
+          <DialogDescription>{dict.listHint}</DialogDescription>
         </DialogHeader>
 
-        <div
-          className={cn('space-y-dialog-desktop', 'xs:space-y-dialog-mobile')}
-        >
+        <div className={cn('mt-2', 'space-y-dialog-desktop', 'xs:space-y-dialog-mobile')}>
           {!showAddGiftForm && (
             <>
               <Button
                 onClick={() => setShowAddGiftForm(true)}
-                className={cn('w-full', 'my-4')}
+                className={cn('w-full', 'sm:w-fit')}
                 data-testid='addGiftButton'
               >
-                <PlusCircle className={cn('h-4', 'w-4', 'mr-2')} />
+                <PlusCircle className={cn('h-4', 'w-4')} />
                 {dict.addGift}
               </Button>
 
               {gifts.length > 0 ? (
-                <div className='space-y-4'>
+                <ul className='-mx-2 sm:-mx-3'>
                   {gifts.map((gift) => (
                     <GiftCard
                       key={gift.id}
@@ -195,11 +190,14 @@ const MemberGiftsDialog: React.FC<MemberGiftsDialogProps> = ({
                       animatedGiftId={animatedGiftId}
                     />
                   ))}
-                </div>
+                </ul>
               ) : (
                 <p
                   className={cn(
-                    'text-center',
+                    'max-w-[40ch]',
+                    'pt-6',
+                    'text-[0.9375rem]',
+                    'leading-relaxed',
                     'text-muted-foreground',
                     'xs:text-sm'
                   )}

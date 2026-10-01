@@ -218,9 +218,9 @@ export interface AddMemberFormProps {
 }
 
 export interface MemberGiftsTranslations {
-  title: string;
   description: string;
   manageGifts: string;
+  listHint: string;
   addGift: string;
   giftTitle: string;
   enterGiftTitle: string;
@@ -232,7 +232,7 @@ export interface MemberGiftsTranslations {
   noGifts: string;
   markAsPurchased: string;
   markAsAvailable: string;
-  deleteGift?: string;
+  deleteGift: string;
 }
 
 export interface ToastTranslations {
@@ -347,7 +347,10 @@ export interface LogoProps {
 
 export interface GiftCardProps {
   gift: Gift;
-  dict: Pick<MemberGiftsTranslations, 'markAsPurchased' | 'markAsAvailable'>;
+  dict: Pick<
+    MemberGiftsTranslations,
+    'markAsPurchased' | 'markAsAvailable' | 'deleteGift'
+  >;
   onDelete: (id: string) => void;
   onTogglePurchased: (id: string) => void;
   animatedGiftId: string | null;

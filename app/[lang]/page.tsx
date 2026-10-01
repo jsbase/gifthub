@@ -16,50 +16,41 @@ const Home: NextPage<PageProps> = async ({ params }) => {
   return (
     <div className={cn('flex', 'flex-col', 'min-h-screen')}>
       <Header dict={dict} />
-      <main
-        className={cn(
-          'flex-1',
-          'bg-gradient-to-b',
-          'from-background',
-          'to-muted'
-        )}
-      >
-        <div
-          className={cn(
-            'container',
-            'max-w-screen-xl',
-            'text-center',
-            'py-8',
-            'lg:py-16'
-          )}
-        >
-          <Logo size='lg' className={cn('mb-4', 'justify-center')} />
-          <p
-            className={cn(
-              'mb-8',
-              'text-lg',
-              'font-normal',
-              'text-muted-foreground',
-              'lg:text-xl',
-              'sm:px-16',
-              'lg:px-48'
-            )}
-          >
-            {dict.tagline}
-          </p>
+      <main className={cn('flex-1')}>
+        {/*
+          `container` is the outer element and the narrow column nests inside
+          it, so the hand-written container ladder in globals.css is never
+          fought by a max-width utility on the same element.
+        */}
+        <div className={cn('container', 'mx-auto')}>
           <div
             className={cn(
-              'flex',
-              'flex-col',
-              'space-y-4',
-              'sm:flex-row',
-              'sm:justify-center',
-              'sm:space-y-0'
+              'mx-auto',
+              'max-w-2xl',
+              'pt-14',
+              'pb-20',
+              'sm:pt-20',
+              'lg:pt-28',
+              'lg:pb-24'
             )}
           >
-            <AuthButtons dict={dict} />
+            <Logo size='lg' />
+            <p
+              className={cn(
+                'mt-6',
+                'max-w-[46ch]',
+                'text-[1.0625rem]',
+                'leading-relaxed',
+                'text-muted-foreground'
+              )}
+            >
+              {dict.tagline}
+            </p>
+            <div className={cn('mt-9')}>
+              <AuthButtons dict={dict} />
+            </div>
+            <FeatureCards features={dict.features} />
           </div>
-          <FeatureCards features={dict.features} />
         </div>
       </main>
       <Footer dict={dict} />

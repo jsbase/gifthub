@@ -2,99 +2,100 @@
   "addMember": "Добавить участника",
   "addMemberDialog": {
     "addMemberTitle": "Добавить участника",
-    "addMember": "Добавить",
+    "addMember": "Добавить участника",
     "adding": "Добавление...",
     "enterGroupName": "Пожалуйста, заполните, чтобы добавить кого-то",
     "enterMemberName": "Имя участника"
   },
   "confirmations": {
-    "deleteGift": "Вы уверены, что хотите удалить этот подарок?",
-    "deleteMember": "Вы уверены, что хотите удалить {name} и все связанные с ним подарки?"
+    "deleteGift": "Удалить эту идею подарка?",
+    "deleteMember": "Удалить {name} и все связанные с ним идеи подарков?"
   },
   "confirmPassword": "Подтвердите пароль",
-  "createGroup": "Регистрация",
-  "createGroupBtn": "Создать",
-  "createGroupDescription": "Пожалуйста, заполните, чтобы создать группу.",
-  "deleteMember": "Вынимать",
+  "createGroup": "Создать группу",
+  "createGroupBtn": "Создать группу",
+  "createGroupDescription": "Назовите группу и выберите пароль. Все участники входят с одними и теми же данными.",
+  "deleteMember": "Удалить участника",
   "emailAddress": "Электронная почта",
-  "enterGroupName": "Пожалуйста, заполните, чтобы войти.",
+  "enterGroupName": "Название группы",
   "enterMemberEmail": "Электронная почта участника",
   "enterPassword": "Пароль",
   "errors": {
-    "failedToLoad": "Не удалось загрузить",
-    "failedToLoadGifts": "Подарки не загружены",
-    "loginFailed": "Вход не выполнен",
-    "loginRequired": "Требуется вход в систему",
+    "failedToLoad": "Участники не загружены",
+    "failedToLoadGifts": "Идеи подарков не загружены",
+    "loginFailed": "Не удалось войти",
+    "loginRequired": "Требуется вход",
     "passwordMismatch": "Пароли не совпадают",
-    "registrationFailed": "Ошибка регистрации"
+    "registrationFailed": "Не удалось создать группу"
   },
   "features": {
     "simple": {
-      "description": "Просто управляйте подарками",
-      "title": "Простое управление группой"
+      "description": "Запишите идею за несколько секунд, пока она не забылась.",
+      "title": "Идеи сразу в список"
     },
     "tracking": {
-      "description": "Следите, избегайте дублирования покупок",
-      "title": "Отслеживание подарков"
+      "description": "Отметьте идею как купленную — группа сразу это увидит.",
+      "title": "Никто не купит дважды"
     },
     "updates": {
-      "description": "Легко организуйте и координируйте общие идеи подарков",
-      "title": "Общее планирование"
+      "description": "Список видит только группа, поэтому тот, кого поздравляют, узнает в день праздника.",
+      "title": "Сюрприз останется сюрпризом"
     }
   },
   "groupName": "Группа",
   "giftCount": {
-    "zero": "нет идей подарков",
-    "one": "1 идея подарка",
-    "many": "{{count}} идей подарков"
+    "zero": "покупать больше нечего",
+    "one": "1 идея подарка ещё не куплена",
+    "many": "{{count}} идей подарка ещё не куплены"
   },
   "loading": "Загрузка...",
-  "login": "Вход",
-  "loginToGroup": "Вход",
-  "logout": "Выход",
+  "login": "Войти",
+  "loginToGroup": "Войти",
+  "logout": "Выйти",
   "memberGifts": {
-    "addGift": "Добавить подарок",
-    "adding": "Загрузка",
+    "addGift": "Добавить идею подарка",
+    "adding": "Добавление...",
     "cancel": "Отмена",
     "description": "Описание",
-    "enterDescription": "Краткое описание",
-    "enterGiftTitle": "Какой подарок?",
+    "deleteGift": "Удалить идею подарка",
+    "enterDescription": "Добавить заметку",
+    "enterGiftTitle": "Идея подарка",
     "enterUrl": "Ссылка",
     "giftTitle": "Подарок",
+    "listHint": "Любой в группе может добавить запись в этот список.",
     "manageGifts": "Здесь управляются все подарки.",
-    "noGifts": "Нет доступных подарков",
+    "noGifts": "Идей подарков пока нет. Добавьте первую.",
     "optional": "Необязательно",
-    "title": "Список желаемого от",
-    "markAsPurchased": "Зачеркнуть",
-    "markAsAvailable": "Освобождать"
+    "markAsPurchased": "Отметить как купленную",
+    "markAsAvailable": "Вернуть в список"
   },
   "members": "Участники",
-  "noMembers": "Нет участников. Добавьте первого участника",
+  "noMembers": "Участников пока нет. Добавьте первого.",
   "password": "Пароль",
-  "register": "Регистрация",
+  "register": "Создать группу",
   "success": {
     "loggedOut": "Вы вышли из системы"
   },
-  "tagline": "Просто организуйте свои подарки",
+  "tagline": "Один список для всех в вашей группе, чтобы никто не купил один и тот же подарок дважды.",
   "toasts": {
-    "giftAdded": "Подарок успешно добавлен",
-    "giftAddFailed": "Не удалось добавить подарок",
-    "giftStatusPurchased": "Куплено",
-    "giftStatusBackToList": "Вернуть в список желаемого",
-    "giftStatusUpdateFailed": "Не удалось обновить статус подарка",
-    "giftDeleted": "Подарок успешно удален",
-    "giftDeleteFailed": "Не удалось удалить подарок",
-    "memberAdded": "Участник {name} успешно добавлен",
-    "memberAddFailed": "Не удалось добавить участника",
-    "loginSuccess": "Вход выполнен успешно",
-    "registrationSuccess": "Регистрация успешна! Пожалуйста, войдите.",
-    "memberDeleted": "Участник {name} и все связанные с ним подарки успешно удалены",
-    "memberDeleteFailed": "Не удалось удалить участника"
+    "giftAdded": "Идея подарка добавлена",
+    "giftAddFailed": "Идея подарка не добавлена",
+    "giftStatusPurchased": "Отмечено как купленная",
+    "giftStatusBackToList": "Вернулось в список",
+    "giftStatusUpdateFailed": "Идея подарка не обновлена",
+    "giftDeleted": "Идея подарка удалена",
+    "giftDeleteFailed": "Идея подарка не удалена",
+    "memberAdded": "{name} добавлен",
+    "memberAddFailed": "Участник не добавлен",
+    "loginSuccess": "Вход выполнен",
+    "registrationSuccess": "Группа создана. Войдите, чтобы продолжить.",
+    "memberDeleted": "{name} и связанные с ним идеи подарков удалены",
+    "memberDeleteFailed": "Участник не удалён"
   },
   "footer": {
-    "copyright": "© 2024 GiftHub. Все права защищены.",
+    "copyright": "© 2026 GiftHub",
     "privacyPolicy": "Политика конфиденциальности",
-    "termsConditions": "Условия использования"
+    "termsConditions": "Условия"
   },
   "privacy": {
     "title": "Политика конфиденциальности",

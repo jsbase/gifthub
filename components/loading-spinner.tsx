@@ -21,8 +21,8 @@ const LoadingSpinner: React.FC = () => {
     <div
       className={cn(
         'fixed inset-0',
-        'bg-background/80',
-        'backdrop-blur-xs',
+        'bg-background/85',
+        'backdrop-blur-sm',
         'z-50',
         'flex',
         'items-center',

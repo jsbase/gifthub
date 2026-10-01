@@ -1,98 +1,99 @@
 {
   "addMember": "Mitglied hinzufügen",
   "addMemberDialog": {
-    "addMemberTitle": "Mitglied hinzufügen",
-    "addMember": "Hinzufügen",
+    "addMemberTitle": "Ein Mitglied hinzufügen",
+    "addMember": "Mitglied hinzufügen",
     "adding": "Wird hinzugefügt...",
     "enterGroupName": "Bitte ausfüllen um jemanden hinzuzufügen",
     "enterMemberName": "Name des Mitglieds"
   },
   "confirmations": {
-    "deleteGift": "Sind Sie sicher, dass Sie dieses Geschenk löschen wollen?",
-    "deleteMember": "Sind Sie sicher, dass Sie {name} und alle zugehörigen Geschenke löschen wollen?"
+    "deleteGift": "Diese Geschenkidee löschen?",
+    "deleteMember": "{name} und alle zugehörigen Geschenkideen löschen?"
   },
   "confirmPassword": "Passwort bestätigen",
-  "createGroup": "Registrieren",
-  "createGroupBtn": "Erstellen",
-  "createGroupDescription": "Bitte ausfüllen, um eine Gruppe zu erstellen.",
-  "deleteMember": "Entfernen",
+  "createGroup": "Gruppe erstellen",
+  "createGroupBtn": "Gruppe erstellen",
+  "createGroupDescription": "Benenne deine Gruppe und wähle ein Passwort. Alle in der Gruppe melden sich mit denselben zwei Angaben an.",
+  "deleteMember": "Mitglied entfernen",
   "emailAddress": "E-Mail",
-  "enterGroupName": "Bitte ausfüllen, um dich anzumelden.",
+  "enterGroupName": "Gruppenname",
   "enterMemberEmail": "E-Mail des Mitglieds",
   "enterPassword": "Passwort",
   "errors": {
-    "failedToLoad": "Laden fehlgeschlagen",
-    "failedToLoadGifts": "Geschenke nicht geladen",
-    "loginFailed": "Login fehlgeschlagen",
-    "loginRequired": "Login erforderlich",
+    "failedToLoad": "Mitglieder nicht geladen",
+    "failedToLoadGifts": "Geschenkideen nicht geladen",
+    "loginFailed": "Anmeldung fehlgeschlagen",
+    "loginRequired": "Anmeldung erforderlich",
     "passwordMismatch": "Passwörter stimmen nicht überein",
-    "registrationFailed": "Registrierung fehlgeschlagen"
+    "registrationFailed": "Gruppe konnte nicht erstellt werden"
   },
   "features": {
     "simple": {
-      "description": "Geschenke einfach verwalten",
-      "title": "Einfache Gruppen- verwaltung"
+      "description": "Eine Idee in ein paar Sekunden notieren, bevor sie wieder verschwindet.",
+      "title": "Ideen sofort festhalten"
     },
     "tracking": {
-      "description": "Überblick behalten, Doppelkäufe vermeiden",
-      "title": "Geschenke tracken"
+      "description": "Als gekauft markieren, damit die ganze Gruppe es sieht.",
+      "title": "Niemand kauft es zweimal"
     },
     "updates": {
-      "description": "Gemeinsame Geschenkideen einfach organisieren und koordinieren",
-      "title": "Gemeinsame Planung"
+      "description": "Nur die Gruppe sieht die Liste, damit die beschenkte Person erst am Tag davon erfährt.",
+      "title": "Die Überraschung bleibt"
     }
   },
   "groupName": "Gruppe",
   "giftCount": {
-    "zero": "keine Geschenkideen",
-    "one": "1 Geschenkidee",
-    "many": "{{count}} Geschenkideen"
+    "zero": "nichts mehr zu kaufen",
+    "one": "1 Geschenkidee noch offen",
+    "many": "{{count}} Geschenkideen noch offen"
   },
   "loading": "Wird geladen...",
-  "login": "Login",
-  "loginToGroup": "Login",
-  "logout": "Logout",
+  "login": "Anmelden",
+  "loginToGroup": "Anmelden",
+  "logout": "Abmelden",
   "memberGifts": {
-    "addGift": "Geschenk hinzufügen",
-    "adding": "Lädt",
+    "addGift": "Geschenkidee hinzufügen",
+    "adding": "Wird hinzugefügt...",
     "cancel": "Abbrechen",
     "description": "Beschreibung",
-    "enterDescription": "Kleine Beschreibung",
-    "enterGiftTitle": "Welches Geschenk?",
+    "deleteGift": "Geschenkidee löschen",
+    "enterDescription": "Notiz hinzufügen",
+    "enterGiftTitle": "Geschenkidee",
     "enterUrl": "Link",
     "giftTitle": "Geschenk",
+    "listHint": "Alle in der Gruppe können Einträge zu dieser Liste hinzufügen.",
     "manageGifts": "Hier werden alle Geschenke verwaltet.",
-    "noGifts": "Keine Geschenke vorhanden",
+    "noGifts": "Noch keine Geschenkideen. Füge die erste hinzu.",
     "optional": "Optional",
-    "title": "Wunschliste von",
-    "markAsPurchased": "Streichen",
-    "markAsAvailable": "Freigeben"
+    "markAsPurchased": "Als gekauft markieren",
+    "markAsAvailable": "Zurück auf die Liste"
   },
   "members": "Mitglieder",
-  "noMembers": "Keine Mitglieder. Füge das erste Mitglied hinzu",
+  "noMembers": "Noch keine Mitglieder. Füge das erste hinzu.",
   "password": "Passwort",
-  "register": "Registrieren",
+  "register": "Gruppe erstellen",
   "success": {
-    "loggedOut": "Ausgeloggt"
+    "loggedOut": "Abgemeldet"
   },
-  "tagline": "Geschenke einfach organisieren",
+  "tagline": "Eine Liste für alle in deiner Gruppe, damit niemand zweimal dasselbe Geschenk kauft.",
   "toasts": {
-    "giftAdded": "Geschenk erfolgreich hinzugefügt",
-    "giftAddFailed": "Geschenk konnte nicht hinzugefügt werden",
-    "giftStatusPurchased": "Gekauft",
-    "giftStatusBackToList": "Wieder auf der Wunschliste",
-    "giftStatusUpdateFailed": "Geschenkstatus konnte nicht aktualisiert werden",
-    "giftDeleted": "Geschenk erfolgreich gelöscht",
-    "giftDeleteFailed": "Geschenk konnte nicht gelöscht werden",
-    "memberAdded": "Mitglied {name} erfolgreich hinzugefügt",
-    "memberAddFailed": "Mitglied konnte nicht hinzugefügt werden",
-    "loginSuccess": "Erfolgreich eingeloggt",
-    "registrationSuccess": "Registrierung erfolgreich! Bitte einloggen.",
-    "memberDeleted": "Mitglied {name} und alle zugehörigen Geschenke erfolgreich gelöscht",
-    "memberDeleteFailed": "Mitglied konnte nicht gelöscht werden"
+    "giftAdded": "Geschenkidee hinzugefügt",
+    "giftAddFailed": "Geschenkidee nicht hinzugefügt",
+    "giftStatusPurchased": "Als gekauft markiert",
+    "giftStatusBackToList": "Zurück auf der Liste",
+    "giftStatusUpdateFailed": "Geschenkidee nicht aktualisiert",
+    "giftDeleted": "Geschenkidee gelöscht",
+    "giftDeleteFailed": "Geschenkidee nicht gelöscht",
+    "memberAdded": "{name} hinzugefügt",
+    "memberAddFailed": "Mitglied nicht hinzugefügt",
+    "loginSuccess": "Erfolgreich angemeldet",
+    "registrationSuccess": "Gruppe erstellt. Jetzt anmelden.",
+    "memberDeleted": "{name} und alle zugehörigen Geschenkideen gelöscht",
+    "memberDeleteFailed": "Mitglied nicht gelöscht"
   },
   "footer": {
-    "copyright": "© 2024 GiftHub. Alle Rechte vorbehalten.",
+    "copyright": "© 2026 GiftHub",
     "privacyPolicy": "Datenschutz",
     "termsConditions": "AGB"
   },

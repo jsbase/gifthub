@@ -4,6 +4,14 @@
 @custom-variant dark (&:where(.dark, .dark *));
 @custom-variant xs (@media (max-width: 639px));
 
+/*
+  "A list written on good paper."
+  A cool grey-green sheet, petrol ink, and exactly one warm colour - marigold -
+  which is spent entirely on the strike that crosses a gift idea off the list.
+  Every token the components reference is defined here in both themes; under
+  Tailwind v4 a utility for an undefined token emits no rule at all, so a gap in
+  this block is a silently dead class rather than a build error.
+*/
 @theme inline {
   /* Core colors */
   --color-background: hsl(var(--background));
@@ -14,46 +22,55 @@
   --color-secondary-foreground: hsl(var(--secondary-foreground));
   --color-muted: hsl(var(--muted));
   --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
   --color-destructive: hsl(var(--destructive));
   --color-destructive-foreground: hsl(var(--destructive-foreground));
 
-  /* Input and borders */
+  /* Input, borders and focus */
   --color-border: hsl(var(--border));
   --color-input: hsl(var(--input));
   --color-ring: hsl(var(--ring));
-  --color-ring-offset-background: hsl(var(--background));
+  --color-ring-offset-background: hsl(var(--surface));
 
-  /* Gray scale */
-  --color-gray-50: hsl(var(--gray-50));
-  --color-gray-100: hsl(var(--gray-100));
-  --color-gray-200: hsl(var(--gray-200));
-  --color-gray-300: hsl(var(--gray-300));
-  --color-gray-400: hsl(var(--gray-400));
-  --color-gray-500: hsl(var(--gray-500));
-  --color-gray-600: hsl(var(--gray-600));
-  --color-gray-700: hsl(var(--gray-700));
-  --color-gray-800: hsl(var(--gray-800));
-  --color-gray-900: hsl(var(--gray-900));
+  /*
+    Planes. There is no card in this app: the page is Paper, the member list is
+    written on a full-bleed band of Frost, and Surface exists only for the one
+    thing that floats above a scrim. Bought is the band colour again, used to
+    settle a row once its gift idea has been crossed off.
+  */
+  --color-surface: hsl(var(--surface));
+  --color-card: hsl(var(--surface));
+  --color-band: hsl(var(--band));
+  --color-bought: hsl(var(--bought));
 
-  /* Chart colors */
-  --color-chart-1: hsl(var(--chart-1));
-  --color-chart-2: hsl(var(--chart-2));
-  --color-chart-3: hsl(var(--chart-3));
-  --color-chart-4: hsl(var(--chart-4));
-  --color-chart-5: hsl(var(--chart-5));
+  /* The one warm colour in the interface */
+  --color-strike: hsl(var(--strike));
 
-  /* Card colors */
-  --color-card-background: hsl(var(--card-background));
+  /*
+    Type. Two families with different jobs: Literata is for the people and the
+    occasion (member names, the wordmark, page and dialog titles); Onest is the
+    mechanism (buttons, inputs, gift titles, counts, legal copy). Both carry
+    Latin and Cyrillic, which de/en/ru from one component tree requires.
+  */
+  --font-serif: var(--font-literata), ui-serif, Georgia, 'Times New Roman', serif;
 
-  /* Border radius */
-  --radius-lg: var(--radius);
+  /*
+    Border radius is a scale, not a single value: controls get 10px, the dialog
+    gets 16px because it floats, and the band and every list row stay square
+    because they are a list, not a box.
+  */
+  --radius-lg: var(--radius-dialog);
   --radius-md: calc(var(--radius) - 2px);
   --radius-sm: calc(var(--radius) - 4px);
 
   /* Custom max-width for dialogs */
   --container-dialog: 42rem;
 
-  /* Header height */
+  /* Header height - the header is sized to match this, and the mobile dialog
+     sheet is positioned from it */
   --height-header: var(--header-height);
 
   /* Custom spacing for consistent gaps */
@@ -62,18 +79,10 @@
   --spacing-dialog-pad-mobile: 1rem;
   --spacing-dialog-pad-desktop: 1.5rem;
 
-  /* Animations */
-  --animate-accordion-down: accordion-down 0.2s ease-out;
-  --animate-accordion-up: accordion-up 0.2s ease-out;
-  --animate-slide-in-top: slide-in-from-top 0.3s ease-out;
-  --animate-slide-out-bottom: slide-out-bottom 0.5s ease-out forwards;
-  --animate-slide-in-top-small: slide-in-from-top-small 0.5s ease-out forwards;
-  --animate-slide-out-top: slide-out-top 0.3s ease-out forwards;
-  --animate-slide-out-top-small: slide-out-top-small 0.3s ease-out forwards;
-  --animate-slide-in-bottom: slide-in-bottom 0.3s ease-out forwards;
-  --animate-fade-in: fade-in 0.5s ease-in-out;
-  --animate-spinner-rotate: spinner-rotate 2s linear infinite;
-  --animate-spinner-dash: spinner-dash 1.5s ease-out infinite;
+  /* Animations - see the reduced-motion block at the foot of this file */
+  --animate-strike-in: strike-in 0.38s ease-out forwards;
+  --animate-settle-in: settle-in 0.4s ease-out forwards;
+  --animate-row-reveal: row-reveal 0.18s ease-out forwards;
 }
 
 @layer base {
@@ -81,225 +90,160 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground antialiased;
+    font-family: var(--font-onest), ui-sans-serif, system-ui, sans-serif;
   }
-  /* Gemeinsame Stile für Input und Textarea */
+  ::selection {
+    @apply bg-accent text-accent-foreground;
+  }
+
+  /*
+    One focus mechanism for the whole app, so no interactive element can be
+    added without inheriting a visible keyboard focus. The ring colour is a
+    mid-tone petrol-cyan rather than the ink: only a mid tone clears 3:1
+    against both the Paper page and a Petrol-filled primary button, which is
+    what WCAG 2.4.11 asks of a focus indicator.
+  */
+  :where(
+      a,
+      button,
+      input,
+      textarea,
+      select,
+      summary,
+      [tabindex]:not([tabindex='-1'])
+    ):focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
+  }
+
   input,
   textarea {
-    @apply text-sm text-foreground;
+    @apply text-foreground;
   }
   input::placeholder,
   textarea::placeholder {
-    @apply text-sm text-muted-foreground;
+    @apply text-muted-foreground;
   }
 }
 
 :root {
-  /* Core colors */
-  --background: 0 0% 100%;
-  --foreground: 0 0% 3.9%;
-  --primary: 0 0% 9%;
-  --primary-foreground: 0 0% 98%;
-  --secondary: 0 0% 96.1%;
-  --secondary-foreground: 0 0% 9%;
-  --muted: 210 40% 96.1%;
-  --muted-foreground: 0 0% 45.1%;
-  --destructive: 0 84.2% 60.2%;
-  --destructive-foreground: 0 0% 98%;
+  /*
+    Light: Paper on the page, Petrol for ink, Frost for the band the member
+    list is written on, Slate for everything secondary, and Marigold held back
+    for the strike.
+  */
+  --background: 150 14% 97%; /* Paper  #F7F9F8 */
+  --foreground: 188 10% 14%; /* Petrol #0E343A */
+  --primary: 188 10% 14%;
+  --primary-foreground: 150 14% 97%;
+  --secondary: 163 14% 90%; /* Frost  #E3EAE8 */
+  --secondary-foreground: 188 10% 14%;
+  --muted: 162 16% 94%;
+  --muted-foreground: 174 7% 40%; /* Slate  #5C716F */
+  --accent: 163 14% 90%;
+  --accent-foreground: 188 10% 14%;
+  --popover: 150 14% 97%;
+  --popover-foreground: 188 10% 14%;
+  --destructive: 5 49% 39%; /* Signal #B02418 */
+  --destructive-foreground: 150 14% 97%;
 
-  /* Input and borders */
-  --border: 0 0% 89.8%;
-  --input: 0 0% 89.8%;
-  --ring: 0 0% 3.9%;
+  --border: 170 12% 80%;
+  --input: 170 12% 80%;
+  --ring: 186 29% 41%; /* #3E8C94 - 3.4:1 on Petrol, 3.7:1 on Paper */
 
-  /* Gray scale */
-  --gray-50: 0 0% 98%;
-  --gray-100: 0 0% 96.1%;
-  --gray-200: 0 0% 89.8%;
-  --gray-300: 0 0% 83.1%;
-  --gray-400: 0 0% 63.9%;
-  --gray-500: 0 0% 45.1%;
-  --gray-600: 0 0% 32.2%;
-  --gray-700: 0 0% 25.1%;
-  --gray-800: 0 0% 14.9%;
-  --gray-900: 0 0% 9%;
+  --surface: 150 14% 97%;
+  --band: 163 14% 90%;
+  --bought: 163 14% 90%;
 
-  /* Chart colors */
-  --chart-1: 12 76% 61%;
-  --chart-2: 173 58% 39%;
-  --chart-3: 197 37% 24%;
-  --chart-4: 43 74% 66%;
-  --chart-5: 27 87% 67%;
+  --strike: 39 77% 52%; /* Marigold #E3A227 */
 
   /* System */
-  --radius: 0.5rem;
-  --card-background: 0 0% 100%;
+  --radius: 0.625rem;
+  --radius-dialog: 1rem;
   --header-height: 56px;
 }
 
 .dark {
-  /* Core colors */
-  --background: 0 0% 3.9%;
-  --foreground: 0 0% 98%;
-  --primary: 0 0% 98%;
-  --primary-foreground: 0 0% 9%;
-  --secondary: 0 0% 14.9%;
-  --secondary-foreground: 0 0% 98%;
-  --muted: 217.2 32.6% 17.5%;
-  --muted-foreground: 215 20.2% 65.1%;
-  --destructive: 0 62.8% 30.6%;
-  --destructive-foreground: 0 0% 98%;
+  /*
+    Dark is the same system at a different hour, not a second theme: the ground
+    is the Paper hue taken down to #0C1F23 and the ink comes back up to #DCE7E5.
+  */
+  --background: 190 5% 9%; /* #0C1F23 */
+  --foreground: 169 19% 88%; /* #DCE7E5 */
+  --primary: 169 19% 88%;
+  --primary-foreground: 190 5% 9%;
+  --secondary: 186 7% 14%; /* #143033 */
+  --secondary-foreground: 169 19% 88%;
+  --muted: 186 7% 16%;
+  --muted-foreground: 172 11% 62%; /* Slate #93A9A6 */
+  --accent: 186 7% 14%;
+  --accent-foreground: 169 19% 88%;
+  --popover: 187 6% 12%;
+  --popover-foreground: 169 19% 88%;
+  --destructive: 8 73% 62%; /* #E56A57 */
+  --destructive-foreground: 190 5% 9%;
 
-  /* Input and borders */
-  --border: 0 0% 14.9%;
-  --input: 0 0% 14.9%;
-  --ring: 0 0% 83.1%;
+  --border: 187 9% 22%;
+  --input: 187 9% 22%;
+  --ring: 186 25% 40%; /* #3F848B - 3.3:1 on the ground, 3.4:1 on the ink */
 
-  /* Gray scale */
-  --gray-50: 0 0% 14.9%;
-  --gray-100: 0 0% 17.5%;
-  --gray-200: 0 0% 25.1%;
-  --gray-300: 0 0% 32.2%;
-  --gray-400: 0 0% 45.1%;
-  --gray-500: 0 0% 65.1%;
-  --gray-600: 0 0% 83.1%;
-  --gray-700: 215 25% 27%;
-  --gray-800: 0 0% 4%;
-  --gray-900: 0 0% 98%;
+  --surface: 187 6% 12%;
+  --band: 186 7% 14%;
+  --bought: 186 7% 14%;
 
-  /* Chart colors */
-  --chart-1: 220 70% 50%;
-  --chart-2: 160 60% 45%;
-  --chart-3: 30 80% 55%;
-  --chart-4: 280 65% 60%;
-  --chart-5: 340 75% 55%;
-
-  /* System */
-  --card-background: 217 33% 17%;
+  --strike: 38 85% 62%; /* Marigold #F0B44B */
 }
 
 /*
-  Tailwind v4 only emits keyframes it knows about, so the custom animations
-  declared above need their keyframes spelled out here.
+  Tailwind v4 only emits keyframes it knows about, so the animations declared
+  above need their keyframes spelled out here.
 */
-@keyframes accordion-down {
+
+/*
+  The strike: the one moment in this app that is worth animating. Someone in the
+  group bought the gift, so a single marigold stroke draws across the title and
+  the row settles into the band colour - bought items recede, so the ones still
+  needing a present are the ones that carry weight.
+
+  The stroke is a real `text-decoration` rather than a positioned pseudo
+  element, because a pseudo element can only ever be positioned against the
+  whole block: a gift title that wraps onto a second line would be struck
+  through the gap between the two lines instead of across them.
+*/
+@keyframes strike-in {
   from {
-    height: 0;
+    text-decoration-color: transparent;
   }
   to {
-    height: var(--radix-accordion-content-height);
+    text-decoration-color: hsl(var(--strike));
   }
 }
 
-@keyframes accordion-up {
+@keyframes settle-in {
   from {
-    height: var(--radix-accordion-content-height);
+    background-color: transparent;
   }
   to {
-    height: 0;
+    background-color: hsl(var(--bought));
   }
 }
 
-@keyframes slide-in-from-top {
-  0% {
-    transform: translateY(-100%);
-    opacity: 0;
-  }
-  100% {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
-
-@keyframes slide-out-bottom {
-  0% {
-    transform: translateY(0);
-    opacity: 1;
-  }
-  100% {
-    transform: translateY(8px);
-    opacity: 0;
-  }
-}
-
-@keyframes slide-in-from-top-small {
-  0% {
-    transform: translateY(-8px);
-    opacity: 0;
-  }
-  100% {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
-
-@keyframes slide-out-top {
-  0% {
-    transform: translateY(0);
-    opacity: 1;
-  }
-  100% {
-    transform: translateY(-100%);
-    opacity: 0;
-  }
-}
-
-@keyframes slide-out-top-small {
-  0% {
-    transform: translateY(0);
-    opacity: 1;
-  }
-  100% {
-    transform: translateY(-8px);
-    opacity: 0;
-  }
-}
-
-@keyframes slide-in-bottom {
-  0% {
-    transform: translateY(8px);
-    opacity: 0;
-  }
-  100% {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
-
-@keyframes fade-in {
+@keyframes row-reveal {
   from {
     opacity: 0;
   }
   to {
     opacity: 1;
-  }
-}
-
-@keyframes spinner-rotate {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-@keyframes spinner-dash {
-  0% {
-    stroke-dasharray: 0 150;
-    stroke-dashoffset: 0;
-  }
-  47.5% {
-    stroke-dasharray: 42 150;
-    stroke-dashoffset: -16;
-  }
-  95%,
-  100% {
-    stroke-dasharray: 42 150;
-    stroke-dashoffset: -59;
   }
 }
 
 /*
   Tailwind v4 has no equivalent for the `container` configuration that v3
-  supported (center + per-breakpoint padding), so it is reimplemented here.
+  supported (center + per-breakpoint padding), so it is reimplemented here. It
+  is the layout backbone of every page: the outer element is `container` and
+  the narrow content column nests a `max-w-2xl mx-auto` inside it, so this
+  ladder is never fought by a utility class on the same element.
 */
 @utility container {
   width: 100%;
@@ -337,15 +281,35 @@
   }
 }
 
-@keyframes slide-in {
-  from {
-    transform: translateX(100%);
-  }
-  to {
-    transform: translateX(0);
-  }
+/*
+  Legal body copy on the privacy and terms pages: one measure, one leading and
+  one colour, defined once rather than repeated on every paragraph.
+*/
+@utility prose-p {
+  font-size: 1rem;
+  line-height: 1.7;
+  color: hsl(var(--muted-foreground));
+  text-wrap: pretty;
 }
 
-.animate-slide-in {
-  animation: slide-in 0.2s ease-out forwards;
+/*
+  Reduced motion. Everything collapses to a state change with no movement. The
+  one exception is the loading spinner: a spinner that has stopped spinning is a
+  broken affordance rather than a decorative one, so it keeps its rotation.
+*/
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .animate-spin,
+  [data-testid='loadingSpinner'] * {
+    animation-duration: 1s !important;
+    animation-iteration-count: infinite !important;
+  }
 }
