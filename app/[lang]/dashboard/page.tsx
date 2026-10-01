@@ -171,19 +171,19 @@ const DashboardPage: NextPage<PageProps> = ({ params }) => {
           it: on this route the board IS the page, and the white cells in the
           member rows are the only label stock on screen.
         */}
-        <section className={cn('flex-1', 'bg-board')}>
-          <div className={cn('container', 'mx-auto')}>
-            <div className={cn('mx-auto', 'max-w-2xl', 'py-8', 'sm:py-12')}>
-              <MemberList
-                members={members}
-                giftCounts={memberGiftCounts}
-                dict={dict}
-                onMemberClick={handleMemberClick}
-                onMemberDeleted={fetchData}
-              />
+<section className={cn('flex-1', 'bg-board')}>
+            <div className={cn('container', 'mx-auto')}>
+              <div className={cn('mx-auto', 'max-w-5xl', 'py-8', 'sm:py-12', 'px-4')}>
+                <MemberList
+                  members={members}
+                  giftCounts={memberGiftCounts}
+                  dict={dict}
+                  onMemberClick={handleMemberClick}
+                  onMemberDeleted={fetchData}
+                />
+              </div>
             </div>
-          </div>
-        </section>
+          </section>
       </main>
 
       <Suspense fallback={<LoadingSpinner />}>

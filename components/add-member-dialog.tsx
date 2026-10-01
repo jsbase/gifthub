@@ -102,6 +102,7 @@ const AddMemberDialog: React.FC<Omit<AddMemberDialogProps, 'dict'>> = ({
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <Button
+          variant='outline'
           data-testid='addMemberButton'
           className='justify-center text-[0.875rem]'
         >

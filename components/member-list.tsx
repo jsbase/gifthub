@@ -137,11 +137,11 @@ const MemberList: React.FC<MemberListProps> = ({
             style={memberInkStyle(member.id)}
             className={cn(
               'relative',
-              'flex',
-              'items-stretch',
-              'border-b',
-              'border-rule',
-              'last:border-b-0',
+              'grid',
+              'grid-cols-[1fr_auto]',
+              'gap-6',
+              'items-center',
+              'py-5',
               // The contents page arriving, once, in order. Capped in CSS by the
               // animation-delay ceiling; the tenth row and beyond share the last
               // delay rather than queueing behind a long list.
@@ -152,21 +152,17 @@ const MemberList: React.FC<MemberListProps> = ({
             <Button
               variant='ghost'
               className={cn(
-                'flex-1',
                 'h-auto',
-                'min-h-[68px]',
+                'min-h-[72px]',
                 'items-center',
-                'justify-between',
                 'gap-4',
-                'px-3',
-                'py-4',
-                '-mx-3',
+                'px-0',
                 'rounded-none',
                 'text-left',
                 'text-ink',
                 'transition-colors',
                 'duration-150',
-                'hover:bg-wash'
+                'hover:bg-transparent'
               )}
               onClick={() => onMemberClick(member.id)}
               data-testid='showGiftsDialog'
@@ -176,7 +172,7 @@ const MemberList: React.FC<MemberListProps> = ({
                 which is the one place the ink tray is allowed a horizontal line -
                 it is the hand of the album's index marking whose sheet this is.
               */}
-              <span className='flex min-w-0 flex-col items-start gap-2'>
+              <div className='flex min-w-0 flex-col items-start gap-2 w-full'>
                 <span className='max-w-full break-words'>
                   <span
                     className={cn(
@@ -190,14 +186,14 @@ const MemberList: React.FC<MemberListProps> = ({
                   </span>
                   <span
                     aria-hidden='true'
-                    className='mt-1.5 block h-px w-9 bg-[var(--member-ink)]'
+                    className='mt-2 block h-1.5 w-24 bg-[var(--member-ink)]'
                   />
                 </span>
                 <span className='sr-only'>{giftCountText}</span>
-              </span>
-
-              <CellFigure unbought={unbought} total={total} />
+              </div>
             </Button>
+
+            <CellFigure unbought={unbought} total={total} />
 
             {showDeleteButtons && (
               <div
@@ -239,7 +235,7 @@ const MemberList: React.FC<MemberListProps> = ({
   );
 
   return (
-    <div className='space-y-4' ref={containerRef}>
+    <div className='grid gap-0' ref={containerRef}>
       <MemberListHeader
         dict={dict}
         onDeleteClick={toggleDeleteButtons}
@@ -248,7 +244,7 @@ const MemberList: React.FC<MemberListProps> = ({
       />
 
       {members.length > 0 ? (
-        <ul data-testid='memberList'>
+        <ul data-testid='memberList' className='divide-y divide-rule'>
           {memberListItems}
         </ul>
       ) : (

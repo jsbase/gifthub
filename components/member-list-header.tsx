@@ -17,7 +17,7 @@ const MemberListHeader: React.FC<MemberListHeaderProps> = ({
         'flex',
         'flex-col',
         'gap-4',
-        'border-b-2',
+        'border-b',
         'border-rule',
         'pb-4',
         'sm:flex-row',
