@@ -1,7 +1,7 @@
 'use client';
 
 import React, { memo } from 'react';
-import { IconExternalLink, IconShoppingBagPlus, IconShoppingBagX, IconTrash } from '@tabler/icons-react';
+import { IconExternalLink, IconShoppingCart, IconShoppingCartMinus, IconShoppingCartPlus, IconTrash } from '@tabler/icons-react';
 import { Button } from '@/components/ui/button';
 import { useDebounce } from '@/hooks/use-debounce';
 import { cn } from '@/lib/utils';
@@ -126,7 +126,18 @@ const GiftCard: React.FC<GiftCardProps> = ({
         className={cn(
           'group/buy',
           'grid',
-          'h-11',
+          // `min-h-11`, not `h-11`. An explicit height beats the row's
+          // `items-stretch`, so a fixed height left this column 44px tall and
+          // pinned to the top: on a two-line row its `border-r` stopped short of
+          // the cell's bottom edge, and on a one-line row the leftover below the
+          // text read as a gap - most visibly on hover, when the wash filled
+          // only the button's own box and stopped where the cell did not.
+          //
+          // `min-h-11` keeps the 44px floor on a one-line row and lets the column
+          // stretch to whatever the row needs, so the rule and the hover wash
+          // both run the full height. The width stays fixed: this is a margin
+          // column, not a content one.
+          'min-h-11',
           'w-11',
           'shrink-0',
           'place-items-center',
@@ -140,55 +151,39 @@ const GiftCard: React.FC<GiftCardProps> = ({
           isPending && 'pointer-events-none opacity-60'
         )}
       >
-        {isCollected ? (
-          /*
-            The collected mark, in two states a single glance separates:
+        {/*
+          The cart, in four states. The glyph never changes - it is a cart in
+          every state - and the STATE is carried by colour, not by a different
+          icon. That is the whole point: a mark that swaps its own shape when you
+          hover it cannot be read at rest, and the resting state is the one the
+          whole group sees all day.
 
-                bought                   a shopping bag with an x on it
-                bought + a pointer       the open bag with a plus
+              open                a plain cart, receded
+              open  + pointer     the same cart with a plus    (click: buy it)
+              bought              the same cart, in the member's ink
+              bought + pointer    the same cart with a minus   (click: undo)
 
-            The hover state is a PREVIEW rather than a fill: hovering a bought
-            idea shows the mark it would become if you clicked it. Tabler ships
-            no filled variant of either shopping-bag icon, so "outline at rest,
-            filled on hover" was not available - and the preview is the more
-            useful affordance anyway, because it answers "what does clicking
-            this do?" instead of the tautological "is this clickable?".
+          So hover shows the ACTION, and the colour shows the STATE. An earlier
+          version swapped x for plus on hover, which inverted the meaning of
+          hover: it showed the mark's state instead of the action, and the user
+          could not tell what a click would do.
 
-            The x is doing the work here. A check would say "done"; the x says
-            "taken, nobody buy this", which is the thing the whole group has to
-            read, and which stays true after the fact.
-
-            Both glyphs sit in the button's single grid cell (`col-start-1
-            row-start-1`) and only ever one of them is displayed, so the swap is
-            a display change and not a reflow - the 44px target never moves.
-
-            The hover fill is the affordance that says "this is undoable" before
-            the click, and it is gated on a real pointer rather than on
-            Tailwind's `hover:`. `hover` can latch after a tap on a touch device,
-            which would leave a bought mark looking half-undoable with no pointer
-            anywhere near it - so the same media query that gates `cursor: pointer`
-            in `globals.css` gates this, spelled out rather than inherited. (That
-            is also not what Tailwind's `hover:` does: v4 gates it on
-            `(hover: hover)` alone, without the `pointer: fine` half.)
-
-            The underscores are Tailwind's own escape for a space in an arbitrary
-            variant, and they are load-bearing: written as a bare
-            `(hover:hover)and(pointer:fine)` the emitted rule is
-            `@media (hover:hover)and(pointer:fine)`, which no CSS parser accepts,
-            and the whole stylesheet fails to build.
-          */
-          <>
-            <IconShoppingBagX
-              aria-hidden='true'
-              className={cn(
-                'col-start-1',
-                'row-start-1',
-                'h-5',
-                'w-5',
-                '[@media(hover:hover)_and_(pointer:fine)]:group-hover/buy:hidden'
-              )}
-            />
-            <IconShoppingBagPlus
+          Tabler ships no filled cart either, so the bought state cannot be a
+          fill. Ink is the channel, and it is one the cell already uses.
+        */}
+        <>
+          <IconShoppingCart
+            aria-hidden='true'
+            className={cn(
+              'col-start-1',
+              'row-start-1',
+              'h-5',
+              'w-5',
+              '[@media(hover:hover)_and_(pointer:fine)]:group-hover/buy:hidden'
+            )}
+          />
+          {isCollected ? (
+            <IconShoppingCartMinus
               aria-hidden='true'
               className={cn(
                 'col-start-1',
@@ -199,16 +194,20 @@ const GiftCard: React.FC<GiftCardProps> = ({
                 '[@media(hover:hover)_and_(pointer:fine)]:group-hover/buy:block'
               )}
             />
-          </>
-        ) : (
-          /*
-            A bag with a plus, so the control shows what tapping it will mean
-            before it is tapped: somebody should buy this for that person. A mark
-            that only appears once something is bought is a mark nobody can find
-            the first time.
-          */
-          <IconShoppingBagPlus aria-hidden='true' className='h-5 w-5' />
-        )}
+          ) : (
+            <IconShoppingCartPlus
+              aria-hidden='true'
+              className={cn(
+                'col-start-1',
+                'row-start-1',
+                'h-5',
+                'w-5',
+                'hidden',
+                '[@media(hover:hover)_and_(pointer:fine)]:group-hover/buy:block'
+              )}
+            />
+          )}
+        </>
       </button>
 
       {gift.url ? (
@@ -231,13 +230,26 @@ const GiftCard: React.FC<GiftCardProps> = ({
         size='icon'
         onClick={handleDelete}
         className={cn(
-          'self-start',
-          'my-0.5',
-          'mr-1',
+          // Same correction as the tick column, for the same reason: `self-start`
+          // plus the primitive's `h-11` pinned this control to the top, so its
+          // hover wash filled 44px and stopped while the cell kept going. On a
+          // one-line row that left the gap the left column had just been fixed
+          // for, mirrored on the right.
+          //
+          // `h-auto` beats the primitive's `h-11` through twMerge, so the row's
+          // `items-stretch` takes effect; `min-h-11` holds the 44px floor on a
+          // one-line row. `my-0.5` and `mr-1` both had to go: a margin is a
+          // fixed offset, and the first defeated the stretch while the second
+          // left a 4px gap at the cell's right edge that read as unfinished once
+          // the wash began spanning the column. The control now fills the cell's
+          // content box on all three sides, square with the tick column opposite.
+          'h-auto',
+          'min-h-11',
+          'self-stretch',
           'shrink-0',
           isCollected
             ? 'text-collected-foreground/70 hover:bg-collected-foreground/12 hover:text-collected-foreground'
-            : 'text-caption hover:text-destructive'
+            : 'text-caption hover:bg-wash hover:text-destructive'
         )}
         data-testid='giftDelete'
         aria-label={dict.deleteGift}

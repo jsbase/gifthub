@@ -198,16 +198,12 @@ const MemberList: React.FC<MemberListProps> = ({
                   >
                     {member.name}
                   </span>
-                  <span
-                    aria-hidden='true'
-                    className='mt-2 block h-1.5 w-24 bg-[var(--member-ink)]'
-                  />
                 </span>
                 <span className='sr-only'>{giftCountText}</span>
               </div>
             </Button>
 
-            <CellFigure unbought={unbought} total={total} />
+            <SheetProgress unbought={unbought} total={total} />
 
             {showDeleteButtons && (
               <div
@@ -296,42 +292,44 @@ const MemberList: React.FC<MemberListProps> = ({
 };
 
 /**
- * A member's sheet in miniature: one cell per idea, collected cells inverted,
- * and the count beside it in printed numerals.
+ * How far along this member's sheet is.
  *
- * Open cells read first, because open cells are what needs acting on. A member
- * with no ideas at all gets a single dashed cell rather than nothing, so "empty"
- * is visibly different from "nothing to show" and from "bought out".
+ * Two parts, and they answer different questions. The numeral is how many ideas
+ * are still open - the actionable figure, and the one the row's count sentence
+ * says in words. The rule is how much of the sheet has been dealt with, filled
+ * in the member's own ink.
  *
- * The whole figure is `aria-hidden` because the row already carries the same
- * fact as real text; a shape is not an announcement.
+ * The earlier version drew one miniature cell per idea, on the theory that a
+ * count you can see beats a count you have to read. It does not survive contact
+ * with real data: a member with a hundred ideas produced a hundred cells, so the
+ * miniature was capped and the cap printed a "+N" that is nothing but an
+ * admission that the figure does not scale. The number scales and the rule
+ * scales, and neither needs a cap - which is what the user asked for.
+ *
+ * Empty is not done, and the two must not look alike. A member with no ideas at
+ * all gets a dashed rule, not an empty one, so "nothing written yet" is visibly
+ * different from "written and all collected".
+ *
+ * `aria-hidden` throughout: the row already carries the same fact as real text in
+ * the count sentence, and a shape is not an announcement.
  */
-const CellFigure: React.FC<{ unbought: number; total: number }> = ({
+const SheetProgress: React.FC<{ unbought: number; total: number }> = ({
   unbought,
   total,
 }) => {
-  const shown = Math.min(total, 14);
-  const overflow = total - shown;
+  const collected = total - unbought;
+  const pct = total === 0 ? 0 : Math.round((collected / total) * 100);
 
   return (
     <span aria-hidden='true' className='flex shrink-0 items-center gap-3'>
-      <span className='flex flex-wrap justify-end gap-[3px]'>
+      <span className='relative block h-[3px] w-14 bg-wash-strong'>
         {total === 0 ? (
-          <span className='block h-3.5 w-3.5 border border-dashed border-rule' />
+          <span className='absolute inset-0 border-t border-dashed border-rule' />
         ) : (
-          Array.from({ length: shown }).map((_, i) => (
-            <span
-              key={i}
-              className={cn(
-                'block',
-                'h-3.5',
-                'w-3.5',
-                'border',
-                'border-rule',
-                i < unbought ? 'bg-cell' : 'border-collected bg-collected'
-              )}
-            />
-          ))
+          <span
+            className='absolute inset-y-0 left-0 bg-[var(--member-ink)]'
+            style={{ width: `${pct}%` }}
+          />
         )}
       </span>
       <span
@@ -348,11 +346,6 @@ const CellFigure: React.FC<{ unbought: number; total: number }> = ({
       >
         {unbought}
       </span>
-      {overflow > 0 && (
-        <span className='font-label text-[0.6875rem] font-bold tracking-[0.06em] text-caption'>
-          +{overflow}
-        </span>
-      )}
     </span>
   );
 };
