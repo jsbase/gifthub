@@ -1,4 +1,8 @@
-name: CI
+# The workflow name is the check-run name prefix, and branch protection on
+# `development` requires `Playwright / run-e2e-tests`. Do not rename this file's
+# `name:` or the `run-e2e-tests` job below without updating the branch protection
+# rule at the same time.
+name: Playwright
 
 # Runs on pushes and pull requests to `development` instead of on Vercel
 # deployments. Two reasons:
@@ -14,28 +18,43 @@ on:
   pull_request:
     branches: [development]
 
-concurrency:
-  group: ci-${{ github.ref }}
-  cancel-in-progress: true
+# The job only reads the repository.
+permissions:
+  contents: read
 
 jobs:
-  build-test-lint:
-    # Pull requests from forks get no repository secrets, so the database steps
-    # below cannot run there. Skipping them is better than a red run that looks
-    # like a code defect.
-    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+  # One job, deliberately. Splitting the secret-free half into a second job would
+  # add a check-run name that branch protection does not require, and the
+  # historically required `Playwright / run-e2e-tests` would then stop reporting
+  # type errors. Instead the static steps always run, and only the steps that
+  # contact the database are skipped when there are no secrets - which is exactly
+  # the case for a pull request from a fork.
+  run-e2e-tests:
     runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    # One group for the whole repository, deliberately not keyed on github.ref:
+    # a pull request ref and a branch ref are different strings, so per-ref
+    # grouping lets a pull request and a push overlap. Everything below migrates
+    # and seeds the same database, and `prisma db seed` deletes every row, so two
+    # runs must never overlap. Queued runs wait instead of being cancelled -
+    # cancelling one mid-seed would leave the next one with a half-written
+    # database and a red build that looks like a code defect.
+    concurrency:
+      group: ci-db
+      cancel-in-progress: false
     env:
-      # A database of this job's own. `prisma db seed` deletes every row and the
-      # end-to-end suite writes, so pointing these at the database the deployed
-      # app uses would wipe it on every run. A Neon branch is the cheapest
-      # separate database that a real Postgres schema migrates cleanly onto.
+      # A database of the job's own. `prisma db seed` deletes every row and the
+      # end-to-end suite writes, so pointing this at the database the deployed app
+      # uses would wipe it on every run. A Neon branch is the cheapest separate
+      # database that a real Postgres schema migrates cleanly onto. These are the
+      # values the migrating, seeding and testing steps connect with; the steps
+      # above them never read them, which is what lets those run without secrets.
       DATABASE_URL: ${{ secrets.CI_DATABASE_URL }}
       # The non-pooled endpoint of the same database: Prisma Migrate cannot run
       # through a connection pooler.
       DIRECT_URL: ${{ secrets.CI_DIRECT_URL }}
       # Signs the session cookie. The app refuses to log in without it, so the
-      # dashboard test cannot run if it is missing.
+      # dashboard test cannot pass.
       JWT_SECRET: ${{ secrets.JWT_SECRET }}
       # Not a secret: the suite runs against the server this job starts itself,
       # which playwright.config.ts launches from `npm run start`.
@@ -49,38 +68,71 @@ jobs:
           node-version: 22
           cache: npm
       - name: Check required secrets
+        id: db-secrets
+        # Only where secrets can exist at all. A pull request from a fork has
+        # none; there this step does not run, so it publishes no output and the
+        # database steps below skip themselves instead of failing.
+        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
         run: |
-          for name in CI_DATABASE_URL CI_DIRECT_URL JWT_SECRET; do
-            if [ -z "${!name}" ]; then
-              echo "::error::Repository secret $name is not set; this job needs it"
-              exit 1
+          missing=0
+          for pair in CI_DATABASE_URL:DATABASE_URL CI_DIRECT_URL:DIRECT_URL JWT_SECRET:JWT_SECRET; do
+            secret="${pair%%:*}"
+            variable="${pair##*:}"
+            if [ -z "${!variable}" ]; then
+              echo "::error::Repository secret $secret is not set; the end-to-end half of this job needs it"
+              missing=1
             fi
           done
+          if [ "$missing" -eq 0 ]; then
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          fi
+          exit "$missing"
+      # Everything from here to the build step needs no database at all. Verified
+      # on a clean checkout with DATABASE_URL, DIRECT_URL and JWT_SECRET set to
+      # the empty string a fork pull request gets: `npm ci` (including the
+      # `prisma generate` postinstall), typecheck, lint, ratchet and build all
+      # succeed. `prisma generate` only writes files, and nothing imports a
+      # PrismaClient while Next collects route config. So no placeholder
+      # connection string is needed either - these steps simply never get one.
       - name: Install dependencies
         run: npm ci
       - name: Typecheck
         run: npx tsc --noEmit
       - name: Lint
         # Exit-code based, deliberately without `--max-warnings`: ESLint fails on
-        # errors, and the warn-only rules in eslint.config.mjs are the accepted
-        # baseline. A cap would make this red for pre-existing debt rather than
-        # for new defects, and it would break on every dependency bump that
-        # reshuffles the count.
+        # errors. Warnings are the ratchet's job, one step down.
         run: npm run lint
-      # Before the build: the build regenerates the Prisma client and Prisma
-      # validates the datasource, and a half-applied schema fails the build for
-      # a reason that has nothing to do with the code.
-      - name: Apply migrations
-        run: npx prisma migrate deploy
-      - name: Seed database
-        run: npx prisma db seed
+      - name: Lint warning ratchet
+        # Fails on warnings that lint-baseline.json does not already contain, so
+        # the 32 accepted warnings cannot become 33 by accident. Shrinking the
+        # debt passes; only growing it fails.
+        run: npm run lint:ratchet
       - name: Build
         run: npm run build
+      - name: Note the skipped end-to-end half
+        if: steps.db-secrets.outputs.configured != 'true'
+        run: |
+          echo "::notice::No CI database is configured, so migrations, seeding and the end-to-end tests are skipped for this event. Set the CI_DATABASE_URL, CI_DIRECT_URL and JWT_SECRET repository secrets to run them."
+      - name: Apply migrations
+        if: steps.db-secrets.outputs.configured == 'true'
+        run: npx prisma migrate deploy
+      - name: Seed database
+        if: steps.db-secrets.outputs.configured == 'true'
+        run: npx prisma db seed
+      - name: Cache Playwright browsers
+        if: steps.db-secrets.outputs.configured == 'true'
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          # The browser build follows @playwright/test, so the lockfile pins it.
+          key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json') }}
       - name: Install Playwright browser
         # Only chromium, matching the suite below. Last of the install steps so a
         # type or lint error fails in seconds instead of after a browser download.
+        if: steps.db-secrets.outputs.configured == 'true'
         run: npx playwright install --with-deps chromium
       - name: Run tests
+        if: steps.db-secrets.outputs.configured == 'true'
         run: npx playwright test --project=chromium
       - name: Upload report
         if: failure()

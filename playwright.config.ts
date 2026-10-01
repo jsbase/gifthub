@@ -8,6 +8,14 @@ const isDevelopment = fs.existsSync(envLocalPath);
 
 dotenv.config(isDevelopment ? { path: envLocalPath } : {});
 
+// One host for the suite, the readiness probe and the server the probe waits
+// for. Deriving the probe from the same value the tests navigate to keeps the
+// two from drifting apart, and the trailing slash is dropped so the probe path
+// cannot become `//en`.
+const appURL = (
+  process.env.NEXT_PUBLIC_BASE_URL ?? 'http://localhost:3000'
+).replace(/\/+$/, '');
+
 export default defineConfig({
   testDir: './tests',
   fullyParallel: false,
@@ -16,7 +24,7 @@ export default defineConfig({
   workers: 1,
   reporter: 'html',
   use: {
-    baseURL: process.env.NEXT_PUBLIC_BASE_URL,
+    baseURL: appURL,
     trace: 'on-first-retry',
   },
   projects: [
@@ -47,7 +55,10 @@ export default defineConfig({
   // Locally it still starts `next dev` and adopts whatever is on :3000.
   webServer: {
     command: process.env.CI ? 'npm run start' : 'npm run dev',
-    url: 'http://localhost:3000/en',
+    url: `${appURL}/en`,
+    // The 60s default has to cover a cold `next dev` start, which compiles the
+    // first route on demand before it can answer at all.
+    timeout: 120_000,
     reuseExistingServer: !process.env.CI,
   },
 });

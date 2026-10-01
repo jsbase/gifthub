@@ -52,12 +52,16 @@ node_modules/
 /playwright-report/
 /blob-report/
 /playwright/.cache/
-.kilo/
 
 # agent tooling
 /.agents
 /.claude
+/.codex
+/.kilo
 /skills-lock.json
+# agent tooling that lives inside .github - ignored, not deleted
+/.github/agents
+/.github/hooks
 
 # agent plan workspace
 /docs/superpowers/

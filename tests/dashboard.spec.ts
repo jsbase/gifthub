@@ -47,8 +47,19 @@ test.describe('Dashboard functionality', () => {
         where: { forMemberId: { in: memberships.map((m) => m.id) } },
       });
       await prisma.userGroup.deleteMany({ where: { groupId: group.id } });
+      // `userGroups: { none: {} }` is what keeps this safe. A User row is
+      // global - `@@unique([userId, groupId])` lets one user sit in several
+      // groups - and this filter runs after the memberships above are gone, so it
+      // can only match users left belonging to nothing at all. Without it, any
+      // user shared with another group would be deleted here and take that
+      // membership with it; nothing in the schema stops the app from creating
+      // such a user (app/api/members/route.ts:87 inserts a fresh one, but a test
+      // must not depend on that).
       await prisma.user.deleteMany({
-        where: { id: { in: memberships.map((m) => m.userId) } },
+        where: {
+          id: { in: memberships.map((m) => m.userId) },
+          userGroups: { none: {} },
+        },
       });
     }
     await prisma.$disconnect();

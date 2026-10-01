@@ -37,11 +37,16 @@ export default defineConfig([
     'test-results/**',
     'next-env.d.ts',
     'prisma/**',
-    // Agent tooling and the plan workspace are vendored, not app source.
+    // Agent tooling and the plan workspace are vendored, not app source. They are
+    // also gitignored: linting them would make the local warning count depend on
+    // which agent tooling happens to be checked out, which the ratchet baseline
+    // in lint-baseline.json cannot express.
     '.agents/**',
     '.claude/**',
     '.codex/**',
     '.kilo/**',
+    '.github/agents/**',
+    '.github/hooks/**',
     '.superpowers/**',
   ]),
 ]);
