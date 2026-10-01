@@ -400,12 +400,6 @@ export interface GiftCardProps {
    * collected ideas does not replay five cancellations.
    */
   changedId: string | null;
-  /**
-   * The cell's number in the corner of the sheet, one-based. Undefined on the
-   * landing page's sample list, which is a quotation of the sheet rather than
-   * the sheet itself.
-   */
-  memberNumber?: number;
 }
 
 /** A member row's gift counts: what is left to buy, and what the list holds. */

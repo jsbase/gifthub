@@ -10,9 +10,9 @@ import type { GiftCardProps } from '@/types';
 /**
  * One cell of the album page.
  *
- * A cell is a sheet of label stock with a printed rule around it and its number
- * in the top corner. Three things live in it, in the order a collector reads
- * them: the number, the thing itself, and the note about the thing.
+ * A cell is a sheet of label stock with a printed rule around it. Two things
+ * live in it, in the order a collector reads them: the thing itself, and the
+ * note about the thing.
  *
  * This is the replacement for a checklist row, and every decision below is the
  * opposite of the one a checklist would make:
@@ -39,7 +39,6 @@ import type { GiftCardProps } from '@/types';
 const GiftCard: React.FC<GiftCardProps> = ({
   gift,
   dict,
-  memberNumber,
   onDelete,
   onTogglePurchased,
   togglingId,
@@ -156,19 +155,11 @@ const GiftCard: React.FC<GiftCardProps> = ({
           rel='noopener noreferrer'
           className={interactiveClasses}
         >
-          <GiftCardBody
-            gift={gift}
-            memberNumber={memberNumber}
-            justChanged={justChanged}
-          />
+          <GiftCardBody gift={gift} justChanged={justChanged} />
         </a>
       ) : (
         <div className={interactiveClasses}>
-          <GiftCardBody
-            gift={gift}
-            memberNumber={memberNumber}
-            justChanged={justChanged}
-          />
+          <GiftCardBody gift={gift} justChanged={justChanged} />
         </div>
       )}
 
@@ -205,9 +196,8 @@ const GiftCard: React.FC<GiftCardProps> = ({
  */
 const GiftCardBody: React.FC<{
   gift: GiftCardProps['gift'];
-  memberNumber?: number;
   justChanged: boolean;
-}> = ({ gift, memberNumber, justChanged }) => (
+}> = ({ gift, justChanged }) => (
   <div
     className={cn(
       'relative',
@@ -217,27 +207,28 @@ const GiftCardBody: React.FC<{
       'py-3'
     )}
   >
-    {memberNumber !== undefined && (
-      <span
-        aria-hidden='true'
-        className={cn(
-          'label-print',
-          'absolute',
-          'right-3',
-          'top-3',
-          'select-none',
-          gift.isPurchased
-            ? 'text-collected-foreground/45'
-            : 'text-[var(--member-ink)]/75'
-        )}
-      >
-        {String(memberNumber).padStart(2, '0')}
-      </span>
-    )}
-
     <h3
       data-testid='giftTitle'
       className={cn(
+        /*
+          The right-hand lane, kept clear for the cell's own corner furniture.
+
+          This used to be documented as room for a numeral that never rendered,
+          which is why it looked like dead space: 36px of a cell's measure that
+          bought nothing. It does buy something. The trash button sits in the top
+          right corner of every cell at `right-3`, 44px wide, so it reaches 56px
+          in from the right edge - over the first line of the title. On a
+          collected cell the cancellation ring sits further left still (`right-6`,
+          44px, so 68px in) and vertically centred, which puts it beside the last
+          line as readily as the first. Together with `px-4` this reservation is
+          what keeps the title out of both.
+
+          Measured rather than assumed: at 390px, without it, the two collected
+          titles in the fixture run under the ring by 24x14px and 9x10px, and the
+          ring's stroke crosses the glyphs - on the cells the design says should
+          be the loudest thing on the sheet. With it, no line of any cell in the
+          fixture touches either piece of furniture.
+        */
         'pr-9',
         'break-words',
         'font-label',
@@ -312,18 +303,22 @@ const GiftCardBody: React.FC<{
           'w-8',
           'rounded-full',
           'border-[1.5px]',
-          // The member's own ink at full strength, raised out of the 70% wash
-          // it used to carry. Measured on the collected cell, not assumed: at
-          // 70% the ring came out at 2.5:1 against its own ground in light
-          // theme, which is under the 3:1 that makes a shape rather than a
-          // smudge, and it read as a decorative outline. At full strength the
-          // same ring is 3.8:1 in light and 10:1 in dark, which is what the
-          // world contract means when it lets the ring be the loudest small
-          // element on a collected cell - on a collected cell there is nothing
-          // else left to read. The declared 1.5px is unchanged, so this adds
-          // no second border weight; Chrome paints it as one device pixel at
-          // 1x and three at 2x.
-          'border-[var(--member-ink)]',
+          /*
+            The member's own ink, resolved for THIS ground.
+
+            A collected cell is the one surface in the app that is near-black in
+            the light theme, and the tray under a name on the contents page is
+            tuned for light paper: the same six values measure 2.06-3.78:1 here
+            and read as faint outlines rather than stamps. So the ring reads
+            `--member-ink-on-collected` - the same six hues lightened, which is
+            what `--member-ink` already resolves to in the dark theme, so nothing
+            about the dark ring changes. Measured after the change on the
+            collected ground: 5.41-9.16:1 in light, and 5.88-9.97:1 in dark both
+            before and after. The ring is `aria-hidden` (the tick carries
+            `aria-pressed`), so this is legibility, not a contrast requirement -
+            but redundancy still has to be legible.
+          */
+          'border-[var(--member-ink-on-collected)]',
           justChanged && 'animate-cancel-stamp'
         )}
       />

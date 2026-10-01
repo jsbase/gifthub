@@ -35,7 +35,17 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   cancelLabel,
 }) => (
   <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-    <DialogContent className='sm:max-w-md xs:h-auto xs:w-auto' hideClose>
+    {/*
+      The width is the caller's to set, and the mobile box is not. This used to
+      carry `xs:h-auto xs:w-auto` as well, and both were inoperative: the
+      primitive anchored the sheet with a definite top and bottom, so `h-auto`
+      resolved to the gap between them and the two buttons sat above a void that
+      filled the rest of the phone, and `w-auto` lost to the primitive's
+      `xs:left-0 xs:right-0`. The primitive now owns the mobile geometry, so
+      there is nothing here to override - and no way for the next caller to
+      reintroduce the same two dead classes.
+    */}
+    <DialogContent className='sm:max-w-md' hideClose>
       <DialogHeader>
         <DialogTitle>{title}</DialogTitle>
         <DialogDescription>{description}</DialogDescription>

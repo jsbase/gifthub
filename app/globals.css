@@ -9,10 +9,10 @@
 
   wishy is a bound album of collected objects. The ground is buff album board;
   every idea is a sheet of printer's-white label stock mounted on it, ruled into
-  a printed grid, with a small numeral in the corner. The mark that says
-  somebody bought this thing is the one a philatelist knows: the cell inverts
-  and a cancellation ring stamps over it. Permanent, visible to everyone holding
-  the album, which is the whole reason nobody buys the same present twice.
+  a printed grid. The mark that says somebody bought this thing is the one a
+  philatelist knows: the cell inverts and a cancellation ring stamps over it.
+  Permanent, visible to everyone holding the album, which is the whole reason
+  nobody buys the same present twice.
 
   Every token a component references is defined here in both themes. Under
   Tailwind v4 a utility for an undefined token emits no rule at all, so a gap in
@@ -22,8 +22,13 @@
   /* Grounds. Three of them, and the difference is material: the board is the
      album, the sheet is the label stock mounted on it, and a cell is one plate
      laid on the sheet. In light the cell and the sheet are the same stock and
-     the printed rule draws the boundary; in dark the cell is lifted a step so
-     the grid still reads without relying on a hairline against a dark ground. */
+     the printed rule draws the boundary. In dark the cell is lifted a step
+     above the sheet - measured, the lift is 1.24:1 and the rule around the cell
+     is 1.49:1 against it, so neither of them clears 3:1 and the grid does rely
+     on the hairline. The lift is what keeps the cell from being the same value
+     as its sheet; the hairline is what actually draws the grid, and it is faint
+     on purpose. A comment claiming the grid reads without the hairline would be
+     a lie in the one file every future reader opens first. */
   --color-board: hsl(var(--board));
   --color-sheet: hsl(var(--sheet));
   --color-cell: hsl(var(--cell));
@@ -79,10 +84,17 @@
   --color-destructive: hsl(var(--destructive));
 
   /*
-    The ink tray. Each member owns one stamped ink, and it is confined to three
-    places: the numeral in the corner of their cells, the rule under their name,
-    and the cancellation ring. No ink ever fills a region, so a page can show
-    six of them and still read as one printed sheet.
+    The ink tray. Each member owns one stamped ink, and it is confined to two
+    places: the rule under their name, and the cancellation ring on a collected
+    cell. No ink ever fills a region, so a page can show six of them and still
+    read as one printed sheet.
+
+    These are the light-ground values. The ring reads a second resolution of the
+    same six hues, `MEMBER_INKS_ON_COLLECTED` in `lib/member-ink.ts`, because a
+    collected cell is the one ground here that is near-black in the light theme;
+    the lightened profile these already carry for `.dark` below is what that
+    ground asks for. No token is duplicated: both resolutions are the two blocks
+    below, read at two grounds.
   */
   --color-ink-1: hsl(var(--member-ink-1));
   --color-ink-2: hsl(var(--member-ink-2));
@@ -103,8 +115,8 @@
                      group, a person - which is the one commitment carried over
                      from the previous system and is better earned here, because
                      a museum label is exactly where a serif belongs.
-      PT Sans Narrow the printed chrome. Cell numerals, the small tracked labels
-                     that head a section, the label stock's own voice. Confined to
+      PT Sans Narrow the printed chrome. The small tracked labels that head a
+                     section, and the label stock's own voice. Confined to
                      11-12px, where a condensed face reads as stamped type
                      instead of as a second body font.
   */

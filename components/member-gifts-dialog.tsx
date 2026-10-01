@@ -238,34 +238,7 @@ const MemberGiftsDialog: React.FC<MemberGiftsDialogProps> = ({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent
         closeLabel={dict.close}
-        className={cn(
-          // The wide sheet, spelled with the same modifier as the default in
-          // the primitive so the caller's value wins.
-          'sm:max-w-sheet',
-          /*
-            A sheet is as tall as what is written on it, up to a cap.
-
-            The primitive anchors the sheet below the header with BOTH
-            `xs:top-[calc(var(--header-height)+1px)]` and `xs:bottom-0`, and a
-            fixed box with a top and a bottom resolves `height: auto` to the gap
-            between them. So `xs:h-auto` on its own could not make the sheet hug
-            its contents: it stood at the full height of the remaining page with
-            a void under the last cell, on a phone as much as on a desktop. The
-            fix is to release the bottom edge - `xs:bottom-auto` - and then
-            `h-auto` with a `max-h` is exactly "hug it, and scroll once it hits
-            the cap".
-
-            The `isFullScreen` escape hatch that used to sit here is gone: for
-            more than five cells it re-declared the very same
-            `xs:h-[calc(100dvh-...)]` the primitive already sets, so all it ever
-            did was put the fixed full-page height back for the long lists -
-            the opposite of what it was named for. One rule now covers every
-            number of cells.
-          */
-          'xs:bottom-auto',
-          'xs:h-auto',
-          'xs:max-h-[calc(100dvh-var(--header-height)-1rem)]'
-        )}
+        className='sm:max-w-sheet'
         style={memberInkStyle(memberId)}
       >
         <DialogHeader>
@@ -329,29 +302,40 @@ const MemberGiftsDialog: React.FC<MemberGiftsDialogProps> = ({
                 ideas: a printed rule means there is a cell, a dashed one means
                 there is room for one. A row of empty dashed rectangles would
                 read as a loading skeleton, which is the thing being escaped.
+
+                And the nesting is the populated branch's nesting, down to the
+                gaps. It used to be its own: the head and the plate were direct
+                children of `DialogContent` and so sat on the container's 16px
+                gap, while the same head and plate one gift later sat inside
+                `flex flex-col gap-1` on a 12px gap inside a section. The blank
+                page was therefore not the page it became - the title, the head
+                and the first cell all jumped when the first idea was written.
+                One structure, two states.
               */
-              <>
-                <SectionHead label={dict.openIdeas} count={0} />
-                <p
-                  data-testid='noGifts'
-                  className={cn(
-                    // Full content width, because a cell on this sheet is
-                    // always full content width: a blank cell that stops two
-                    // thirds of the way across would be a different shape from
-                    // the cell it is standing in for.
-                    'border',
-                    'border-dashed',
-                    'border-rule',
-                    'px-5',
-                    'py-8',
-                    'text-[0.9375rem]',
-                    'leading-relaxed',
-                    'text-caption'
-                  )}
-                >
-                  {dict.noGifts}
-                </p>
-              </>
+              <div className='flex flex-col gap-1'>
+                <section className='flex flex-col gap-3'>
+                  <SectionHead label={dict.openIdeas} count={0} />
+                  <p
+                    data-testid='noGifts'
+                    className={cn(
+                      // Full content width, because a cell on this sheet is
+                      // always full content width: a blank cell that stops two
+                      // thirds of the way across would be a different shape from
+                      // the cell it is standing in for.
+                      'border',
+                      'border-dashed',
+                      'border-rule',
+                      'px-5',
+                      'py-8',
+                      'text-[0.9375rem]',
+                      'leading-relaxed',
+                      'text-caption'
+                    )}
+                  >
+                    {dict.noGifts}
+                  </p>
+                </section>
+              </div>
             ) : (
               <div className='flex flex-col gap-1'>
                 {openGifts.length > 0 && (

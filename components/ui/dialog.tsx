@@ -105,18 +105,29 @@ const DialogContent = React.forwardRef<
         'overflow-x-hidden',
         // Below sm the sheet becomes the whole page below the header, squared at
         // the top: a sheet pulled out of an album, not a card floating on one.
-        'xs:h-[calc(100dvh-var(--header-height)-1px)]',
+        //
+        // It is anchored at the TOP EDGE ONLY. Anchoring both vertical edges and
+        // then letting callers ask for `xs:h-auto` was the trap this replaced: a
+        // fixed box with a definite top and a definite bottom resolves
+        // `height: auto` to the gap between them, so the caller's height could
+        // not bind, the sheet stood the full height of the remaining page, and
+        // the override that was supposed to release it had to be repeated in
+        // every caller to get one rule to work. Here the sheet is as tall as
+        // what is written on it, up to a cap that keeps its bottom edge 15px
+        // clear of the viewport, and it scrolls once it hits the cap. A caller
+        // that wants a different cap says so once, and nothing has to release an
+        // edge that is no longer there.
+        'xs:h-auto',
+        'xs:max-h-[calc(100dvh-var(--header-height)-1rem)]',
+        'xs:top-[calc(var(--header-height)+1px)]',
         'xs:w-screen',
         'xs:gap-4',
-        'xs:top-[calc(var(--header-height)+1px)]',
-        'xs:bottom-0',
         'xs:left-0',
         'xs:right-0',
         'xs:rounded-none',
         'xs:translate-x-0',
         'xs:data-[state=closed]:slide-out-to-bottom',
         'xs:data-[state=open]:slide-in-from-bottom',
-        'xs:mb-4',
         'sm:h-fit',
         'sm:max-h-[85dvh]',
         // A sheet of label stock is 32rem unless a caller says otherwise. This
@@ -124,7 +135,13 @@ const DialogContent = React.forwardRef<
         // passed by the caller, and because the two are different Tailwind
         // modifier groups the base one silently won at every width above 640px -
         // the wide sheet token was dead code and every wide dialog rendered at
-        // 512px. Both are now the same modifier, so the caller's wins by order.
+        // 512px. Both are now the same `sm:max-w-*` modifier, which is half the
+        // fix: `twMerge` still keeps BOTH classes (`sm:max-w-[32rem]
+        // sm:max-w-sheet` survives it), and the caller's wins because Tailwind
+        // emits the arbitrary-value rule after the named one. Verified, not
+        // assumed - which is why this default is expressed as the value rather
+        // than left to fight it. A caller passing a standard scale size
+        // (`sm:max-w-md`) does get merged down to just its own class.
         'sm:max-w-[32rem]',
         'sm:rounded-lg',
         'sm:left-[50%] sm:translate-x-[-50%]',
