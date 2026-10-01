@@ -17,12 +17,18 @@ const dictionaries = {
     ),
 };
 
+type SupportedLocale = keyof typeof dictionaries;
+
+const isSupportedLocale = (locale: string): locale is SupportedLocale =>
+  Object.prototype.hasOwnProperty.call(dictionaries, locale);
+
 const getDictionary = async (locale: string): Promise<Translations> => {
-  if (!dictionaryCache[locale]) {
-    dictionaryCache[locale] =
-      dictionaries[locale as keyof typeof dictionaries]();
+  const safeLocale: SupportedLocale = isSupportedLocale(locale) ? locale : 'en';
+
+  if (!dictionaryCache[safeLocale]) {
+    dictionaryCache[safeLocale] = dictionaries[safeLocale]();
   }
-  return dictionaryCache[locale];
+  return dictionaryCache[safeLocale];
 };
 
 export default getDictionary;
