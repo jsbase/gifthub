@@ -11,7 +11,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ dict, isLoading, onSubmit }) => {
   return (
     <form
       onSubmit={onSubmit}
-      className={cn('space-y-dialog-desktop', 'xs:space-y-dialog-mobile')}
+      className={cn('mt-4', 'space-y-dialog-desktop', 'xs:space-y-dialog-mobile')}
     >
       <div className='space-y-2'>
         <Label className='sr-only' htmlFor='groupName'>
@@ -20,7 +20,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ dict, isLoading, onSubmit }) => {
         <Input
           name='groupName'
           id='groupName'
-          placeholder={dict.groupName}
+          placeholder={dict.enterGroupName}
           required
         />
       </div>

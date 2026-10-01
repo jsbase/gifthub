@@ -1,14 +1,33 @@
 import '@/app/globals.css';
 import React from 'react';
 import { Metadata, Viewport } from 'next';
-import { Inter } from 'next/font/google';
+import { Literata, Onest } from 'next/font/google';
 import ThemeProvider from '@/components/theme-provider';
 import { Toaster } from '@/components/ui/sonner';
 import ServiceWorkerRegistration from '@/components/service-worker';
+import { Analytics } from '@vercel/analytics/next';
+import { SpeedInsights } from '@vercel/speed-insights/next';
 import { cn } from '@/lib/utils';
 import type { RootLayoutProps } from '@/types';
 
-const inter = Inter({ subsets: ['latin'] });
+// Literata carries names and only names: the wordmark, a group's name in the
+// header, a member's name in the list, and a member's name as a dialog title.
+// Onest carries everything else - every heading that is not a name, every
+// control, every gift title, every count, and the whole of the legal copy. Both
+// ship Latin and Cyrillic, which de/en/ru from one component tree requires.
+const literata = Literata({
+  subsets: ['latin', 'cyrillic'],
+  weight: ['500', '600'],
+  display: 'swap',
+  variable: '--font-literata',
+});
+
+const onest = Onest({
+  subsets: ['latin', 'cyrillic'],
+  weight: ['400', '500', '600'],
+  display: 'swap',
+  variable: '--font-onest',
+});
 
 export const metadata: Metadata = {
   title: 'GiftHub - Family Gift Management',
@@ -63,7 +82,13 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: '#ffffff',
+  // These are the two page grounds, and they are the two values the token block
+  // in globals.css actually renders - the dark ground is a 49%-saturated deep
+  // teal, not a near-black, so the OS chrome is told what the page paints.
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#F6F8F7' },
+    { media: '(prefers-color-scheme: dark)', color: '#0C1E22' },
+  ],
   width: 'device-width',
   initialScale: 1.0,
   viewportFit: 'cover',
@@ -72,7 +97,15 @@ export const viewport: Viewport = {
 
 const RootLayout: React.FC<RootLayoutProps> = ({ children }) => (
   <html lang='en' suppressHydrationWarning>
-    <body className={cn(inter.className, 'min-h-screen', 'flex', 'flex-col')}>
+    <body
+      className={cn(
+        literata.variable,
+        onest.variable,
+        'min-h-screen',
+        'flex',
+        'flex-col'
+      )}
+    >
       <ThemeProvider
         attribute='class'
         defaultTheme='system'
@@ -82,6 +115,8 @@ const RootLayout: React.FC<RootLayoutProps> = ({ children }) => (
         <div className={cn('flex-1', 'flex', 'flex-col')}>{children}</div>
         <Toaster />
         <ServiceWorkerRegistration />
+        <Analytics />
+        <SpeedInsights />
       </ThemeProvider>
     </body>
   </html>

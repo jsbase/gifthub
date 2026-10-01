@@ -8,15 +8,13 @@ const FeatureCards: React.FC<Pick<Translations, 'features'>> = ({
 }) => (
   <div
     className={cn(
-      'text-center',
-      'my-12',
-      'lg:mb-0',
-      'md:mb-0',
+      'mt-16',
       'grid',
       'grid-cols-1',
-      'md:grid-cols-3',
-      'gap-dialog-desktop',
-      'xs:gap-dialog-mobile'
+      'gap-x-10',
+      'gap-y-9',
+      'sm:grid-cols-3',
+      'sm:gap-y-0'
     )}
   >
     {Object.entries(features).map(([key, feature]) => (

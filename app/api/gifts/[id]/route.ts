@@ -1,15 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server';
+import type { Prisma } from '@prisma/client';
 import prisma from '@/lib/prisma';
 import { getGroupIdFromToken } from '@/lib/auth-server';
 
 export const dynamic = 'force-dynamic';
+
+// Gift ids are Prisma cuids (e.g. "clx0a1b2c3d4e5f6g7h8i9j0k1").
+const ID_PATTERN = /^[A-Za-z0-9_-]{1,64}$/;
+
+const isValidId = (value: unknown): value is string =>
+  typeof value === 'string' && ID_PATTERN.test(value);
 
 export const GET: (request: NextRequest) => Promise<NextResponse> = async (
   request
 ) => {
   const { id } = await request.json();
 
-  if (!id.match(/^[0-9a-fA-F]{24}$/)) {
+  if (!isValidId(id)) {
     return NextResponse.json(
       { message: 'Invalid gift ID format' },
       { status: 400 }
@@ -46,11 +53,35 @@ export const GET: (request: NextRequest) => Promise<NextResponse> = async (
 export const POST: (request: NextRequest) => Promise<NextResponse> = async (
   request
 ) => {
-  const { id } = await request.json();
+  // Read the body once. Reading it a second time throws "Body is unusable",
+  // and spreading the parsed object would let a caller rewrite `forMemberId`
+  // or `id` — so pick the editable fields out explicitly.
+  let body: unknown;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ message: 'Invalid gift data' }, { status: 400 });
+  }
 
-  if (!id.match(/^[0-9a-fA-F]{24}$/)) {
+  if (!body || typeof body !== 'object' || Array.isArray(body)) {
+    return NextResponse.json({ message: 'Invalid gift data' }, { status: 400 });
+  }
+
+  const { id, title, description, url, isPurchased } = body as Record<
+    string,
+    unknown
+  >;
+
+  if (!isValidId(id)) {
     return NextResponse.json(
       { message: 'Invalid gift ID format' },
+      { status: 400 }
+    );
+  }
+
+  if (typeof title !== 'string' || title.trim().length === 0) {
+    return NextResponse.json(
+      { message: 'A gift needs a title' },
       { status: 400 }
     );
   }
@@ -61,12 +92,22 @@ export const POST: (request: NextRequest) => Promise<NextResponse> = async (
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
 
-    const data = await request.json();
-    if (!data || typeof data !== 'object') {
-      return NextResponse.json(
-        { message: 'Invalid gift data' },
-        { status: 400 }
-      );
+    // Absent means "leave alone"; present-but-empty means "clear it". Checking
+    // `in` keeps those two apart - sending only a title must not wipe the
+    // description and url the gift already had. An empty string is treated as
+    // empty rather than stored, so both nullable columns hold null or text.
+    const data: Prisma.GiftUpdateInput = { title: title.trim() };
+    if ('description' in body) {
+      data.description =
+        typeof description === 'string' && description.length > 0
+          ? description
+          : null;
+    }
+    if ('url' in body) {
+      data.url = typeof url === 'string' && url.length > 0 ? url : null;
+    }
+    if (typeof isPurchased === 'boolean') {
+      data.isPurchased = isPurchased;
     }
 
     const gift = await prisma.gift.update({
@@ -74,10 +115,7 @@ export const POST: (request: NextRequest) => Promise<NextResponse> = async (
         id,
         groupId,
       },
-      data: {
-        ...data,
-        groupId,
-      },
+      data,
     });
 
     return NextResponse.json(gift);
@@ -145,7 +183,7 @@ export const PUT: (request: NextRequest) => Promise<NextResponse> = async (
 ) => {
   const { id } = await request.json();
 
-  if (!id.match(/^[0-9a-fA-F]{24}$/)) {
+  if (!isValidId(id)) {
     return NextResponse.json(
       { message: 'Invalid gift ID format' },
       { status: 400 }

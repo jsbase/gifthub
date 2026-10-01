@@ -15,18 +15,22 @@ const AuthDialog: React.FC<AuthDialogProps> = ({
   title,
   description,
   className,
+  closeLabel,
 }) => {
   return (
     <DialogContent
+      closeLabel={closeLabel}
       className={cn(
         'max-w-dialog',
-        'xs:p-dialog-mobile p-dialog-desktop',
+        'xs:p-dialog-pad-mobile p-dialog-pad-desktop',
         className
       )}
     >
       <DialogHeader>
         <DialogTitle>{title}</DialogTitle>
-        <DialogDescription>{description}</DialogDescription>
+        <DialogDescription className='pr-6'>
+          {description}
+        </DialogDescription>
       </DialogHeader>
       {children}
     </DialogContent>

@@ -1,5 +1,5 @@
 import React, { memo, useMemo } from 'react';
-import { GiftIcon } from 'lucide-react';
+import { Tag } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { LogoProps } from '@/types';
 
@@ -9,33 +9,30 @@ const SIZES = {
     text: 'text-xl',
   },
   md: {
-    icon: 'h-8 w-8',
+    icon: 'h-7 w-7',
     text: 'text-2xl',
   },
   lg: {
-    icon: 'h-12 w-12',
-    text: 'text-4xl md:text-5xl lg:text-6xl',
+    icon: 'h-9 w-9 sm:h-10 sm:w-10',
+    text: 'text-[clamp(2.25rem,7vw,3.5rem)]',
   },
 } as const;
 
 const Logo: React.FC<LogoProps> = ({ size = 'md', className, groupName }) => {
   const containerClasses = useMemo(
-    () => cn('flex', 'items-center', 'space-x-2', className),
+    () => cn('flex', 'items-center', 'gap-2.5', className),
     [className]
-  );
-
-  const iconClasses = useMemo(
-    () => cn(SIZES[size].icon, 'text-primary'),
-    [size]
   );
 
   const textClasses = useMemo(
     () =>
       cn(
         SIZES[size].text,
-        'font-extrabold',
-        'tracking-tight',
+        'font-serif',
+        'font-medium',
         'leading-none',
+        'tracking-[-0.02em]',
+        'text-balance',
         'text-foreground'
       ),
     [size]
@@ -43,7 +40,15 @@ const Logo: React.FC<LogoProps> = ({ size = 'md', className, groupName }) => {
 
   return (
     <div className={containerClasses}>
-      <GiftIcon className={iconClasses} />
+      {/*
+        A tag rather than a present: the app's whole subject is a list of things
+        other people are going to wrap and hand over.
+      */}
+      <Tag
+        className={cn(SIZES[size].icon, 'shrink-0', 'text-primary')}
+        strokeWidth={1.75}
+        aria-hidden='true'
+      />
       <h1 className={textClasses}>{groupName || 'GiftHub'}</h1>
     </div>
   );

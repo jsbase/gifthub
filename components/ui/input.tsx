@@ -1,8 +1,7 @@
 import * as React from 'react';
 import { cn } from '@/lib/utils';
 
-export interface InputProps
-  extends React.InputHTMLAttributes<HTMLInputElement> {}
+export type InputProps = React.InputHTMLAttributes<HTMLInputElement>;
 
 const Input = React.forwardRef<HTMLInputElement, InputProps>(
   ({ className, type, ...props }, ref) => {
@@ -11,13 +10,21 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
         type={type}
         className={cn(
           'flex',
-          'h-10',
+          // 44px rather than shadcn's 40px: this form is filled in on a phone,
+          // in a hallway, by someone in a hurry.
+          'h-11',
           'w-full',
           'rounded-md',
           'border',
           'border-input',
-          'bg-background',
-          'px-3'
+          'bg-transparent',
+          'px-3',
+          'text-[0.9375rem]',
+          'transition-colors',
+          'placeholder:text-muted-foreground',
+          'disabled:cursor-not-allowed',
+          'disabled:opacity-50',
+          className
         )}
         ref={ref}
         {...props}

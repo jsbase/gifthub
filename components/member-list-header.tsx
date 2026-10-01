@@ -15,15 +15,33 @@ const MemberListHeader: React.FC<MemberListHeaderProps> = ({
     <div
       className={cn(
         'flex',
-        'flex-col sm:flex-row',
-        'sm:items-center',
+        'flex-col',
+        'gap-5',
+        'border-b',
+        'border-border',
+        'sm:flex-row',
+        'sm:items-end',
         'sm:justify-between',
-        'gap-2'
+        'sm:gap-6'
       )}
     >
-      <h2 className='text-2xl font-bold'>{dict.members}</h2>
+      {/* A section label, not a name: it stays in the sans. */}
+      <h2 className={cn('text-3xl', 'font-semibold', 'leading-none', 'tracking-[-0.01em]')}>
+        {dict.members}
+      </h2>
+      {/*
+        Stacked at 390px, side by side once there is room: at the narrow end two
+        German or Russian labels do not fit on one line each.
+      */}
       <div
-        className={cn('grid', 'grid-cols-2', 'gap-2', 'w-full', 'sm:w-auto')}
+        className={cn(
+          'grid',
+          'grid-cols-1',
+          'gap-3',
+          'w-full',
+          'min-[26rem]:grid-cols-2',
+          'sm:w-auto'
+        )}
       >
         <Button
           variant='outline'
@@ -34,7 +52,7 @@ const MemberListHeader: React.FC<MemberListHeaderProps> = ({
             'items-center',
             'justify-center',
             'gap-2',
-            !hasMembers && 'opacity-50 cursor-not-allowed'
+            'text-[0.875rem]'
           )}
           data-testid='showRemoveMemberButtons'
         >

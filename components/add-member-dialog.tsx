@@ -32,6 +32,7 @@ const AddMemberDialog: React.FC<Omit<AddMemberDialogProps, 'dict'>> = ({
   const [dict, setDict] = useState<{
     addMemberDialog: AddMemberDialogDictionary;
     toasts: ToastTranslations;
+    close: string;
   } | null>(null);
   const path = usePathname();
   const locale = getLocaleFromPath(path);
@@ -42,6 +43,7 @@ const AddMemberDialog: React.FC<Omit<AddMemberDialogProps, 'dict'>> = ({
       setDict({
         addMemberDialog: translations.addMemberDialog,
         toasts: translations.toasts,
+        close: translations.close,
       });
     };
     loadTranslations();
@@ -99,15 +101,21 @@ const AddMemberDialog: React.FC<Omit<AddMemberDialogProps, 'dict'>> = ({
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button data-testid='addMemberButton'>
-          <UserPlus className={cn('h-4 w-4', 'mr-2')} />
+        <Button
+          data-testid='addMemberButton'
+          className='justify-center text-[0.875rem]'
+        >
+          <UserPlus className={cn('h-4', 'w-4')} />
           {dict.addMemberDialog.addMember}
         </Button>
       </DialogTrigger>
-      <DialogContent className={cn('xs:p-4', 'xs:h-[85vh]', 'xs:max-h-[85vh]')}>
+      <DialogContent
+        closeLabel={dict.close}
+        className={cn('xs:p-4', 'xs:h-[85vh]', 'xs:max-h-[85vh]')}
+      >
         <DialogHeader>
           <DialogTitle>{dict.addMemberDialog.addMemberTitle}</DialogTitle>
-          <DialogDescription className='sr-only'>
+          <DialogDescription>
             {dict.addMemberDialog.enterMemberName}
           </DialogDescription>
         </DialogHeader>

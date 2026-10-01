@@ -1,8 +1,5 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
   assetPrefix: process.env.NODE_ENV === 'production' ? undefined : '',
   images: { unoptimized: true },
   headers: async () => {
@@ -17,13 +14,6 @@ const nextConfig = {
         ],
       },
     ];
-  },
-  webpack: (config, { dev }) => {
-    if (dev) {
-      config.cache = false;
-    }
-
-    return config;
   },
 };
 

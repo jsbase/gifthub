@@ -1,6 +1,5 @@
 import { DialogProps } from '@radix-ui/react-dialog';
 import { ReactNode } from 'react';
-import { ToastActionElement, ToastProps } from '@/components/ui/toast';
 
 export interface Gift {
   id: string;
@@ -49,6 +48,8 @@ export interface Translations {
   login: string;
   register: string;
   loading: string;
+  cancel: string;
+  close: string;
   createGroup: string;
   createGroupDescription: string;
   enterGroupName: string;
@@ -63,6 +64,7 @@ export interface Translations {
   logout: string;
   noMembers: string;
   features: Features;
+  preview: LandingPreviewTranslations;
   errors: {
     loginRequired: string;
     failedToLoad: string;
@@ -158,6 +160,9 @@ export interface Translations {
     };
   };
   giftCount: {
+    /** A member with no gift ideas at all - the one who most needs a present. */
+    none: string;
+    /** Every idea on the list has been bought. */
     zero: string;
     one: string;
     many: string;
@@ -169,7 +174,20 @@ export interface Translations {
     | MemberGiftsTranslations
     | ToastTranslations
     | ConfirmationTranslations
+    | LandingPreviewTranslations
+    | { name: string; count: number }[]
     | { [key: string]: string };
+}
+
+/**
+ * The sample list on the landing page. It renders with the same count strings and
+ * the same row anatomy as the real dashboard, so it cannot drift away from what
+ * a member actually sees.
+ */
+export interface LandingPreviewTranslations {
+  /** Says plainly that this is the whole screen, which is the claim it makes. */
+  lead: string;
+  members: { name: string; count: number }[];
 }
 
 export interface MemberGiftsDialogProps {
@@ -182,10 +200,11 @@ export interface MemberGiftsDialogProps {
   dict: MemberGiftsTranslations & {
     toasts: ToastTranslations;
     confirmations: ConfirmationTranslations;
+    close: string;
   };
 }
 
-export interface CommandDialogProps extends DialogProps {}
+export type CommandDialogProps = DialogProps;
 
 export interface AuthButtonsProps {
   dict: Translations;
@@ -218,11 +237,8 @@ export interface AddMemberFormProps {
 }
 
 export interface MemberGiftsTranslations {
-  title: string;
-  description: string;
-  manageGifts: string;
+  listHint: string;
   addGift: string;
-  giftTitle: string;
   enterGiftTitle: string;
   optional: string;
   enterDescription: string;
@@ -232,7 +248,9 @@ export interface MemberGiftsTranslations {
   noGifts: string;
   markAsPurchased: string;
   markAsAvailable: string;
-  deleteGift?: string;
+  deleteGift: string;
+  /** Title of the delete-confirmation dialog; the button reuses deleteGift. */
+  deleteGiftConfirm: string;
 }
 
 export interface ToastTranslations {
@@ -261,6 +279,7 @@ export interface AddMemberDialogProps {
   dict?: {
     addMemberDialog: AddMemberDialogDictionary;
     toasts: Pick<ToastTranslations, 'memberAdded' | 'memberAddFailed'>;
+    close: string;
   };
 }
 
@@ -275,6 +294,9 @@ export interface HeaderProps {
   showAuth?: boolean;
 }
 
+// Deliberately shadows the global PageProps that Next 16 generates into
+// .next/types/routes.d.ts: a page that omits `import type { PageProps }` will
+// resolve to that generated global instead, which is parameterised by route.
 export interface PageProps {
   params: Promise<{ lang: string }>;
 }
@@ -293,6 +315,7 @@ export interface AuthDialogProps {
   title: string;
   description: string;
   className?: string;
+  closeLabel: string;
 }
 
 export interface AuthState {
@@ -344,10 +367,44 @@ export interface LogoProps {
 
 export interface GiftCardProps {
   gift: Gift;
-  dict: Pick<MemberGiftsTranslations, 'markAsPurchased' | 'markAsAvailable'>;
+  dict: Pick<
+    MemberGiftsTranslations,
+    'markAsPurchased' | 'markAsAvailable' | 'deleteGift'
+  >;
   onDelete: (id: string) => void;
   onTogglePurchased: (id: string) => void;
-  animatedGiftId: string | null;
+  /** The row whose toggle request is in flight; it dims and refuses re-clicks. */
+  togglingId: string | null;
+  /**
+   * The row that actually changed in this dialog session. The strike and the
+   * settle are gated on it, so opening the dialog for someone with five bought
+   * ideas does not replay five strikes.
+   */
+  changedId: string | null;
+}
+
+/** A member row's gift counts: what is left to buy, and what the list holds. */
+export interface MemberGiftCounts {
+  unbought: number;
+  total: number;
+}
+
+export interface MemberListProps {
+  members: Member[];
+  giftCounts: Record<string, MemberGiftCounts>;
+  dict: any;
+  onMemberClick: (id: string) => void;
+  onMemberDeleted: () => void;
+}
+
+export interface ConfirmDialogProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onConfirm: () => void;
+  title: string;
+  description: string;
+  confirmLabel: string;
+  cancelLabel: string;
 }
 
 export interface DebouncedFunction<T extends (...args: any[]) => any> {
@@ -361,57 +418,9 @@ export interface DebounceOptions {
   trailing?: boolean;
 }
 
-export interface MemberListProps {
-  members: Member[];
-  giftCounts: Record<string, number>;
-  dict: any;
-  onMemberClick: (id: string) => void;
-  onMemberDeleted: () => void;
-}
-
 export interface MemberListHeaderProps {
   dict: any;
   onDeleteClick: () => void;
   onMemberAdded: () => void;
   hasMembers: boolean;
-}
-
-export type ToasterToast = ToastProps & {
-  id: string;
-  title?: React.ReactNode;
-  description?: React.ReactNode;
-  action?: ToastActionElement;
-};
-
-export type Toast = Omit<ToasterToast, 'id'>;
-
-const actionTypes = {
-  ADD_TOAST: 'ADD_TOAST',
-  UPDATE_TOAST: 'UPDATE_TOAST',
-  DISMISS_TOAST: 'DISMISS_TOAST',
-  REMOVE_TOAST: 'REMOVE_TOAST',
-} as const;
-
-export type ActionType = typeof actionTypes;
-
-export type Action =
-  | {
-      type: ActionType['ADD_TOAST'];
-      toast: ToasterToast;
-    }
-  | {
-      type: ActionType['UPDATE_TOAST'];
-      toast: Partial<ToasterToast>;
-    }
-  | {
-      type: ActionType['DISMISS_TOAST'];
-      toastId?: ToasterToast['id'];
-    }
-  | {
-      type: ActionType['REMOVE_TOAST'];
-      toastId?: ToasterToast['id'];
-    };
-
-export interface State {
-  toasts: ToasterToast[];
 }
