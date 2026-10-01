@@ -20,8 +20,9 @@ import type { RootLayoutProps } from '@/types';
   Source Serif 4 is reserved for a name, which is the one typographic commitment
   carried over from the previous system - a museum specimen label is exactly
   where a serif belongs, so the rule survives the change of world and is better
-  motivated by it. PT Sans Narrow is the printed chrome: cell numerals and the
-  small tracked labels that head a section, confined to 11-12px.
+  motivated by it. PT Sans Narrow is the printed chrome: the cell's name and the
+  reference line under it, the count figure that heads each section of a sheet,
+  and the small tracked labels, 11-15px.
 */
 const sourceSerif = Source_Serif_4({
   subsets: ['latin', 'cyrillic'],

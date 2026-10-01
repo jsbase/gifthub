@@ -204,32 +204,48 @@ const GiftCardBody: React.FC<{
       'min-w-0',
       'flex-1',
       'px-4',
+      /*
+        The right-hand lane, kept clear for the cell's own corner furniture.
+
+        This used to be documented as room for a numeral that never rendered,
+        which is why it looked like dead space: 36px of a cell's measure that
+        bought nothing. It does buy something, and the arithmetic is exact:
+
+            px-4                     16px either side
+            pr-[52px]                52px at the end   (replaces px-4's 16px there)
+                                    ─────
+            every line of text stops  52px from this box's right edge
+            ring  right-5 + w-8      20px + 32px = 52px from the same edge
+
+        So the ring's left stroke lands exactly on the text's right edge: 0px
+        clearance, measured rather than assumed, and it is the whole reason the
+        reservation is load-bearing. The ring is positioned against this box's
+        padding box, so the padding here cannot move it - which is what makes it
+        safe to take the lane off the `h3` and give it to the box itself.
+
+        It has to live here, not on the heading. The description and the URL
+        row are siblings of the `h3` inside this same box, so a lane on the
+        heading protected the title and nothing else: on a collected cell - the
+        only kind that carries a ring - a long note or a long URL ran straight
+        underneath the cancellation. Measured at 390px before this move, the
+        description intersected the ring's box by 32x11.75px and the URL row by
+        32x12.5px, which is the ring's full 32px width in both cases.
+
+        52 rather than 36 is the point, twice over. It is `px-4`'s 16px plus the
+        36px the `h3` used to carry, so the title keeps the exact measure and the
+        exact wrap points it had when the lane lived on the `h3`; and it is also
+        exactly where the ring's left stroke sits. Move either side of that sum
+        and the collision comes back at a width nobody is looking at - so
+        re-measure before touching `right-5`, `w-8`, this box's `px-4`, or the
+        lane itself.
+      */
+      'pr-[52px]',
       'py-3'
     )}
   >
     <h3
       data-testid='giftTitle'
       className={cn(
-        /*
-          The right-hand lane, kept clear for the cell's own corner furniture.
-
-          This used to be documented as room for a numeral that never rendered,
-          which is why it looked like dead space: 36px of a cell's measure that
-          bought nothing. It does buy something. The trash button sits in the top
-          right corner of every cell at `right-3`, 44px wide, so it reaches 56px
-          in from the right edge - over the first line of the title. On a
-          collected cell the cancellation ring sits further left still (`right-6`,
-          44px, so 68px in) and vertically centred, which puts it beside the last
-          line as readily as the first. Together with `px-4` this reservation is
-          what keeps the title out of both.
-
-          Measured rather than assumed: at 390px, without it, the two collected
-          titles in the fixture run under the ring by 24x14px and 9x10px, and the
-          ring's stroke crosses the glyphs - on the cells the design says should
-          be the loudest thing on the sheet. With it, no line of any cell in the
-          fixture touches either piece of furniture.
-        */
-        'pr-9',
         'break-words',
         'font-label',
         'text-[0.9375rem]',
