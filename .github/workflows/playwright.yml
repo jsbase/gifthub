@@ -13,14 +13,16 @@ name: Playwright
 #      deploy-triggered suite would run the database-writing tests against the
 #      data a human is looking at.
 #
-# `development` was the target before and no longer exists on origin; the
-# integration branch is now `preview` and `main` is the only long-lived branch
-# besides it.
+# Feature branches and pull requests. `main` is deliberately excluded: it is the
+# production branch, and every change reaches it through a pull_request, which
+# this already gates. Dependabot branches are excluded from `push` because their
+# pull_request run covers the same commits - without that, each update runs twice.
 on:
   push:
-    branches: [preview, main]
+    branches-ignore:
+      - main
+      - 'dependabot/**'
   pull_request:
-    branches: [preview, main]
 
 # The job only reads the repository.
 permissions:
