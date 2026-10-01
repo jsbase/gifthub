@@ -104,8 +104,18 @@ export const POST: (request: NextRequest) => Promise<NextResponse> = async (
     });
 
     if (existingMember) {
+      // `code` for the same reason the format 400 above has one: both are 400
+      // with a `message`, and without a discriminator the client cannot tell
+      // "that is not a name" from "that name is taken" - which are two
+      // different sentences in the user's language, and the more common of the
+      // two by some distance. Named to match `invalid_name_format` in shape,
+      // and about the name rather than the member, because the message is
+      // about the name. Additive; `message` and the status are unchanged.
       return NextResponse.json(
-        { message: 'A member with this name already exists in this group' },
+        {
+          message: 'A member with this name already exists in this group',
+          code: 'duplicate_name',
+        },
         { status: 400 }
       );
     }

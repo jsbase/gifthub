@@ -70,6 +70,7 @@ export interface Translations {
     failedToLoad: string;
     failedToLoadGifts: string;
     invalidNameFormat: string;
+    duplicateName: string;
     loginFailed: string;
     passwordMismatch: string;
     registrationFailed: string;
