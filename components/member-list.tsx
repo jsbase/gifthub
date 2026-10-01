@@ -154,6 +154,20 @@ const MemberList: React.FC<MemberListProps> = ({
               className={cn(
                 'h-auto',
                 'min-h-[72px]',
+                'min-w-0',
+                /*
+                  The one place in this app where a control is allowed to wrap.
+                  Every button in `buttonVariants` is `whitespace-nowrap`, which is
+                  right for a label and wrong here: a row is a label plus a
+                  figure, and the row has to survive the longest name the product
+                  allows. A German compound or a Russian patronymic is one
+                  unbreakable token wider than a phone; under nowrap it ran past
+                  the sheet's own rule, over the count figure, and gave the page a
+                  horizontal scrollbar. `break-words` on the name below could not
+                  fix this, because nowrap removes the soft-wrap opportunity that
+                  break-words depends on.
+                */
+                'whitespace-normal',
                 'items-center',
                 'gap-4',
                 'px-0',

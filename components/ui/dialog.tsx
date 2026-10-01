@@ -46,7 +46,7 @@ DialogOverlay.displayName = DialogPrimitive.Overlay.displayName;
  * this is a printed page rather than a card - which is the difference this whole
  * world is making.
  */
-const CropMarks = () => (
+export const CropMarks = () => (
   <>
     {(
       [
