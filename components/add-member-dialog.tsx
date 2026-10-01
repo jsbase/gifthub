@@ -111,7 +111,10 @@ const AddMemberDialog: React.FC<Omit<AddMemberDialogProps, 'dict'>> = ({
       </DialogTrigger>
       <DialogContent
         closeLabel={dict.close}
-        className={cn('xs:p-4', 'xs:h-[85vh]', 'xs:max-h-[85vh]')}
+        className={cn(
+          'xs:h-auto',
+          'xs:max-h-[calc(100dvh-var(--header-height)-1rem)]'
+        )}
       >
         <DialogHeader>
           <DialogTitle>{dict.addMemberDialog.addMemberTitle}</DialogTitle>

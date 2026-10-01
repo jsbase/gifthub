@@ -19,13 +19,13 @@ const DropdownMenuSub = DropdownMenuPrimitive.Sub;
 const DropdownMenuRadioGroup = DropdownMenuPrimitive.RadioGroup;
 
 const menuSurface =
-  'z-50 min-w-[10rem] overflow-hidden rounded-lg border border-border bg-popover p-1 text-popover-foreground shadow-[0_12px_30px_-10px_rgb(0_0_0/0.24)] data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2';
+  'z-50 min-w-[10rem] overflow-hidden rounded-lg border border-rule bg-sheet p-1 text-ink shadow-[0_12px_30px_-10px_rgb(0_0_0/0.24)] data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2';
 
 // Radix moves focus with the arrow keys onto items carrying `tabindex="-1"`, so
 // `:focus-visible` never matches them. `data-[highlighted]` is what actually
 // shows a keyboard user where they are in this menu.
 const menuItem =
-  'relative flex cursor-default select-none items-center rounded-md px-3 py-2.5 text-[0.9375rem] outline-none transition-colors data-[highlighted]:bg-accent data-[disabled]:pointer-events-none data-[disabled]:opacity-50';
+  'relative flex cursor-default select-none items-center rounded-md px-3 py-2.5 text-[0.9375rem] outline-none transition-colors data-[highlighted]:bg-wash data-[disabled]:pointer-events-none data-[disabled]:opacity-50';
 
 const DropdownMenuSubTrigger = React.forwardRef<
   React.ElementRef<typeof DropdownMenuPrimitive.SubTrigger>,
@@ -38,7 +38,7 @@ const DropdownMenuSubTrigger = React.forwardRef<
     className={cn(
       menuItem,
       inset && 'pl-8',
-      'data-[state=open]:bg-accent',
+      'data-[state=open]:bg-wash',
       className
     )}
     {...props}
@@ -153,7 +153,7 @@ const DropdownMenuLabel = React.forwardRef<
   <DropdownMenuPrimitive.Label
     ref={ref}
     className={cn(
-      'px-3 py-2 text-[0.8125rem] font-medium text-muted-foreground',
+      'px-3 py-2 text-[0.8125rem] font-medium text-caption',
       inset && 'pl-8',
       className
     )}
@@ -168,7 +168,7 @@ const DropdownMenuSeparator = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <DropdownMenuPrimitive.Separator
     ref={ref}
-    className={cn('-mx-1 my-1 h-px bg-border', className)}
+      className={cn('-mx-1 my-1 h-px bg-rule', className)}
     {...props}
   />
 ));
@@ -180,7 +180,7 @@ const DropdownMenuShortcut = ({
 }: React.HTMLAttributes<HTMLSpanElement>) => {
   return (
     <span
-      className={cn('ml-auto text-xs text-muted-foreground', className)}
+      className={cn('ml-auto text-xs text-caption', className)}
       {...props}
     />
   );

@@ -10,8 +10,8 @@ const AddMemberForm: React.FC<AddMemberFormProps> = ({
   onSubmit,
 }) => (
   <form onSubmit={onSubmit} className='mt-4 space-y-4'>
-    <div className='space-y-2'>
-      <Label className='sr-only' htmlFor='name'>
+    <div className='flex flex-col gap-1.5'>
+      <Label className='label-print text-caption' htmlFor='name'>
         {dict.enterMemberName}
       </Label>
       <Input

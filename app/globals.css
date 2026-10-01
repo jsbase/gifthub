@@ -5,137 +5,166 @@
 @custom-variant xs (@media (max-width: 639px));
 
 /*
-  "A list written on good paper."
-  A cool grey-green sheet, petrol ink, and exactly one warm colour - marigold -
-  which is spent entirely on the strike that crosses a gift idea off the list.
-  Every token the components reference is defined here in both themes; under
+  "A page in the family album."
+
+  wishy is a bound album of collected objects. The ground is buff album board;
+  every idea is a sheet of printer's-white label stock mounted on it, ruled into
+  a printed grid, with a small numeral in the corner. The mark that says
+  somebody bought this thing is the one a philatelist knows: the cell inverts
+  and a cancellation ring stamps over it. Permanent, visible to everyone holding
+  the album, which is the whole reason nobody buys the same present twice.
+
+  Every token a component references is defined here in both themes. Under
   Tailwind v4 a utility for an undefined token emits no rule at all, so a gap in
   this block is a silently dead class rather than a build error.
-
-  The comments below name the hex each triplet actually renders. Those hexes are
-  not round numbers because HSL is quantised to whole degrees, so a token is the
-  nearest reachable colour to the design value rather than the design value
-  itself; every one of them is within two units per channel of what was drawn,
-  except the four that were genuinely wrong (the ink, Signal, and the two dark
-  grounds) and are now what they always claimed to be.
 */
 @theme inline {
-  /* Core colours */
-  --color-background: hsl(var(--background));
-  --color-foreground: hsl(var(--foreground));
-  --color-primary: hsl(var(--primary));
-  --color-primary-foreground: hsl(var(--primary-foreground));
+  /* Grounds. Three of them, and the difference is material: the board is the
+     album, the sheet is the label stock mounted on it, and a cell is one plate
+     laid on the sheet. In light the cell and the sheet are the same stock and
+     the printed rule draws the boundary; in dark the cell is lifted a step so
+     the grid still reads without relying on a hairline against a dark ground. */
+  --color-board: hsl(var(--board));
+  --color-sheet: hsl(var(--sheet));
+  --color-cell: hsl(var(--cell));
+
+  /*
+    The collected cell, and the two poles of its inversion.
+
+    This exists as its own pair rather than as "swap label and ink" because ink
+    is a colour, not a pole: in the dark theme --ink is a light cream, so a cell
+    inverted to --ink came out brighter than the sheet it sits on and became the
+    loudest thing on the screen. Receding has to mean the same thing in both
+    themes, and it does here - in the light theme the collected cell goes to ink,
+    in the dark theme it goes *below* the board, because both are "further from
+    the light than its neighbours".
+  */
+  --color-collected: hsl(var(--collected));
+  --color-collected-foreground: hsl(var(--collected-foreground));
+
+  /* Ink. One warm near-black for everything written, and a caption weight of it
+     for anything that recedes. */
+  --color-ink: hsl(var(--ink));
+  --color-caption: hsl(var(--caption));
+  --color-ink-foreground: hsl(var(--ink-foreground));
+
+  /* The printed rule. One hairline, one weight, on both grounds. */
+  --color-rule: hsl(var(--rule));
+  --color-rule-input: hsl(var(--rule));
+
+  /*
+    The wash is a mix of the ink rather than a second tint, which is why one
+    hover value works on buff board, on white label and on an inverted cell.
+  */
+  --color-wash: color-mix(in srgb, hsl(var(--ink)) 7%, transparent);
+  --color-wash-strong: color-mix(in srgb, hsl(var(--ink)) 13%, transparent);
+
+  /* Registration cyan. Printers align four plates in cyan before anything is
+     black, so cyan is the one colour in this world that means "look here". It
+     carries the focus ring and nothing else. */
+  --color-register: hsl(var(--register));
+  --color-register-gap: hsl(var(--register-gap));
+
+  /* Printers' crop and registration marks, used as the sheet's edge furniture. */
+  --color-furniture: hsl(var(--furniture));
+
+  /* Destructive. Ink on label is already unreadable, so the destructive colour
+     is the caption weight pushed to red rather than a new field. */
   --color-destructive: hsl(var(--destructive));
-  --color-destructive-foreground: hsl(var(--destructive-foreground));
-  --color-muted-foreground: hsl(var(--muted-foreground));
-  --color-popover: hsl(var(--popover));
-  --color-popover-foreground: hsl(var(--popover-foreground));
 
   /*
-    The hover fill is a wash of the ink, not a second tint. Frost has exactly one
-    job - the full-bleed band the member list is written on - and a hover that
-    was a fixed colour would have to sit between Paper and Frost to be visible on
-    both, lightening one and darkening the other. Mixing the ink keeps the wash
-    proportional and in the same direction on every surface, in both themes.
+    The ink tray. Each member owns one stamped ink, and it is confined to three
+    places: the numeral in the corner of their cells, the rule under their name,
+    and the cancellation ring. No ink ever fills a region, so a page can show
+    six of them and still read as one printed sheet.
   */
-  --color-accent: color-mix(in srgb, hsl(var(--foreground)) 8%, transparent);
-  --color-accent-hover: color-mix(in srgb, hsl(var(--foreground)) 14%, transparent);
-
-  /* Input, borders and focus. The focus pair is plain hex rather than
-     hsl(var(--x)) - see the base rule below for why. */
-  --color-border: hsl(var(--border));
-  --color-input: hsl(var(--input));
+  --color-ink-1: hsl(var(--member-ink-1));
+  --color-ink-2: hsl(var(--member-ink-2));
+  --color-ink-3: hsl(var(--member-ink-3));
+  --color-ink-4: hsl(var(--member-ink-4));
+  --color-ink-5: hsl(var(--member-ink-5));
+  --color-ink-6: hsl(var(--member-ink-6));
 
   /*
-    Planes. There is no card in this app: the page is Paper, the member list is
-    written on a full-bleed band of Frost, and Surface exists only for the one
-    thing that floats above a scrim. Dark mode steps ground -> surface -> band so
-    a settled gift row is still legible against the dialog it sits in.
-  */
-  --color-surface: hsl(var(--surface));
-  --color-band: hsl(var(--band));
+    Type. Three families, each with one job, all three carrying Latin AND
+    Cyrillic because the de/en/ru route tree requires it and a Latin-only face
+    is a bug for the Russian half of the audience.
 
-  /* The one warm colour in the interface */
-  --color-strike: hsl(var(--strike));
+      Golos Text     a Cyrillic-first grotesque. The body, the controls, the
+                     labels. It was drawn for Cyrillic, so the Russian strings
+                     in this product are its native case rather than a fallback.
+      Source Serif 4 the specimen label. Reserved for a name - the wordmark, a
+                     group, a person - which is the one commitment carried over
+                     from the previous system and is better earned here, because
+                     a museum label is exactly where a serif belongs.
+      PT Sans Narrow the printed chrome. Cell numerals, the small tracked labels
+                     that head a section, the label stock's own voice. Confined to
+                     11-12px, where a condensed face reads as stamped type
+                     instead of as a second body font.
+  */
+  --font-serif: var(--font-source-serif), ui-serif, Georgia, 'Times New Roman', serif;
+  --font-sans: var(--font-golos), ui-sans-serif, system-ui, sans-serif;
+  --font-label: var(--font-pt-narrow), var(--font-golos), ui-sans-serif, sans-serif;
 
   /*
-    Type. Two families, both first-class tokens, divided by what they are for:
-    Literata is a serif and is used for exactly one kind of thing - a name. The
-    product's name, a group's name, a person's name. Onest is the sans and
-    carries everything else: every heading that is not a name, every control,
-    every gift title, every count, and the whole of the legal copy. Long German
-    and Russian strings set at display size in a serif are slower to read, and
-    the two things this screen exists to show - a name and a number - are the
-    only things a serif helps with.
+    Radius is cut, not moulded. Album stock and label stock are trimmed with a
+    blade, so a control gets 3px and a floating sheet 6px; every cell, every
+    rule and the whole board stay square, because a printed grid is not a box.
   */
-  --font-serif: var(--font-literata), ui-serif, Georgia, 'Times New Roman', serif;
-  --font-sans: var(--font-onest), ui-sans-serif, system-ui, sans-serif;
+  --radius-lg: var(--radius-sheet);
+  --radius-md: calc(var(--radius) - 1px);
+  --radius-sm: calc(var(--radius) - 2px);
 
-  /*
-    Border radius is a scale, not a single value: controls get 10px, the dialog
-    gets 16px because it floats, and the band and every list row stay square
-    because they are a list, not a box.
-  */
-  --radius-lg: var(--radius-dialog);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-sm: calc(var(--radius) - 4px);
+  --container-sheet: 44rem;
 
-  /* Max width for the wide dialogs */
-  --container-dialog: 42rem;
-
-  /* Header height - the header is sized to match this, and the mobile dialog
-     sheet is positioned from it */
   --height-header: var(--header-height);
 
-  /* Consistent gaps inside dialogs */
-  --spacing-dialog-mobile: 0.5rem;
-  --spacing-dialog-desktop: 1rem;
-  --spacing-dialog-pad-mobile: 1rem;
-  --spacing-dialog-pad-desktop: 1.5rem;
-
-  /* Animations - see the reduced-motion block at the foot of this file */
-  --animate-strike-in: strike-in 0.38s ease-out forwards;
-  --animate-settle-in: settle-in 0.4s ease-out forwards;
-  --animate-row-reveal: row-reveal 0.18s ease-out forwards;
+  /* Motion. One authored moment in this world is the cancellation; the rest are
+     state feedback and the list arriving once. */
+  --animate-cancel-stamp: cancel-stamp 320ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  --animate-cancel-settle: cancel-settle 260ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  --animate-reveal-in: reveal-in 340ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  --animate-count-flash: count-flash 520ms ease-out both;
+  --animate-row-reveal: row-reveal 180ms ease-out both;
 }
 
 @layer base {
   * {
-    @apply border-border;
+    @apply border-rule;
   }
+
+  html {
+    -webkit-tap-highlight-color: transparent;
+  }
+
   body {
-    @apply bg-background text-foreground font-sans antialiased;
+    @apply bg-board text-ink font-sans antialiased;
+    /* Text on buff board is set slightly looser than the same size on white:
+       a warm ground reads heavier than a cool one at the same value. */
+    text-rendering: optimizeLegibility;
   }
+
   ::selection {
-    @apply bg-accent-hover;
+    background-color: color-mix(in srgb, hsl(var(--ink)) 18%, transparent);
+    color: hsl(var(--ink));
   }
 
   /*
-    One focus mechanism for the whole app, so no interactive element can be added
-    without inheriting a visible keyboard focus - and it is two-tone by
-    construction: a 2px gap in the surface tone, then a 2px mid-teal ring.
+    One focus mechanism for the whole app, so a new control cannot be added
+    without inheriting a visible keyboard focus.
 
-    The two tones are not decoration. No single flat colour can clear 3:1 against
-    both a near-white page and a mid-dark red button: against #AF2418 the ring
-    needs a relative luminance of at least 0.40, and against #F6F8F7 it must not
-    exceed 0.28, which is an empty interval. WCAG 2.4.11 allows an indicator made
-    of two colours as long as one of them clears 3:1 against what it sits
-    against, and here the gap tone clears 6.8:1 on the destructive fill in light
-    and 5.7:1 in dark while the ring clears 3.2:1 or better everywhere else.
+    It is two tones by construction: a 2px gap in the local ground, then a 2px
+    registration-cyan ring. No single flat colour can clear 3:1 against both a
+    buff board and an ink-filled button, and WCAG 2.4.11 accepts a two-colour
+    indicator as long as one of the tones clears 3:1 against what it sits on -
+    here the gap tone does, by a wide margin, on every ground in both themes.
 
-    Both tones are drawn with box-shadow rather than outline. The obvious version
-    of this rule is `outline: 2px solid var(--focus-ring)` with the gap in
-    outline-offset, and it does not work: measured in the browser, the width, the
-    style, the offset and the gap shadow all applied while outline-*colour* fell
-    back to currentColor, and !important did not change it. On a button whose
-    text is destructive that is a red ring on a red button - no indicator at all.
-    Two stacked shadows draw the same figure and are not subject to it. The
-    `outline` is left in place as a transparent 2px ring because box-shadow is
-    dropped in forced-colors mode, where Windows High Contrast then paints its
-    own system focus colour into it.
-
-    Both colours are plain hex custom properties, so the values in the comment
-    above are the values the browser resolves.
+    Both tones are box-shadow rather than outline. The obvious outline version
+    was measured in the browser and outline-*colour* fell back to currentColor,
+    which puts a ring the same colour as the text on a destructive button - no
+    indicator at all. Box-shadow is not subject to that fallback. The transparent
+    outline stays for forced-colors mode, where Windows High Contrast paints its
+    own focus colour and box-shadow is dropped.
   */
   :where(
       a,
@@ -148,67 +177,149 @@
     ):focus-visible {
     outline: 2px solid transparent;
     outline-offset: 2px;
-    box-shadow: 0 0 0 2px var(--focus-gap), 0 0 0 4px var(--focus-ring) !important;
+    box-shadow:
+      0 0 0 2px var(--register-gap),
+      0 0 0 4px var(--register) !important;
+  }
+
+  /*
+    The caret is part of the design, not a browser default: every field in this
+    app is filled in on a phone by someone in a hurry, and an invisible caret on
+    a buff ground is a broken affordance.
+  */
+  input,
+  textarea {
+    caret-color: hsl(var(--ink));
+  }
+
+  /*
+    A pointer, on the devices that have a pointer.
+
+    Gated on `hover: hover` and `pointer: fine` rather than applied everywhere:
+    a tap target on a phone has no cursor to change, and a stylesheet that sets
+    `cursor: pointer` everywhere is the clearest tell of one that was not written
+    for the device in hand. It lives here rather than on each component because
+    one rule cannot drift from the others.
+
+    Text fields are deliberately absent - clicking one gives you a caret, not a
+    target - and disabled controls keep their own cursor.
+  */
+  @media (hover: hover) and (pointer: fine) {
+    :where(
+        a[href],
+        button,
+        summary,
+        select,
+        [role='button'],
+        [role='checkbox'],
+        [role='switch'],
+        [role='tab'],
+        [role='menuitem'],
+        [role='option']
+      ):not(:disabled):not([aria-disabled='true']) {
+      cursor: pointer;
+    }
+  }
+
+  /*
+    Scrollbars belong to the sheet they sit on. The default light-grey bar on
+    buff board is the clearest tell of a page that was assembled rather than
+    drawn, and it is the one surface detail no component owns.
+  */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in srgb, hsl(var(--ink)) 26%, transparent)
+      transparent;
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background-color: color-mix(in srgb, hsl(var(--ink)) 22%, transparent);
+    border: 3px solid transparent;
+    background-clip: content-box;
+    border-radius: 999px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: color-mix(in srgb, hsl(var(--ink)) 34%, transparent);
   }
 }
 
+/*
+  Daylight: an album open on a kitchen table. Buff board, white label stock, warm
+  near-black ink. A collected cell is ink, so it is the darkest thing on the
+  page and recedes the moment the ink lands on it.
+*/
 :root {
-  /*
-    Light: Paper on the page, Petrol for ink, Frost for the band the member list
-    is written on, Slate for everything secondary, and Marigold held back for
-    the strike.
-  */
-  --background: 150 14% 97%; /* Paper   #F6F8F7 */
-  --foreground: 188 61% 14%; /* Petrol  #0E3439 */
-  --primary: 188 61% 14%; /* Petrol  #0E3439 */
-  --primary-foreground: 150 14% 97%; /* Paper #F6F8F7 */
-  --muted-foreground: 170 10% 34%; /* Slate #4E5F5C */
-  --popover: 150 14% 97%; /* Paper   #F6F8F7 */
-  --popover-foreground: 188 61% 14%; /* Petrol #0E3439 */
-  --destructive: 5 76% 39%; /* Signal  #AF2418 */
-  --destructive-foreground: 150 14% 97%; /* Paper #F6F8F7 */
+  --board: 40 26% 89%; /* buff album board      ~#E3DACA */
+  --sheet: 45 16% 99%; /* label stock           ~#FDFCF8 */
+  --cell: 45 16% 99%; /* one plate of it       ~#FDFCF8 */
+  --collected: 25 30% 9%; /* the stamp's ink      ~#190F0A */
+  --collected-foreground: 45 20% 97%; /*          ~#FCFAF5 */
+  --ink: 25 22% 11%; /* printing ink          ~#1E1410 */
+  --caption: 28 11% 40%; /* receded ink           ~#5B5049 */
+  --rule: 34 14% 44%; /* printed rule          ~#807260 */
+  --ink-foreground: 45 16% 99%;
 
-  --border: 170 12% 80%; /* Hairline #C6D2D0 */
-  --input: 170 12% 80%; /* Hairline #C6D2D0 */
-  --focus-ring: #3e8b93;
-  --focus-gap: #ffffff;
+  --register: 195 84% 34%; /* registration cyan   ~#0B7EA3 */
+  --register-gap: 45 16% 99%; /* the local ground   ~#FDFCF8 */
+  --furniture: 34 14% 52%;
 
-  --surface: 150 14% 97%; /* Paper #F6F8F7 */
-  --band: 163 14% 90%; /* Frost  #E2E9E7 */
+  --destructive: 6 68% 42%; /* red pencil           ~#B32D18 */
 
-  --strike: 39 77% 52%; /* Marigold #E3A126 */
+  --member-ink-1: 354 58% 36%; /* oxblood */
+  --member-ink-2: 232 46% 40%; /* indigo */
+  --member-ink-3: 174 46% 26%; /* verdigris */
+  --member-ink-4: 36 70% 36%; /* ochre */
+  --member-ink-5: 276 28% 42%; /* violet slate */
+  --member-ink-6: 196 58% 28%; /* teal ink */
 
-  --radius: 0.625rem;
-  --radius-dialog: 1rem;
+  --radius: 4px;
+  --radius-sheet: 6px;
   --header-height: 56px;
 }
 
+/*
+  Night: the same album under a lamp. The board drops to a warm near-black, the
+  sheet lifts just clear of it, a cell lifts a step further so the grid still
+  reads, and a collected cell goes *below* the board - the deepest value on the
+  page, which is what "stamped and filed" should look like when the page is
+  already dark.
+
+  The saturation does not collapse on the way: this is dark brown board, not
+  neutral black.
+*/
 .dark {
-  /*
-    Dark is the same system at a different hour, not a second theme: the ground is
-    the Paper hue taken down to #0C1E22 and the ink comes back up to #DBE6E4.
-    The saturation does not collapse on the way - the ground is 49% saturated,
-    not the 5% a near-black would need.
-  */
-  --background: 190 49% 9%; /* #0C1E22 */
-  --foreground: 169 19% 88%; /* Petrol #DBE6E4 */
-  --primary: 169 19% 88%; /* Petrol #DBE6E4 */
-  --primary-foreground: 190 49% 9%; /* #0C1E22 */
-  --muted-foreground: 172 11% 62%; /* Slate #93A9A6 */
-  --popover: 188 40% 11%; /* Surface #112427 */
-  --popover-foreground: 169 19% 88%; /* Petrol #DBE6E4 */
-  --destructive: 8 73% 62%; /* Signal #E56A57 */
-  --destructive-foreground: 190 49% 9%; /* #0C1E22 */
+  --board: 28 15% 7%; /* ~#100C09 */
+  --sheet: 30 13% 14%; /* ~#1F1917 */
+  --cell: 32 13% 20%; /* ~#2C2724 */
+  --collected: 28 20% 5%; /* ~#0B0706 */
+  --collected-foreground: 42 24% 93%; /* ~#F2EDE4 */
+  --ink: 42 24% 93%; /* ~#F2EDE4 */
+  --caption: 35 10% 66%; /* ~#AF9F92 */
+  --rule: 30 10% 30%; /* ~#4A3E37 */
+  --ink-foreground: 28 15% 8%;
 
-  --border: 187 31% 22%; /* Hairline #274549 */
-  --input: 187 31% 22%; /* Hairline #274549 */
-  --focus-ring: #3f858d;
-  --focus-gap: #0a171a;
+  --register: 193 68% 48%; /* ~#35B2D4 */
+  --register-gap: 28 15% 9%; /* the local ground */
+  --furniture: 32 10% 42%;
 
-  --surface: 188 40% 11%; /* #112427 */
-  --band: 186 44% 14%; /* Frost #143033 */
+  --destructive: 8 72% 58%; /* ~#E8705C */
 
-  --strike: 38 85% 62%; /* Marigold #F0B44C */
+  --member-ink-1: 354 62% 64%;
+  --member-ink-2: 232 58% 72%;
+  --member-ink-3: 174 46% 58%;
+  --member-ink-4: 38 74% 62%;
+  --member-ink-5: 276 34% 72%;
+  --member-ink-6: 196 58% 62%;
 }
 
 /*
@@ -217,49 +328,89 @@
 */
 
 /*
-  The strike: the one moment in this app that is worth animating. Someone in the
-  group bought the gift, so a single marigold stroke draws across the title and
-  the row settles into the band colour - bought items recede, so the ones still
-  needing a present are the ones that carry weight.
+  THE CANCEL. The one moment in this app worth animating, and it is not a
+  highlighter drawing a line across a title - a philatelist cancels a stamp, so
+  this ring comes down askew and slightly too large, overshoots, and settles
+  square. It lands on a cell that has already inverted, because a stamp lands
+  instantly; only the ring takes its 320ms.
 
-  The stroke is a real `text-decoration` rather than a positioned pseudo
-  element, because a pseudo element can only ever be positioned against the
-  whole block: a gift title that wraps onto a second line would be struck
-  through the gap between the two lines instead of across them.
+  Gated on the one row that changed, so opening a list of five collected ideas
+  stamps nothing.
 */
-@keyframes strike-in {
-  from {
-    text-decoration-color: transparent;
+@keyframes cancel-stamp {
+  0% {
+    opacity: 0;
+    transform: scale(1.5) rotate(-14deg);
+    filter: blur(2px);
   }
-  to {
-    text-decoration-color: hsl(var(--strike));
+  55% {
+    opacity: 1;
+    transform: scale(0.94) rotate(2.5deg);
+    filter: blur(0);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+    filter: blur(0);
   }
 }
 
-@keyframes settle-in {
-  from {
+/* The cell settling under the stamp: a 2px drop, as if the sheet took a press. */
+@keyframes cancel-settle {
+  0% {
+    transform: translateY(-2px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+/*
+  The list arriving. Once, on first paint of a sheet, staggered by position and
+  capped at ten rows so a long list does not arrive as a queue.
+*/
+@keyframes reveal-in {
+  0% {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/*
+  Count feedback. When a gift is bought the number in the sheet's header
+  changes, and this is the only way the app says so outside the row itself.
+*/
+@keyframes count-flash {
+  0% {
     background-color: transparent;
   }
-  to {
-    background-color: hsl(var(--band));
+  25% {
+    background-color: color-mix(in srgb, hsl(var(--ink)) 14%, transparent);
+  }
+  100% {
+    background-color: transparent;
   }
 }
 
 @keyframes row-reveal {
-  from {
+  0% {
     opacity: 0;
   }
-  to {
+  100% {
     opacity: 1;
   }
 }
 
 /*
-  Tailwind v4 has no equivalent for the `container` configuration that v3
-  supported (center + per-breakpoint padding), so it is reimplemented here. It
-  is the layout backbone of every page: the outer element is `container` and
-  the narrow content column nests a `max-w-2xl mx-auto` inside it, so this
-  ladder is never fought by a utility class on the same element.
+  Tailwind v4 has no equivalent for the `container` configuration v3 supported
+  (centre + per-breakpoint padding), so it is reimplemented here. It is the
+  layout backbone of every page: the outer element is `container` and the narrow
+  content column nests a `max-w-2xl mx-auto` inside it, so this ladder is never
+  fought by a utility class on the same element.
 */
 @utility container {
   width: 100%;
@@ -280,8 +431,8 @@
 
   @media (width >= 64rem) {
     max-width: 64rem;
-    padding-left: 4rem;
-    padding-right: 4rem;
+    padding-left: 3.5rem;
+    padding-right: 3.5rem;
   }
 
   @media (width >= 80rem) {
@@ -298,28 +449,45 @@
 }
 
 /*
-  Legal body copy on the privacy and terms pages: one measure, one leading and
-  one colour, defined once rather than repeated on every paragraph.
+  Legal body copy: one measure, one leading, one colour. Measured against the
+  buff board rather than white, so the measure is a touch shorter and the
+  leading a touch looser - long German compounds set at 68ch on a warm ground
+  lose the reader at the right edge.
 */
 @utility prose-p {
   font-size: 1rem;
-  line-height: 1.7;
-  color: hsl(var(--muted-foreground));
+  line-height: 1.75;
+  color: hsl(var(--caption));
   text-wrap: pretty;
 }
 
 /*
-  Reduced motion. Everything collapses to a state change with no movement. The
-  one exception is the loading spinner, selected by the class that animates it
-  rather than by a test id: a spinner that has stopped spinning is a broken
-  affordance, not a decorative one. Under reduced motion the strike is still
-  applied - it just appears complete instead of drawing in.
+  The printed label: the small tracked uppercase line that heads a section of
+  the sheet. It is the one place PT Sans Narrow is used at body size, and it is
+  how a specimen catalogue marks its sections.
+*/
+@utility label-print {
+  font-family: var(--font-label);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  line-height: 1;
+}
+
+/*
+  Reduced motion. Everything collapses to a state change with no movement - the
+  collected cell still inverts and the cancellation still appears, it just
+  arrives already stamped. The one exception is the loading spinner, selected by
+  the class that animates it rather than by a test id: a spinner that has
+  stopped spinning is a broken affordance, not a decorative one.
 */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
   *::after {
     animation-duration: 1ms !important;
+    animation-delay: 0ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 1ms !important;
     scroll-behavior: auto !important;

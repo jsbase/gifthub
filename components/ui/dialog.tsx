@@ -22,8 +22,9 @@ const DialogOverlay = React.forwardRef<
     className={cn(
       'fixed inset-0',
       'z-50',
-      'bg-foreground/45',
-      'backdrop-blur-[2px]',
+      // A scrim, not a glass panel. The board behind stays legible and recedes;
+      // nothing here blurs, because nothing in a printed world does.
+      'bg-ink/55',
       'data-[state=open]:animate-in',
       'data-[state=closed]:animate-out',
       'data-[state=closed]:fade-out-0',
@@ -36,6 +37,37 @@ const DialogOverlay = React.forwardRef<
   />
 ));
 DialogOverlay.displayName = DialogPrimitive.Overlay.displayName;
+
+/**
+ * A sheet of label stock laid on the board.
+ *
+ * Four printers' crop marks sit in the corners at low contrast. They cost four
+ * absolutely positioned elements and they are the single detail that tells you
+ * this is a printed page rather than a card - which is the difference this whole
+ * world is making.
+ */
+const CropMarks = () => (
+  <>
+    {(
+      [
+        ['top-3 left-3', 'border-l border-t'],
+        ['top-3 right-3', 'border-r border-t'],
+        ['bottom-3 left-3', 'border-l border-b'],
+        ['bottom-3 right-3', 'border-r border-b'],
+      ] as const
+    ).map(([position, edges]) => (
+      <span
+        key={position}
+        aria-hidden='true'
+        className={cn(
+          'pointer-events-none absolute h-2 w-2 border-furniture opacity-70',
+          position,
+          edges
+        )}
+      />
+    ))}
+  </>
+);
 
 const DialogContent = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Content>,
@@ -59,24 +91,23 @@ const DialogContent = React.forwardRef<
         'fixed z-50',
         'flex flex-col',
         'w-full',
-        'gap-2',
+        'gap-5',
         'border',
-        'border-border',
-        'bg-surface',
-        'text-foreground',
-        'p-6',
-        // The one shadow in the app: a dialog has to separate from its scrim,
-        // and this is a long soft falloff rather than the generic card shadow.
-        'shadow-[0_18px_50px_-12px_rgb(0_0_0/0.28)]',
+        'border-rule',
+        'bg-sheet',
+        'text-ink',
+        'p-5 xs:p-4',
+        // The only shadow in the app: a sheet genuinely floats above the board,
+        // and this is a long soft falloff rather than a generic card shadow.
+        'shadow-[0_22px_60px_-16px_rgb(0_0_0/0.34)]',
         'duration-200',
         'overflow-y-auto',
         'overflow-x-hidden',
-        // Below sm the dialog becomes a full-height sheet, squared off at the
-        // top, sitting directly under the header.
+        // Below sm the sheet becomes the whole page below the header, squared at
+        // the top: a sheet pulled out of an album, not a card floating on one.
         'xs:h-[calc(100dvh-var(--header-height)-1px)]',
         'xs:w-screen',
-        'xs:gap-2',
-        'xs:p-4',
+        'xs:gap-4',
         'xs:top-[calc(var(--header-height)+1px)]',
         'xs:bottom-0',
         'xs:left-0',
@@ -87,8 +118,14 @@ const DialogContent = React.forwardRef<
         'xs:data-[state=open]:slide-in-from-bottom',
         'xs:mb-4',
         'sm:h-fit',
-        'sm:max-h-[85vh]',
-        'sm:max-w-lg',
+        'sm:max-h-[85dvh]',
+        // A sheet of label stock is 32rem unless a caller says otherwise. This
+        // default used to be `sm:max-w-lg` written here *and* `max-w-sheet`
+        // passed by the caller, and because the two are different Tailwind
+        // modifier groups the base one silently won at every width above 640px -
+        // the wide sheet token was dead code and every wide dialog rendered at
+        // 512px. Both are now the same modifier, so the caller's wins by order.
+        'sm:max-w-[32rem]',
         'sm:rounded-lg',
         'sm:left-[50%] sm:translate-x-[-50%]',
         'sm:top-[50%] sm:translate-y-[-50%]',
@@ -101,21 +138,25 @@ const DialogContent = React.forwardRef<
       )}
       {...props}
     >
+      <CropMarks />
       {children}
       {!hideClose && (
         <DialogPrimitive.Close
           className={cn(
             'absolute',
-            'right-4',
-            'top-4',
+            'right-3',
+            'top-3',
+            'grid',
+            'h-11',
+            'w-11',
+            'place-items-center',
             'rounded-md',
-            'p-1.5',
-            'text-muted-foreground',
+            'text-caption',
             'transition-colors',
-            'hover:bg-accent',
-            'hover:text-foreground',
-            'data-[state=open]:bg-accent',
-            'data-[state=open]:text-muted-foreground'
+            'hover:bg-wash',
+            'hover:text-ink',
+            'data-[state=open]:bg-wash',
+            'data-[state=open]:text-ink'
           )}
           data-testid='dialogClose'
         >
@@ -138,9 +179,10 @@ const DialogHeader = ({
     className={cn(
       'flex',
       'flex-col',
-      'space-y-1.5',
+      'gap-1.5',
+      'pr-11',
       'text-left',
-      'xs:space-y-1',
+      'xs:gap-1',
       className
     )}
     {...props}
@@ -156,9 +198,10 @@ const DialogFooter = ({
     className={cn(
       'flex',
       'flex-col-reverse',
+      'gap-2',
       'sm:flex-row',
       'sm:justify-end',
-      'sm:space-x-2',
+      'xs:gap-1.5',
       className
     )}
     {...props}
@@ -168,7 +211,7 @@ DialogFooter.displayName = 'DialogFooter';
 
 // No font family here. The serif in this app is for a name, and whether a
 // dialog is titled by a person's name or by a verb is the caller's decision:
-// the gifts dialog passes `font-serif` because its title is the member's name,
+// the gifts sheet passes `font-serif` because its title is the member's name,
 // the other three do not.
 const DialogTitle = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Title>,
@@ -177,11 +220,11 @@ const DialogTitle = React.forwardRef<
   <DialogPrimitive.Title
     ref={ref}
     className={cn(
+      'font-serif',
       'text-2xl',
       'font-semibold',
       'leading-tight',
       'tracking-[-0.01em]',
-      'pr-8',
       className
     )}
     {...props}
@@ -195,7 +238,7 @@ const DialogDescription = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <DialogPrimitive.Description
     ref={ref}
-    className={cn('text-[0.9375rem]', 'text-muted-foreground', className)}
+    className={cn('text-[0.9375rem]', 'text-caption', className)}
     {...props}
   />
 ));

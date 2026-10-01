@@ -72,8 +72,10 @@
     "noGifts": "Noch keine Geschenkideen. Füge die erste hinzu.",
     "optional": "Optional",
     "markAsPurchased": "Als gekauft markieren",
-    "markAsAvailable": "Zurück auf die Liste"
-  },
+      "markAsAvailable": "Zurück auf die Liste",
+      "openIdeas": "Noch offen",
+      "collectedIdeas": "Besorgt"
+    },
   "members": "Mitglieder",
   "cancel": "Abbrechen",
   "close": "Schließen",
@@ -101,7 +103,7 @@
     "memberDeleteFailed": "Mitglied nicht gelöscht"
   },
   "footer": {
-    "copyright": "© 2026 GiftHub",
+    "copyright": "© 2026 wishy",
     "privacyPolicy": "Datenschutz",
     "termsConditions": "AGB"
   },
@@ -156,15 +158,15 @@
     "title": "Allgemeine Geschäftsbedingungen",
     "section1": {
       "title": "1. Geltungsbereich",
-      "content": "Diese Allgemeinen Geschäftsbedingungen gelten für die Nutzung der GiftHub Web-App, einer Plattform zur Organisation von Geschenken in Gruppen und Familien."
+      "content": "Diese Allgemeinen Geschäftsbedingungen gelten für die Nutzung der wishy Web-App, einer Plattform zur Organisation von Geschenken in Gruppen und Familien."
     },
     "section2": {
       "title": "2. Leistungsbeschreibung",
-      "content": "GiftHub ermöglicht es Nutzern, Geschenkwünsche zu organisieren, Wunschlisten zu erstellen und den Überblick über geplante Geschenke zu behalten. Die App dient der Koordination von Geschenken innerhalb von Gruppen, wobei die Überraschung gewahrt bleibt."
+      "content": "wishy ermöglicht es Nutzern, Geschenkwünsche zu organisieren, Wunschlisten zu erstellen und den Überblick über geplante Geschenke zu behalten. Die App dient der Koordination von Geschenken innerhalb von Gruppen, wobei die Überraschung gewahrt bleibt."
     },
     "section3": {
       "title": "3. Registrierung und Nutzerkonto",
-      "content": "Die Nutzung von GiftHub erfordert die Erstellung eines Gruppenkontos. Die Nutzer sind verpflichtet, ihre Zugangsdaten geheim zu halten und vor dem Zugriff Dritter zu schützen."
+      "content": "Die Nutzung von wishy erfordert die Erstellung eines Gruppenkontos. Die Nutzer sind verpflichtet, ihre Zugangsdaten geheim zu halten und vor dem Zugriff Dritter zu schützen."
     },
     "section4": {
       "title": "4. Nutzungsregeln",
@@ -176,7 +178,7 @@
     },
     "section6": {
       "title": "6. Haftungsausschluss",
-      "content": "GiftHub übernimmt keine Garantie für die ständige Verfügbarkeit der App und haftet nicht für leicht fahrlässig verursachte Schäden."
+      "content": "wishy übernimmt keine Garantie für die ständige Verfügbarkeit der App und haftet nicht für leicht fahrlässig verursachte Schäden."
     }
   }
 }

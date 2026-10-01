@@ -16,19 +16,24 @@ const MemberListHeader: React.FC<MemberListHeaderProps> = ({
       className={cn(
         'flex',
         'flex-col',
-        'gap-5',
-        'border-b',
-        'border-border',
+        'gap-4',
+        'border-b-2',
+        'border-rule',
+        'pb-4',
         'sm:flex-row',
         'sm:items-end',
         'sm:justify-between',
         'sm:gap-6'
       )}
     >
-      {/* A section label, not a name: it stays in the sans. */}
-      <h2 className={cn('text-3xl', 'font-semibold', 'leading-none', 'tracking-[-0.01em]')}>
-        {dict.members}
-      </h2>
+      {/*
+        A printed section label rather than a page heading. It is how a specimen
+        catalogue marks a section of a page, and it is deliberately not the size
+        the section used to be: on a contents page the list itself is the thing
+        worth looking at, and a 30px heading above it made the rows read as the
+        caption to a title rather than as the contents.
+      */}
+      <h2 className='label-print pt-1 text-caption'>{dict.members}</h2>
       {/*
         Stacked at 390px, side by side once there is room: at the narrow end two
         German or Russian labels do not fit on one line each.

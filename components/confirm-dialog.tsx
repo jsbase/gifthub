@@ -35,7 +35,7 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   cancelLabel,
 }) => (
   <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-    <DialogContent className='max-w-dialog xs:h-auto xs:w-auto' hideClose>
+    <DialogContent className='sm:max-w-md xs:h-auto xs:w-auto' hideClose>
       <DialogHeader>
         <DialogTitle>{title}</DialogTitle>
         <DialogDescription>{description}</DialogDescription>

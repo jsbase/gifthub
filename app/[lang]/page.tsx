@@ -55,7 +55,7 @@ const Home: NextPage<PageProps> = async ({ params }) => {
                 'max-w-[46ch]',
                 'text-[1.0625rem]',
                 'leading-relaxed',
-                'text-muted-foreground'
+                'text-caption'
               )}
             >
               {dict.tagline}

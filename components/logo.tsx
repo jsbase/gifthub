@@ -33,7 +33,7 @@ const Logo: React.FC<LogoProps> = ({ size = 'md', className, groupName }) => {
         'leading-none',
         'tracking-[-0.02em]',
         'text-balance',
-        'text-foreground'
+        'text-ink'
       ),
     [size]
   );
@@ -45,11 +45,11 @@ const Logo: React.FC<LogoProps> = ({ size = 'md', className, groupName }) => {
         other people are going to wrap and hand over.
       */}
       <Tag
-        className={cn(SIZES[size].icon, 'shrink-0', 'text-primary')}
+        className={cn(SIZES[size].icon, 'shrink-0', 'text-ink')}
         strokeWidth={1.75}
         aria-hidden='true'
       />
-      <h1 className={textClasses}>{groupName || 'GiftHub'}</h1>
+      <h1 className={textClasses}>{groupName || 'wishy'}</h1>
     </div>
   );
 };

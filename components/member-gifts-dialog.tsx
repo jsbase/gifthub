@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { toast } from 'sonner';
 import { PlusCircle } from 'lucide-react';
 import {
@@ -17,8 +17,22 @@ import { Textarea } from '@/components/ui/textarea';
 import GiftCard from '@/components/gift-card';
 import ConfirmDialog from '@/components/confirm-dialog';
 import { cn } from '@/lib/utils';
+import { memberInkStyle } from '@/lib/member-ink';
 import type { MemberGiftsDialogProps, Gift } from '@/types';
 
+/**
+ * One sheet of the album: a person's page, its cells divided into the ones still
+ * waiting and the ones already stamped.
+ *
+ * The previous version returned the gifts newest-first in a single run of rows,
+ * which meant the two states this product exists to distinguish - still needed
+ * and already covered - were interleaved in whatever order they happened to be
+ * written. Splitting the sheet is not decoration: "what does this person still
+ * need" and "what has been handled" are different questions, and a single
+ * undifferentiated list cannot answer either one. It is also why the collected
+ * cells recede: open cells sit on white, collected cells are inverted, so the
+ * eye lands on what is still needed without being told to.
+ */
 const MemberGiftsDialog: React.FC<MemberGiftsDialogProps> = ({
   isOpen,
   onClose,
@@ -31,8 +45,8 @@ const MemberGiftsDialog: React.FC<MemberGiftsDialogProps> = ({
   const [showAddGiftForm, setShowAddGiftForm] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   /* The row whose toggle is in flight, and the row that actually changed. They
-     are separate because the strike is a one-shot: gating it on the request
-     alone would either replay on every dialog open or never fire. */
+     are separate because the cancellation is a one-shot: gating it on the
+     request alone would either replay on every dialog open or never fire. */
   const [togglingId, setTogglingId] = useState<string | null>(null);
   const [changedId, setChangedId] = useState<string | null>(null);
   const [pendingDeletion, setPendingDeletion] = useState<Gift | null>(null);
@@ -51,6 +65,37 @@ const MemberGiftsDialog: React.FC<MemberGiftsDialogProps> = ({
       setPendingDeletion(null);
     }
   }, [isOpen]);
+
+  /*
+    Newest first within each section, because that is the order the API returns
+    and because the idea you have just written down is the one you most want to
+    see. What changes is which section it is in.
+  */
+  const { openGifts, collectedGifts, openCount } = useMemo(() => {
+    const open: Gift[] = [];
+    const collected: Gift[] = [];
+    for (const gift of gifts) {
+      (gift.isPurchased ? collected : open).push(gift);
+    }
+    return {
+      openGifts: open,
+      collectedGifts: collected,
+      openCount: open.length,
+    };
+  }, [gifts]);
+
+  /* The count in the sheet's header. It moves whenever a cell is collected, and
+     the numeral flashes - the only place the app reports a change outside the
+     cell itself, because on mobile the sheet's own header is the one thing that
+     stays on screen while you scroll the cells. */
+  const countLabel =
+    gifts.length === 0
+      ? dict.giftCount.none
+      : openCount === 0
+        ? dict.giftCount.zero
+        : openCount === 1
+          ? dict.giftCount.one.replace('{{count}}', '1')
+          : dict.giftCount.many.replace('{{count}}', String(openCount));
 
   const handleAddGift = useCallback(
     async (e: React.FormEvent<HTMLFormElement>) => {
@@ -159,147 +204,248 @@ const MemberGiftsDialog: React.FC<MemberGiftsDialogProps> = ({
 
   const isFullScreen = gifts.length > 5;
 
+  /*
+    The section head: a printed label, a rule, and the count. This is the
+    furniture that turns a list of rows into a page of an album.
+  */
+  const SectionHead = ({
+    label,
+    count,
+  }: {
+    label: string;
+    count: number;
+  }) => (
+    <div className='flex items-baseline justify-between gap-3 pt-2'>
+      <h3 className='label-print text-caption'>{label}</h3>
+      <span
+        className={cn(
+          'font-label',
+          'text-[0.6875rem]',
+          'font-bold',
+          'tabular-nums',
+          'tracking-[0.1em]',
+          'text-caption'
+        )}
+      >
+        {String(count).padStart(2, '0')}
+      </span>
+    </div>
+  );
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent
         closeLabel={dict.close}
         className={cn(
-          'max-w-dialog',
-          'xs:p-dialog-pad-mobile',
-          'xs:h-[85vh]',
-          'xs:max-h-[85vh]',
-          isFullScreen ? 'xs:w-full xs:h-full' : 'xs:w-auto xs:h-auto'
+          // The wide sheet, spelled with the same modifier as the default in
+          // the primitive so the caller's value wins.
+          'sm:max-w-sheet',
+          // Below sm the sheet hugs its content instead of standing open at a
+          // fixed 85vh: the previous version left most of a phone screen empty
+          // below a four-cell list.
+          'xs:h-auto xs:max-h-[calc(100dvh-var(--header-height)-1rem)]',
+          isFullScreen && 'xs:h-[calc(100dvh-var(--header-height)-1px)] xs:max-h-none'
         )}
+        style={memberInkStyle(memberId)}
       >
         <DialogHeader>
           {/*
             The one dialog title that is a name, so the one dialog title in the
-            serif. A person's name is the content the serif is reserved for.
+            specimen serif. A person's name is the content the serif is reserved
+            for, and it is now the printed label's proper voice.
           */}
-          <DialogTitle className='font-serif xs:text-2xl'>{memberName}</DialogTitle>
+          <DialogTitle>{memberName}</DialogTitle>
           <DialogDescription>{dict.listHint}</DialogDescription>
         </DialogHeader>
 
-        <div
-          className={cn('mt-2', 'space-y-dialog-desktop', 'xs:space-y-dialog-mobile')}
-        >
-          {!showAddGiftForm && (
-            <>
+        {!showAddGiftForm && (
+          <>
+            {/*
+              The count is the sheet's own line of state, in the same words the
+              contents page uses. It is a flash rather than a change of wording
+              because the wording does not change: the number inside it does.
+            */}
+            <div
+              key={countLabel}
+              className={cn(
+                'animate-count-flash',
+                '-mx-1',
+                'w-fit',
+                'rounded-sm',
+                'px-1',
+                'font-label',
+                'text-[0.6875rem]',
+                'font-bold',
+                'uppercase',
+                'tracking-[0.14em]',
+                'text-caption'
+              )}
+            >
+              {countLabel}
+            </div>
+
+            {gifts.length === 0 ? (
+              <p className='max-w-[44ch] py-6 text-[0.9375rem] leading-relaxed text-caption'>
+                {dict.noGifts}
+              </p>
+            ) : (
+              <div className='flex flex-col gap-1'>
+                {openGifts.length > 0 && (
+                  <section className='flex flex-col gap-3'>
+                    <SectionHead
+                      label={dict.openIdeas}
+                      count={openGifts.length}
+                    />
+                    <ul className='flex flex-col gap-2'>
+                      {openGifts.map((gift) => (
+                        <GiftCard
+                          key={gift.id}
+                          gift={gift}
+                          dict={dict}
+                          onDelete={(id) =>
+                            setPendingDeletion(
+                              gifts.find((candidate) => candidate.id === id) ??
+                                null
+                            )
+                          }
+                          onTogglePurchased={handleTogglePurchased}
+                          togglingId={togglingId}
+                          changedId={changedId}
+                        />
+                      ))}
+                    </ul>
+                  </section>
+                )}
+
+                {collectedGifts.length > 0 && (
+                  <section className='flex flex-col gap-3'>
+                    {/*
+                      The section head says what the section is, not what it
+                      means: the line above already says "nothing left to buy" in
+                      the product's own words, so saying it twice here would be
+                      two sentences competing for the same fact.
+                    */}
+                    <SectionHead
+                      label={dict.collectedIdeas}
+                      count={collectedGifts.length}
+                    />
+                    <ul className='flex flex-col gap-2'>
+                      {collectedGifts.map((gift) => (
+                        <GiftCard
+                          key={gift.id}
+                          gift={gift}
+                          dict={dict}
+                          onDelete={(id) =>
+                            setPendingDeletion(
+                              gifts.find((candidate) => candidate.id === id) ??
+                                null
+                            )
+                          }
+                          onTogglePurchased={handleTogglePurchased}
+                          togglingId={togglingId}
+                          changedId={changedId}
+                        />
+                      ))}
+                    </ul>
+                  </section>
+                )}
+              </div>
+            )}
+
+            {/*
+              The add action is at the foot of the sheet and it is quiet. It was
+              a solid ink button at the head of the list, where it outweighed the
+              person's own name - the loudest thing on a page should be the thing
+              the page is about, and the page is about their ideas.
+            */}
+            <div className='mt-1 border-t border-rule pt-3'>
               <Button
+                variant='ghost'
                 onClick={() => setShowAddGiftForm(true)}
-                className={cn('w-full', 'sm:w-fit')}
+                className={cn(
+                  'w-full',
+                  'justify-start',
+                  'gap-2.5',
+                  'px-3',
+                  'text-caption'
+                )}
                 data-testid='addGiftButton'
               >
-                <PlusCircle className={cn('h-4', 'w-4')} />
-                {dict.addGift}
+                <PlusCircle className='h-4 w-4' strokeWidth={1.75} />
+                <span className='label-print'>{dict.addGift}</span>
               </Button>
+            </div>
+          </>
+        )}
 
-              {gifts.length > 0 ? (
-                <ul className='-mx-2 sm:-mx-3'>
-                  {gifts.map((gift) => (
-                    <GiftCard
-                      key={gift.id}
-                      gift={gift}
-                      dict={dict}
-                      onDelete={(id) =>
-                        setPendingDeletion(
-                          gifts.find((candidate) => candidate.id === id) ?? null
-                        )
-                      }
-                      onTogglePurchased={handleTogglePurchased}
-                      togglingId={togglingId}
-                      changedId={changedId}
-                    />
-                  ))}
-                </ul>
-              ) : (
-                <p
-                  className={cn(
-                    'max-w-[40ch]',
-                    'pt-6',
-                    'text-[0.9375rem]',
-                    'leading-relaxed',
-                    'text-muted-foreground',
-                    'xs:text-sm'
-                  )}
-                >
-                  {dict.noGifts}
-                </p>
-              )}
-            </>
-          )}
+        {showAddGiftForm && (
+          <form
+            onSubmit={handleAddGift}
+            className='flex flex-col gap-4 xs:gap-3'
+          >
+            {/*
+              Visible printed labels above each field. The previous version
+              relied on placeholders with screen-reader-only labels, which is a
+              known weak pattern: the instruction disappears the moment the field
+              is filled and a screen reader meets it only once.
+            */}
+            <div className='flex flex-col gap-1.5'>
+              <Label htmlFor='title' className='label-print text-caption'>
+                {dict.enterGiftTitle}
+              </Label>
+              <Input
+                id='title'
+                name='title'
+                placeholder={dict.enterGiftTitle}
+                required
+                autoFocus
+              />
+            </div>
 
-          {showAddGiftForm && (
-            <form
-              onSubmit={handleAddGift}
-              className={cn('space-y-4', 'xs:space-y-3')}
-            >
-              <div className={cn('space-y-2', 'xs:space-y-1')}>
-                <Label htmlFor='title' className='sr-only'>
-                  {dict.enterGiftTitle}
-                </Label>
-                <Input
-                  id='title'
-                  name='title'
-                  placeholder={dict.enterGiftTitle}
-                  required
-                />
-              </div>
+            <div className='flex flex-col gap-1.5'>
+              <Label htmlFor='description' className='label-print text-caption'>
+                {dict.enterDescription}
+              </Label>
+              <Textarea
+                id='description'
+                name='description'
+                placeholder={`${dict.enterDescription} (${dict.optional})`}
+                rows={3}
+              />
+            </div>
 
-              <div className={cn('space-y-2', 'xs:space-y-1')}>
-                <Label className='sr-only' htmlFor='description'>
-                  {dict.enterDescription}
-                </Label>
-                <Textarea
-                  id='description'
-                  name='description'
-                  placeholder={`${dict.enterDescription} (${dict.optional})`}
-                  rows={3}
-                />
-              </div>
+            <div className='flex flex-col gap-1.5'>
+              <Label htmlFor='url' className='label-print text-caption'>
+                {dict.enterUrl}
+              </Label>
+              <Input
+                id='url'
+                name='url'
+                type='url'
+                placeholder={`${dict.enterUrl} (${dict.optional})`}
+              />
+            </div>
 
-              <div className={cn('space-y-2', 'xs:space-y-1')}>
-                <Label className='sr-only' htmlFor='url'>
-                  {dict.enterUrl}
-                </Label>
-                <Input
-                  id='url'
-                  name='url'
-                  type='url'
-                  placeholder={`${dict.enterUrl} (${dict.optional})`}
-                />
-              </div>
-
-              <div
-                className={cn(
-                  'flex',
-                  'flex-row',
-                  'space-x-2',
-                  'xs:flex-col',
-                  'xs:space-x-0',
-                  'xs:space-y-2'
-                )}
+            <div className='mt-1 flex flex-row gap-2 xs:flex-col xs:gap-1.5'>
+              <Button
+                type='submit'
+                disabled={isLoading}
+                className='xs:w-full'
+                data-testid='addGiftSubmit'
               >
-                <Button
-                  type='submit'
-                  disabled={isLoading}
-                  className={cn('xs:w-full', 'xs:text-sm')}
-                  data-testid='addGiftSubmit'
-                >
-                  {isLoading ? dict.adding : dict.addGift}
-                </Button>
-                <Button
-                  type='button'
-                  variant='outline'
-                  onClick={() => setShowAddGiftForm(false)}
-                  className={cn('xs:w-full', 'xs:text-sm')}
-                >
-                  {dict.cancel}
-                </Button>
-              </div>
-            </form>
-          )}
-        </div>
+                {isLoading ? dict.adding : dict.addGift}
+              </Button>
+              <Button
+                type='button'
+                variant='outline'
+                onClick={() => setShowAddGiftForm(false)}
+                className='xs:w-full'
+              >
+                {dict.cancel}
+              </Button>
+            </div>
+          </form>
+        )}
       </DialogContent>
 
       <ConfirmDialog

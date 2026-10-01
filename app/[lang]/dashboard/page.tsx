@@ -155,7 +155,7 @@ const DashboardPage: NextPage<PageProps> = ({ params }) => {
   if (!mounted) return null;
 
   return (
-    <div className={cn('min-h-screen', 'bg-background', 'flex flex-col')}>
+    <div className={cn('min-h-screen', 'bg-board', 'flex flex-col')}>
       <Header
         groupName={groupName}
         dict={dict}
@@ -165,12 +165,13 @@ const DashboardPage: NextPage<PageProps> = ({ params }) => {
 
       <main className={cn('flex', 'flex-1', 'flex-col')}>
         {/*
-          The member list is written on a full-bleed band of Frost, square
-          corners and no shadow: a sheet of paper, not a card. The band takes the
+          The contents page, written on the album board. The band takes the
           remaining height so the footer sits at the foot of the page instead of
-          floating behind a field of empty background.
+          floating behind a field of empty background. There is no sheet under
+          it: on this route the board IS the page, and the white cells in the
+          member rows are the only label stock on screen.
         */}
-        <section className={cn('flex-1', 'bg-band')}>
+        <section className={cn('flex-1', 'bg-board')}>
           <div className={cn('container', 'mx-auto')}>
             <div className={cn('mx-auto', 'max-w-2xl', 'py-8', 'sm:py-12')}>
               <MemberList
@@ -203,6 +204,7 @@ const DashboardPage: NextPage<PageProps> = ({ params }) => {
             toasts: dict.toasts,
             confirmations: dict.confirmations,
             close: dict.close,
+            giftCount: dict.giftCount,
           }}
         />
       </Suspense>

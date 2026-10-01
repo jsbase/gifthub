@@ -2,13 +2,13 @@
 [![CodeQL](https://github.com/jsbase/gifthub/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/jsbase/gifthub/actions/workflows/github-code-scanning/codeql)
 [![Dependabot Updates](https://github.com/jsbase/gifthub/actions/workflows/dependabot/dependabot-updates/badge.svg)](https://github.com/jsbase/gifthub/actions/workflows/dependabot/dependabot-updates)
 
-# 🎁 GiftHub
+# 🎁 wishy
 
 > The smart way to organize and track gifts for your family, friends, and groups! Never buy duplicate presents or miss a special occasion again.
 
-## 🎯 What is GiftHub?
+## 🎯 What is wishy?
 
-GiftHub helps you manage gift-giving within your family or other groups. Create wishlists, track who's buying what, and ensure everyone gets something special - all while keeping the surprise! Perfect for birthdays, holidays, or any gift-giving occasion.
+wishy helps you manage gift-giving within your family or other groups. Create wishlists, track who's buying what, and ensure everyone gets something special - all while keeping the surprise! Perfect for birthdays, holidays, or any gift-giving occasion.
 
 ## ✨ Features
 
@@ -27,7 +27,7 @@ Built with [Next.js](https://nextjs.org) and bootstrapped using [`create-next-ap
 
 ## 🛠 Setup
 
-GiftHub keeps its data in PostgreSQL. Start from `.env.example` and copy it
+wishy keeps its data in PostgreSQL. Start from `.env.example` and copy it
 to **both** `.env` and `.env.local`, then fill in the values: Next.js reads
 `.env.local`, while the Prisma CLI reads `.env`, so a value that exists in
 only one of the two works in one tool and fails in the other. Both files are

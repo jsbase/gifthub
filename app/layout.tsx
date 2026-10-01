@@ -1,7 +1,7 @@
 import '@/app/globals.css';
 import React from 'react';
 import { Metadata, Viewport } from 'next';
-import { Literata, Onest } from 'next/font/google';
+import { Golos_Text, PT_Sans_Narrow, Source_Serif_4 } from 'next/font/google';
 import ThemeProvider from '@/components/theme-provider';
 import { Toaster } from '@/components/ui/sonner';
 import ServiceWorkerRegistration from '@/components/service-worker';
@@ -10,29 +10,46 @@ import { SpeedInsights } from '@vercel/speed-insights/next';
 import { cn } from '@/lib/utils';
 import type { RootLayoutProps } from '@/types';
 
-// Literata carries names and only names: the wordmark, a group's name in the
-// header, a member's name in the list, and a member's name as a dialog title.
-// Onest carries everything else - every heading that is not a name, every
-// control, every gift title, every count, and the whole of the legal copy. Both
-// ship Latin and Cyrillic, which de/en/ru from one component tree requires.
-const literata = Literata({
+/*
+  Three faces, three jobs, all three carrying Latin AND Cyrillic - the de/en/ru
+  route tree comes from one component tree, so a face without a Cyrillic subset
+  breaks the product for half its audience rather than degrading it.
+
+  Golos Text is Cyrillic-first: it was drawn for Cyrillic, which matters in a
+  product whose longest strings are German compounds and Russian genitives.
+  Source Serif 4 is reserved for a name, which is the one typographic commitment
+  carried over from the previous system - a museum specimen label is exactly
+  where a serif belongs, so the rule survives the change of world and is better
+  motivated by it. PT Sans Narrow is the printed chrome: cell numerals and the
+  small tracked labels that head a section, confined to 11-12px.
+*/
+const sourceSerif = Source_Serif_4({
   subsets: ['latin', 'cyrillic'],
-  weight: ['500', '600'],
+  weight: ['400', '600', '700'],
   display: 'swap',
-  variable: '--font-literata',
+  variable: '--font-source-serif',
 });
 
-const onest = Onest({
+const golos = Golos_Text({
   subsets: ['latin', 'cyrillic'],
-  weight: ['400', '500', '600'],
+  weight: ['400', '500', '600', '700'],
   display: 'swap',
-  variable: '--font-onest',
+  variable: '--font-golos',
+});
+
+const ptNarrow = PT_Sans_Narrow({
+  subsets: ['latin', 'cyrillic'],
+  // PT Sans Narrow ships 400 and 700 only, and that is all this face needs: the
+  // printed chrome is either plain or emphatically stamped.
+  weight: ['400', '700'],
+  display: 'swap',
+  variable: '--font-pt-narrow',
 });
 
 export const metadata: Metadata = {
-  title: 'GiftHub - Family Gift Management',
+  title: 'wishy - Family Gift Management',
   description: 'Manage gift ideas for your family and groups',
-  authors: [{ name: 'GiftHub' }],
+  authors: [{ name: 'wishy' }],
   keywords: [
     'gift',
     'gift ideas',
@@ -42,7 +59,7 @@ export const metadata: Metadata = {
   ],
   robots: 'index, follow',
   openGraph: {
-    title: 'GiftHub - Family Gift Management',
+    title: 'wishy - Family Gift Management',
     description: 'Manage gift ideas for your family and groups',
     images: [
       {
@@ -50,7 +67,7 @@ export const metadata: Metadata = {
       },
     ],
     url: process.env.NEXT_PUBLIC_BASE_URL,
-    siteName: 'GiftHub',
+    siteName: 'wishy',
     locale: 'en_US',
     type: 'website',
   },
@@ -82,12 +99,11 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  // These are the two page grounds, and they are the two values the token block
-  // in globals.css actually renders - the dark ground is a 49%-saturated deep
-  // teal, not a near-black, so the OS chrome is told what the page paints.
+  // The two page grounds, and the two values the token block in globals.css
+  // actually renders: buff album board by day, and dark warm board at night.
   themeColor: [
-    { media: '(prefers-color-scheme: light)', color: '#F6F8F7' },
-    { media: '(prefers-color-scheme: dark)', color: '#0C1E22' },
+    { media: '(prefers-color-scheme: light)', color: '#E3DACA' },
+    { media: '(prefers-color-scheme: dark)', color: '#17110D' },
   ],
   width: 'device-width',
   initialScale: 1.0,
@@ -99,8 +115,9 @@ const RootLayout: React.FC<RootLayoutProps> = ({ children }) => (
   <html lang='en' suppressHydrationWarning>
     <body
       className={cn(
-        literata.variable,
-        onest.variable,
+        sourceSerif.variable,
+        golos.variable,
+        ptNarrow.variable,
         'min-h-screen',
         'flex',
         'flex-col'

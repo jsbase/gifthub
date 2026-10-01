@@ -72,7 +72,7 @@ const Header: React.FC<HeaderProps> = ({
     : undefined;
 
   return (
-    <header className='border-b border-border'>
+    <header className='border-b border-rule'>
       <div
         className={cn(
           'container',
@@ -88,7 +88,7 @@ const Header: React.FC<HeaderProps> = ({
           href={homeRoute}
           className={cn('rounded-sm', '-ml-1', 'px-1', 'py-1')}
           data-testid='logo'
-          aria-label={currentGroupName || 'GiftHub'}
+          aria-label={currentGroupName || 'wishy'}
         >
           <Logo size='sm' groupName={currentGroupName} />
         </Link>

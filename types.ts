@@ -201,6 +201,12 @@ export interface MemberGiftsDialogProps {
     toasts: ToastTranslations;
     confirmations: ConfirmationTranslations;
     close: string;
+    /**
+     * The four count strings, passed down so the sheet's own header can say what
+     * is left in exactly the words the contents page uses. Two places counting
+     * the same thing is how a list and its index start disagreeing.
+     */
+    giftCount: Translations['giftCount'];
   };
 }
 
@@ -251,6 +257,14 @@ export interface MemberGiftsTranslations {
   deleteGift: string;
   /** Title of the delete-confirmation dialog; the button reuses deleteGift. */
   deleteGiftConfirm: string;
+  /**
+   * The two printed labels that head a sheet of the album page. A sheet is
+   * divided into the cells still waiting and the cells already stamped, because
+   * "what is still needed" and "what is already handled" are different
+   * questions and a single undifferentiated list cannot answer either.
+   */
+  openIdeas: string;
+  collectedIdeas: string;
 }
 
 export interface ToastTranslations {
@@ -376,11 +390,17 @@ export interface GiftCardProps {
   /** The row whose toggle request is in flight; it dims and refuses re-clicks. */
   togglingId: string | null;
   /**
-   * The row that actually changed in this dialog session. The strike and the
-   * settle are gated on it, so opening the dialog for someone with five bought
-   * ideas does not replay five strikes.
+   * The row that actually changed in this dialog session. The cancellation and
+   * the settle are gated on it, so opening the sheet for someone with five
+   * collected ideas does not replay five cancellations.
    */
   changedId: string | null;
+  /**
+   * The cell's number in the corner of the sheet, one-based. Undefined on the
+   * landing page's sample list, which is a quotation of the sheet rather than
+   * the sheet itself.
+   */
+  memberNumber?: number;
 }
 
 /** A member row's gift counts: what is left to buy, and what the list holds. */
