@@ -46,9 +46,9 @@
   "preview": {
     "lead": "Das ist der ganze Bildschirm: alle in der Gruppe, und wie viele Geschenkideen für jeden von ihnen noch offen sind.",
     "members": [
-      { "name": "Anna", "count": 3 },
-      { "name": "Ben", "count": 1 },
-      { "name": "Mia", "count": 0 }
+      { "name": "Anna", "count": 3, "collected": 2 },
+      { "name": "Ben", "count": 1, "collected": 2 },
+      { "name": "Mia", "count": 0, "collected": 4 }
     ]
   },
   "giftCount": {

@@ -14,6 +14,7 @@ import { useDebounce } from '@/hooks/use-debounce';
 import { cn } from '@/lib/utils';
 import { giftCountLabel } from '@/lib/gift-count';
 import { memberInkStyle } from '@/lib/member-ink';
+import SheetProgress from '@/components/sheet-progress';
 import type { MemberListProps } from '@/types';
 
 /**
@@ -288,65 +289,6 @@ const MemberList: React.FC<MemberListProps> = ({
         cancelLabel={dict.cancel}
       />
     </div>
-  );
-};
-
-/**
- * How far along this member's sheet is.
- *
- * Two parts, and they answer different questions. The numeral is how many ideas
- * are still open - the actionable figure, and the one the row's count sentence
- * says in words. The rule is how much of the sheet has been dealt with, filled
- * in the member's own ink.
- *
- * The earlier version drew one miniature cell per idea, on the theory that a
- * count you can see beats a count you have to read. It does not survive contact
- * with real data: a member with a hundred ideas produced a hundred cells, so the
- * miniature was capped and the cap printed a "+N" that is nothing but an
- * admission that the figure does not scale. The number scales and the rule
- * scales, and neither needs a cap - which is what the user asked for.
- *
- * Empty is not done, and the two must not look alike. A member with no ideas at
- * all gets a dashed rule, not an empty one, so "nothing written yet" is visibly
- * different from "written and all collected".
- *
- * `aria-hidden` throughout: the row already carries the same fact as real text in
- * the count sentence, and a shape is not an announcement.
- */
-const SheetProgress: React.FC<{ unbought: number; total: number }> = ({
-  unbought,
-  total,
-}) => {
-  const collected = total - unbought;
-  const pct = total === 0 ? 0 : Math.round((collected / total) * 100);
-
-  return (
-    <span aria-hidden='true' className='flex shrink-0 items-center gap-3'>
-      <span className='relative block h-[3px] w-14 bg-wash-strong'>
-        {total === 0 ? (
-          <span className='absolute inset-0 border-t border-dashed border-rule' />
-        ) : (
-          <span
-            className='absolute inset-y-0 left-0 bg-[var(--member-ink)]'
-            style={{ width: `${pct}%` }}
-          />
-        )}
-      </span>
-      <span
-        className={cn(
-          'font-label',
-          'min-w-[2ch]',
-          'text-right',
-          'text-[0.8125rem]',
-          'font-bold',
-          'tabular-nums',
-          'tracking-[0.06em]',
-          unbought > 0 ? 'text-ink' : 'text-caption'
-        )}
-      >
-        {unbought}
-      </span>
-    </span>
   );
 };
 

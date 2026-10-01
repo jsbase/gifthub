@@ -2,6 +2,7 @@ import React, { memo } from 'react';
 import { CropMarks } from '@/components/ui/dialog';
 import { giftCountLabel } from '@/lib/gift-count';
 import { memberInkStyle } from '@/lib/member-ink';
+import SheetProgress from '@/components/sheet-progress';
 import { cn } from '@/lib/utils';
 import type { Translations } from '@/types';
 
@@ -19,11 +20,9 @@ import type { Translations } from '@/types';
  * ink as a rule on the right, and the open count in printed numerals - and the
  * same words behind it for anyone who cannot see the figure.
  *
- * `SheetProgress` in `member-list.tsx` is the authority for the figure and is
- * reimplemented here rather than imported, because the two live on opposite
- * sides of a login and pulling a dashboard row onto a public page to draw three
- * sample lines would be worse coupling than the duplication. The geometry below
- * is therefore a copy, and it has to be edited when that component is edited.
+ * `SheetProgress` in `components/sheet-progress.tsx` is the authority for the
+ * figure, and is imported rather than copied: a second copy is a second thing to
+ * forget. See the note at the top of that file.
  *
  * It has to be a faithful quotation, not a flattering one, which cuts both
  * ways here. Every sample member is fully un-collected, so `pct` is 0 for all
@@ -134,54 +133,5 @@ const LandingPreview: React.FC<
   </figure>
 );
 
-/**
- * How far along this member's sheet is: the numeral is how many ideas are still
- * open, the rule is how much of the sheet has been dealt with, filled in that
- * member's own ink. `aria-hidden` throughout, because the row already carries
- * the same fact as real text in the count sentence and a shape is not an
- * announcement.
- *
- * A copy of `SheetProgress` in `member-list.tsx`. See the note at the top of
- * this file. The one thing it cannot copy is the height of the row it sits in:
- * the dashboard's row is 113px because the row is a 72px button, and padding a
- * decorative line of text out to match a tap target would be copying the
- * control rather than the screen.
- */
-const SheetProgress: React.FC<{ unbought: number; total: number }> = ({
-  unbought,
-  total,
-}) => {
-  const collected = total - unbought;
-  const pct = total === 0 ? 0 : Math.round((collected / total) * 100);
-
-  return (
-    <span aria-hidden='true' className='flex shrink-0 items-center gap-3'>
-      <span className='relative block h-[3px] w-14 bg-wash-strong'>
-        {total === 0 ? (
-          <span className='absolute inset-0 border-t border-dashed border-rule' />
-        ) : (
-          <span
-            className='absolute inset-y-0 left-0 bg-[var(--member-ink)]'
-            style={{ width: `${pct}%` }}
-          />
-        )}
-      </span>
-      <span
-        className={cn(
-          'font-label',
-          'min-w-[2ch]',
-          'text-right',
-          'text-[0.8125rem]',
-          'font-bold',
-          'tabular-nums',
-          'tracking-[0.06em]',
-          unbought > 0 ? 'text-ink' : 'text-caption'
-        )}
-      >
-        {unbought}
-      </span>
-    </span>
-  );
-};
 
 export default memo(LandingPreview);

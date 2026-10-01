@@ -46,9 +46,9 @@
   "preview": {
     "lead": "Вот весь экран: все участники группы и сколько идей подарков ещё открыто для каждого из них.",
     "members": [
-      { "name": "Аня", "count": 3 },
-      { "name": "Бен", "count": 1 },
-      { "name": "Мия", "count": 0 }
+      { "name": "Аня", "count": 3, "collected": 2 },
+      { "name": "Бен", "count": 1, "collected": 2 },
+      { "name": "Мия", "count": 0, "collected": 4 }
     ]
   },
   "giftCount": {

@@ -46,9 +46,9 @@
   "preview": {
     "lead": "That is the whole screen: everyone in the group, and how many gift ideas are still open for each of them.",
     "members": [
-      { "name": "Anna", "count": 3 },
-      { "name": "Ben", "count": 1 },
-      { "name": "Mia", "count": 0 }
+      { "name": "Anna", "count": 3, "collected": 2 },
+      { "name": "Ben", "count": 1, "collected": 2 },
+      { "name": "Mia", "count": 0, "collected": 4 }
     ]
   },
   "giftCount": {

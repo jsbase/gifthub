@@ -177,7 +177,7 @@ export interface Translations {
     | ToastTranslations
     | ConfirmationTranslations
     | LandingPreviewTranslations
-    | { name: string; count: number }[]
+    | { name: string; count: number; collected: number }[]
     | { [key: string]: string };
 }
 
@@ -189,7 +189,16 @@ export interface Translations {
 export interface LandingPreviewTranslations {
   /** Says plainly that this is the whole screen, which is the claim it makes. */
   lead: string;
-  members: { name: string; count: number }[];
+  /**
+   * `count` is how many ideas are still OPEN - which is what the lead sentence
+   * promises. `collected` is how many of the same member's ideas are already
+   * bought, and exists so the row's progress rule has real fill: with open counts
+   * alone the rule could only ever stand at zero, which read as an empty bar
+   * rather than as progress.
+   *
+   * Numbers, not strings, so this costs no copy in any locale.
+   */
+  members: { name: string; count: number; collected: number }[];
 }
 
 export interface MemberGiftsDialogProps {

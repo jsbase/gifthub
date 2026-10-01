@@ -54,6 +54,19 @@
      not its luminance. */
   --color-scrim: hsl(var(--scrim));
 
+/*
+    The only colour in this world that means something rather than someone.
+
+    Every other hue is an identity: the six member inks say whose sheet you are
+    looking at. This one says a state - that a sheet has nothing left to buy -
+    and it is the only place in the app where a number is replaced by a picture,
+    because "nothing left" is a conclusion rather than a quantity. It is
+    deliberately not one of the six inks: verdigris and teal are already spoken
+    for, and a member whose ink happened to be green would collide with it.
+  */
+  --color-done: hsl(var(--done));
+  --color-done-foreground: hsl(var(--done-foreground));
+
   /* Ink. One warm near-black for everything written, and a caption weight of it
      for anything that recedes. */
   --color-ink: hsl(var(--ink));
@@ -293,6 +306,8 @@
   --furniture: 34 14% 52%;
 
   --destructive: 6 68% 42%; /* red pencil           ~#B32D18 */
+  --done: 152 54% 28%; /* nothing left       ~#18773F */
+  --done-foreground: 152 54% 28%;
 
   --member-ink-1: 354 58% 36%; /* oxblood */
   --member-ink-2: 232 46% 40%; /* indigo */
@@ -333,6 +348,8 @@
   --furniture: 32 10% 42%;
 
   --destructive: 8 72% 58%; /* ~#E8705C */
+  --done: 150 44% 60%; /* ~#64D394 */
+  --done-foreground: 150 44% 60%;
 
   --member-ink-1: 354 62% 64%;
   --member-ink-2: 232 58% 72%;
