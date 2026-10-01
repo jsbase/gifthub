@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import type { Prisma } from '@prisma/client';
 import prisma from '@/lib/prisma';
 import { getGroupIdFromToken } from '@/lib/auth-server';
 
@@ -91,18 +92,30 @@ export const POST: (request: NextRequest) => Promise<NextResponse> = async (
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
 
+    // Absent means "leave alone"; present-but-empty means "clear it". Checking
+    // `in` keeps those two apart - sending only a title must not wipe the
+    // description and url the gift already had. An empty string is treated as
+    // empty rather than stored, so both nullable columns hold null or text.
+    const data: Prisma.GiftUpdateInput = { title: title.trim() };
+    if ('description' in body) {
+      data.description =
+        typeof description === 'string' && description.length > 0
+          ? description
+          : null;
+    }
+    if ('url' in body) {
+      data.url = typeof url === 'string' && url.length > 0 ? url : null;
+    }
+    if (typeof isPurchased === 'boolean') {
+      data.isPurchased = isPurchased;
+    }
+
     const gift = await prisma.gift.update({
       where: {
         id,
         groupId,
       },
-      data: {
-        title: title.trim(),
-        description: typeof description === 'string' ? description : null,
-        url: typeof url === 'string' && url.length > 0 ? url : null,
-        isPurchased:
-          typeof isPurchased === 'boolean' ? isPurchased : undefined,
-      },
+      data,
     });
 
     return NextResponse.json(gift);
