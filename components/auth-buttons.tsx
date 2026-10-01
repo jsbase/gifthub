@@ -97,6 +97,7 @@ const AuthButtons: React.FC<AuthButtonsProps> = ({ dict }) => {
         <AuthDialog
           title={dict.loginToGroup}
           description={dict.enterGroupName}
+          closeLabel={dict.close}
           className={cn('xs:h-[85vh]', 'xs:max-h-[85vh]')}
         >
           <LoginForm dict={dict} isLoading={isLoading} onSubmit={handleLogin} />
@@ -118,6 +119,7 @@ const AuthButtons: React.FC<AuthButtonsProps> = ({ dict }) => {
         <AuthDialog
           title={dict.createGroup}
           description={dict.createGroupDescription}
+          closeLabel={dict.close}
           className={cn('xs:h-[85vh]', 'xs:max-h-[85vh]')}
         >
           <RegisterForm

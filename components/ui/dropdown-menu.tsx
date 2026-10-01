@@ -25,7 +25,7 @@ const menuSurface =
 // `:focus-visible` never matches them. `data-[highlighted]` is what actually
 // shows a keyboard user where they are in this menu.
 const menuItem =
-  'relative flex cursor-default select-none items-center rounded-md px-3 py-2.5 text-[0.9375rem] outline-none transition-colors data-[highlighted]:bg-accent data-[highlighted]:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50';
+  'relative flex cursor-default select-none items-center rounded-md px-3 py-2.5 text-[0.9375rem] outline-none transition-colors data-[highlighted]:bg-accent data-[disabled]:pointer-events-none data-[disabled]:opacity-50';
 
 const DropdownMenuSubTrigger = React.forwardRef<
   React.ElementRef<typeof DropdownMenuPrimitive.SubTrigger>,

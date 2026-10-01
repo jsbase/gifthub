@@ -97,10 +97,6 @@ test.describe('Dashboard functionality', () => {
   test('Add and remove members and gifts', async ({ page }) => {
     test.slow();
 
-    page.on('dialog', async (dialog) => {
-      await dialog.accept();
-    });
-
     const noMembersMessage = await page.getByTestId('noMembers');
     await expect(noMembersMessage).toBeVisible();
 
@@ -128,8 +124,11 @@ test.describe('Dashboard functionality', () => {
       'PlayStation 5'
     );
 
-    // Delete the Gift
+    // Delete the Gift. The confirmation is the app's own dialog, not a native
+    // window.confirm, so the step has to drive it - and the assertions below are
+    // what prove the dialog actually destroyed the row.
     await page.getByTestId('giftDelete').click();
+    await page.getByTestId('confirmAction').click();
     await expect(giftCard).not.toBeVisible();
 
     // Close the Member Gifts Dialog
@@ -140,6 +139,7 @@ test.describe('Dashboard functionality', () => {
     await page.getByTestId('showRemoveMemberButtons').click();
     await page.waitForTimeout(1000);
     await page.getByTestId('removeMemberButton').click();
+    await page.getByTestId('confirmAction').click();
 
     await expect(noMembersMessage).toBeVisible();
   });

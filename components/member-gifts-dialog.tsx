@@ -15,6 +15,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import GiftCard from '@/components/gift-card';
+import ConfirmDialog from '@/components/confirm-dialog';
 import { cn } from '@/lib/utils';
 import type { MemberGiftsDialogProps, Gift } from '@/types';
 
@@ -29,7 +30,12 @@ const MemberGiftsDialog: React.FC<MemberGiftsDialogProps> = ({
 }) => {
   const [showAddGiftForm, setShowAddGiftForm] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [animatedGiftId, setAnimatedGiftId] = useState<string | null>(null);
+  /* The row whose toggle is in flight, and the row that actually changed. They
+     are separate because the strike is a one-shot: gating it on the request
+     alone would either replay on every dialog open or never fire. */
+  const [togglingId, setTogglingId] = useState<string | null>(null);
+  const [changedId, setChangedId] = useState<string | null>(null);
+  const [pendingDeletion, setPendingDeletion] = useState<Gift | null>(null);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -40,7 +46,9 @@ const MemberGiftsDialog: React.FC<MemberGiftsDialogProps> = ({
     if (!isOpen) {
       setShowAddGiftForm(false);
       setIsLoading(false);
-      setAnimatedGiftId(null);
+      setTogglingId(null);
+      setChangedId(null);
+      setPendingDeletion(null);
     }
   }, [isOpen]);
 
@@ -84,7 +92,7 @@ const MemberGiftsDialog: React.FC<MemberGiftsDialogProps> = ({
   const handleTogglePurchased = useCallback(
     async (giftId: string) => {
       try {
-        setAnimatedGiftId(giftId);
+        setTogglingId(giftId);
         const response = await fetch(`/api/gifts/${giftId}/toggle`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
@@ -99,11 +107,12 @@ const MemberGiftsDialog: React.FC<MemberGiftsDialogProps> = ({
             ? dict?.toasts.giftStatusPurchased
             : dict?.toasts.giftStatusBackToList
         );
+        setChangedId(giftId);
         onGiftAdded();
       } catch (error) {
         toast.error(dict?.toasts.giftStatusUpdateFailed);
       } finally {
-        setAnimatedGiftId(null);
+        setTogglingId(null);
       }
     },
     [
@@ -116,10 +125,6 @@ const MemberGiftsDialog: React.FC<MemberGiftsDialogProps> = ({
 
   const handleDeleteGift = useCallback(
     async (giftId: string) => {
-      if (!confirm(dict?.confirmations.deleteGift)) {
-        return;
-      }
-
       try {
         const response = await fetch(`/api/gifts/${giftId}`, {
           method: 'DELETE',
@@ -136,12 +141,17 @@ const MemberGiftsDialog: React.FC<MemberGiftsDialogProps> = ({
       }
     },
     [
-      dict?.confirmations.deleteGift,
       dict?.toasts.giftDeleted,
       dict?.toasts.giftDeleteFailed,
       onGiftAdded,
     ]
   );
+
+  const handleConfirmDelete = useCallback(() => {
+    if (pendingDeletion) {
+      handleDeleteGift(pendingDeletion.id);
+    }
+  }, [pendingDeletion, handleDeleteGift]);
 
   if (!mounted) {
     return null;
@@ -152,6 +162,7 @@ const MemberGiftsDialog: React.FC<MemberGiftsDialogProps> = ({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent
+        closeLabel={dict.close}
         className={cn(
           'max-w-dialog',
           'xs:p-dialog-pad-mobile',
@@ -161,12 +172,17 @@ const MemberGiftsDialog: React.FC<MemberGiftsDialogProps> = ({
         )}
       >
         <DialogHeader>
-          {/* The person's name is the title: this list belongs to them. */}
-          <DialogTitle className='xs:text-2xl'>{memberName}</DialogTitle>
+          {/*
+            The one dialog title that is a name, so the one dialog title in the
+            serif. A person's name is the content the serif is reserved for.
+          */}
+          <DialogTitle className='font-serif xs:text-2xl'>{memberName}</DialogTitle>
           <DialogDescription>{dict.listHint}</DialogDescription>
         </DialogHeader>
 
-        <div className={cn('mt-2', 'space-y-dialog-desktop', 'xs:space-y-dialog-mobile')}>
+        <div
+          className={cn('mt-2', 'space-y-dialog-desktop', 'xs:space-y-dialog-mobile')}
+        >
           {!showAddGiftForm && (
             <>
               <Button
@@ -185,9 +201,14 @@ const MemberGiftsDialog: React.FC<MemberGiftsDialogProps> = ({
                       key={gift.id}
                       gift={gift}
                       dict={dict}
-                      onDelete={handleDeleteGift}
+                      onDelete={(id) =>
+                        setPendingDeletion(
+                          gifts.find((candidate) => candidate.id === id) ?? null
+                        )
+                      }
                       onTogglePurchased={handleTogglePurchased}
-                      animatedGiftId={animatedGiftId}
+                      togglingId={togglingId}
+                      changedId={changedId}
                     />
                   ))}
                 </ul>
@@ -280,6 +301,16 @@ const MemberGiftsDialog: React.FC<MemberGiftsDialogProps> = ({
           )}
         </div>
       </DialogContent>
+
+      <ConfirmDialog
+        isOpen={pendingDeletion !== null}
+        onClose={() => setPendingDeletion(null)}
+        onConfirm={handleConfirmDelete}
+        title={dict.deleteGiftConfirm}
+        description={dict.confirmations.deleteGift}
+        confirmLabel={dict.deleteGift}
+        cancelLabel={dict.cancel}
+      />
     </Dialog>
   );
 };

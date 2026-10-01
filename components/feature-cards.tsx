@@ -8,7 +8,7 @@ const FeatureCards: React.FC<Pick<Translations, 'features'>> = ({
 }) => (
   <div
     className={cn(
-      'mt-20',
+      'mt-16',
       'grid',
       'grid-cols-1',
       'gap-x-10',

@@ -6,6 +6,7 @@ import Logo from '@/components/logo';
 import AuthButtons from '@/components/auth-buttons';
 import Footer from '@/components/footer';
 import FeatureCards from '@/components/feature-cards';
+import LandingPreview from '@/components/landing-preview';
 import { cn } from '@/lib/utils';
 import type { PageProps, Translations } from '@/types';
 
@@ -16,22 +17,27 @@ const Home: NextPage<PageProps> = async ({ params }) => {
   return (
     <div className={cn('flex', 'flex-col', 'min-h-screen')}>
       <Header dict={dict} />
-      <main className={cn('flex-1')}>
+      <main className={cn('flex', 'flex-1', 'flex-col')}>
         {/*
           `container` is the outer element and the narrow column nests inside
           it, so the hand-written container ladder in globals.css is never
-          fought by a max-width utility on the same element.
+          fought by a max-width utility on the same element. The column is a flex
+          column so the preview can take the slack with `mt-auto`: the space below
+          the features becomes a deliberate gap above something, not a hole.
         */}
         <div className={cn('container', 'mx-auto')}>
           <div
             className={cn(
               'mx-auto',
               'max-w-2xl',
-              'pt-14',
-              'pb-20',
-              'sm:pt-20',
-              'lg:pt-28',
-              'lg:pb-24'
+              'flex',
+              'flex-1',
+              'flex-col',
+              'pt-12',
+              'pb-8',
+              'sm:pt-14',
+              'lg:pt-16',
+              'lg:pb-6'
             )}
           >
             <Logo size='lg' />
@@ -50,6 +56,11 @@ const Home: NextPage<PageProps> = async ({ params }) => {
               <AuthButtons dict={dict} />
             </div>
             <FeatureCards features={dict.features} />
+            <LandingPreview
+              preview={dict.preview}
+              giftCount={dict.giftCount}
+              members={dict.members}
+            />
           </div>
         </div>
       </main>

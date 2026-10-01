@@ -79,9 +79,12 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
+  // These are the two page grounds, and they are the two values the token block
+  // in globals.css actually renders - the dark ground is a 49%-saturated deep
+  // teal, not a near-black, so the OS chrome is told what the page paints.
   themeColor: [
-    { media: '(prefers-color-scheme: light)', color: '#F7F9F8' },
-    { media: '(prefers-color-scheme: dark)', color: '#0C1F23' },
+    { media: '(prefers-color-scheme: light)', color: '#F6F8F7' },
+    { media: '(prefers-color-scheme: dark)', color: '#0C1E22' },
   ],
   width: 'device-width',
   initialScale: 1.0,

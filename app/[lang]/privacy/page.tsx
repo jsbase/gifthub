@@ -18,7 +18,6 @@ const PrivacyPolicy: NextPage<PageProps> = async ({ params }) => {
           <div className={cn('mx-auto', 'max-w-2xl', 'py-12', 'sm:py-16')}>
             <h1
               className={cn(
-                'font-serif',
                 'text-[clamp(1.75rem,4vw,2.25rem)]',
                 'font-semibold',
                 'leading-tight',
@@ -40,7 +39,6 @@ const PrivacyPolicy: NextPage<PageProps> = async ({ params }) => {
                 <section key={sectionNum} className={cn('mt-10')}>
                   <h2
                     className={cn(
-                      'font-serif',
                       'text-lg',
                       'font-semibold',
                       'leading-snug',

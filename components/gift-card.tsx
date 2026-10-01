@@ -10,13 +10,21 @@ import type { GiftCardProps } from '@/types';
 /**
  * One row of a list, not a card: no border box, no shadow, no radius - a hairline
  * above and the writing on the page.
+ *
+ * The row is a flex of three siblings - the tick, the link, the delete button.
+ * They cannot be nested: interactive content inside an `<a>` is invalid HTML, it
+ * is axe-core's `nested-interactive`, and it makes the link's accessible name
+ * recurse into the tick's label, so the link would announce as "Mark as bought,
+ * <title>, <url>". Tab also reached the tick from inside the link, and Enter
+ * navigated away instead of ticking.
  */
 const GiftCard: React.FC<GiftCardProps> = ({
   gift,
   dict,
   onDelete,
   onTogglePurchased,
-  animatedGiftId,
+  togglingId,
+  changedId,
 }) => {
   const debouncedDelete = useDebounce(
     (id: string) => {
@@ -41,18 +49,23 @@ const GiftCard: React.FC<GiftCardProps> = ({
     onTogglePurchased(gift.id);
   };
 
-  const isPending = animatedGiftId === gift.id;
+  const isPending = togglingId === gift.id;
+  // The state is persistent - a bought gift idea stays struck and stays
+  // receded - but the motion is one-shot, confined to the row that changed.
+  const justChanged = changedId === gift.id;
 
-  const content = (
-    <div
+  return (
+    <li
       className={cn(
         'flex',
         'items-start',
-        'gap-3',
-        'px-2',
-        'sm:px-3',
-        'pt-4',
-        'pb-3'
+        'gap-2',
+        'border-b',
+        'border-border',
+        'last:border-b-0',
+        'transition-colors',
+        gift.isPurchased && 'bg-band',
+        justChanged && gift.isPurchased && 'animate-settle-in'
       )}
     >
       {/*
@@ -67,7 +80,7 @@ const GiftCard: React.FC<GiftCardProps> = ({
         aria-label={gift.isPurchased ? dict.markAsAvailable : dict.markAsPurchased}
         data-testid='giftStrikethrough'
         className={cn(
-          'mt-0.5',
+          'mt-4',
           'grid',
           'h-5',
           'w-5',
@@ -86,94 +99,39 @@ const GiftCard: React.FC<GiftCardProps> = ({
         <Check className={cn('h-3.5', 'w-3.5')} strokeWidth={3} />
       </button>
 
-      <div className='min-w-0 flex-1'>
-        <h3
-          data-testid='giftTitle'
-          className={cn(
-            'break-words',
-            'text-[0.9375rem]',
-            'font-medium',
-            'leading-snug',
-            // The strike. The only marigold in the interface and the only
-            // animation worth spending on: someone in the group bought this, so
-            // one stroke draws across the title while the row settles back into
-            // the sheet. Bought items recede, so the ones still needing a present
-            // are the ones that carry the weight.
-            gift.isPurchased
-              ? 'animate-strike-in text-muted-foreground line-through decoration-[1.5px] decoration-strike'
-              : 'text-foreground'
-          )}
-        >
-          {gift.title}
-        </h3>
-        {gift.description && (
-          <p
-            className={cn(
-              'mt-0.5',
-              'break-words',
-              'text-[0.8125rem]',
-              'leading-relaxed',
-              'text-muted-foreground'
-            )}
-          >
-            {gift.description}
-          </p>
-        )}
-        {gift.url && (
-          // Quiet meta, not an accent: the whole row is already the link.
-          <span
-            className={cn(
-              'mt-1',
-              'block',
-              'truncate',
-              'text-[0.8125rem]',
-              'text-muted-foreground'
-            )}
-          >
-            {gift.url.replace(/^https?:\/\//, '').replace(/\/$/, '')}
-          </span>
-        )}
-      </div>
-    </div>
-  );
-
-  const interactiveClasses = cn(
-    'min-w-0',
-    'flex-1',
-    'rounded-md',
-    'transition-colors',
-    'duration-150',
-    'hover:bg-foreground/[0.04]'
-  );
-
-  return (
-    <li
-      className={cn(
-        'flex',
-        'items-start',
-        'gap-1',
-        'border-b',
-        'border-border',
-        'last:border-b-0',
-        'transition-colors',
-        gift.isPurchased && 'animate-settle-in bg-bought'
-      )}
-    >
       {gift.url ? (
         <a
           href={gift.url}
           target='_blank'
           rel='noopener noreferrer'
-          className={interactiveClasses}
+          className={cn(
+            'min-w-0',
+            'flex-1',
+            'rounded-md',
+            'transition-colors',
+            'duration-150',
+            'hover:bg-foreground/[0.04]'
+          )}
           data-testid='giftCard'
         >
-          {content}
+          <GiftCardBody gift={gift} justChanged={justChanged} />
         </a>
       ) : (
-        <div className={interactiveClasses} data-testid='giftCard'>
-          {content}
+        <div
+          className={cn(
+            'min-w-0',
+            'flex-1',
+            'rounded-md',
+            'transition-colors',
+            'duration-150',
+            'hover:bg-foreground/[0.04]'
+          )}
+          data-testid='giftCard'
+        >
+          <GiftCardBody gift={gift} justChanged={justChanged} />
         </div>
       )}
+
       <Button
         variant='ghost'
         size='icon'
@@ -195,5 +153,65 @@ const GiftCard: React.FC<GiftCardProps> = ({
     </li>
   );
 };
+
+/**
+ * The text of a row, shared by the linked and unlinked variants so the two cannot
+ * diverge.
+ */
+const GiftCardBody: React.FC<{
+  gift: GiftCardProps['gift'];
+  justChanged: boolean;
+}> = ({ gift, justChanged }) => (
+  <div
+    className={cn('px-1', 'sm:px-1', 'pt-4', 'pb-3', 'pr-0')}
+  >
+    <h3
+      data-testid='giftTitle'
+      className={cn(
+        'break-words',
+        'text-[0.9375rem]',
+        'font-medium',
+        'leading-snug',
+        // The strike. The only marigold in the interface and the only animation
+        // worth spending on: someone in the group bought this, so one stroke
+        // draws across the title while the row settles into the sheet. Bought
+        // items recede, so the ones still needing a present carry the weight.
+        gift.isPurchased
+          ? 'text-muted-foreground line-through decoration-[1.5px] decoration-strike'
+          : 'text-foreground',
+        justChanged && gift.isPurchased && 'animate-strike-in'
+      )}
+    >
+      {gift.title}
+    </h3>
+    {gift.description && (
+      <p
+        className={cn(
+          'mt-0.5',
+          'break-words',
+          'text-[0.8125rem]',
+          'leading-relaxed',
+          'text-muted-foreground'
+        )}
+      >
+        {gift.description}
+      </p>
+    )}
+    {gift.url && (
+      // Quiet meta, not an accent: the whole row is already the link.
+      <span
+        className={cn(
+          'mt-1',
+          'block',
+          'truncate',
+          'text-[0.8125rem]',
+          'text-muted-foreground'
+        )}
+      >
+        {gift.url.replace(/^https?:\/\//, '').replace(/\/$/, '')}
+      </span>
+    )}
+  </div>
+);
 
 export default memo(GiftCard);

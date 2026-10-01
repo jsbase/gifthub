@@ -9,6 +9,7 @@ import { Trash2, ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import MemberListHeader from '@/components/member-list-header';
+import ConfirmDialog from '@/components/confirm-dialog';
 import { useDebounce } from '@/hooks/use-debounce';
 import { cn } from '@/lib/utils';
 import type { MemberListProps } from '@/types';
@@ -21,6 +22,10 @@ const MemberList: React.FC<MemberListProps> = ({
   onMemberDeleted,
 }) => {
   const [showDeleteButtons, setShowDeleteButtons] = useState(false);
+  const [pendingRemoval, setPendingRemoval] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
   const handleClickOutside = useMemo(
@@ -45,14 +50,8 @@ const MemberList: React.FC<MemberListProps> = ({
     };
   }, [showDeleteButtons, handleClickOutside]);
 
-  const debouncedDelete = useDebounce(
+  const removeMember = useCallback(
     async (memberId: string, memberName: string) => {
-      if (
-        !confirm(dict.confirmations.deleteMember.replace('{name}', memberName))
-      ) {
-        return;
-      }
-
       try {
         const response = await fetch(`/api/members/${memberId}`, {
           method: 'DELETE',
@@ -63,7 +62,7 @@ const MemberList: React.FC<MemberListProps> = ({
         }
 
         // Sonner, like every other message in the app. This used to go to the
-        // Radix toast store, for which no Toaster is ever mounted, so the
+        // Radix toast store, for which no Toaster was ever mounted, so the
         // confirmation that a member was removed never reached the screen.
         toast.success(dict.toasts.memberDeleted.replace('{name}', memberName));
         setShowDeleteButtons(false);
@@ -72,6 +71,17 @@ const MemberList: React.FC<MemberListProps> = ({
         console.error('Error deleting member:', error);
         toast.error(dict.toasts.memberDeleteFailed);
       }
+    },
+    [dict.toasts.memberDeleted, dict.toasts.memberDeleteFailed, onMemberDeleted]
+  );
+
+  // A leading-edge debounce on the *request* was hiding the second half of the
+  // problem: `window.confirm` blocked the page, so a fast double click could not
+  // open two dialogs. Now that the confirmation is a dialog, the debounce guards
+  // the network call instead, and the dialog is the only gate in front of it.
+  const debouncedRemove = useDebounce(
+    (memberId: string, memberName: string) => {
+      removeMember(memberId, memberName);
     },
     300,
     {
@@ -82,10 +92,16 @@ const MemberList: React.FC<MemberListProps> = ({
 
   const handleDeleteMember = useCallback(
     (memberId: string, memberName: string) => {
-      debouncedDelete(memberId, memberName);
+      setPendingRemoval({ id: memberId, name: memberName });
     },
-    [debouncedDelete]
+    []
   );
+
+  const handleConfirmRemoval = useCallback(() => {
+    if (pendingRemoval) {
+      debouncedRemove(pendingRemoval.id, pendingRemoval.name);
+    }
+  }, [pendingRemoval, debouncedRemove]);
 
   const toggleDeleteButtons = useCallback(
     () => setShowDeleteButtons((prev) => !prev),
@@ -95,13 +111,24 @@ const MemberList: React.FC<MemberListProps> = ({
   const memberListItems = useMemo(
     () =>
       (members || []).map((member) => {
-        const count = giftCounts[member.id];
+        const counts = giftCounts[member.id] ?? { unbought: 0, total: 0 };
+        const { unbought, total } = counts;
+        /*
+          Three states, not two. A member with nothing left to buy has had their
+          list bought out; a member with no list at all is the one who most needs
+          a present, and conflating the two made them invisible. The count is set
+          in ink whenever there is still something to act on and recedes only
+          once the list is done.
+        */
         const giftCountText =
-          count === 0
+          total === 0
+            ? dict.giftCount.none
+            : unbought === 0
             ? dict.giftCount.zero
-            : count === 1
+            : unbought === 1
             ? dict.giftCount.one
-            : dict.giftCount.many.replace('{{count}}', String(count));
+            : dict.giftCount.many.replace('{{count}}', String(unbought));
+        const stillOpen = total === 0 || unbought > 0;
 
         return (
           <li
@@ -149,18 +176,11 @@ const MemberList: React.FC<MemberListProps> = ({
                 >
                   {member.name}
                 </span>
-                {/*
-                  The count of gift ideas still to buy is the one number this
-                  screen exists to show, so it is set in ink when there is
-                  something left to choose and in secondary grey when there is
-                  nothing - the eye lands on the people still waiting for a
-                  present.
-                */}
                 <span
                   className={cn(
                     'text-[0.8125rem]',
                     'leading-tight',
-                    count > 0 ? 'text-foreground' : 'text-muted-foreground'
+                    stillOpen ? 'text-foreground' : 'text-muted-foreground'
                   )}
                 >
                   {giftCountText}
@@ -218,7 +238,7 @@ const MemberList: React.FC<MemberListProps> = ({
   );
 
   return (
-    <div className='space-y-2' ref={containerRef}>
+    <div className='space-y-4' ref={containerRef}>
       <MemberListHeader
         dict={dict}
         onDeleteClick={toggleDeleteButtons}
@@ -227,14 +247,14 @@ const MemberList: React.FC<MemberListProps> = ({
       />
 
       {members.length > 0 ? (
-        <ul className='-mt-2' data-testid='memberList'>
+        <ul data-testid='memberList'>
           {memberListItems}
         </ul>
       ) : (
         <p
           className={cn(
             'max-w-[40ch]',
-            'pt-8',
+            'pt-6',
             'text-[0.9375rem]',
             'leading-relaxed',
             'text-muted-foreground'
@@ -244,6 +264,19 @@ const MemberList: React.FC<MemberListProps> = ({
           {dict.noMembers}
         </p>
       )}
+
+      <ConfirmDialog
+        isOpen={pendingRemoval !== null}
+        onClose={() => setPendingRemoval(null)}
+        onConfirm={handleConfirmRemoval}
+        title={dict.removeMemberConfirm}
+        description={dict.confirmations.deleteMember.replace(
+          '{name}',
+          pendingRemoval?.name ?? ''
+        )}
+        confirmLabel={dict.deleteMember}
+        cancelLabel={dict.cancel}
+      />
     </div>
   );
 };

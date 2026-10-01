@@ -15,9 +15,11 @@ const AuthDialog: React.FC<AuthDialogProps> = ({
   title,
   description,
   className,
+  closeLabel,
 }) => {
   return (
     <DialogContent
+      closeLabel={closeLabel}
       className={cn(
         'max-w-dialog',
         'xs:p-dialog-pad-mobile p-dialog-pad-desktop',

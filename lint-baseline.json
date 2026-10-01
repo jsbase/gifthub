@@ -1,7 +1,6 @@
 {
   "warnings": [
     "app/[lang]/dashboard/page.tsx\u0000@typescript-eslint/no-explicit-any\u0000Unexpected any. Specify a different type.",
-    "app/[lang]/dashboard/page.tsx\u0000@typescript-eslint/no-explicit-any\u0000Unexpected any. Specify a different type.",
     "app/[lang]/dashboard/page.tsx\u0000@typescript-eslint/no-unused-vars\u0000'error' is defined but never used.",
     "app/[lang]/dashboard/page.tsx\u0000react-hooks/set-state-in-effect\u0000Error: Calling setState synchronously within an effect can trigger cascading renders",
     "app/[lang]/dashboard/page.tsx\u0000react-hooks/set-state-in-effect\u0000Error: Calling setState synchronously within an effect can trigger cascading renders",
@@ -29,7 +28,6 @@
     "types.ts\u0000@typescript-eslint/no-explicit-any\u0000Unexpected any. Specify a different type.",
     "types.ts\u0000@typescript-eslint/no-explicit-any\u0000Unexpected any. Specify a different type.",
     "types.ts\u0000@typescript-eslint/no-explicit-any\u0000Unexpected any. Specify a different type.",
-    "types.ts\u0000@typescript-eslint/no-explicit-any\u0000Unexpected any. Specify a different type.",
-    "types.ts\u0000@typescript-eslint/no-unused-vars\u0000'actionTypes' is assigned a value but only used as a type."
+    "types.ts\u0000@typescript-eslint/no-explicit-any\u0000Unexpected any. Specify a different type."
   ]
 }

@@ -39,8 +39,18 @@ DialogOverlay.displayName = DialogPrimitive.Overlay.displayName;
 
 const DialogContent = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Content>,
-  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content>
->(({ className, children, ...props }, ref) => (
+  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content> & {
+    /** Accessible name for the close control; callers pass a translated one. */
+    closeLabel?: string;
+    /**
+     * A destructive confirmation is a two-choice dialog, and the X is a third,
+     * ambiguous way out of a prompt about deleting something. Cancel is the way
+     * to back out, so the close control is left out - which also keeps
+     * `dialogClose` unique in the DOM while one dialog is exiting.
+     */
+    hideClose?: boolean;
+  }
+>(({ className, children, closeLabel = 'Close', hideClose, ...props }, ref) => (
   <DialogPortal>
     <DialogOverlay />
     <DialogPrimitive.Content
@@ -92,25 +102,27 @@ const DialogContent = React.forwardRef<
       {...props}
     >
       {children}
-      <DialogPrimitive.Close
-        className={cn(
-          'absolute',
-          'right-4',
-          'top-4',
-          'rounded-md',
-          'p-1.5',
-          'text-muted-foreground',
-          'transition-colors',
-          'hover:bg-accent',
-          'hover:text-foreground',
-          'data-[state=open]:bg-accent',
-          'data-[state=open]:text-muted-foreground'
-        )}
-        data-testid='dialogClose'
-      >
-        <X className='h-4 w-4' />
-        <span className='sr-only'>Close</span>
-      </DialogPrimitive.Close>
+      {!hideClose && (
+        <DialogPrimitive.Close
+          className={cn(
+            'absolute',
+            'right-4',
+            'top-4',
+            'rounded-md',
+            'p-1.5',
+            'text-muted-foreground',
+            'transition-colors',
+            'hover:bg-accent',
+            'hover:text-foreground',
+            'data-[state=open]:bg-accent',
+            'data-[state=open]:text-muted-foreground'
+          )}
+          data-testid='dialogClose'
+        >
+          <X className='h-4 w-4' />
+          <span className='sr-only'>{closeLabel}</span>
+        </DialogPrimitive.Close>
+      )}
     </DialogPrimitive.Content>
   </DialogPortal>
 ));
@@ -154,6 +166,10 @@ const DialogFooter = ({
 );
 DialogFooter.displayName = 'DialogFooter';
 
+// No font family here. The serif in this app is for a name, and whether a
+// dialog is titled by a person's name or by a verb is the caller's decision:
+// the gifts dialog passes `font-serif` because its title is the member's name,
+// the other three do not.
 const DialogTitle = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Title>,
   React.ComponentPropsWithoutRef<typeof DialogPrimitive.Title>
@@ -161,7 +177,6 @@ const DialogTitle = React.forwardRef<
   <DialogPrimitive.Title
     ref={ref}
     className={cn(
-      'font-serif',
       'text-2xl',
       'font-semibold',
       'leading-tight',

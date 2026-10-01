@@ -8,17 +8,15 @@
     "enterMemberName": "Member's name"
   },
   "confirmations": {
-    "deleteGift": "Delete this gift idea?",
-    "deleteMember": "Delete {name} and all of their gift ideas?"
+    "deleteGift": "This takes the idea off the shared list for everyone in the group.",
+    "deleteMember": "This also deletes every gift idea on {name}'s list, and it cannot be undone."
   },
   "confirmPassword": "Confirm password",
   "createGroup": "Create a group",
   "createGroupBtn": "Create group",
   "createGroupDescription": "Name your group and pick a password. Everyone in the group signs in with the same two.",
   "deleteMember": "Remove member",
-  "emailAddress": "Email",
   "enterGroupName": "Group name",
-  "enterMemberEmail": "Member's email",
   "enterPassword": "Password",
   "errors": {
     "failedToLoad": "Members not loaded",
@@ -43,7 +41,16 @@
     }
   },
   "groupName": "Group",
+  "preview": {
+    "lead": "That is the whole screen: everyone in the group, and how many gift ideas are still open for each of them.",
+    "members": [
+      { "name": "Anna", "count": 3 },
+      { "name": "Ben", "count": 1 },
+      { "name": "Mia", "count": 0 }
+    ]
+  },
   "giftCount": {
+    "none": "no gift ideas yet",
     "zero": "nothing left to buy",
     "one": "1 gift idea left to buy",
     "many": "{{count}} gift ideas left to buy"
@@ -56,23 +63,24 @@
     "addGift": "Add gift idea",
     "adding": "Adding...",
     "cancel": "Cancel",
-    "description": "Description",
     "deleteGift": "Delete gift idea",
+    "deleteGiftConfirm": "Delete this gift idea?",
     "enterDescription": "Add a note",
     "enterGiftTitle": "Gift idea",
     "enterUrl": "Link",
-    "giftTitle": "Gift",
     "listHint": "Everyone in the group can add to this list.",
-    "manageGifts": "All gifts are managed here.",
     "noGifts": "No gift ideas yet. Add the first one.",
     "optional": "Optional",
     "markAsPurchased": "Mark as bought",
     "markAsAvailable": "Move back to the list"
   },
   "members": "Members",
+  "cancel": "Cancel",
+  "close": "Close",
   "noMembers": "No members yet. Add the first one.",
   "password": "Password",
   "register": "Create a group",
+  "removeMemberConfirm": "Remove this member?",
   "success": {
     "loggedOut": "Logged out"
   },

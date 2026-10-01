@@ -19,22 +19,14 @@ const MemberListHeader: React.FC<MemberListHeaderProps> = ({
         'gap-5',
         'border-b',
         'border-border',
-        'pb-6',
         'sm:flex-row',
         'sm:items-end',
         'sm:justify-between',
         'sm:gap-6'
       )}
     >
-      <h2
-        className={cn(
-          'font-serif',
-          'text-3xl',
-          'font-semibold',
-          'leading-none',
-          'tracking-[-0.01em]'
-        )}
-      >
+      {/* A section label, not a name: it stays in the sans. */}
+      <h2 className={cn('text-3xl', 'font-semibold', 'leading-none', 'tracking-[-0.01em]')}>
         {dict.members}
       </h2>
       {/*

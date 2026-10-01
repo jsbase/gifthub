@@ -11,7 +11,6 @@ const FeatureCard: React.FC<FeatureCardProps> = ({ title, description }) => (
   <div className={cn('max-w-[36ch]')}>
     <h2
       className={cn(
-        'font-serif',
         'text-lg',
         'font-semibold',
         'leading-snug',

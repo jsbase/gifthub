@@ -8,17 +8,15 @@
     "enterMemberName": "Name des Mitglieds"
   },
   "confirmations": {
-    "deleteGift": "Diese Geschenkidee löschen?",
-    "deleteMember": "{name} und alle zugehörigen Geschenkideen löschen?"
+    "deleteGift": "Damit verschwindet die Idee aus der gemeinsamen Liste aller in der Gruppe.",
+    "deleteMember": "Damit werden auch alle Geschenkideen auf der Liste von {name} gelöscht. Das lässt sich nicht rückgängig machen."
   },
   "confirmPassword": "Passwort bestätigen",
   "createGroup": "Gruppe erstellen",
   "createGroupBtn": "Gruppe erstellen",
   "createGroupDescription": "Benenne deine Gruppe und wähle ein Passwort. Alle in der Gruppe melden sich mit denselben zwei Angaben an.",
   "deleteMember": "Mitglied entfernen",
-  "emailAddress": "E-Mail",
   "enterGroupName": "Gruppenname",
-  "enterMemberEmail": "E-Mail des Mitglieds",
   "enterPassword": "Passwort",
   "errors": {
     "failedToLoad": "Mitglieder nicht geladen",
@@ -43,7 +41,16 @@
     }
   },
   "groupName": "Gruppe",
+  "preview": {
+    "lead": "Das ist der ganze Bildschirm: alle in der Gruppe, und wie viele Geschenkideen für jeden von ihnen noch offen sind.",
+    "members": [
+      { "name": "Anna", "count": 3 },
+      { "name": "Ben", "count": 1 },
+      { "name": "Mia", "count": 0 }
+    ]
+  },
   "giftCount": {
+    "none": "noch keine Geschenkidee",
     "zero": "nichts mehr zu kaufen",
     "one": "1 Geschenkidee noch offen",
     "many": "{{count}} Geschenkideen noch offen"
@@ -56,23 +63,24 @@
     "addGift": "Geschenkidee hinzufügen",
     "adding": "Wird hinzugefügt...",
     "cancel": "Abbrechen",
-    "description": "Beschreibung",
     "deleteGift": "Geschenkidee löschen",
+    "deleteGiftConfirm": "Diese Geschenkidee löschen?",
     "enterDescription": "Notiz hinzufügen",
     "enterGiftTitle": "Geschenkidee",
     "enterUrl": "Link",
-    "giftTitle": "Geschenk",
     "listHint": "Alle in der Gruppe können Einträge zu dieser Liste hinzufügen.",
-    "manageGifts": "Hier werden alle Geschenke verwaltet.",
     "noGifts": "Noch keine Geschenkideen. Füge die erste hinzu.",
     "optional": "Optional",
     "markAsPurchased": "Als gekauft markieren",
     "markAsAvailable": "Zurück auf die Liste"
   },
   "members": "Mitglieder",
+  "cancel": "Abbrechen",
+  "close": "Schließen",
   "noMembers": "Noch keine Mitglieder. Füge das erste hinzu.",
   "password": "Passwort",
   "register": "Gruppe erstellen",
+  "removeMemberConfirm": "Dieses Mitglied entfernen?",
   "success": {
     "loggedOut": "Abgemeldet"
   },

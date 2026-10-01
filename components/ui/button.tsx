@@ -19,9 +19,10 @@ const buttonVariants = cva(
         destructive:
           'bg-destructive text-destructive-foreground hover:bg-destructive/90',
         outline:
-          'border border-border bg-transparent text-foreground hover:bg-accent hover:text-accent-foreground',
-        secondary:
-          'bg-secondary text-secondary-foreground hover:bg-secondary/70',
+          'border border-border bg-transparent text-foreground hover:bg-accent',
+        // No `secondary` variant: Frost is bound to the one full-bleed band, and
+        // a second tint would have put it behind rounded boxes. The hover wash
+        // is `accent`, which is a mix of the ink and works on any ground.
         ghost: 'text-muted-foreground hover:bg-accent hover:text-foreground',
         link: 'text-foreground underline underline-offset-4 hover:text-muted-foreground',
       },

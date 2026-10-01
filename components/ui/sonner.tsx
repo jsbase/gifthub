@@ -29,8 +29,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
           description: 'group-[.toast]:text-muted-foreground',
           actionButton:
             'group-[.toast]:bg-primary group-[.toast]:text-primary-foreground',
-          cancelButton:
-            'group-[.toast]:bg-accent group-[.toast]:text-accent-foreground',
+          cancelButton: 'group-[.toast]:bg-accent',
         },
       }}
       {...props}
