@@ -13,15 +13,12 @@ name: Playwright
 #      deploy-triggered suite would run the database-writing tests against the
 #      data a human is looking at.
 #
-# Feature branches and pull requests. `main` is deliberately excluded: it is the
-# production branch, and every change reaches it through a pull_request, which
-# this already gates. Dependabot branches are excluded from `push` because their
-# pull_request run covers the same commits - without that, each update runs twice.
+# Pull requests only. A `push` trigger would fire a second, identical run for
+# every commit that also has an open pull request - double the CI minutes, a
+# second browser download, and a second seed of the shared test database. Since
+# every change reaches main through a pull_request, that event alone covers the
+# whole path: feature -> preview, and preview -> main.
 on:
-  push:
-    branches-ignore:
-      - main
-      - 'dependabot/**'
   pull_request:
 
 # The job only reads the repository.
