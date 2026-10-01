@@ -1,7 +1,7 @@
 'use client';
 
 import React, { memo } from 'react';
-import { IconExternalLink, IconSquareRounded, IconSquareRoundedCheck, IconSquareRoundedCheckFilled, IconTrash } from '@tabler/icons-react';
+import { IconExternalLink, IconShoppingBagPlus, IconShoppingBagX, IconTrash } from '@tabler/icons-react';
 import { Button } from '@/components/ui/button';
 import { useDebounce } from '@/hooks/use-debounce';
 import { cn } from '@/lib/utils';
@@ -142,16 +142,21 @@ const GiftCard: React.FC<GiftCardProps> = ({
       >
         {isCollected ? (
           /*
-            The collected mark, in three states that a single glance separates:
+            The collected mark, in two states a single glance separates:
 
-                open                     a bare rounded square
-                bought                   that square with a check, in outline
-                bought + a pointer       the same check, filled
+                bought                   a shopping bag with an x on it
+                bought + a pointer       the open bag with a plus
 
-            Filled against empty needs no decoding, which is the point: the cell
-            is the loudest signal in the product and the mark is the quiet one
-            that says which. The check is what makes "bought" legible in the
-            margin while the title recedes into the inversion.
+            The hover state is a PREVIEW rather than a fill: hovering a bought
+            idea shows the mark it would become if you clicked it. Tabler ships
+            no filled variant of either shopping-bag icon, so "outline at rest,
+            filled on hover" was not available - and the preview is the more
+            useful affordance anyway, because it answers "what does clicking
+            this do?" instead of the tautological "is this clickable?".
+
+            The x is doing the work here. A check would say "done"; the x says
+            "taken, nobody buy this", which is the thing the whole group has to
+            read, and which stays true after the fact.
 
             Both glyphs sit in the button's single grid cell (`col-start-1
             row-start-1`) and only ever one of them is displayed, so the swap is
@@ -173,7 +178,7 @@ const GiftCard: React.FC<GiftCardProps> = ({
             and the whole stylesheet fails to build.
           */
           <>
-            <IconSquareRoundedCheck
+            <IconShoppingBagX
               aria-hidden='true'
               className={cn(
                 'col-start-1',
@@ -183,7 +188,7 @@ const GiftCard: React.FC<GiftCardProps> = ({
                 '[@media(hover:hover)_and_(pointer:fine)]:group-hover/buy:hidden'
               )}
             />
-            <IconSquareRoundedCheckFilled
+            <IconShoppingBagPlus
               aria-hidden='true'
               className={cn(
                 'col-start-1',
@@ -197,11 +202,12 @@ const GiftCard: React.FC<GiftCardProps> = ({
           </>
         ) : (
           /*
-            Unfilled on purpose. A control the product exists for has to be
-            visible before it is used; a mark that only appears once something is
-            bought is a mark nobody can find the first time.
+            A bag with a plus, so the control shows what tapping it will mean
+            before it is tapped: somebody should buy this for that person. A mark
+            that only appears once something is bought is a mark nobody can find
+            the first time.
           */
-          <IconSquareRounded aria-hidden='true' className='h-5 w-5' />
+          <IconShoppingBagPlus aria-hidden='true' className='h-5 w-5' />
         )}
       </button>
 
