@@ -111,10 +111,11 @@ jobs:
         if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
         run: |
           missing=0
-          for pair in CI_DATABASE_URL:DATABASE_URL CI_DIRECT_URL:DIRECT_URL JWT_SECRET:JWT_SECRET CI_SEED_EXPECTED_HOST:SEED_EXPECT_HOST; do
-            secret="${pair%%:*}"
-            variable="${pair##*:}"
-            if [ -z "${!variable}" ]; then
+          # Check the secret's own name. Actions exposes each secret as an env
+          # var named after the secret, so an alias like SEED_EXPECT_HOST is
+          # never in the environment and would report missing forever.
+          for secret in CI_DATABASE_URL CI_DIRECT_URL JWT_SECRET CI_SEED_EXPECTED_HOST; do
+            if [ -z "${!secret}" ]; then
               echo "::error::Repository secret $secret is not set; the end-to-end half of this job needs it"
               missing=1
             fi

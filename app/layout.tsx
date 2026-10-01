@@ -6,6 +6,7 @@ import ThemeProvider from '@/components/theme-provider';
 import { Toaster } from '@/components/ui/sonner';
 import ServiceWorkerRegistration from '@/components/service-worker';
 import { Analytics } from '@vercel/analytics/next';
+import { SpeedInsights } from '@vercel/speed-insights/next';
 import { cn } from '@/lib/utils';
 import type { RootLayoutProps } from '@/types';
 
@@ -115,6 +116,7 @@ const RootLayout: React.FC<RootLayoutProps> = ({ children }) => (
         <Toaster />
         <ServiceWorkerRegistration />
         <Analytics />
+        <SpeedInsights />
       </ThemeProvider>
     </body>
   </html>
