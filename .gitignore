@@ -69,3 +69,5 @@ node_modules/
 # `*`, but that file ignores itself, so deleting it would expose all of it.
 /.superpowers/
 .neon
+/.shots
+/.impeccable

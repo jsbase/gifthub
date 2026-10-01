@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { LogOut } from 'lucide-react';
+import { IconLogout } from '@tabler/icons-react';
 import { Button } from '@/components/ui/button';
 import Logo from '@/components/logo';
 import LanguageSwitcher from '@/components/language-switcher';
@@ -72,7 +72,7 @@ const Header: React.FC<HeaderProps> = ({
     : undefined;
 
   return (
-    <header className='border-b border-border'>
+    <header className='border-b border-rule'>
       <div
         className={cn(
           'container',
@@ -88,7 +88,7 @@ const Header: React.FC<HeaderProps> = ({
           href={homeRoute}
           className={cn('rounded-sm', '-ml-1', 'px-1', 'py-1')}
           data-testid='logo'
-          aria-label={currentGroupName || 'GiftHub'}
+          aria-label={currentGroupName || 'wishy'}
         >
           <Logo size='sm' groupName={currentGroupName} />
         </Link>
@@ -103,7 +103,7 @@ const Header: React.FC<HeaderProps> = ({
               data-testid='logout'
               className='px-2'
             >
-              <LogOut className={cn('h-4', 'w-4')} />
+              <IconLogout className={cn('h-4', 'w-4')} />
               {dict.logout}
             </Button>
           )}

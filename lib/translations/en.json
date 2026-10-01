@@ -19,8 +19,10 @@
   "enterGroupName": "Group name",
   "enterPassword": "Password",
   "errors": {
+    "duplicateName": "A member with this name already exists in this group.",
     "failedToLoad": "Members not loaded",
     "failedToLoadGifts": "Gift ideas not loaded",
+    "invalidNameFormat": "Names may contain letters, numbers, spaces, dots, hyphens and apostrophes, up to 100 characters.",
     "loginFailed": "Log in failed",
     "loginRequired": "Log in required",
     "passwordMismatch": "Passwords do not match",
@@ -44,9 +46,9 @@
   "preview": {
     "lead": "That is the whole screen: everyone in the group, and how many gift ideas are still open for each of them.",
     "members": [
-      { "name": "Anna", "count": 3 },
-      { "name": "Ben", "count": 1 },
-      { "name": "Mia", "count": 0 }
+      { "name": "Anna", "count": 3, "collected": 2 },
+      { "name": "Ben", "count": 1, "collected": 2 },
+      { "name": "Mia", "count": 0, "collected": 4 }
     ]
   },
   "giftCount": {
@@ -70,10 +72,12 @@
     "enterUrl": "Link",
     "listHint": "Everyone in the group can add to this list.",
     "noGifts": "No gift ideas yet. Add the first one.",
-    "optional": "Optional",
-    "markAsPurchased": "Mark as bought",
-    "markAsAvailable": "Move back to the list"
-  },
+      "optional": "Optional",
+      "markAsPurchased": "Mark as bought",
+      "markAsAvailable": "Move back to the list",
+      "openIdeas": "Still to buy",
+      "collectedIdeas": "Collected"
+    },
   "members": "Members",
   "cancel": "Cancel",
   "close": "Close",
@@ -101,7 +105,7 @@
     "memberDeleteFailed": "Member not deleted"
   },
   "footer": {
-    "copyright": "© 2026 GiftHub",
+    "copyright": "© 2026 wishy",
     "privacyPolicy": "Privacy policy",
     "termsConditions": "Terms"
   },
@@ -156,15 +160,15 @@
     "title": "Terms and Conditions",
     "section1": {
       "title": "1. Scope",
-      "content": "These Terms and Conditions apply to the use of the GiftHub web app, a platform for organizing gifts within groups and families."
+      "content": "These Terms and Conditions apply to the use of the wishy web app, a platform for organizing gifts within groups and families."
     },
     "section2": {
       "title": "2. Service Description",
-      "content": "GiftHub enables users to organize gift wishes, create wishlists, and keep track of planned gifts. The app serves to coordinate gifts within groups while maintaining the element of surprise."
+      "content": "wishy enables users to organize gift wishes, create wishlists, and keep track of planned gifts. The app serves to coordinate gifts within groups while maintaining the element of surprise."
     },
     "section3": {
       "title": "3. Registration and User Account",
-      "content": "Using GiftHub requires creating a group account. Users are obligated to keep their access credentials confidential and protect them from third-party access."
+      "content": "Using wishy requires creating a group account. Users are obligated to keep their access credentials confidential and protect them from third-party access."
     },
     "section4": {
       "title": "4. Usage Rules",
@@ -176,7 +180,7 @@
     },
     "section6": {
       "title": "6. Disclaimer",
-      "content": "GiftHub does not guarantee constant availability of the app and is not liable for damages caused by slight negligence."
+      "content": "wishy does not guarantee constant availability of the app and is not liable for damages caused by slight negligence."
     }
   }
 }

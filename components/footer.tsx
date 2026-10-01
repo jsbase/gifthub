@@ -7,7 +7,7 @@ const Footer: React.FC<FooterProps> = ({ dict }) => {
   if (!dict) return null;
 
   return (
-    <footer className={cn('mt-auto', 'w-full', 'border-t', 'border-border')}>
+    <footer className={cn('mt-auto', 'w-full', 'border-t', 'border-rule')}>
       <div className={cn('container', 'mx-auto', 'py-6')}>
         <div
           className={cn(
@@ -19,7 +19,7 @@ const Footer: React.FC<FooterProps> = ({ dict }) => {
             'sm:justify-between'
           )}
         >
-          <p className={cn('text-[0.8125rem]', 'text-muted-foreground')}>
+          <p className={cn('text-[0.8125rem]', 'text-caption')}>
             {dict.footer.copyright}
           </p>
           <FooterLinks dict={dict} />

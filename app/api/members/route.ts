@@ -4,6 +4,33 @@ import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 import { getGroupIdFromToken } from '@/lib/auth-server';
 
+// Unicode-aware on purpose: de/en/ru are equally first-class per PRODUCT.md and
+// de is the default locale, so `\p{L}\p{M}` is what real names are made of. Do not
+// "simplify" this back to ASCII. Anchoring the class is also what rejects
+// zero-width and other invisible characters: they are neither letters nor marks.
+const MEMBER_NAME_REGEX = /^(?=[^\p{L}]*\p{L})[\p{L}\p{M}\p{N} .\-'’]{1,100}$/u;
+
+/**
+ * Pasted text arrives with the wrong space and the wrong hyphen. Rewriting them
+ * is the point, not accepting them: a name carrying `U+00A0` and the same name
+ * typed plainly have to be the same member, or the duplicate check below stops
+ * recognising them and the list grows a second row that looks identical.
+ *
+ * Only these two are rewritten. The genuinely invisible characters - `U+200B`,
+ * `U+200D`, `U+FEFF`, `U+2028`, `U+2029` - stay rejected: they make two
+ * *different* names render identically, which is a support problem rather than
+ * a formatting one, and no amount of normalising recovers what was typed.
+ *
+ * NFC comes first, and it is not optional. The two normal forms of "Müller" are
+ * byte-different and identical on screen: `ü` as one code point, or `u` plus a
+ * combining diaeresis. macOS filesystems hand out the decomposed form routinely,
+ * so the same person can be typed twice and pass the regex both times as two
+ * different members. Composing first makes the comparison - and the stored value
+ * - the same either way.
+ */
+const normalizeMemberName = (name: string): string =>
+  name.normalize('NFC').replace(/\u00A0/g, ' ').replace(/\u2011/g, '-');
+
 export const GET: (request: NextRequest) => Promise<NextResponse> = async (
   request
 ) => {
@@ -57,13 +84,19 @@ export const POST: (request: NextRequest) => Promise<NextResponse> = async (
     const body = await request.json();
     const { name } = body;
 
-    // Validate name format
-    const nameRegex = /^[a-zA-Z0-9\s.\-]+$/;
-    if (!name || !nameRegex.test(name)) {
+    // Normalize before validating and before every use below. The name that is
+    // tested, de-duplicated and stored is the same value, so a pasted U+00A0
+    // cannot slip past the test and then sit in the database as a second,
+    // visually identical member.
+    const normalizedName =
+      typeof name === 'string' ? normalizeMemberName(name) : name;
+
+    if (!name || !MEMBER_NAME_REGEX.test(normalizedName)) {
       return NextResponse.json(
         {
           message:
-            'Invalid name format. Only letters, numbers, spaces, dots, and hyphens are allowed.',
+            'Invalid name format. Names may contain letters from any alphabet, marks, numbers, spaces, dots, hyphens and apostrophes, up to 100 characters.',
+          code: 'invalid_name_format',
         },
         { status: 400 }
       );
@@ -73,13 +106,23 @@ export const POST: (request: NextRequest) => Promise<NextResponse> = async (
     const existingMember = await prisma.userGroup.findFirst({
       where: {
         group: { id: groupId },
-        user: { name: name },
+        user: { name: normalizedName },
       },
     });
 
     if (existingMember) {
+      // `code` for the same reason the format 400 above has one: both are 400
+      // with a `message`, and without a discriminator the client cannot tell
+      // "that is not a name" from "that name is taken" - which are two
+      // different sentences in the user's language, and the more common of the
+      // two by some distance. Named to match `invalid_name_format` in shape,
+      // and about the name rather than the member, because the message is
+      // about the name. Additive; `message` and the status are unchanged.
       return NextResponse.json(
-        { message: 'A member with this name already exists in this group' },
+        {
+          message: 'A member with this name already exists in this group',
+          code: 'duplicate_name',
+        },
         { status: 400 }
       );
     }
@@ -90,7 +133,7 @@ export const POST: (request: NextRequest) => Promise<NextResponse> = async (
 
     const user = await prisma.user.create({
       data: {
-        name,
+        name: normalizedName,
         password: hashedPassword,
       },
     });
