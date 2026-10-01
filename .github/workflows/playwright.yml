@@ -67,11 +67,47 @@ jobs:
           # Node 20 is past EOL. Next 16 needs >=20.9 and jose 6 needs >=20.19.
           node-version: 22
           cache: npm
+      # Everything from here to the build step needs no database at all. Verified
+      # on a clean checkout with DATABASE_URL, DIRECT_URL and JWT_SECRET set to
+      # the empty string a fork pull request gets: `npm ci` (including the
+      # `prisma generate` postinstall), typecheck, lint, ratchet and build all
+      # succeed. `prisma generate` only writes files, and nothing imports a
+      # PrismaClient while Next collects route config. So no placeholder
+      # connection string is needed either - these steps simply never get one.
+      #
+      # These five steps carry no `if:`, so they run whenever nothing above them
+      # has failed. That is why the secret preflight sits *below* them and not
+      # above: a step that exits non-zero aborts the rest of the job by the
+      # default `success()`, so a preflight placed here would skip typecheck,
+      # lint, ratchet and build entirely on a push with the secrets unset - which
+      # is the state this gate was added to protect against. Inverted paths were
+      # the result: a fork pull request, with no secrets reachable and the
+      # preflight gated off, ran the whole static half, while a same-repository
+      # push with full secret access ran none of it.
+      - name: Install dependencies
+        run: npm ci
+      - name: Typecheck
+        run: npx tsc --noEmit
+      - name: Lint
+        # Exit-code based, deliberately without `--max-warnings`: ESLint fails on
+        # errors. Warnings are the ratchet's job, one step down.
+        run: npm run lint
+      - name: Lint warning ratchet
+        # Fails on warnings that lint-baseline.json does not already contain, so
+        # the accepted warnings cannot become one more by accident. Shrinking the
+        # debt passes; only growing it fails.
+        run: npm run lint:ratchet
+      - name: Build
+        run: npm run build
       - name: Check required secrets
         id: db-secrets
         # Only where secrets can exist at all. A pull request from a fork has
         # none; there this step does not run, so it publishes no output and the
         # database steps below skip themselves instead of failing.
+        #
+        # Below the static half on purpose - see the note above `npm ci`. Exiting
+        # non-zero from above them would cancel them, which is precisely the
+        # regression this position avoids. Everything it feeds is below it.
         if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
         run: |
           missing=0
@@ -87,28 +123,6 @@ jobs:
             echo "configured=true" >> "$GITHUB_OUTPUT"
           fi
           exit "$missing"
-      # Everything from here to the build step needs no database at all. Verified
-      # on a clean checkout with DATABASE_URL, DIRECT_URL and JWT_SECRET set to
-      # the empty string a fork pull request gets: `npm ci` (including the
-      # `prisma generate` postinstall), typecheck, lint, ratchet and build all
-      # succeed. `prisma generate` only writes files, and nothing imports a
-      # PrismaClient while Next collects route config. So no placeholder
-      # connection string is needed either - these steps simply never get one.
-      - name: Install dependencies
-        run: npm ci
-      - name: Typecheck
-        run: npx tsc --noEmit
-      - name: Lint
-        # Exit-code based, deliberately without `--max-warnings`: ESLint fails on
-        # errors. Warnings are the ratchet's job, one step down.
-        run: npm run lint
-      - name: Lint warning ratchet
-        # Fails on warnings that lint-baseline.json does not already contain, so
-        # the 32 accepted warnings cannot become 33 by accident. Shrinking the
-        # debt passes; only growing it fails.
-        run: npm run lint:ratchet
-      - name: Build
-        run: npm run build
       - name: Note the skipped end-to-end half
         if: steps.db-secrets.outputs.configured != 'true'
         run: |
@@ -117,7 +131,12 @@ jobs:
         if: steps.db-secrets.outputs.configured == 'true'
         run: npx prisma migrate deploy
       - name: Seed database
+        # prisma/seed.mjs refuses to run its unfiltered deleteMany sweep without
+        # this marker, so pointing CI_DATABASE_URL at the parent database the
+        # deployed app uses fails here instead of emptying it.
         if: steps.db-secrets.outputs.configured == 'true'
+        env:
+          SEED_ALLOW_WIPE: '1'
         run: npx prisma db seed
       - name: Cache Playwright browsers
         if: steps.db-secrets.outputs.configured == 'true'

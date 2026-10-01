@@ -65,3 +65,6 @@ node_modules/
 
 # agent plan workspace
 /docs/superpowers/
+# the SDD ledger and its review diffs. Its own nested .gitignore covers it with
+# `*`, but that file ignores itself, so deleting it would expose all of it.
+/.superpowers/
