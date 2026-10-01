@@ -264,25 +264,29 @@ const MemberGiftsDialog: React.FC<MemberGiftsDialogProps> = ({
               The count is the sheet's own line of state, in the same words the
               contents page uses. It is a flash rather than a change of wording
               because the wording does not change: the number inside it does.
+              With zero gifts there is nothing to count, so the line is omitted
+              entirely — the empty-state paragraph below carries the message.
             */}
-            <div
-              key={countLabel}
-              className={cn(
-                'animate-count-flash',
-                '-mx-1',
-                'w-fit',
-                'rounded-sm',
-                'px-1',
-                'font-label',
-                'text-[0.6875rem]',
-                'font-bold',
-                'uppercase',
-                'tracking-[0.14em]',
-                'text-caption'
-              )}
-            >
-              {countLabel}
-            </div>
+            {gifts.length > 0 && (
+              <div
+                key={countLabel}
+                className={cn(
+                  'animate-count-flash',
+                  '-mx-1',
+                  'w-fit',
+                  'rounded-sm',
+                  'px-1',
+                  'font-label',
+                  'text-[0.6875rem]',
+                  'font-bold',
+                  'uppercase',
+                  'tracking-[0.14em]',
+                  'text-caption'
+                )}
+              >
+                {countLabel}
+              </div>
+            )}
 
             {gifts.length === 0 ? (
               <p className='max-w-[44ch] py-6 text-[0.9375rem] leading-relaxed text-caption'>

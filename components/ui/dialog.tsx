@@ -24,7 +24,7 @@ const DialogOverlay = React.forwardRef<
       'z-50',
       // A scrim, not a glass panel. The board behind stays legible and recedes;
       // nothing here blurs, because nothing in a printed world does.
-      'bg-ink/55',
+      'bg-scrim/55',
       'data-[state=open]:animate-in',
       'data-[state=closed]:animate-out',
       'data-[state=closed]:fade-out-0',
