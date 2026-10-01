@@ -4,6 +4,12 @@ import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 import { getGroupIdFromToken } from '@/lib/auth-server';
 
+// Unicode-aware on purpose: de/en/ru are equally first-class per PRODUCT.md and
+// de is the default locale, so `\p{L}\p{M}` is what real names are made of. Do not
+// "simplify" this back to ASCII. Anchoring the class is also what rejects
+// zero-width and other invisible characters: they are neither letters nor marks.
+const MEMBER_NAME_REGEX = /^(?=[^\p{L}]*\p{L})[\p{L}\p{M}\p{N} .\-'’]{1,100}$/u;
+
 export const GET: (request: NextRequest) => Promise<NextResponse> = async (
   request
 ) => {
@@ -58,8 +64,7 @@ export const POST: (request: NextRequest) => Promise<NextResponse> = async (
     const { name } = body;
 
     // Validate name format
-    const nameRegex = /^[a-zA-Z0-9\s.\-]+$/;
-    if (!name || !nameRegex.test(name)) {
+    if (!name || !MEMBER_NAME_REGEX.test(name)) {
       return NextResponse.json(
         {
           message:
