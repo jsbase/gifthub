@@ -37,12 +37,11 @@ export default defineConfig([
     'test-results/**',
     'next-env.d.ts',
     'prisma/**',
-    // Agent tooling and worktrees are vendored, not application source.
+    // Agent tooling and the plan workspace are vendored, not app source.
     '.agents/**',
     '.claude/**',
     '.codex/**',
-    '.impeccable/**',
     '.kilo/**',
-    'docs/**',
+    '.superpowers/**',
   ]),
 ]);

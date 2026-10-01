@@ -275,6 +275,9 @@ export interface HeaderProps {
   showAuth?: boolean;
 }
 
+// Deliberately shadows the global PageProps that Next 16 generates into
+// .next/types/routes.d.ts: a page that omits `import type { PageProps }` will
+// resolve to that generated global instead, which is parameterised by route.
 export interface PageProps {
   params: Promise<{ lang: string }>;
 }

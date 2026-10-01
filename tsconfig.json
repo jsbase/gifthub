@@ -34,6 +34,12 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
+    // Next returns both globs on purpose (see getTypeDefinitionGlobPatterns in
+    // next/dist/lib/typescript/type-paths.js: "Include both .next/types and
+    // .next/dev/types to avoid tsconfig churn when switching between dev/build
+    // modes"). Do not collapse these into one - Next only ever appends, never
+    // removes, so dropping either one just makes the next dev/build run
+    // re-add it.
     ".next/dev/types/**/*.ts"
   ],
   "exclude": [
