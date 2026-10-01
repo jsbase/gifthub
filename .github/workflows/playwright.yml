@@ -1,10 +1,10 @@
 # The workflow name is the check-run name prefix, and branch protection on
-# `development` requires `Playwright / run-e2e-tests`. Do not rename this file's
-# `name:` or the `run-e2e-tests` job below without updating the branch protection
-# rule at the same time.
+# `preview` and `main` requires `Playwright / run-e2e-tests`. Do not rename this
+# file's `name:` or the `run-e2e-tests` job below without updating the branch
+# protection rule at the same time.
 name: Playwright
 
-# Runs on pushes and pull requests to `development` instead of on Vercel
+# Runs on pushes and pull requests to `preview` and `main` instead of on Vercel
 # deployments. Two reasons:
 #   1. A `deployment_status` trigger cannot gate a merge. The checks only ran
 #      after a deploy, which is how a long-standing type error in the dashboard
@@ -12,11 +12,17 @@ name: Playwright
 #   2. The datasource is a hosted Postgres shared with the deployed app, so a
 #      deploy-triggered suite would run the database-writing tests against the
 #      data a human is looking at.
+#
+# Feature branches and pull requests. `main` is deliberately excluded: it is the
+# production branch, and every change reaches it through a pull_request, which
+# this already gates. Dependabot branches are excluded from `push` because their
+# pull_request run covers the same commits - without that, each update runs twice.
 on:
   push:
-    branches: [development]
+    branches-ignore:
+      - main
+      - 'dependabot/**'
   pull_request:
-    branches: [development]
 
 # The job only reads the repository.
 permissions:
