@@ -18,6 +18,7 @@ import GiftCard from '@/components/gift-card';
 import ConfirmDialog from '@/components/confirm-dialog';
 import { cn } from '@/lib/utils';
 import { memberInkStyle } from '@/lib/member-ink';
+import { giftCountLabel, sheetCounts, splitSheet } from '@/lib/gift-count';
 import type { MemberGiftsDialogProps, Gift } from '@/types';
 
 /**
@@ -101,33 +102,24 @@ const MemberGiftsDialog: React.FC<MemberGiftsDialogProps> = ({
   /*
     Newest first within each section, because that is the order the API returns
     and because the idea you have just written down is the one you most want to
-    see. What changes is which section it is in.
+    see. What changes is which section it is in. Both the split and the count
+    come from `lib/gift-count`, which is also what words them - the ladder used
+    to be written out a second time right here, and two copies of the rule that
+    separates "nothing left" from "no ideas at all" is how they came to disagree.
   */
-  const { openGifts, collectedGifts, openCount } = useMemo(() => {
-    const open: Gift[] = [];
-    const collected: Gift[] = [];
-    for (const gift of gifts) {
-      (gift.isPurchased ? collected : open).push(gift);
-    }
-    return {
-      openGifts: open,
-      collectedGifts: collected,
-      openCount: open.length,
-    };
-  }, [gifts]);
+  const { open: openGifts, collected: collectedGifts } = useMemo(
+    () => splitSheet(gifts),
+    [gifts]
+  );
+  const sheetTotals = useMemo(() => sheetCounts(gifts), [gifts]);
 
   /* The count in the sheet's header. It moves whenever a cell is collected, and
      the numeral flashes - the only place the app reports a change outside the
      cell itself, because on mobile the sheet's own header is the one thing that
      stays on screen while you scroll the cells. */
-  const countLabel =
-    gifts.length === 0
-      ? dict.giftCount.none
-      : openCount === 0
-        ? dict.giftCount.zero
-        : openCount === 1
-          ? dict.giftCount.one.replace('{{count}}', '1')
-          : dict.giftCount.many.replace('{{count}}', String(openCount));
+  const countLabel = giftCountLabel(sheetTotals, {
+    giftCount: dict.giftCount,
+  });
 
   const handleAddGift = useCallback(
     async (e: React.FormEvent<HTMLFormElement>) => {

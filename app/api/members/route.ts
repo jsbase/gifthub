@@ -2,40 +2,23 @@ import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
-import { getGroupIdFromToken } from '@/lib/auth-server';
+import { requireGroupId } from '@/lib/auth-server';
+import { acceptedMemberName } from '@/lib/member-name';
 
-// Unicode-aware on purpose: de/en/ru are equally first-class per PRODUCT.md and
-// de is the default locale, so `\p{L}\p{M}` is what real names are made of. Do not
-// "simplify" this back to ASCII. Anchoring the class is also what rejects
-// zero-width and other invisible characters: they are neither letters nor marks.
-const MEMBER_NAME_REGEX = /^(?=[^\p{L}]*\p{L})[\p{L}\p{M}\p{N} .\-'’]{1,100}$/u;
+/*
+  The alphabet, the normalisation and the two refusal codes all live in
+  `lib/member-name`, which the client imports too. This route decides whether the
+  name is taken; it no longer decides on its own what a name may be.
+*/
 
-/**
- * Pasted text arrives with the wrong space and the wrong hyphen. Rewriting them
- * is the point, not accepting them: a name carrying `U+00A0` and the same name
- * typed plainly have to be the same member, or the duplicate check below stops
- * recognising them and the list grows a second row that looks identical.
- *
- * Only these two are rewritten. The genuinely invisible characters - `U+200B`,
- * `U+200D`, `U+FEFF`, `U+2028`, `U+2029` - stay rejected: they make two
- * *different* names render identically, which is a support problem rather than
- * a formatting one, and no amount of normalising recovers what was typed.
- *
- * NFC comes first, and it is not optional. The two normal forms of "Müller" are
- * byte-different and identical on screen: `ü` as one code point, or `u` plus a
- * combining diaeresis. macOS filesystems hand out the decomposed form routinely,
- * so the same person can be typed twice and pass the regex both times as two
- * different members. Composing first makes the comparison - and the stored value
- * - the same either way.
- */
-const normalizeMemberName = (name: string): string =>
-  name.normalize('NFC').replace(/\u00A0/g, ' ').replace(/\u2011/g, '-');
-
-export const GET: (request: NextRequest) => Promise<NextResponse> = async (
-  request
-) => {
+/*
+  No request parameter. The group comes from the session cookie, so this handler
+  has nothing to read off the request - it used to accept one and pass it to the
+  auth helper, which never opened it.
+*/
+export const GET: () => Promise<NextResponse> = async () => {
   try {
-    const groupId = await getGroupIdFromToken(request);
+    const groupId = await requireGroupId();
     if (!groupId) {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
@@ -76,7 +59,7 @@ export const POST: (request: NextRequest) => Promise<NextResponse> = async (
   request
 ) => {
   try {
-    const groupId = await getGroupIdFromToken(request);
+    const groupId = await requireGroupId();
     if (!groupId) {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
@@ -84,14 +67,15 @@ export const POST: (request: NextRequest) => Promise<NextResponse> = async (
     const body = await request.json();
     const { name } = body;
 
-    // Normalize before validating and before every use below. The name that is
-    // tested, de-duplicated and stored is the same value, so a pasted U+00A0
-    // cannot slip past the test and then sit in the database as a second,
-    // visually identical member.
-    const normalizedName =
-      typeof name === 'string' ? normalizeMemberName(name) : name;
+    /*
+      `acceptedMemberName` normalises, tests, and hands back the value to store,
+      so the name that is de-duplicated below and written at the end is the same
+      one that passed the test. It used to be done in three steps here, which is
+      three chances to store a different string than the one validated.
+    */
+    const normalizedName = acceptedMemberName(name);
 
-    if (!name || !MEMBER_NAME_REGEX.test(normalizedName)) {
+    if (normalizedName === undefined) {
       return NextResponse.json(
         {
           message:

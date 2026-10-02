@@ -1,4 +1,3 @@
-import { DialogProps } from '@radix-ui/react-dialog';
 import { ReactNode } from 'react';
 
 export interface Gift {
@@ -68,6 +67,19 @@ export interface Translations {
   createGroupBtn: string;
   members: string;
   addMember: string;
+  /**
+   * The label on the control that starts removing a member. Like
+   * `removeMemberConfirm` below, it shipped in de, en and ru while existing in
+   * no type - both were reachable only through `dict: any`.
+   */
+  deleteMember: string;
+  /**
+   * The title of the member-removal confirmation, above the sentence that warns
+   * about the cascade. It was in all three locale files and in no type - the
+   * index signature that used to close this interface admitted any key, so a
+   * string that ships in three languages was still only reachable by accident.
+   */
+  removeMemberConfirm: string;
   logout: string;
   changeLanguage: string;
   noMembers: string;
@@ -186,16 +198,19 @@ export interface Translations {
     one: string;
     many: string;
   };
-  [key: string]:
-    | string
-    | { [key: string]: string | { [key: string]: string } }
-    | AddMemberDialogDictionary
-    | MemberGiftsTranslations
-    | ToastTranslations
-    | ConfirmationTranslations
-    | LandingPreviewTranslations
-    | { name: string; count: number; collected: number }[]
-    | { [key: string]: string };
+  /*
+    There is deliberately no index signature here.
+
+    One used to sit at the bottom of this interface, admitting `string` and a
+    handful of object shapes for any key at all. It checked every key that is
+    named above and waved through every key that is not, which is what let two
+    props describing the same visual concept be typed three different ways - two
+    of them `any` - and what let a key exist in `de.json` and be missing from
+    `ru.json` without anything noticing.
+
+    A string is only in the product once it exists in de, en and ru. Removing the
+    escape hatch is what makes that true by construction rather than by review.
+  */
 }
 
 /**
@@ -250,8 +265,6 @@ export interface MemberGiftsDialogProps {
     giftCount: Translations['giftCount'];
   };
 }
-
-export type CommandDialogProps = DialogProps;
 
 export interface AuthButtonsProps {
   dict: Translations;
@@ -473,7 +486,13 @@ export interface MemberGiftCounts {
 export interface MemberListProps {
   members: Member[];
   giftCounts: Record<string, MemberGiftCounts>;
-  dict: any;
+  /**
+   * The whole dictionary, because this list draws its rows with the same count
+   * words the sheet does and the same confirmation the sheet uses. Both were
+   * `any` before, which is how `removeMemberConfirm` came to ship in three locale
+   * files while existing in no type.
+   */
+  dict: Translations;
   onMemberClick: (id: string) => void;
   onMemberDeleted: () => void;
 }
@@ -500,7 +519,11 @@ export interface DebounceOptions {
 }
 
 export interface MemberListHeaderProps {
-  dict: any;
+  /**
+   * Two keys, named rather than `any`: the heading above the list and the label
+   * on the control that starts removal.
+   */
+  dict: Pick<Translations, 'members' | 'deleteMember'>;
   onDeleteClick: () => void;
   onMemberAdded: () => void;
   hasMembers: boolean;

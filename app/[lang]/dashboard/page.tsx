@@ -12,13 +12,8 @@ import Footer from '@/components/footer';
 import { CropMarks } from '@/components/ui/dialog';
 import { verifyAuth, logout } from '@/lib/auth';
 import { cn } from '@/lib/utils';
-import type {
-  Member,
-  MemberGiftCounts,
-  Gift,
-  Translations,
-  PageProps,
-} from '@/types';
+import { countsByMember, sheetCounts } from '@/lib/gift-count';
+import type { Member, MemberGiftCounts, Gift, Translations, PageProps } from '@/types';
 
 const MemberGiftsDialog = lazy(
   () => import('@/components/member-gifts-dialog')
@@ -56,18 +51,14 @@ const DashboardPage: NextPage<PageProps> = ({ params }) => {
       /*
         Both numbers, not one. "Nothing left to buy" and "no gift ideas yet" are
         different situations and the row has to be able to say which: a member
-        with an empty list is the one who most needs a present.
+        with an empty list is the one who most needs a present. `countsByMember`
+        is the same module that words those counts on the row and in the sheet,
+        so the figure and the sentence under it cannot come from two ideas about
+        what a count is.
       */
-      const giftCountsByMember = membersData.members.reduce(
-        (acc: Record<string, MemberGiftCounts>, member: any) => {
-          const own = allGifts.filter((gift) => gift.forMemberId === member.id);
-          acc[member.id] = {
-            unbought: own.filter((gift) => !gift.isPurchased).length,
-            total: own.length,
-          };
-          return acc;
-        },
-        {}
+      const giftCountsByMember = countsByMember(
+        membersData.members.map((member: Member) => member.id),
+        allGifts
       );
 
       setMemberGiftCounts(giftCountsByMember);
@@ -150,10 +141,7 @@ const DashboardPage: NextPage<PageProps> = ({ params }) => {
       const data = await response.json();
       setMemberGiftCounts((prev) => ({
         ...prev,
-        [memberId]: {
-          unbought: data.gifts.filter((gift: Gift) => !gift.isPurchased).length,
-          total: data.gifts.length,
-        },
+        [memberId]: sheetCounts(data.gifts),
       }));
     }
   }, []);
