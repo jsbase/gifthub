@@ -48,11 +48,19 @@ const MIA = 'mia@example.test';
 
 type Actor = { context: BrowserContext; api: BrowserContext['request'] };
 
-/** Sign one account in and hand back an isolated context for it. */
+/**
+ * Sign one account in and hand back an isolated context for it.
+ *
+ * `identifier`, because that is the field name the login route reads. It used to be
+ * `email` and this suite posted the address; the route now accepts a nickname or an
+ * address in one field, and a helper still posting `email` fails with "Name or
+ * email, and a password, are required" - which is the route being right about its
+ * own contract and the caller being stale.
+ */
 const signIn = async (browser: Browser, email: string): Promise<Actor> => {
   const context = await browser.newContext();
   const response = await context.request.post('/api/auth/login', {
-    data: { email, password: PASSWORD },
+    data: { identifier: email, password: PASSWORD },
   });
   expect(
     response.ok(),
@@ -223,12 +231,23 @@ test.describe('Sharing permissions', () => {
       expect(status, `a buyer must not be able to ${what}`).toBe(403);
     }
 
-    // And the list survived every one of them, which is what makes the 403s above
+    // The list survived every one of them, which is what makes the 403s above
     // refusals rather than lucky ordering.
     expect((await anna.api.get(`/api/lists/${listId}`)).status()).toBe(200);
+
+    /*
+      Including the idea. Asserted against the sheet's own gift ids rather than
+      against a status from `GET /api/lists/{id}/gifts/{giftId}` - there is no such
+      route, so that request answers 405 and any `>= 400` assertion passed
+      vacuously. The question the test is actually asking is "is the idea still
+      there", and the sheet is where the ideas are.
+    */
+    const survivors = await (
+      await anna.api.get(`/api/lists/${listId}`)
+    ).json();
     expect(
-      (await anna.api.get(`/api/lists/${listId}/gifts/${giftId}`)).status()
-    ).toBeGreaterThanOrEqual(400);
+      survivors.gifts.map((g: { id: string }) => g.id)
+    ).toContain(giftId);
 
     await anna.context.close();
     await ben.context.close();
@@ -319,9 +338,19 @@ test.describe('Sharing permissions', () => {
     expect(ownerClear.status()).toBe(403);
     expect((await ownerClear.json()).code).toBe('cannot_clear_purchase');
 
-    // The mark is still standing, which is the half that actually matters.
-    const after = await ben.api.get(`/api/lists/${listId}`);
-    expect(JSON.stringify(await after.json())).toContain('Geschenk');
+    /*
+      This is the half that actually matters, and it is asserted about the mark
+      rather than about the idea. `toContain('Geschenk')` only proved the response
+      mentioned the title at all - which it does whether the mark is standing or not.
+      The row is found by id and its state is read.
+    */
+    const after = await (await ben.api.get(`/api/lists/${listId}`)).json();
+    const marked = after.gifts.find((g: { id: string }) => g.id === giftId);
+    expect(marked, 'the idea is still on the list').toBeTruthy();
+    expect(
+      marked.isPurchased,
+      "the owner's refused clear must leave the buyer's mark standing"
+    ).toBe(true);
 
     // A buyer correcting another buyer's mark is the coordination working, and is
     // deliberately allowed.

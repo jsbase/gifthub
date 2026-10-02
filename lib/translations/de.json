@@ -8,10 +8,14 @@
 
   "email": "E-Mail-Adresse",
   "displayName": "Anzeigename",
+    "nickname": "Nickname",
   "password": "Passwort",
   "confirmPassword": "Passwort bestätigen",
   "loginBtn": "Anmelden",
   "registerBtn": "Konto erstellen",
+    "loginIdentifier": "Nickname oder E-Mail-Adresse",
+    "loginIdentifierHint": "Dein Nickname ist einmalig — damit meldest du dich an. Dein Anzeigename darfst du später ändern.",
+    "registerNicknameHint": "Dein Nickname ist einmalig. Andere sehen dich zunächst unter diesem Namen.",
 
   "loginDescription": "Nach der Anmeldung siehst du deine Listen und die, die andere mit dir geteilt haben.",
   "registerDescription": "Mit diesem Konto gehören dir alle Listen, die du anlegst — und du allein entscheidest, wer sie sieht.",
@@ -66,6 +70,12 @@
     "registrationFailed": "Konto konnte nicht erstellt werden",
 
     "invalidEmail": "Bitte eine gültige E-Mail-Adresse eingeben.",
+    "invalidNickname": "Bitte einen Nickname aus Buchstaben, Ziffern, Punkt, Strich oder Unterstrich eingeben (2–32 Zeichen).",
+    "duplicateNickname": "Dieser Nickname ist schon vergeben.",
+    "invalidIdentifier": "Bitte deinen Nickname oder deine E-Mail-Adresse eingeben.",
+    "nothingToChange": "Es wurde nichts geändert.",
+    "ambiguousChange": "Bitte entweder den Namen oder die Sichtbarkeit ändern, nicht beides.",
+    "invalidVisibility": "Diese Sichtbarkeit gibt es nicht.",
     "duplicateEmail": "Zu dieser E-Mail-Adresse gibt es schon ein Konto. Ein vergessenes Passwort lässt sich nicht zurücksetzen.",
     "weakPassword": "Mindestens 8 Zeichen.",
     "invalidDisplayName": "Der Name darf Buchstaben, Zahlen, Leerzeichen, Punkte, Bindestriche und Apostrophe enthalten, höchstens 100 Zeichen.",
@@ -246,7 +256,7 @@
       },
       {
         "title": "b) Registrierung und Anmeldung zur Nutzung der Web-App",
-        "content": "Um die Web-App zu nutzen, ist ein Konto mit E-Mail-Adresse, Passwort und Anzeigename erforderlich. Bei der Registrierung und Anmeldung speichern wir: Kontodaten (E-Mail-Adresse, Passwort und Anzeigename), die eigenen Wunschlisten mit ihren Geschenkideen und Links zu Produkten sowie bei geteilten Listen die E-Mail-Adresse und den Anzeigenamen der Personen, mit denen sie geteilt wurden. Das Passwort wird vor der Speicherung gehasht und ist im Klartext nicht wiederherstellbar. Zu jeder als gekauft markierten Idee speichern wir außerdem das Konto, das sie abgehakt hat, damit nur dieses Konto die Markierung zurücknehmen kann; der Name wird in der Web-App nicht angezeigt."
+        "content": "Um die Web-App zu nutzen, ist ein Konto mit E-Mail-Adresse, Passwort und Anzeigename erforderlich. Bei der Registrierung und Anmeldung speichern wir: Kontodaten (E-Mail-Adresse, Passwort und Anzeigename), die eigenen Wunschlisten mit ihren Geschenkideen und Links zu Produkten sowie bei geteilten Listen die E-Mail-Adresse und den Anzeigenamen der Personen, mit denen sie geteilt wurden. Das Passwort wird vor der Speicherung gehasht und ist im Klartext nicht wiederherstellbar. Zu jeder als gekauft markierten Idee speichern wir außerdem das Konto, das sie abgehakt hat. Die Markierung gehört allen, mit denen die Liste geteilt ist: Sie können sie untereinander korrigieren. Nur die Person, der die Liste gehört, kann eine von jemand anderem gesetzte Markierung nicht aufheben. Der Name wird in der Web-App nicht angezeigt."
       }
     ]
   },

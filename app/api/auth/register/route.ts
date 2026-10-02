@@ -1,15 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { SignJWT } from 'jose';
 import bcrypt from 'bcryptjs';
+import { Prisma } from '@prisma/client';
 import prisma from '@/lib/prisma';
 import { findAccountByEmail } from '@/lib/list-access';
 import { acceptedEmail } from '@/lib/email';
 import {
-  acceptedDisplayName,
   BCRYPT_COST,
   isPasswordLongEnough,
 } from '@/lib/account-name';
+import { acceptedNickname } from '@/lib/nickname';
 import { refusalResponse } from '@/lib/api-refusal';
+import { cookieIsSecure } from '@/lib/cookie';
 
 /*
   Registration is the only place in this product that creates an account and the
@@ -27,6 +29,18 @@ import { refusalResponse } from '@/lib/api-refusal';
 export const POST: (request: NextRequest) => Promise<NextResponse> = async (
   request
 ) => {
+  /*
+    Upper-cases the first character and leaves the rest alone.
+   *
+    Only the first character, deliberately. Splitting on a separator and joining with
+    spaces would be cleverer and would be wrong: `anna.mueller` and `anna-mueller`
+    are handles, and turning them into "Anna.Mueller" would invent a surname that
+    nobody typed. The nickname is a handle first and a name second, and this is the
+    one place the second is derived from the first.
+   */
+  const capitalize = (value: string): string =>
+    value.charAt(0).toUpperCase() + value.slice(1);
+
   try {
     /*
       Both configuration values are checked before anything is written. The group
@@ -45,13 +59,13 @@ export const POST: (request: NextRequest) => Promise<NextResponse> = async (
 
     let email: unknown;
     let password: unknown;
-    let displayName: unknown;
+    let nickname: unknown;
 
     try {
       const body = await request.json();
       email = body.email;
       password = body.password;
-      displayName = body.displayName;
+      nickname = body.nickname;
     } catch {
       return NextResponse.json(
         { success: false, message: 'Invalid request body' },
@@ -83,15 +97,36 @@ export const POST: (request: NextRequest) => Promise<NextResponse> = async (
       return refusalResponse('weak_password');
     }
 
-    /*
-      Required, not optional. `PRODUCT.md:72` makes the header substitute this for
-      the wordmark, and an optional name falls back to an email address in the one
-      place the product speaks to the person using it.
+/*
+      The unique handle, and the one account-wide rule that moved into the schema to
+      enforce it. A validator and a unique index would disagree under concurrency,
+      so the index is the authority and this check exists only to say so in a
+      sentence rather than in a database error. The catch below covers the race.
     */
-    const normalizedName = acceptedDisplayName(displayName);
-    if (normalizedName === undefined) {
-      return refusalResponse('invalid_display_name');
+    const normalizedNickname = acceptedNickname(nickname);
+    if (normalizedNickname === undefined) {
+      return refusalResponse('invalid_nickname');
     }
+
+    if (await prisma.account.findUnique({
+      where: { nickname: normalizedNickname },
+    })) {
+      return refusalResponse('duplicate_nickname');
+    }
+
+    /*
+      The display name starts as the nickname rather than being asked for. Signing
+      up is already three fields for someone who is not technical, and a fourth
+      that says the same thing is the one that tips it over; the display name is
+      theirs to change afterwards and until then a nickname is a perfectly good
+      name to be called.
+
+      Capitalised on the way through, so somebody who typed `anna` is greeted as
+      "Anna" - the header substitution in `PRODUCT.md:72` is set in a serif and is
+      the product's one piece of typography that is trying to be a name, and a
+      lowercase handle is not one.
+    */
+    const displayName = capitalize(normalizedNickname);
 
     /*
       Checked through the same lookup the sign-in path uses, rather than a direct
@@ -117,9 +152,10 @@ export const POST: (request: NextRequest) => Promise<NextResponse> = async (
       data: {
         email: normalizedEmail,
         password: hashedPassword,
-        displayName: normalizedName,
+        nickname: normalizedNickname,
+        displayName,
       },
-      select: { id: true, email: true, displayName: true },
+      select: { id: true, email: true, nickname: true, displayName: true },
     });
 
     /*
@@ -148,7 +184,7 @@ export const POST: (request: NextRequest) => Promise<NextResponse> = async (
       name: 'auth-token',
       value: token,
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure: cookieIsSecure(request),
       sameSite: 'lax',
       maxAge: 60 * 60 * 24 * 7, // 7 days
     });
@@ -158,14 +194,49 @@ export const POST: (request: NextRequest) => Promise<NextResponse> = async (
     console.error('Registration error:', error);
 
     /*
-      The check above and the unique constraint are not atomic, so two people
-      registering `anna@example.de` at the same moment can both pass the check and
-      one of them loses. `P2002` is that loss, and it has to answer with the same
-      refusal as the check would have - otherwise the person who lost the race is
-      told "registration failed" for an address that is, correctly, taken.
+      The checks above and the unique constraints are not atomic, so two people
+      registering `anna` at the same moment can both pass a check and one of them
+      loses. `P2002` is that loss, and it has to answer with the same refusal the
+      check would have - otherwise the person who lost the race is told
+      "registration failed" for a field that is, correctly, taken.
+
+      Tested on the error's `code`, not on its `message`. The message is a rendered
+      sentence Prisma composes for a human reading a terminal, and the code is the
+      part that is a contract - so matching on the message means this branch stops
+      firing the day the wording changes, and the failure mode is the worst kind: an
+      ordinary 500 on a route that has a correct answer ready for it.
+
+      **Which** unique constraint is read off `meta.target`, because `P2002` alone
+      does not say. There are three of them on this table - the address, the
+      nickname and the primary key - and answering `duplicate_email` for a lost
+      nickname race tells somebody their email address is taken when it is not, which
+      sends them off to fix the field that was fine and leaves the one that was not.
+      That is the exact failure `lib/nickname.ts` gives its codes separate identities
+      to prevent, undone in the catch.
+
+      `meta.target` is the column or index name as a string on some Prisma versions
+      and an array on others, so both are handled and anything unrecognised falls
+      through to the generic 500 rather than guessing. Guessing would be worse than
+      the plain failure: a wrong sentence about a wrong field is the one error a
+      person cannot work out on their own.
     */
-    if (error instanceof Error && error.message.includes('P2002')) {
-      return refusalResponse('duplicate_email');
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === 'P2002'
+    ) {
+      const target = error.meta?.target;
+      const fields = Array.isArray(target)
+        ? target
+        : typeof target === 'string'
+          ? [target]
+          : [];
+
+      if (fields.some((field) => String(field).includes('nickname'))) {
+        return refusalResponse('duplicate_nickname');
+      }
+      if (fields.some((field) => String(field).includes('email'))) {
+        return refusalResponse('duplicate_email');
+      }
     }
 
     return NextResponse.json(

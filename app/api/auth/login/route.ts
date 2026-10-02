@@ -2,10 +2,65 @@ import { NextResponse, NextRequest } from 'next/server';
 import { cookies } from 'next/headers';
 import { SignJWT } from 'jose';
 import bcrypt from 'bcryptjs';
+import prisma from '@/lib/prisma';
 import { findAccountByEmail } from '@/lib/list-access';
 import { acceptedEmail } from '@/lib/email';
+import { acceptedNickname } from '@/lib/nickname';
+import { cookieIsSecure } from '@/lib/cookie';
+import { refusalResponse } from '@/lib/api-refusal';
 import { defaultLocale, locales } from '@/lib/i18n-config';
 import type { LanguageCode } from '@/types';
+import type { Prisma } from '@prisma/client';
+
+/**
+ * Whether an identifier is a shape this product accepts at all.
+ *
+ * Split from the lookup on purpose, because the two failures must not look alike:
+ * a malformed field is a fact about the request and gets its own sentence, while
+ * "no such account" and "wrong password" stay a single uniform 401. That split is
+ * what lets the client say "that is not a nickname or an address" without saying
+ * anything about whether anybody is registered - a refusal about the *shape* of what
+ * you typed reveals nothing about the world, and that is the only thing sign-in is
+ * allowed to distinguish.
+ */
+const identifierIsWellFormed = (identifier: string): boolean =>
+  identifier.includes('@')
+    ? acceptedEmail(identifier) !== undefined
+    : acceptedNickname(identifier) !== undefined;
+
+/**
+ * The account a sign-in identifier names, or `null`.
+ *
+ * Exactly one, or none. A nickname and an email address are both unique in the
+ * database, so there is no third answer and no need to ask the person which of two
+ * accounts they meant. That was the reason for adding the nickname at all: sign-in
+ * originally accepted a *display* name, which cannot be unique because two people
+ * are both called Anna, and the way out of that was to give people a unique handle
+ * rather than to make their names unique - see `lib/nickname.ts`.
+ *
+ * An `@` chooses the lookup rather than trying both, because a nickname cannot
+ * contain one. The two input spaces do not overlap and there is nothing to
+ * disambiguate, so a field that tried both would be slower and would have two ways
+ * to fail for one reason.
+ *
+ * The nickname comparison is case-insensitive, which it has to be: nicknames are
+ * stored lowercased, so an exact comparison would fail every capitalised attempt.
+ */
+const loginIdentifierMatches = async (
+  identifier: string
+): Promise<Prisma.AccountGetPayload<Record<string, never>> | null> => {
+  const trimmed = identifier.trim();
+
+  if (trimmed.includes('@')) {
+    const email = acceptedEmail(trimmed);
+    return email === undefined ? null : findAccountByEmail(email);
+  }
+
+  const nickname = acceptedNickname(trimmed);
+  if (nickname === undefined) return null;
+
+  return prisma.account.findUnique({ where: { nickname } });
+};
 
 export const POST: (request: NextRequest) => Promise<NextResponse> = async (
   request
@@ -15,34 +70,46 @@ export const POST: (request: NextRequest) => Promise<NextResponse> = async (
       throw new Error('JWT_SECRET is not set');
     }
 
-    const { email, password } = await request.json();
+    const { identifier, password } = await request.json();
 
-    if (typeof email !== 'string' || typeof password !== 'string' || !password) {
+    if (
+      typeof identifier !== 'string' ||
+      typeof password !== 'string' ||
+      !password
+    ) {
       return NextResponse.json(
-        { message: 'Email and password are required' },
+        { message: 'Name or email, and a password, are required' },
         { status: 400 }
       );
     }
 
     /*
-      Normalised before the lookup rather than after it, so the address that is
-      compared is the address that is stored. Signing in with the capital letters a
-      phone keyboard supplies has to find the account that registered in lower case;
-      a comparison against the typed string would hand back "no such account" for
-      a person who has, in fact, an account.
+One field, two kinds of answer: a nickname, or an email address.
+
+      Which one it is decided by the presence of an `@`. That is a heuristic and it
+      is the right one here, because `acceptedNickname` does not permit `@` in a
+      nickname at all - so the two sets cannot overlap, and nothing has to be guessed
+      about which lookup to run. A field that had to try both would be slower and
+      could not say which failure it was.
     */
-    const normalizedEmail = acceptedEmail(email);
-    if (normalizedEmail === undefined) {
-      return NextResponse.json(
-        { message: 'That is not an email address', code: 'invalid_email' },
-        { status: 400 }
-      );
-    }
-
-    const account = await findAccountByEmail(normalizedEmail);
 
     /*
-      One answer for "no such address" and "wrong password", and it is 401 in both
+      The shape of the field, before anything is looked up.
+
+      This is the only place on this route that says which part of what you typed was
+      wrong, and it is safe precisely because it is about the *request* rather than
+      the world: "that is not a nickname or an email address" is a fact about a
+      string the caller already knows. Existence stays a uniform 401 below, so
+      nothing here reveals whether anybody is registered.
+    */
+    if (!identifierIsWellFormed(identifier)) {
+      return refusalResponse('invalid_identifier');
+    }
+
+    const account = await loginIdentifierMatches(identifier);
+
+    /*
+      One answer for "no such account" and "wrong password", and it is 401 in both
       cases. The status is the same, the sentence is the same, and the work is the
       same - the missing-account branch compares against a hash nobody has, so both
       paths pay a full bcrypt verification and the response time says nothing either.
@@ -75,7 +142,7 @@ export const POST: (request: NextRequest) => Promise<NextResponse> = async (
 
     if (!account || !isValid) {
       return NextResponse.json(
-        { message: 'Email or password is not correct' },
+        { message: 'Nickname, email address or password is not correct' },
         { status: 401 }
       );
     }
@@ -97,7 +164,7 @@ export const POST: (request: NextRequest) => Promise<NextResponse> = async (
       name: 'auth-token',
       value: token,
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure: cookieIsSecure(request),
       sameSite: 'lax',
       maxAge: 60 * 60 * 24 * 7, // 7 days
     });

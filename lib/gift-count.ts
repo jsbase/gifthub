@@ -38,32 +38,6 @@ export function sheetCounts(gifts: PurchasedFlag[]): MemberGiftCounts {
 }
 
 /**
- * The same counts for every list at once.
- *
- * One pass over the gifts rather than a filter per list: the contents page used to
- * walk the whole gift list once for each row it was drawing, which is quadratic in
- * exactly the place that has to stay responsive while lists are being added.
- */
-export function countsByList(
-  listIds: string[],
-  gifts: (Gift | (PurchasedFlag & { listId: string }))[]
-): Record<string, MemberGiftCounts> {
-  const counts: Record<string, MemberGiftCounts> = {};
-  for (const id of listIds) {
-    counts[id] = { unbought: 0, total: 0 };
-  }
-  for (const gift of gifts) {
-    const entry = counts[gift.listId];
-    // An idea on a list that is no longer shown still belongs to the response, so
-    // it is counted into nobody rather than into a missing key.
-    if (!entry) continue;
-    entry.total += 1;
-    if (!gift.isPurchased) entry.unbought += 1;
-  }
-  return counts;
-}
-
-/**
  * A sheet split into the two sections it is read in: what is still needed, and
  * what has already been handled. A single undifferentiated list answers neither
  * question, which is why the sheet draws them as two.

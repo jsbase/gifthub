@@ -4,14 +4,14 @@ import React, { memo, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { acceptedDisplayName } from '@/lib/account-name';
+import { acceptedNickname } from '@/lib/nickname';
 import { cn } from '@/lib/utils';
 import type { RegisterFormProps } from '@/types';
 
 /**
- * Account creation: a name, an address, and the same password twice.
+ * Account creation: a nickname, an address, and the same password twice.
  *
- * **The name is validated here, with the server's own function.**
+ * **The nickname is validated here, with the server's own function.**
  * `acceptedDisplayName` is imported rather than reimplemented for the same reason
  * the old add-member dialog imported `isMemberNameRefusal`: the client check and
  * the server check are two ends of one rule, and a second copy of the rule is a
@@ -39,10 +39,12 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
   onSubmit,
   emailError,
   passwordError,
-  displayNameError,
+  nicknameError,
+  confirmPasswordError,
   onEmailChange,
   onPasswordChange,
-  onDisplayNameChange,
+  onConfirmPasswordChange,
+  onNicknameChange,
 }) => {
   /*
     The one field with a value in it. `RegisterFormProps` carries no `value`, and
@@ -50,34 +52,33 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
     owns the fields. This one is held locally only because this is the one that is
     checked while it is being typed, and a checked field needs a value.
   */
-  const [name, setName] = useState('');
-  const [nameTouched, setNameTouched] = useState(false);
+  const [nickname, setNickname] = useState('');
+  const [nicknameTouched, setNicknameTouched] = useState(false);
 
   /*
-    `name.length > 0` first, because an empty field is not a malformed name: it is
-    a field nobody has filled in, and `required` already owns that case with the
-    browser's own message. Answering a blur on an empty field with "names may
-    contain letters, numbers, spaces, dots, hyphens and apostrophes" would state a
-    rule about the value of nothing, 116 characters of German to say it, on a field
-    the reader had not written in yet.
+    `nickname.length > 0` first, because an empty field is not a malformed
+    nickname: it is a field nobody has filled in, and `required` already owns that
+    case with the browser's own message. Answering a blur on an empty field with the
+    rule about the value would state a rule about nothing, in 70 characters of
+    German, on a field the reader had not written in yet.
   */
-  const liveNameError =
-    name.length > 0 &&
-    nameTouched &&
-    acceptedDisplayName(name) === undefined
-      ? dict.errors.invalidDisplayName
+  const liveNicknameError =
+    nickname.length > 0 &&
+    nicknameTouched &&
+    acceptedNickname(nickname) === undefined
+      ? dict.errors.invalidNickname
       : null;
 
   /*
     The server's sentence first, the live one behind it.
 
     Order matters and it is the other way round from what it looks like. The parent
-    clears `displayNameError` on the first keystroke, so a server refusal and a live
+    clears `nicknameError` on the first keystroke, so a server refusal and a live
     refusal are never both standing: the moment the reader touches the field again
     the server's verdict is gone and the one rule that produced it is answering
     instead. They cannot disagree, because they are the same function.
   */
-  const shownNameError = displayNameError || liveNameError;
+  const shownNicknameError = nicknameError || liveNicknameError;
 
   return (
     <form
@@ -85,51 +86,63 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
       className={cn('mt-4', 'flex', 'flex-col', 'gap-3')}
     >
       {/*
-        Name, address, password. The name leads because it is the line the product
-        will be carrying: `PRODUCT.md:72` puts the signed-in person's name in the
-        header in place of the wordmark, so the first thing asked for is the thing
-        the header will then show. It was also the first field of the group form
-        this replaces, so the reading order a returning reader has does not move.
+        Nickname first, then address, then password.
+
+        The nickname leads because it is what the product will ask for every day
+        afterwards - it is the handle `POST /api/auth/login` resolves - and putting
+        it first means the reading order of the fields matches the order they matter
+        in. It was not asked for in an earlier version of this form, because sign-in
+        took a display name; a display name cannot be a handle, so the field appeared
+        with the change rather than being renamed.
+
+        Registration still asks for three things, not four. The display name is not
+        among them: the route derives it from the nickname and capitalises the first
+        letter, so somebody who typed `anna` is greeted as "Anna" and can change it
+        later. For an audience that is explicitly not technical, a fourth field
+        saying roughly what the first one already said is the one that tips the form
+        over.
       */}
       <div className='flex flex-col gap-1.5'>
-        <Label className='label-print text-caption' htmlFor='newDisplayName'>
-          {dict.displayName}
+        <Label className='label-print text-caption' htmlFor='newNickname'>
+          {dict.nickname}
         </Label>
         <Input
-          name='displayName'
-          id='newDisplayName'
+          name='nickname'
+          id='newNickname'
           type='text'
-          value={name}
+          value={nickname}
           onChange={(event) => {
-            setName(event.target.value);
-            onDisplayNameChange?.();
+            setNickname(event.target.value);
+            onNicknameChange?.();
           }}
-          onBlur={() => setNameTouched(true)}
+          onBlur={() => setNicknameTouched(true)}
           /*
-            `spellCheck={false}` and no `autoCapitalize`, for the same reason
-            `lib/account-name.ts` rewrites the no-break space it is handed rather
-            than storing it: this is a person's own name, not a word. A red
-            underline under "Jörg" is a small lie, and a capitaliser that rewrites
-            "van der Berg" or a Cyrillic patronymic into Title Case is the same
-            class of defect as an invisible character in the stored value - the
-            reader did not type what the product will later show.
+            No `spellCheck` and no `autoCapitalize`, because the field is a handle
+            rather than a word: the route lowercases it on the way in, so leaving
+            the capitaliser off stops the browser from fixing text the product is
+            about to rewrite anyway, and a red line under `mueller` would be
+            complaining about a word that is not supposed to be a word.
           */
           spellCheck={false}
           autoCapitalize='none'
+          autoComplete='username'
           required
-          aria-invalid={shownNameError ? true : undefined}
+          aria-invalid={shownNicknameError ? true : undefined}
           aria-describedby={
-            shownNameError ? 'registerDisplayNameError' : undefined
+            shownNicknameError ? 'registerNicknameError' : 'nicknameHint'
           }
         />
-        {shownNameError && (
+        <p id='nicknameHint' className='text-[0.8125rem] leading-snug text-caption'>
+          {dict.registerNicknameHint}
+        </p>
+        {shownNicknameError && (
           <p
-            id='registerDisplayNameError'
+            id='registerNicknameError'
             role='alert'
-            data-testid='registerDisplayNameError'
+            data-testid='registerNicknameError'
             className='text-destructive text-[0.875rem] leading-snug'
           >
-            {shownNameError}
+            {shownNicknameError}
           </p>
         )}
       </div>
@@ -188,14 +201,11 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
         />
         {/*
           One paragraph, described from BOTH password fields, and both marked
-          invalid. `RegisterFormProps` has a single `passwordError` and no
-          `confirmPasswordError`, and it has to work that way: the two refusals it
-          carries - "too short" and "these two do not match" - are about the pair,
-          and a second slot would only invite a caller to put half a verdict in each
-          half. So the sentence sits under the first field where the prop is named
-          and the second field points at the same paragraph, which is the only
-          arrangement where a keyboard user is told the same thing whichever of the
-          two they are standing in.
+          invalid. `passwordError` and `confirmPasswordError` are two slots and they
+          carry one of the two refusals between them - "too short" belongs to the
+          first field on its own, and "these two do not match" is about the pair and
+          has to be said under both. Splitting one paragraph into two would let a
+          keyboard user standing at the second field be told nothing.
         */}
         {passwordError && (
           <p
@@ -218,11 +228,29 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
           id='confirmPassword'
           type='password'
           autoComplete='new-password'
-          onChange={onPasswordChange}
+          onChange={onConfirmPasswordChange ?? onPasswordChange}
           required
-          aria-invalid={passwordError ? true : undefined}
-          aria-describedby={passwordError ? 'registerPasswordError' : undefined}
+          aria-invalid={
+            passwordError || confirmPasswordError ? true : undefined
+          }
+          aria-describedby={
+            confirmPasswordError
+              ? 'registerConfirmPasswordError'
+              : passwordError
+                ? 'registerPasswordError'
+                : undefined
+          }
         />
+        {confirmPasswordError && (
+          <p
+            id='registerConfirmPasswordError'
+            role='alert'
+            data-testid='registerConfirmPasswordError'
+            className='text-destructive text-[0.875rem] leading-snug'
+          >
+            {confirmPasswordError}
+          </p>
+        )}
       </div>
 
       {/* No `aria-label`: the button is named by its own text, which is the

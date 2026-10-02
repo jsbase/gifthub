@@ -254,7 +254,22 @@ const DashboardPage: NextPage<PageProps> = ({ params }) => {
           visibility={shareTarget.visibility}
           access={shareAccess}
           dict={dict}
-          onChanged={fetchData}
+          onChanged={async () => {
+            /*
+              Both halves, in that order, and the second one is the reason this is
+              not just `fetchData`.
+
+              A grant or a revoke changes two things: the board's copy of the list,
+              and the audience this dialog is showing. Re-reading only the board left
+              the dialog holding the audience it was opened with, so adding a person
+              appeared to do nothing until the dialog was closed and reopened - on
+              the one screen whose entire purpose is showing you who can see the
+              list. `openShareSheet` after the re-read is the same two lines the
+              visibility handler below runs, and for the same reason.
+            */
+            await fetchData();
+            if (shareTarget) openShareSheet(shareTarget.id);
+          }}
           onVisibilityChanged={async () => {
             /*
               Re-read rather than patch the dialog's copy. The share sheet asked

@@ -96,7 +96,7 @@ test.describe('Login and Registration', () => {
     const loginButton = page.getByTestId('OpenLogin');
     await loginButton.click();
 
-    await page.fill('#email', ANNA);
+    await page.fill('#identifier', ANNA);
     await page.fill('#password', PASSWORD);
 
     const submitButton = page.getByTestId('SubmitLogin');
@@ -118,30 +118,40 @@ test.describe('Login and Registration', () => {
   });
 
   /*
-    The sign-in is case-insensitive on the address, because a phone keyboard
-    supplies capitals and a person who types `Anna@example.test` has an account.
-    Normalising at the boundary rather than in the form is why that is true: the
-    stored key and the compared key are the same string.
+    One field, two identifiers. Both are unique in the database, so one input
+    resolves to at most one account and the route never has to ask which of two
+    people was meant - which is the whole reason the nickname exists: a display name
+    could not do this job, because two accounts are both called Anna.
   */
-  test('Login accepts an address typed in any case', async ({ page }) => {
-    await page.getByTestId('OpenLogin').click();
-    await page.fill('#email', 'Anna@Example.test');
-    await page.fill('#password', PASSWORD);
+  test('Login accepts a nickname or an address, in any case', async ({ page }) => {
+    for (const identifier of [
+      'anna', // the nickname
+      'ANNA', // ...uppercased, which is what autocorrect does
+      ANNA, // the address
+      'Anna@Example.test', // ...with the capitals a phone keyboard supplies
+    ]) {
+      await page.goto(`${process.env.NEXT_PUBLIC_BASE_URL}`, {
+        waitUntil: 'networkidle',
+      });
+      await page.getByTestId('OpenLogin').click();
+      await page.fill('#identifier', identifier);
+      await page.fill('#password', PASSWORD);
 
-    await Promise.all([
-      page.waitForNavigation({ timeout: 15000, waitUntil: 'load' }),
-      page.getByTestId('SubmitLogin').click(),
-    ]);
+      await Promise.all([
+        page.waitForNavigation({ timeout: 15000, waitUntil: 'load' }),
+        page.getByTestId('SubmitLogin').click(),
+      ]);
 
-    await expect(page).toHaveURL(/dashboard/);
+      await expect(page, `"${identifier}" did not sign in`).toHaveURL(/dashboard/);
+    }
   });
 
-  test('A refused sign-in says the same thing for an unknown address and a wrong password', async ({
+  test('A refused sign-in says the same thing for an unknown identifier and a wrong password', async ({
     page,
   }) => {
     // Wrong password on an account that exists.
     await page.getByTestId('OpenLogin').click();
-    await page.fill('#email', ANNA);
+    await page.fill('#identifier', ANNA);
     await page.fill('#password', 'definitely-not-the-password');
     await page.getByTestId('SubmitLogin').click();
 
@@ -158,7 +168,7 @@ test.describe('Login and Registration', () => {
     // Address nobody has. Same status, same sentence.
     await page.reload({ waitUntil: 'networkidle' });
     await page.getByTestId('OpenLogin').click();
-    await page.fill('#email', 'nobody@example.test');
+    await page.fill('#identifier', 'nobody@example.test');
     await page.fill('#password', PASSWORD);
     await page.getByTestId('SubmitLogin').click();
 
@@ -174,7 +184,7 @@ test.describe('Login and Registration', () => {
     const dialog = page.locator('[role="dialog"]');
     await expect(dialog).toBeVisible();
 
-    await page.fill('#newDisplayName', 'Erika');
+    await page.fill('#newNickname', 'erika');
     await page.fill('#newEmail', NEW_ACCOUNT);
     await page.fill('#newPassword', PASSWORD);
     await page.fill('#confirmPassword', PASSWORD);
@@ -191,17 +201,44 @@ test.describe('Login and Registration', () => {
 
     await expect(page).toHaveURL(/\/dashboard/);
 
+    /*
+      The header shows a display name, and registration did not ask for one: the
+      route derives it from the nickname and capitalises the first letter. So a
+      person who typed `erika` is greeted as "Erika" without having been asked to
+      type it twice - which is the arrangement that keeps this form at three fields.
+    */
+    await expect(page.getByTestId('logo')).toContainText('Erika');
+
     const toast = page.locator('[data-sonner-toast][data-type="success"]');
     await toast.waitFor({ state: 'visible', timeout: 10000 });
     expect(await toast.textContent()).toContain(dict.toasts.registrationSuccess);
+
+    /*
+      And the nickname is the handle that signs in, which is the property the whole
+      one-field sign-in rests on. Asserted rather than assumed: if the route stored
+      something other than the submitted handle, or stored it differently, the loop
+      above would still pass.
+    */
+    await page.context().clearCookies();
+    await page.goto(`${process.env.NEXT_PUBLIC_BASE_URL}`, {
+      waitUntil: 'networkidle',
+    });
+    await page.getByTestId('OpenLogin').click();
+    await page.fill('#identifier', 'erika');
+    await page.fill('#password', PASSWORD);
+    await Promise.all([
+      page.waitForNavigation({ timeout: 15000, waitUntil: 'load' }),
+      page.getByTestId('SubmitLogin').click(),
+    ]);
+    await expect(page, 'the new nickname must sign in').toHaveURL(/dashboard/);
   });
 
-  test('A refused sign-in reports an address that is already taken', async ({
+  test('A refused registration reports an address that is already taken', async ({
     page,
   }) => {
     await page.getByTestId('OpenRegister').click();
 
-    await page.fill('#newDisplayName', 'Anna Again');
+    await page.fill('#newNickname', 'annaagain');
     await page.fill('#newEmail', ANNA);
     await page.fill('#newPassword', PASSWORD);
     await page.fill('#confirmPassword', PASSWORD);
@@ -223,25 +260,66 @@ test.describe('Login and Registration', () => {
     await expect(page).not.toHaveURL(/\/dashboard/);
   });
 
-  test('The display name is refused before it reaches the server', async ({
+  /*
+    The nickname's own two refusals, which are different sentences about different
+    problems. A client that could not tell "malformed" from "taken" would answer the
+    second with the first and send somebody off to retype something that was never
+    wrong.
+  */
+  test('A nickname that is taken is reported as taken, not as malformed', async ({
     page,
   }) => {
     await page.getByTestId('OpenRegister').click();
 
-    await page.fill('#newDisplayName', '!!!');
+    await page.fill('#newNickname', 'anna');
+    await page.fill('#newEmail', 'someone-else@example.test');
+    await page.fill('#newPassword', PASSWORD);
+    await page.fill('#confirmPassword', PASSWORD);
+    await page.getByTestId('SubmitRegister').click();
+
+    const nicknameError = page.getByTestId('registerNicknameError');
+    await expect(nicknameError).toBeVisible({ timeout: 10000 });
+    expect(await nicknameError.textContent()).toContain(
+      dict.errors.duplicateNickname
+    );
+  });
+
+  test('A nickname is refused before it reaches the server', async ({ page }) => {
+    await page.getByTestId('OpenRegister').click();
+
+    await page.fill('#newNickname', '!!!');
     await page.fill('#newEmail', 'someone@example.test');
     await page.fill('#newPassword', PASSWORD);
     await page.fill('#confirmPassword', PASSWORD);
 
     await page.getByTestId('SubmitRegister').click();
 
-    // Live validation on blur, sharing `acceptedDisplayName` with the route - one
-    // rule in one module, because the rule used to be written out twice and a
-    // rename on either side compiled.
-    const nameError = page.getByTestId('registerDisplayNameError');
-    await expect(nameError).toBeVisible({ timeout: 10000 });
-    expect(await nameError.textContent()).toContain(
-      dict.errors.invalidDisplayName
+    // Live validation on blur, sharing `acceptedNickname` with the route - one rule
+    // in one module, because the rule used to be written out twice and a rename on
+    // either side compiled.
+    const nicknameError = page.getByTestId('registerNicknameError');
+    await expect(nicknameError).toBeVisible({ timeout: 10000 });
+    expect(await nicknameError.textContent()).toContain(
+      dict.errors.invalidNickname
     );
+  });
+
+  test('Sign-in refuses a field that is neither a nickname nor an address', async ({
+    page,
+  }) => {
+    await page.getByTestId('OpenLogin').click();
+    await page.fill('#identifier', '!!!');
+    await page.fill('#password', PASSWORD);
+    await page.getByTestId('SubmitLogin').click();
+
+    // The identifier sentence, not the password one: the reader typed something
+    // wrong, and telling them their password was rejected would be answering a
+    // question they did not ask.
+    const identifierError = page.getByTestId('loginIdentifierError');
+    await expect(identifierError).toBeVisible({ timeout: 10000 });
+    expect(await identifierError.textContent()).toContain(
+      dict.errors.invalidIdentifier
+    );
+    await expect(page.getByTestId('loginPasswordError')).toHaveCount(0);
   });
 });

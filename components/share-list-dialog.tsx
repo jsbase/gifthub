@@ -18,9 +18,8 @@ import { isRefusal, type Refusal } from '@/lib/refusals';
 import { cn } from '@/lib/utils';
 import type {
   ListAccess,
-  ListVisibility,
+  ListVisibilityDialogProps,
   ShareListDialogProps,
-  Translations,
 } from '@/types';
 
 /**
@@ -35,26 +34,19 @@ import type {
  * `ListVisibilityDialog` lives in this file rather than in either caller for the
  * same reason `GiftCardBody` lives inside `gift-card.tsx`: one sheet decides what
  * a list's reach looks like, and two sheets deciding it separately is how the two
- * drift. Its prop type is written out here instead of in `types.ts` because that
- * file is frozen for this change and carries interfaces for the shipped dialogs;
- * everything it needs is already on `Translations.visibility`.
+ * drift. Its prop type is written out inline here, which breaks the repo's
+ * "interfaces live in `types.ts`" rule; it is a two-file working exception because
+ * the dialog is private to this module and its parent and no fourth caller exists
+ * to justify widening `types.ts` for it. Everything it needs is already on
+ * `Translations.visibility`, so there is no prop type to share.
  */
-export const ListVisibilityDialog: React.FC<{
-  isOpen: boolean;
-  onClose: () => void;
-  visibility: ListVisibility;
-  /** The two states, both labels and both hints, plus the dialog's close label. */
-  dict: Pick<Translations, 'visibility' | 'close'>;
-  /**
-   * The state that was pressed, as a choice and not as a mutation.
-   *
-   * The two callers each own the request: the contents page dims its row while
-   * the PATCH is in flight, the sheet reports afterwards. So this dialog decides
-   * what a reader is choosing between and nothing about what happens afterwards -
-   * it closes, and the caller decides when the world changes.
-   */
-  onSelect: (visibility: ListVisibility) => void;
-}> = ({ isOpen, onClose, visibility, dict, onSelect }) => {
+export const ListVisibilityDialog: React.FC<ListVisibilityDialogProps> = ({
+  isOpen,
+  onClose,
+  visibility,
+  dict,
+  onSelect,
+}) => {
   const options = [
     {
       value: 'PRIVATE' as const,
@@ -143,11 +135,12 @@ export const ListVisibilityDialog: React.FC<{
 
         {/*
           The consequence of moving a list back to private is not that anybody is
-          removed, so this dialog says neither. `lib/list-access.ts:265` leaves
-          the access rows in place and only closes the reads, and a word like
-          "removes the people" in front of that control would be a lie the server
-          does not tell. The hint under each option is the whole explanation:
-          private means only you can see it, and that is all it does.
+          removed, so this dialog says neither. `setVisibility` in
+          `lib/list-access.ts` leaves the access rows in place and only closes the
+          reads, and a word like "removes the people" in front of that control
+          would be a lie the server does not tell. The hint under each option is
+          the whole explanation: private means only you can see it, and that is all
+          it does.
         */}
       </DialogContent>
     </Dialog>
@@ -237,6 +230,7 @@ const ShareListDialog: React.FC<ShareListDialogProps> = ({
         const body = (await response.json().catch(() => null)) as {
           code?: unknown;
           message?: string;
+          access?: { displayName?: string; email?: string };
         } | null;
 
         /*
@@ -249,8 +243,8 @@ const ShareListDialog: React.FC<ShareListDialogProps> = ({
           The table is keyed by the shared `Refusal` union rather than by six
           bare strings, so a refusal the server adds without a sentence here is
           a type error rather than a missing case, and a refusal that is none of
-          these five misses the table and falls through to the toast below - the
-          same two-way split the member form used.
+          the six below misses the table and falls through to the toast further
+          down - the same two-way split the member form used.
         */
         const fieldFailures: Record<Refusal, string | undefined> = {
           invalid_email: dict.errors.invalidEmail,
@@ -259,12 +253,19 @@ const ShareListDialog: React.FC<ShareListDialogProps> = ({
           cannot_share_with_owner: dict.errors.cannotShareWithOwner,
           not_shared_yet: dict.errors.notSharedYet,
           forbidden: dict.errors.forbidden,
-          // The other five are not about this field: credentials, a name, and
-          // the two authorization codes that mean "you may not", which belong
-          // on the sheet rather than under an address somebody typed.
+          // The other nine are not about this field: credentials, a handle, the
+          // three `PATCH` request-shape refusals, and the two authorization codes
+          // that mean "you may not", which belong on the sheet rather than under an
+          // address somebody typed.
           duplicate_email: undefined,
           weak_password: undefined,
           invalid_display_name: undefined,
+          invalid_nickname: undefined,
+          duplicate_nickname: undefined,
+          invalid_identifier: undefined,
+          nothing_to_change: undefined,
+          ambiguous_change: undefined,
+          invalid_visibility: undefined,
           not_found: undefined,
           cannot_clear_purchase: undefined,
         };
@@ -281,7 +282,20 @@ const ShareListDialog: React.FC<ShareListDialogProps> = ({
           throw new Error(body?.message || `Error: ${response.status}`);
         }
 
-        toast.success(dict.toasts.accessGranted);
+        /*
+          The toast names the person who was added, and `accessGranted` is the only
+          kind of string in the dictionaries that carries a placeholder. Rendering it
+          unsubstituted put a literal `{name}` in front of the owner, which is the
+          kind of thing that ships because nothing throws - the sentence is a valid
+          string either way, and the dictionary has no way to complain about it.
+
+          The name comes from the grant response rather than from the address the
+          owner typed, so the toast says the person's name and not the string they
+          happened to type. The address is the fallback: it is in the field above,
+          and a sentence with a hole in it is worse than a plainer one.
+        */
+        const grantee = body?.access?.displayName?.trim() || email;
+        toast.success(dict.toasts.accessGranted.replace('{name}', grantee));
         setEmail('');
         setEmailError(null);
         onChanged();
@@ -340,7 +354,7 @@ const ShareListDialog: React.FC<ShareListDialogProps> = ({
       try {
         /*
           Keyed by the access row rather than by the account, because that is
-          what `lib/list-access.ts:354` takes: the URL names the grant being
+          what `revokeAccess` in `lib/list-access.ts` takes: the URL names the grant being
           withdrawn, and a row can outlive the account it names.
         */
         const response = await fetch(
@@ -350,7 +364,17 @@ const ShareListDialog: React.FC<ShareListDialogProps> = ({
 
         if (!response.ok) throw new Error('Failed to revoke access');
 
-        toast.success(dict.toasts.accessRevoked);
+        // The same placeholder as the grant, filled from the row the owner just
+        // confirmed. The name is already in the dialog, so there is nothing to read
+        // back from the response - and the revoke response carries the row anyway,
+        // so either source would do. See the grant for why an unsubstituted
+        // placeholder ships without anything failing.
+        toast.success(
+          dict.toasts.accessRevoked.replace(
+            '{name}',
+            row.displayName?.trim() || row.email || ''
+          )
+        );
         onChanged();
       } catch {
         toast.error(dict.toasts.accessRevokeFailed);
@@ -457,7 +481,7 @@ const ShareListDialog: React.FC<ShareListDialogProps> = ({
             {/*
               The 48px floor, applied only where the one-handed case is: below
               `sm` this is the primary action of the sheet and the phone is where
-              it is pressed, which is the same rule `login-form.tsx:42` applies
+              it is pressed, which is the same rule `login-form.tsx` applies
               and the same one `PRODUCT.md` calls a floor rather than a
               preference.
             */}

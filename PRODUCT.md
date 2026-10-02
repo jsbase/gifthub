@@ -10,7 +10,7 @@ web
 
 Primary: one member of a family or friend group. They open the app in two roles, sometimes in the same minute. As a **recipient**, they have written down what they would like and shared that list with the specific people they intend to buy from. As a **buyer**, they open somebody else's shared list to see what is still unclaimed before they buy something.
 
-There is a real account per person: an email address, a password, and a display name. **Each person owns their own lists.** A list starts private, visible only to the person who made it, and becomes shared when its owner says so. A shared list is visible to exactly the accounts its owner added by email address and to nobody else â€” there is no link, no public page, no search, and no directory.
+There is a real account per person: a unique nickname, an email address, a password, and a display name. **The nickname is the handle you sign in with; the display name is what other people see, and the two are deliberately different.** Display names are not unique — two accounts are both called Anna — so they cannot identify anybody; the nickname and the address are both unique and either will get you in. **Each person owns their own lists.** A list starts private, visible only to the person who made it, and becomes shared when its owner says so. A shared list is visible to exactly the accounts its owner added by email address and to nobody else â€” there is no link, no public page, no search, and no directory.
 
 A person added to somebody else's list is a **buyer**: they may read it and mark an idea as bought, and that is all. They cannot add ideas to it, rename it, change its visibility, share it again, or delete it. The person who owns the list writes their own ideas down; nobody writes onto their sheet.
 
@@ -47,7 +47,7 @@ The mark is shared, but it is not unfalsifiable. An owner may put the mark on an
 ## Capabilities and Constraints
 
 **Built and working:**
-- Account registration and sign-in by email address and password; session JWT; logout. No address verification and no password reset, deliberately â€” there is no mail provider and this audience would hit both flows.
+- Account registration by nickname, email address and password; sign-in by nickname **or** email address; session JWT; logout. No address verification and no password reset, deliberately — there is no mail provider and this audience would hit both flows.
 - Lists owned by an account, each either private or shared, renameable and deletable.
 - Sharing a list with a specific person by email address, and withdrawing it again. Sharing an address that has no account behind it is refused with a message that says what to do instead.
 - Gift ideas on a list: title (required), description (optional), URL (optional), and a purchased flag.

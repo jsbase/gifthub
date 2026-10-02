@@ -3,7 +3,7 @@ import { requireAccountId } from '@/lib/auth-server';
 import {
   createList,
   listSummariesFor,
-  type ListSummary as StoredSummary,
+  type StoredListSummary,
 } from '@/lib/list-access';
 import type { ListSummary, ListVisibility } from '@/types';
 
@@ -19,7 +19,7 @@ import type { ListSummary, ListVisibility } from '@/types';
  * `JSON.stringify`, so the response is the shape the type claims on any
  * serialization.
  */
-const toWireSummary = (list: StoredSummary): ListSummary => ({
+const toWireSummary = (list: StoredListSummary): ListSummary => ({
   id: list.id,
   name: list.name,
   visibility: list.visibility,

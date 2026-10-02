@@ -106,16 +106,24 @@ async function main() {
 
     The addresses are stored the way `lib/email.ts` stores them - already
     lowercase, already trimmed - so a login in the specs that types `Anna@Example.test`
-    finds this account rather than creating a second one.
+    finds this account rather than creating a second one. The nicknames are stored
+    the way `lib/nickname.ts` stores them, for the same reason and with the same
+    effect: the sign-in specs type `Anna` in one case and `anna` in another and must
+    find the same account both times.
+
+    Nickname and address are both unique, which is the property the sign-in route
+    depends on - it resolves one field to at most one account and never has to ask
+    which of two people was meant. Display names are the opposite, deliberately not
+    unique, which is why they are a separate field rather than the same one.
   */
   const accounts = {};
-  for (const [key, email, displayName] of [
-    ['anna', 'anna@example.test', 'Anna'],
-    ['ben', 'ben@example.test', 'Ben'],
-    ['mia', 'mia@example.test', 'Mia'],
+  for (const [key, nickname, email, displayName] of [
+    ['anna', 'anna', 'anna@example.test', 'Anna'],
+    ['ben', 'ben', 'ben@example.test', 'Ben'],
+    ['mia', 'mia', 'mia@example.test', 'Mia'],
   ]) {
     accounts[key] = await prisma.account.create({
-      data: { email, displayName, password },
+      data: { nickname, email, displayName, password },
     });
   }
 
@@ -190,13 +198,24 @@ async function main() {
     data: [{ title: 'Kaffeemühle', listId: bensList.id }],
   });
 
-  console.log('Seeded three accounts:');
-  for (const [key, email] of Object.entries({
-    anna: 'anna@example.test',
-    ben: 'ben@example.test',
-    mia: 'mia@example.test',
+  console.log('Seeded three accounts (sign in with the nickname or the address):');
+
+  /*
+    Destructured as a key and a nested pair.
+
+    The array was written once with a flat `for (const [key, nickname, email] of
+    Object.entries(...))` over values that are two-element arrays, so `nickname` was
+    the whole pair and `email` was `undefined` - and the seed printed
+    `anna: anna,anna@example.test / undefined`. The output was edited to look right
+    before the loop was, which hid the fault rather than fixing it. Both halves of
+    this are the shape of the code and not its wording: read the pair, then print it.
+  */
+  for (const [key, [nickname, email]] of Object.entries({
+    anna: ['anna', 'anna@example.test'],
+    ben: ['ben', 'ben@example.test'],
+    mia: ['mia', 'mia@example.test'],
   })) {
-    console.log(`  ${key}: ${email}`);
+    console.log(`  ${key}: ${email}  (nickname: ${nickname})`);
   }
   console.log(`Password for all three: ${PASSWORD}`);
   console.log("Anna's PRIVATE list 'Für mich' (2 open ideas)");

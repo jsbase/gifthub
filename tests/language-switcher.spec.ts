@@ -71,7 +71,7 @@ test.describe('Switch language', () => {
     const loginButton = page.getByTestId('OpenLogin');
     await loginButton.click();
 
-    await page.fill('#email', 'anna@example.test');
+    await page.fill('#identifier', 'anna');
     await page.fill('#password', 'test1234');
 
     const submitButton = page.getByTestId('SubmitLogin');

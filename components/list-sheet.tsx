@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useCallback, useMemo, useState, type ReactNode } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { IconArrowLeft, IconCirclePlus, IconTrash } from '@tabler/icons-react';
 import { Button } from '@/components/ui/button';
@@ -19,10 +19,9 @@ import { memberInkStyle } from '@/lib/member-ink';
 import { giftCountLabel, sheetCounts, splitSheet } from '@/lib/gift-count';
 import type {
   Gift,
-  HeaderProps,
   ListSheetProps,
   ListVisibility,
-  Translations,
+  SheetFrameProps,
 } from '@/types';
 
 /**
@@ -51,7 +50,7 @@ import type {
  *   On a phone this figure/ground inverts, and it inverts because the dialog
  *   already said it would: below `sm` a sheet "becomes the whole page below the
  *   header, squared at the top: a sheet pulled out of an album, not a card
- *   floating on one" (`ui/dialog.tsx:106`). A dialog opens on top of this sheet
+ *   floating on one" (as `ui/dialog.tsx` documents). A dialog opens on top of this sheet
  *   edge to edge - the create-list sheet and the share sheet both do - and this
  *   sheet was inset 32px, so the two surfaces the user sees at the same moment
  *   were 32px apart. Below `sm` there is no desk around the paper: the paper is
@@ -64,11 +63,11 @@ import type {
  * and its `dict` is already the narrow `Pick` it wants, so the route assembles
  * its own header and the frame has no opinion about the person signed in.
  */
-export const SheetFrame: React.FC<{
-  header: HeaderProps;
-  dict: Translations;
-  children: ReactNode;
-}> = ({ header, dict, children }) => (
+export const SheetFrame: React.FC<SheetFrameProps> = ({
+  header,
+  dict,
+  children,
+}) => (
   <div className={cn('min-h-screen', 'bg-board', 'flex flex-col')}>
     <Header {...header} />
 
@@ -130,7 +129,7 @@ export const SheetFrame: React.FC<{
                 // utility for a token declared in `@theme`. `--radius-sheet`
                 // lives in `:root`, so `rounded-sheet` is not a class that exists
                 // - it compiles to nothing and the sheet stayed square at every
-                // width, while the dialog beside it (ui/dialog.tsx:146) got its
+                // width, while the dialog beside it (as `ui/dialog.tsx` documents) got its
                 // documented 6px. One sheet, one radius.
                 'sm:rounded-lg',
                 // The same floor the dialog primitive gives every sheet on a
@@ -757,7 +756,6 @@ const ListSheet: React.FC<ListSheetProps> = ({
                         key={gift.id}
                         gift={gift}
                         dict={dict.listSheet}
-                        canAdd={canAdd}
                         canDelete={isOwner}
                         // The mark is the one control that is never simply
                         // present: an owner may put a mark on but may not take one
@@ -800,11 +798,18 @@ const ListSheet: React.FC<ListSheetProps> = ({
                     may clear anybody's mark, so every mark on a list they can
                     read is theirs to undo and there is nothing to explain.
 
-                    It cannot be rendered inside the cell: `GiftCardProps.dict` is
-                    narrowed to three keys and `types.ts` is frozen, so the note
-                    is attached to the section from here.
+It cannot be rendered inside the cell: `GiftCardProps.dict` is
+                     narrowed to three keys and `types.ts` is frozen, so the note
+                     is attached to the section from here.
+
+                     And it is conditioned on there being a mark it applies to. The
+                     owner check alone printed it on every sheet they opened, including
+                     the common case where every collected idea is a mark they set
+                     themselves - where the sentence is not merely redundant but
+                     untrue, since they can undo all of them. `canClear` is the
+                     per-idea half of that question and it is already here.
                   */}
-                  {isOwner && (
+                  {isOwner && collectedGifts.some((gift) => !gift.canClear) && (
                     <p
                       data-testid='markedBySomeoneElse'
                       className={cn(
@@ -826,7 +831,6 @@ const ListSheet: React.FC<ListSheetProps> = ({
                         key={gift.id}
                         gift={gift}
                         dict={dict.listSheet}
-                        canAdd={canAdd}
                         canDelete={isOwner}
                         onDelete={(id) =>
                           setPendingDeletion(

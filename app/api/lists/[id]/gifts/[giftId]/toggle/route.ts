@@ -1,33 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAccountId } from '@/lib/auth-server';
-import { mayClearMark, toggleGiftPurchased } from '@/lib/list-access';
-import type { Gift as StoredGift } from '@prisma/client';
-import type { Gift } from '@/types';
+import { toggleGiftPurchased } from '@/lib/list-access';
 import { refusalResponse } from '@/lib/api-refusal';
-
-/**
- * A gift as it goes on the wire.
- *
- * Every field is named, and the one that is not is the point. The row this route
- * gets back is the one `toggleGiftPurchased` just wrote `purchasedById` into, or
- * nulled - the attribution the authorization needs in order to answer the next
- * toggle. A spread would hand that column to the browser, which is how the person
- * who bought the present gets named on the list it was bought from, and the
- * surprise the product exists to protect stops existing. Enumerating the fields *is*
- * the guarantee. The same mapping is written out in `app/api/lists/[id]/route.ts`
- * and `app/api/lists/[id]/gifts/route.ts`; a change to one is a change to all three.
- */
-const toWireGift = (gift: StoredGift, accountId: string, isOwner: boolean): Gift => ({
-  id: gift.id,
-  title: gift.title,
-  description: gift.description,
-  url: gift.url,
-  isPurchased: gift.isPurchased,
-  canClear: mayClearMark(gift, accountId, isOwner),
-  createdAt: gift.createdAt.toISOString(),
-  updatedAt: gift.updatedAt.toISOString(),
-  listId: gift.listId,
-});
+import { toWireGift } from '@/lib/wire';
 
 type GiftContext = { params: Promise<{ id: string; giftId: string }> };
 

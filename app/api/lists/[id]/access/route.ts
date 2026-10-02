@@ -1,17 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAccountId } from '@/lib/auth-server';
-import { grantAccess, type AccessRow } from '@/lib/list-access';
+import { grantAccess } from '@/lib/list-access';
 import { acceptedEmail } from '@/lib/email';
-import type { ListAccess } from '@/types';
 import { refusalResponse } from '@/lib/api-refusal';
-
-const toWireAccess = (row: AccessRow): ListAccess => ({
-  id: row.id,
-  accountId: row.accountId,
-  email: row.email,
-  displayName: row.displayName,
-  grantedAt: row.grantedAt.toISOString(),
-});
+import { toWireAccess } from '@/lib/wire';
 
 type ListContext = { params: Promise<{ id: string }> };
 

@@ -8,10 +8,14 @@
 
   "email": "Email address",
   "displayName": "Display name",
+    "nickname": "Nickname",
   "password": "Password",
   "confirmPassword": "Confirm password",
   "loginBtn": "Log in",
   "registerBtn": "Create account",
+    "loginIdentifier": "Nickname or email address",
+    "loginIdentifierHint": "Your nickname is unique — that is how you sign in. You can change your display name later.",
+    "registerNicknameHint": "Your nickname is unique. Other people see you under this name for now.",
 
   "loginDescription": "Once you log in you see your own lists and the ones other people have shared with you.",
   "registerDescription": "Every list you create belongs to this account, and you alone decide who gets to see it.",
@@ -66,6 +70,12 @@
     "registrationFailed": "Account could not be created",
 
     "invalidEmail": "Enter a valid email address.",
+    "invalidNickname": "Pick a nickname of letters, digits, dot, hyphen or underscore (2–32 characters).",
+    "duplicateNickname": "That nickname is already taken.",
+    "invalidIdentifier": "Enter your nickname or your email address.",
+    "nothingToChange": "Nothing was changed.",
+    "ambiguousChange": "Change either the name or the visibility, not both at once.",
+    "invalidVisibility": "That visibility does not exist.",
     "duplicateEmail": "There is already an account for this email address. A forgotten password cannot be reset.",
     "weakPassword": "At least 8 characters.",
     "invalidDisplayName": "Names may contain letters, numbers, spaces, dots, hyphens and apostrophes, up to 100 characters.",
@@ -246,7 +256,7 @@
       },
       {
         "title": "b) Registration and Login for Using the Web App",
-        "content": "To use the web app, an account with an email address, a password and a display name is required. During registration and login, we store: account data (email address, password and display name), your own wishlists with their gift ideas and links to products, and on shared lists the email address and display name of the people it is shared with. The password is hashed before it is stored and cannot be recovered in plain text. For every idea marked as bought we also store the account that marked it, so that only that account can undo the mark; the name is never shown in the web app."
+        "content": "To use the web app, an account with an email address, a password and a display name is required. During registration and login, we store: account data (email address, password and display name), your own wishlists with their gift ideas and links to products, and on shared lists the email address and display name of the people it is shared with. The password is hashed before it is stored and cannot be recovered in plain text. For every idea marked as bought we also store the account that marked it. The mark belongs to everyone the list is shared with: they can correct each other's marks. Only the person who owns the list is unable to remove a mark somebody else set; the name is never shown in the web app."
       }
     ]
   },

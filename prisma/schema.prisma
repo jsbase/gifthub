@@ -50,10 +50,28 @@ model Account {
   password    String
 
   /**
+   * The unique handle this person signs in with. Lowercased on the way in, and
+   * unique in the database rather than in application code - a validator that
+   * checks "is this taken" and a unique index that enforces it will disagree under
+   * concurrency, and the constraint is the one that cannot be raced.
+   *
+   * Separate from `displayName` because the two answer different questions. This
+   * one answers "who is signing in", which needs uniqueness, and display names
+   * cannot provide it - two accounts are both called Anna. The display name answers
+   * "what do I call this person in the header", which does not, and is theirs to
+   * change without touching the handle they sign in with.
+   */
+  nickname    String @unique
+
+  /**
    * Shown in the header in place of the wordmark, which `PRODUCT.md:72` makes a
-   * brand commitment. Required rather than optional: an optional one silently
-   * falls back to an email address in the one place the product speaks to the
-   * person using it.
+   * brand commitment. Not unique, and not the login handle - see `nickname`.
+   *
+   * Defaults to the nickname on registration so that signing up asks for three
+   * fields rather than four; this one can be set afterwards without touching the
+   * handle. The registration route capitalises it on the way through, so a person
+   * who typed `anna` is greeted as "Anna" without having been asked to type it
+   * twice.
    */
   displayName String
 

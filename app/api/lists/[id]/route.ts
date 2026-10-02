@@ -4,62 +4,12 @@ import {
   accessForList,
   deleteList,
   listGifts,
-  mayClearMark,
   readableListSummary,
   renameList,
   setVisibility,
 } from '@/lib/list-access';
 import { refusalResponse } from '@/lib/api-refusal';
-import type { AccessRow } from '@/lib/list-access';
-import type { Gift as StoredGift } from '@prisma/client';
-import type { Gift, ListAccess } from '@/types';
-
-/**
- * A gift as it goes on the wire.
- *
- * Every field is named, and the one that is not is the point. The Prisma row the
- * authorization module returns carries `purchasedById`, because
- * `toggleGiftPurchased` has to be able to tell the owner's mark from somebody
- * else's - and a spread would carry that column straight out to the browser, where
- * the buyer's identity becomes a product output and the surprise the product exists
- * to protect is spent. Enumerating the fields *is* the guarantee: the only way for
- * `purchasedById` to reach a response is for somebody to type it here on purpose.
- * This mapping is written out in the three routes that return gifts -
- * `app/api/lists/[id]/gifts/route.ts` and `app/api/lists/[id]/gifts/[giftId]/toggle/route.ts`
- * beside this one - and any change to one of them is a change to all three.
- *
- * Dates become ISO strings here rather than being left to `JSON.stringify`, so the
- * response is the shape `types.ts` describes rather than a shape that happens to
- * agree.
- */
-const toWireGift = (gift: StoredGift, accountId: string, isOwner: boolean): Gift => ({
-  id: gift.id,
-  title: gift.title,
-  description: gift.description,
-  url: gift.url,
-  isPurchased: gift.isPurchased,
-  // See `mayClearMark`. The wire carries a permission, not an attribution: the
-  // client can render the right control without learning whose mark this is.
-  canClear: mayClearMark(gift, accountId, isOwner),
-  createdAt: gift.createdAt.toISOString(),
-  updatedAt: gift.updatedAt.toISOString(),
-  listId: gift.listId,
-});
-
-/**
- * The audience, in the order it was granted and with the same fields.
- *
- * `grantedAt` is the second field-by-field construction in this file that exists
- * for the reason the gift mapping does: a spread of a Prisma row is a decision
- * nobody makes.
- */
-const toWireAccess = (row: AccessRow): ListAccess => ({
-  id: row.id,
-  accountId: row.accountId,
-  email: row.email,
-  displayName: row.displayName,
-  grantedAt: row.grantedAt.toISOString(),
-});
+import { toWireAccess, toWireGift } from '@/lib/wire';
 
 type ListContext = { params: Promise<{ id: string }> };
 
@@ -159,10 +109,7 @@ export const PATCH: (
     const wantsVisibility = visibility !== undefined && visibility !== null;
 
     if (!wantsRename && !wantsVisibility) {
-      return NextResponse.json(
-        { message: 'Nothing to change', code: 'nothing_to_change' },
-        { status: 400 }
-      );
+      return refusalResponse('nothing_to_change');
     }
 
     /*
@@ -170,15 +117,15 @@ export const PATCH: (
       separate controls in the interface, and a request naming both would mean this
       handler deciding which one wins - a question about the interface's state
       machine, asked of the layer that is supposed to know nothing about it.
+
+      All three refusals in this handler go through `lib/api-refusal.ts` rather than
+      spelling out a status and a `code`. They used to be inline, with `code` values
+      that were not in the closed union - which `isRefusal` rejects, so no client
+      could ever have had a sentence for them. A refusal raised outside the
+      vocabulary is a refusal the product cannot word.
     */
     if (wantsRename && wantsVisibility) {
-      return NextResponse.json(
-        {
-          message: 'A list changes one thing at a time',
-          code: 'ambiguous_change',
-        },
-        { status: 400 }
-      );
+      return refusalResponse('ambiguous_change');
     }
 
     /*
@@ -206,10 +153,7 @@ export const PATCH: (
     }
 
     if (visibility !== 'PRIVATE' && visibility !== 'SHARED') {
-      return NextResponse.json(
-        { message: 'A list is either private or shared', code: 'invalid_visibility' },
-        { status: 400 }
-      );
+      return refusalResponse('invalid_visibility');
     }
 
     const changed = await setVisibility(id, accountId, visibility);

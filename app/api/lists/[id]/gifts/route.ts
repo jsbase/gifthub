@@ -1,44 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAccountId } from '@/lib/auth-server';
 import { addGift } from '@/lib/list-access';
-import type { Gift as StoredGift } from '@prisma/client';
-import type { Gift } from '@/types';
 import { refusalResponse } from '@/lib/api-refusal';
-
-/**
- * A gift as it goes on the wire.
- *
- * Every field is named, and the one that is not is the point. The Prisma row
- * `addGift` returns carries `purchasedById`, because
- * `toggleGiftPurchased` has to be able to tell the owner's mark from somebody
- * else's - and a spread would carry that column straight out to the browser, where
- * the buyer's identity becomes a product output and the surprise the product exists
- * to protect is spent. Enumerating the fields *is* the guarantee: the only way for
- * `purchasedById` to reach a response is for somebody to type it here on purpose.
- * The same mapping is written out in `app/api/lists/[id]/route.ts` and
- * `app/api/lists/[id]/gifts/[giftId]/toggle/route.ts`; a change to one is a change
- * to all three.
- *
- * The mark cannot be set here even though the column is writable. An idea enters
- * the sheet open, and the bought flag is a shared ritual rather than something the
- * person writing the idea down gets to pre-empt - which still holds now that the
- * person writing it down is usually the person receiving it.
- */
-const toWireGift = (gift: StoredGift): Gift => ({
-  id: gift.id,
-  title: gift.title,
-  description: gift.description,
-  url: gift.url,
-  isPurchased: gift.isPurchased,
-  // A brand-new idea is open, and an open idea is clearable by anyone who can read
-  // the list - so this is `true` by definition rather than by argument, and needs no
-  // call into `mayClearMark`. Only the owner's own list accepts a new idea, so the
-  // reader of this response is its owner, who may certainly take it back off.
-  canClear: true,
-  createdAt: gift.createdAt.toISOString(),
-  updatedAt: gift.updatedAt.toISOString(),
-  listId: gift.listId,
-});
+import { toWireGift } from '@/lib/wire';
 
 /**
  * An optional field that arrived blank is stored as absent rather than as an empty
@@ -94,7 +58,16 @@ export const POST: (
 
     return NextResponse.json({
       success: true,
-      gift: toWireGift(gift.value),
+      /*
+        `isOwner: true` because `addGift` is owner-only, so the only account that
+        can reach this response is the owner - and a brand-new idea is open, so
+        `mayClearMark` returns true for it whatever the owner flag says. It is passed
+        rather than defaulted inside `toWireGift` because the mapper has no business
+        knowing which route called it, and it is passed rather than hardcoded because
+        this response used to carry its own `canClear: true`, which is how a route
+        ended up holding a copy of a permission rule.
+      */
+      gift: toWireGift(gift.value, accountId, true),
     });
   } catch (error) {
     console.error('Error adding gift:', error);

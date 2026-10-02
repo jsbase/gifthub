@@ -96,8 +96,43 @@ export interface Translations {
   /** The three registration fields, and the two on the sign-in sheet. */
   email: string;
   displayName: string;
+  /**
+   * The unique handle, chosen once at registration and used to sign in.
+   *
+   * Distinct from `displayName` on purpose, and the distinction is the whole reason
+   * it exists: display names are not unique - two accounts are both called Anna - so
+   * a display name cannot identify anybody. See `lib/nickname.ts`.
+   */
+  nickname: string;
   password: string;
   confirmPassword: string;
+  /**
+   * The sign-in field's printed label.
+   *
+   * It is not "email", because the field accepts a nickname too - and a label that
+   * names only one of the two things the field takes is a label that is wrong for
+   * half the people who use it.
+   */
+  loginIdentifier: string;
+  /**
+   * What the nickname is for, in one sentence.
+   *
+   * On a product where the display name is a person's own label and the nickname is
+   * their handle, "you pick this once" is worth saying: it is the answer to the
+   * question a person asks when a field is called "nickname", which is whether it
+   * has to be their real name. It does not, and that is not obvious.
+   */
+  loginIdentifierHint: string;
+  /**
+   * The same hint, for the registration sheet.
+   *
+   * A separate key because the two sheets answer different questions. Signing in:
+   * "this is what you chose". Registering: "this is what other people will see you
+   * as, for now" - because the display name is derived from this value rather than
+   * asked for, and sharing one sentence between the two told a first-time user they
+   * could change a display name they had not been given.
+   */
+  registerNicknameHint: string;
   loginBtn: string;
   registerBtn: string;
 
@@ -200,6 +235,27 @@ export interface ErrorTranslations {
   duplicateEmail: string;
   weakPassword: string;
   invalidDisplayName: string;
+  /**
+   * What the sign-in field says when it holds neither a usable nickname nor a
+   * usable address. It cannot reuse `invalidEmail`, which tells a person their
+   * address is malformed - the wrong sentence entirely when they typed a handle.
+   */
+  invalidIdentifier: string;
+  /**
+   * `PATCH /api/lists/{id}` refusals, for a body that named neither field, both
+   * fields, or a visibility that is not one of the two.
+   *
+   * They were bare strings outside the closed union when both review axes found
+   * them, which meant `isRefusal` rejected them and no client could ever have a
+   * sentence for them. They are in the vocabulary now, which is what §7.1 means by
+   * the status mapping living in one place.
+   */
+  nothingToChange: string;
+  ambiguousChange: string;
+  invalidVisibility: string;
+  /** Nickname refusals, shown against the nickname field. */
+  invalidNickname: string;
+  duplicateNickname: string;
 
   /** Sharing refusals, shown inside the share dialog. */
   noSuchAccount: string;
@@ -493,6 +549,37 @@ export interface CreateListDialogProps {
   onCreated: (listId: string) => void;
 }
 
+/**
+ * The board or the sheet, wrapped in the same furniture.
+ *
+ * Shared by `/[lang]/dashboard` and `/[lang]/list/[id]`, and it is a prop interface
+ * here rather than inline at the component for the repo's reason - one type surface,
+ * and the second caller's signature visible next to the first's.
+ */
+export interface SheetFrameProps {
+  header: HeaderProps;
+  dict: Translations;
+  children: ReactNode;
+}
+
+/**
+ * The two-state chooser for a list's reach.
+ *
+ * Reports a *choice*, never a mutation: the contents page dims its row while the
+ * PATCH is in flight and the sheet reports afterwards, so this dialog decides what a
+ * reader is choosing between and nothing about what happens next - it closes, and
+ * the caller decides when the world changes.
+ */
+export interface ListVisibilityDialogProps {
+  isOpen: boolean;
+  onClose: () => void;
+  visibility: ListVisibility;
+  /** The two states, both labels and both hints, plus the dialog's close label. */
+  dict: Pick<Translations, 'visibility' | 'close'>;
+  onSelect: (visibility: ListVisibility) => void;
+  isPending?: boolean;
+}
+
 export interface ShareListDialogProps {
   isOpen: boolean;
   onClose: () => void;
@@ -644,8 +731,14 @@ export interface LoginFormProps {
   dict: Translations;
   isLoading: boolean;
   onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
-  /** Localized reason the server refused a field, shown against that field. */
-  emailError?: string | null;
+  /**
+   * The single sign-in field: a nickname or an email address.
+   *
+   * Named for what it accepts rather than for one of the two. `email` would be a
+   * lie for half the people who use it, and the label and the id are the two places
+   * that lie is most expensive.
+   */
+  identifierError?: string | null;
   passwordError?: string | null;
 }
 
@@ -655,10 +748,17 @@ export interface RegisterFormProps {
   onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
   emailError?: string | null;
   passwordError?: string | null;
-  displayNameError?: string | null;
+  nicknameError?: string | null;
+  /**
+   * `weak_password` and a confirmation mismatch share the password slot, because
+   * they are both about the password and a person fixing one has not been asked to
+   * look somewhere else.
+   */
+  confirmPasswordError?: string | null;
   onEmailChange?: () => void;
   onPasswordChange?: () => void;
-  onDisplayNameChange?: () => void;
+  onConfirmPasswordChange?: () => void;
+  onNicknameChange?: () => void;
 }
 
 export interface LogoProps {
@@ -689,11 +789,6 @@ export interface GiftCardProps {
    * rather than disabled, because a disabled control is an invitation to ask why.
    */
   canDelete: boolean;
-  /**
-   * Whether this reader may add an idea. Owners always can; a buyer never can, and
-   * the add form is not rendered at all rather than rendered inert.
-   */
-  canAdd: boolean;
 }
 
 export interface DebouncedFunction<T extends (...args: any[]) => any> {

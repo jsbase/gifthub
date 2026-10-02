@@ -39,7 +39,7 @@ const signIn = async (
   email: string
 ) => {
   await page.getByTestId('OpenLogin').click();
-  await page.fill('#email', email);
+  await page.fill('#identifier', email);
   await page.fill('#password', PASSWORD);
   await Promise.all([
     page.waitForNavigation({ timeout: 15000, waitUntil: 'load' }),
@@ -171,8 +171,18 @@ test.describe('Contents page', () => {
     })).toHaveCount(0);
   });
 
+  /*
+    Anchored to a seeded list rather than to one an earlier test in this file
+    created. A test that depends on the test before it passes as a suite and fails
+    on its own, which is the kind of thing that only shows up when someone runs one
+    spec to reproduce a bug. "Für mich" is private and owned by Anna and is created
+    by the seed, so it is here whatever else this file does.
+  */
   test('An owner row offers all four controls', async ({ page }) => {
-    const owned = page.getByTestId('listRow').filter({ hasText: 'e2e-owned' });
+    const owned = page
+      .getByTestId('ownedLists')
+      .getByTestId('listRow')
+      .filter({ hasText: 'Für mich' });
     await expect(owned).toHaveCount(1);
 
     for (const control of ['openList', 'shareList', 'renameList', 'deleteList']) {

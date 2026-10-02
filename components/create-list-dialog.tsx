@@ -214,7 +214,7 @@ const CreateListDialog: React.FC<CreateListDialogProps> = ({
 
           {/*
             The 48px floor on the one primary action of a sheet, applied only
-            below `sm` where the phone is - the same rule `login-form.tsx:42`
+            below `sm` where the phone is - the same rule `login-form.tsx` applies
             follows, and `PRODUCT.md` calls a floor rather than a preference.
           */}
           <Button

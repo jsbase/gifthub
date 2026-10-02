@@ -9,7 +9,8 @@ import AuthDialog from '@/components/auth-dialog';
 import LoginForm from '@/components/login-form';
 import RegisterForm from '@/components/register-form';
 import { login, register } from '@/lib/auth';
-import { acceptedDisplayName, isPasswordLongEnough } from '@/lib/account-name';
+import { isPasswordLongEnough } from '@/lib/account-name';
+import { acceptedNickname } from '@/lib/nickname';
 import { acceptedEmail } from '@/lib/email';
 import { getLocaleFromPath } from '@/lib/i18n-config';
 import { isRefusal } from '@/lib/refusals';
@@ -17,24 +18,40 @@ import { cn } from '@/lib/utils';
 import type { AuthButtonsProps, AuthResponse } from '@/types';
 
 /**
- * The four credential refusals registration can produce, and nothing else.
+ * The credential refusals these two sheets can produce, and nothing else.
  *
  * Written out as literals rather than taken as the whole `Refusal` union because
- * the union is the whole API: eight of its twelve members are share and
- * authorization refusals that registration cannot produce and that have no
- * sentence in a registration form. Narrowing the vocabulary here is what lets the
- * table below be a total `Record` - so a refusal added to the API and to this list
- * is a compile error until it has a sentence, instead of a field that quietly says
- * nothing.
+* the union is the whole API: most of its members are share and authorization
+ * refusals that neither form can produce and that have no sentence in a credential
+ * form. Narrowing the vocabulary here is what lets the tables below be total
+ * `Record`s, so adding a refusal to *these lists* without giving it a sentence is a
+ * compile error.
+ *
+ * That is a narrower guarantee than `lib/api-refusal.ts` gives, and it is worth
+ * being exact about the difference rather than claiming the stronger one: a refusal
+ * added to the API union and not to these lists compiles fine here and falls
+ * through to the generic toast at runtime. The gap is deliberate on both sides - a
+ * refusal that is about a list must not be answered by a credential field - so what
+ * holds is "no refusal reaches a field without a sentence *if the field owns it*",
+ * not "no refusal can arrive unworded".
+ *
+ * Registration and sign-in do not raise the same set, and they are listed
+ * separately rather than merged: `invalid_nickname` can only come back from
+ * registration and `invalid_identifier` only from sign-in, and a merged list would
+ * force each sheet to carry a sentence for the other's field.
  */
-const CREDENTIAL_REFUSALS = [
+const REGISTER_REFUSALS = [
   'invalid_email',
   'duplicate_email',
+  'invalid_nickname',
+  'duplicate_nickname',
   'weak_password',
-  'invalid_display_name',
 ] as const;
 
-type CredentialRefusal = (typeof CREDENTIAL_REFUSALS)[number];
+const LOGIN_REFUSALS = ['invalid_identifier'] as const;
+
+type RegisterRefusal = (typeof REGISTER_REFUSALS)[number];
+type LoginRefusal = (typeof LOGIN_REFUSALS)[number];
 
 /*
   `isRefusal` first, then a membership test, rather than a lookup keyed by whatever
@@ -43,9 +60,11 @@ type CredentialRefusal = (typeof CREDENTIAL_REFUSALS)[number];
   `Object.prototype.constructor`, which a `Record` keyed by it would find), the
   second rejects the refusals that exist but are not about a field here.
 */
-const isCredentialRefusal = (code: unknown): code is CredentialRefusal =>
-  isRefusal(code) &&
-  (CREDENTIAL_REFUSALS as readonly string[]).includes(code);
+const isRegisterRefusal = (code: unknown): code is RegisterRefusal =>
+  isRefusal(code) && (REGISTER_REFUSALS as readonly string[]).includes(code);
+
+const isLoginRefusal = (code: unknown): code is LoginRefusal =>
+  isRefusal(code) && (LOGIN_REFUSALS as readonly string[]).includes(code);
 
 const AuthButtons: React.FC<AuthButtonsProps> = ({ dict }) => {
   const router = useRouter();
@@ -77,12 +96,18 @@ const AuthButtons: React.FC<AuthButtonsProps> = ({ dict }) => {
   */
   const [emailError, setEmailError] = useState<string | null>(null);
   const [passwordError, setPasswordError] = useState<string | null>(null);
-  const [displayNameError, setDisplayNameError] = useState<string | null>(null);
+  const [confirmPasswordError, setConfirmPasswordError] = useState<string | null>(
+    null
+  );
+  const [identifierError, setIdentifierError] = useState<string | null>(null);
+  const [nicknameError, setNicknameError] = useState<string | null>(null);
 
   const clearErrors = useCallback(() => {
     setEmailError(null);
     setPasswordError(null);
-    setDisplayNameError(null);
+    setConfirmPasswordError(null);
+    setIdentifierError(null);
+    setNicknameError(null);
   }, []);
 
   const goToDashboard = useCallback(() => {
@@ -96,39 +121,62 @@ const AuthButtons: React.FC<AuthButtonsProps> = ({ dict }) => {
     clearErrors();
 
     const formData = new FormData(e.currentTarget);
-    const email = formData.get('email') as string;
+    const identifier = formData.get('identifier') as string;
     const password = formData.get('password') as string;
 
     /*
-      One client-side gate before the request, and it is the address only.
+      One client-side gate before the request, and it is the identifier only.
 
-      `acceptedEmail` is the same function the login route runs, so this cannot
-      drift from what the server would have said - but it lets the reader be told
-      "that is not an address" against the address field in their own language,
-      which `login()` in `lib/auth.ts` cannot do: it throws on any non-2xx and
+      The field takes a nickname or an address and the gate has to accept both, so
+      it is the disjunction of the same two functions the route runs - which is why
+      the route can decide by the presence of an `@` and get the same answer twice.
+
+      `lib/auth.ts`'s `login()` cannot do any of this: it throws on any non-2xx and
       throws the response body away, so every credential refusal the server has
       arrives here as one indistinguishable `Error`.
 
       That discarding is also why the *password* gets no equivalent check. There is
       no honest field-level sentence for a refused sign-in: the route answers the
-      same 401 for an unknown address as for a wrong password, and printing
+      same 401 for an unknown identifier as for a wrong password, and printing
       "wrong password" under the password field would confirm which of the two a
       stranger got wrong. So the sheet says the one thing it can - `loginFailed`,
       under the password, meaning "these two values did not sign you in" - and no
-      address sentence, which would have implied the address was good.
+      identifier sentence, which would have implied the identifier was good.
     */
-    if (acceptedEmail(email) === undefined) {
-      setEmailError(dict.errors.invalidEmail);
+    if (
+      acceptedNickname(identifier) === undefined &&
+      acceptedEmail(identifier) === undefined
+    ) {
+      setIdentifierError(dict.errors.invalidIdentifier);
       return;
     }
 
-    setIsLoading(true);
+setIsLoading(true);
     try {
-      await login(email, password);
+      const result = await login(identifier, password);
+
+      /*
+        The server's code first, because the server is the authority on the rule and
+        this file only has the copy it optimistically ran a moment ago. The gate above
+        answers sooner, which is the whole point of having it; this answers for real,
+        which is the whole point of not having to trust it.
+      */
+      if (isLoginRefusal(result.code)) {
+        setIdentifierError(dict.errors.invalidIdentifier);
+        return;
+      }
+
+      if (!result.success) {
+        setPasswordError(dict.errors.loginFailed);
+        return;
+      }
+
       toast.success(dict.toasts.loginSuccess);
       setIsLoginOpen(false);
       goToDashboard();
     } catch {
+      // The request never arrived, or the response was not JSON. There is nothing
+      // to narrow and nothing to say about which half was wrong.
       setPasswordError(dict.errors.loginFailed);
     } finally {
       setIsLoading(false);
@@ -141,7 +189,7 @@ const AuthButtons: React.FC<AuthButtonsProps> = ({ dict }) => {
     clearErrors();
 
     const formData = new FormData(e.currentTarget);
-    const displayName = formData.get('displayName') as string;
+    const nickname = formData.get('nickname') as string;
     const email = formData.get('email') as string;
     const password = formData.get('password') as string;
     const confirmPassword = formData.get('confirmPassword') as string;
@@ -164,8 +212,8 @@ const AuthButtons: React.FC<AuthButtonsProps> = ({ dict }) => {
       - which sends them off to retype something that was never wrong, and reads as
       though the address itself were the problem.
     */
-    if (acceptedDisplayName(displayName) === undefined) {
-      setDisplayNameError(dict.errors.invalidDisplayName);
+    if (acceptedNickname(nickname) === undefined) {
+      setNicknameError(dict.errors.invalidNickname);
       return;
     }
     if (acceptedEmail(email) === undefined) {
@@ -177,13 +225,13 @@ const AuthButtons: React.FC<AuthButtonsProps> = ({ dict }) => {
       return;
     }
     if (password !== confirmPassword) {
-      setPasswordError(dict.errors.passwordMismatch);
+      setConfirmPasswordError(dict.errors.passwordMismatch);
       return;
     }
 
     setIsLoading(true);
     try {
-      const result = (await register(email, password, displayName)) as
+      const result = (await register(email, password, nickname)) as
         AuthResponse & { code?: unknown };
 
       /*
@@ -195,30 +243,31 @@ const AuthButtons: React.FC<AuthButtonsProps> = ({ dict }) => {
         instead of rendering `undefined` into a field. `code?: string` on
         `AuthResponse` would delete this cast and nothing else.
       */
-      const refusal = isCredentialRefusal(result?.code)
-        ? result.code
-        : undefined;
+      const refusal = isRegisterRefusal(result?.code) ? result.code : undefined;
 
       if (refusal) {
         const fieldFor: Record<
-          CredentialRefusal,
-          'email' | 'password' | 'displayName'
+          RegisterRefusal,
+          'email' | 'password' | 'confirmPassword' | 'nickname'
         > = {
           invalid_email: 'email',
           duplicate_email: 'email',
+          invalid_nickname: 'nickname',
+          duplicate_nickname: 'nickname',
           weak_password: 'password',
-          invalid_display_name: 'displayName',
         };
         const setters = {
           email: setEmailError,
           password: setPasswordError,
-          displayName: setDisplayNameError,
+          confirmPassword: setConfirmPasswordError,
+          nickname: setNicknameError,
         };
-        const sentences: Record<CredentialRefusal, string> = {
+        const sentences: Record<RegisterRefusal, string> = {
           invalid_email: dict.errors.invalidEmail,
           duplicate_email: dict.errors.duplicateEmail,
+          invalid_nickname: dict.errors.invalidNickname,
+          duplicate_nickname: dict.errors.duplicateNickname,
           weak_password: dict.errors.weakPassword,
-          invalid_display_name: dict.errors.invalidDisplayName,
         };
         setters[fieldFor[refusal]](sentences[refusal]);
         return;
@@ -310,11 +359,11 @@ const AuthButtons: React.FC<AuthButtonsProps> = ({ dict }) => {
           description={dict.loginDescription}
           closeLabel={dict.close}
         >
-          <LoginForm
+<LoginForm
             dict={dict}
             isLoading={isLoading}
             onSubmit={handleLoginBase}
-            emailError={emailError}
+            identifierError={identifierError}
             passwordError={passwordError}
           />
         </AuthDialog>
@@ -349,12 +398,14 @@ const AuthButtons: React.FC<AuthButtonsProps> = ({ dict }) => {
             dict={dict}
             isLoading={isLoading}
             onSubmit={handleRegisterBase}
-            emailError={emailError}
+emailError={emailError}
             passwordError={passwordError}
-            displayNameError={displayNameError}
+            confirmPasswordError={confirmPasswordError}
+            nicknameError={nicknameError}
             onEmailChange={() => setEmailError(null)}
             onPasswordChange={() => setPasswordError(null)}
-            onDisplayNameChange={() => setDisplayNameError(null)}
+            onNicknameChange={() => setNicknameError(null)}
+        onConfirmPasswordChange={() => setConfirmPasswordError(null)}
           />
         </AuthDialog>
       </Dialog>

@@ -51,11 +51,6 @@ import type { GiftCardProps } from '@/types';
  *     (inverted cell, inked mark, `aria-pressed` on the live marks) and the cell
  *     does not reflow because of who is looking at it. Only the ability to press
  *     it is gone.
- *
- * `canAdd` is in the prop surface but is not read here: this cell has no add
- * control of its own. The invitation to write an idea is the sheet's blank cell
- * and its foot row, and it is the sheet that knows whether the reader may use
- * them.
  */
 const GiftCard: React.FC<GiftCardProps> = ({
   gift,

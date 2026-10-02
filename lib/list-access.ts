@@ -101,7 +101,7 @@ const readableBy = (accountId: string) =>
   }) satisfies Prisma.ListWhereInput;
 
 /** One row of the contents page, with the counts it is read by. */
-export interface ListSummary {
+export interface StoredListSummary {
   id: string;
   name: string;
   visibility: ListVisibility;
@@ -121,7 +121,7 @@ type StoredListWithCounts = Prisma.ListGetPayload<{
   };
 }>;
 
-const toSummary = (list: StoredListWithCounts, accountId: string): ListSummary => ({
+const toSummary = (list: StoredListWithCounts, accountId: string): StoredListSummary => ({
   id: list.id,
   name: list.name,
   visibility: list.visibility,
@@ -170,7 +170,7 @@ const summaryInclude = {
  */
 export const listSummariesFor = async (
   accountId: string
-): Promise<{ owned: ListSummary[]; shared: ListSummary[] }> => {
+): Promise<{ owned: StoredListSummary[]; shared: StoredListSummary[] }> => {
   const [owned, shared] = await Promise.all([
     prisma.list.findMany({
       where: { ownerId: accountId },
@@ -202,7 +202,7 @@ export const findReadableList = async (
 };
 
 /**
- * The whole `ListSummary` for a list this account may read, authorized by the same
+ * The whole `StoredListSummary` for a list this account may read, authorized by the same
  * predicate as `findReadableList`.
  *
  * This exists because the sheet page is opened from a cold deep link at least as
@@ -222,7 +222,7 @@ export const findReadableList = async (
 export const readableListSummary = async (
   listId: string,
   accountId: string
-): Promise<Outcome<ListSummary>> => {
+): Promise<Outcome<StoredListSummary>> => {
   const list = await prisma.list.findFirst({
     where: { id: listId, ...readableBy(accountId) },
     include: summaryInclude,
@@ -261,7 +261,7 @@ export const requireWritableList = async (
 };
 
 /** The people this list is shared with. Owner only - a buyer is not shown the audience. */
-export interface AccessRow {
+export interface StoredAccessRow {
   id: string;
   accountId: string | null;
   email: string;
@@ -272,7 +272,7 @@ export interface AccessRow {
 export const accessForList = async (
   listId: string,
   accountId: string
-): Promise<Outcome<AccessRow[]>> => {
+): Promise<Outcome<StoredAccessRow[]>> => {
   const gate = await requireWritableList(listId, accountId);
   if (!gate.ok) return refused(gate.refusal);
 
@@ -374,7 +374,7 @@ export const grantAccess = async (
   listId: string,
   ownerId: string,
   email: string
-): Promise<Outcome<AccessRow>> => {
+): Promise<Outcome<StoredAccessRow>> => {
   const gate = await requireWritableList(listId, ownerId);
   if (!gate.ok) return refused(gate.refusal);
 
@@ -419,7 +419,7 @@ export const revokeAccess = async (
   listId: string,
   ownerId: string,
   accessId: string
-): Promise<Outcome<AccessRow>> => {
+): Promise<Outcome<StoredAccessRow>> => {
   const gate = await requireWritableList(listId, ownerId);
   if (!gate.ok) return refused(gate.refusal);
 
@@ -546,6 +546,35 @@ export const addGift = async (
  */
 export type ToggledGift = { gift: StoredGift; isOwner: boolean };
 
+/**
+ * The mark, as a conditional write rather than a read followed by an update.
+ *
+ * The first version read the idea and then wrote `!isPurchased`, and put the owner's
+ * restriction in JavaScript: `if (isOwner && purchasedById !== accountId) refuse`.
+ * That is correct when nothing else happens in between, and something else can.
+ * This product's whole premise is several people buying the same gift at the same
+ * time, and the exact race is two of them tapping within the same few milliseconds:
+ *
+ *   both read `isPurchased: false`
+ *   the buyer writes `true, purchasedById: buyer`
+ *   the owner writes `true, purchasedById: owner`   <- overwrites the attribution
+ *
+ * The mark itself survives, so nobody double-buys and the guarantee holds. But the
+ * attribution now names the owner, which means the buyer can no longer undo their
+ * own claim, and the restriction this function exists to enforce was enforced
+ * against a value that had already gone stale.
+ *
+ * So the expected current state moves into the `where` and the database decides.
+ * `updateMany` matched zero rows means somebody beat us to it, and the answer is
+ * whatever is true now - re-read and return it - rather than a blind overwrite.
+ * The owner's restriction becomes `purchasedById: accountId` in the predicate
+ * instead of a branch above the write, so there is no window in which it can be
+ * stale.
+ *
+ * Still three round trips: authorise, conditional write, read back. The read-back
+ * exists because `updateMany` returns a count and not a row, and returning the row
+ * is what lets the caller replace its copy without a fourth request.
+ */
 export const toggleGiftPurchased = async (
   listId: string,
   giftId: string,
@@ -554,30 +583,69 @@ export const toggleGiftPurchased = async (
   const gate = await findReadableList(listId, accountId);
   if (!gate.ok) return refused(gate.refusal);
 
+  const isOwner = gate.value.ownerId === accountId;
+  const current = await prisma.gift.findFirst({
+    where: { id: giftId, listId },
+  });
+  if (!current) return refused('not_found');
+
+  /*
+    The owner's refusal is decided by the database here, not by a branch. An owner
+    *clearing* asks for `purchasedById: accountId`, so a mark somebody else set does
+    not match and the write simply does not happen - which is the rule, expressed as
+    a condition on the row rather than as an intention checked a moment earlier.
+
+    The condition is on the clearing path only, and that asymmetry is the whole
+    point. An owner *claiming* an open idea must not ask for `purchasedById:
+    accountId`: an open idea has `purchasedById: null`, so that predicate would
+    match no row and the owner would be unable to record "I already got this
+    myself", which is the case the claim path exists for.
+  */
+  const clearing = current.isPurchased;
+  const claimed = await prisma.gift.updateMany({
+    where: {
+      id: giftId,
+      /*
+        The state we expect to find is the state we read, not the state we are
+        about to write. The first version put the negation here, which is the value
+        the update is setting - so a clear looked for an open idea, matched nothing,
+        and silently became a no-op that reported success. The write lost a race
+        that never happened.
+      */
+      isPurchased: current.isPurchased,
+      ...(isOwner && clearing ? { purchasedById: accountId } : {}),
+    },
+    data: clearing
+      ? { isPurchased: false, purchasedById: null }
+      : { isPurchased: true, purchasedById: accountId },
+  });
+
+  /*
+    Nobody matched. Either the state moved between the read and the write, or the
+    owner was refused. Both are answered by looking again rather than by writing
+    anyway - and the owner's refusal is only reported when they were clearing, for
+    the same asymmetry: losing the race to claim is not being forbidden from
+    clearing.
+  */
   const gift = await prisma.gift.findFirst({ where: { id: giftId, listId } });
   if (!gift) return refused('not_found');
 
-  const isOwner = gate.value.ownerId === accountId;
-
-  if (!gift.isPurchased) {
-    const claimed = await prisma.gift.update({
-      where: { id: giftId },
-      data: { isPurchased: true, purchasedById: accountId },
-    });
-    return done({ gift: claimed, isOwner });
-  }
-
-  const setBySomebodyElse = gift.purchasedById !== accountId;
-
-  if (isOwner && setBySomebodyElse) {
+  if (
+    claimed.count === 0 &&
+    clearing &&
+    isOwner &&
+    gift.purchasedById !== accountId
+  ) {
     return refused('cannot_clear_purchase');
   }
 
-  const cleared = await prisma.gift.update({
-    where: { id: giftId },
-    data: { isPurchased: false, purchasedById: null },
-  });
-  return done({ gift: cleared, isOwner });
+  /*
+    Either the write landed, or we lost a race we were entitled to win and somebody
+    marked or unmarked the same idea between our read and our write. Returning the
+    current row covers both, and it is the honest answer: the interface shows the
+    state that is true rather than the one it hoped for.
+  */
+  return done({ gift, isOwner });
 };
 
 /** Take an idea off the sheet entirely. Owner only. */

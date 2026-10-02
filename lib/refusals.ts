@@ -19,8 +19,16 @@ export type Refusal =
   // Credentials and fields.
   | 'invalid_email'
   | 'duplicate_email'
+  | 'invalid_nickname'
+  | 'duplicate_nickname'
   | 'weak_password'
   | 'invalid_display_name'
+  // Sign-in.
+  | 'invalid_identifier'
+  // Request shape: the body named neither or both of the fields it may name.
+  | 'nothing_to_change'
+  | 'ambiguous_change'
+  | 'invalid_visibility'
   // Sharing.
   | 'no_such_account'
   | 'already_shared'
@@ -34,8 +42,14 @@ export type Refusal =
 export const REFUSALS: Refusal[] = [
   'invalid_email',
   'duplicate_email',
+  'invalid_nickname',
+  'duplicate_nickname',
   'weak_password',
   'invalid_display_name',
+  'invalid_identifier',
+  'nothing_to_change',
+  'ambiguous_change',
+  'invalid_visibility',
   'no_such_account',
   'already_shared',
   'cannot_share_with_owner',
@@ -60,14 +74,3 @@ export const isRefusal = (code: unknown): code is Refusal =>
   (REFUSALS as string[]).includes(code) &&
   !Object.prototype.hasOwnProperty.call(Object.prototype, code);
 
-/**
- * Whether the reader could not have been told the thing exists.
- *
- * The distinction the whole authorization design turns on. `not_found` says "there
- * is nothing here for you", which is what an account with no relationship to a list
- * must be told so that another person's list is never confirmed to exist.
- * `forbidden` and `cannot_clear_purchase` say "yes, and you may not", which is only
- * safe to say to somebody who can already read the list.
- */
-export const HIDES_EXISTENCE = (refusal: Refusal): boolean =>
-  refusal === 'not_found';
