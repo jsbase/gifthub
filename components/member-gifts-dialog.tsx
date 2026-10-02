@@ -283,57 +283,105 @@ const MemberGiftsDialog: React.FC<MemberGiftsDialogProps> = ({
 
             {gifts.length === 0 ? (
               /*
-                A blank page waiting to be written on, and it is built out of
-                the sheet's own parts rather than out of a new shape: the same
-                section head, the same printed count, the same cell-shaped
-                ground, and the same add action at the same place at the foot.
+                A blank page waiting to be written on - and the blank page is the
+                button.
 
-                The previous version was a sentence floating between two pieces
-                of whitespace with a full-height sheet around it, which is
-                precisely the silhouette of a dialog whose content failed to
-                load - the first thing a new group ever sees. Here the page is
-                the same page it becomes the moment the first idea is written:
-                a head, a count of `00`, one cell's worth of stock with nothing
-                on it, and the invitation written on that stock. Nothing is
-                invented, and no language gains a sentence it did not have.
+                The plate used to be a paragraph and the add action was a quiet
+                ghost row pinned to the foot of the sheet underneath it, so the
+                one thing a person can do on an empty sheet was the quietest
+                object on it, eleven pixels of tracked caption below a rule, and
+                the invitation ("add the first one") and the control that carried
+                out the invitation were two separate things with a rule between
+                them. It also read as a placeholder: a wide dashed rectangle with
+                one caption-weight sentence floating in the middle of it is the
+                silhouette of a panel that failed to load.
 
-                The plate is dashed rather than ruled on purpose, following the
-                convention the contents page already uses for a member with no
-                ideas: a printed rule means there is a cell, a dashed one means
-                there is room for one. A row of empty dashed rectangles would
-                read as a loading skeleton, which is the thing being escaped.
+                The dashed plate now IS the control, for the same reason it is
+                dashed. A printed rule means there is a cell and a dashed one
+                means there is room for one, and the only thing you can do with
+                room for a cell is write in it. So the whole cell is the target -
+                the full width of a cell rather than a 44px-tall row - the
+                invitation and the action are finally the same object, and the
+                foot row is gone rather than left as a second control that
+                duplicates it.
 
-                And the nesting is the populated branch's nesting, down to the
-                gaps. It used to be its own: the head and the plate were direct
-                children of `DialogContent` and so sat on the container's 16px
-                gap, while the same head and plate one gift later sat inside
-                `flex flex-col gap-1` on a 12px gap inside a section. The blank
-                page was therefore not the page it became - the title, the head
-                and the first cell all jumped when the first idea was written.
-                One structure, two states.
+                It keeps the populated branch's structure exactly: same outer
+                `flex flex-col gap-1`, same section, same head, same gaps, so
+                writing the first idea moves one sentence into a cell instead of
+                moving the head, the plate and the first row. The plate is a
+                `<button>` rather than a `<p>`, so it takes the app's one focus
+                mechanism and one Tab stop instead of none.
               */
               <div className='flex flex-col gap-1'>
                 <section className='flex flex-col gap-3'>
                   <SectionHead label={dict.openIdeas} count={0} />
-                  <p
-                    data-testid='noGifts'
+                  <button
+                    type='button'
+                    onClick={() => setShowAddGiftForm(true)}
+                    data-testid='addGiftButton'
                     className={cn(
                       // Full content width, because a cell on this sheet is
                       // always full content width: a blank cell that stops two
                       // thirds of the way across would be a different shape from
                       // the cell it is standing in for.
+                      'group flex w-full flex-col items-start gap-2.5',
                       'border',
                       'border-dashed',
                       'border-rule',
                       'px-5',
-                      'py-8',
-                      'text-[0.9375rem]',
-                      'leading-relaxed',
-                      'text-caption'
+                      'py-7',
+                      'text-left',
+                      // The wash is a real hover affordance on a control, so it
+                      // is gated on a real pointer. A touch device that can
+                      // reach a button cannot hover it, and an unhoverable target
+                      // that repaints on tap is the tap-to-nothing pattern.
+                      '[@media(hover:hover)_and_(pointer:fine)]:hover:bg-wash',
+                      'rounded-md'
                     )}
                   >
-                    {dict.noGifts}
-                  </p>
+                    {/*
+                      The field's own name, in the face the section heads use, so
+                      the blank cell reads as one cell of this sheet rather than as
+                      a message about the sheet.
+                    */}
+                    <span className={cn('label-print', 'text-caption')}>
+                      {dict.enterGiftTitle}
+                    </span>
+
+                    {/*
+                      The invitation, in ink rather than in caption. On a sheet
+                      with nothing on it this sentence is the entire content, and
+                      it was set at the same weight as the section head above it.
+                    */}
+                    <span
+                      data-testid='noGifts'
+                      className={cn(
+                        'text-[0.9375rem]',
+                        'leading-relaxed',
+                        'text-pretty',
+                        'text-ink'
+                      )}
+                    >
+                      {dict.noGifts}
+                    </span>
+
+                    {/*
+                      What actually goes in. Hidden from assistive tech because it
+                      restates what the form it opens will label field by field,
+                      and a fourth sentence in the button's accessible name is
+                      more than the control needs to announce.
+                    */}
+                    <span
+                      aria-hidden='true'
+                      className={cn(
+                        'text-[0.8125rem]',
+                        'leading-relaxed',
+                        'text-caption'
+                      )}
+                    >
+                      {dict.emptyCellHint}
+                    </span>
+                  </button>
                 </section>
               </div>
             ) : (
@@ -405,34 +453,40 @@ const MemberGiftsDialog: React.FC<MemberGiftsDialogProps> = ({
               a solid ink button at the head of the list, where it outweighed the
               person's own name - the loudest thing on a page should be the thing
               the page is about, and the page is about their ideas.
+
+              It is also the foot row only once the sheet has something on it. On
+              an empty sheet the blank cell is the add control, and leaving a
+              second one here would be two controls performing one action.
             */}
-            <div className='mt-1 border-t border-rule pt-3'>
-              <Button
-                variant='ghost'
-                onClick={() => setShowAddGiftForm(true)}
-                className={cn(
-                  'w-full',
-                  'justify-start',
-                  'gap-2.5',
-                  'px-3',
-                  'text-caption'
-                )}
-                data-testid='addGiftButton'
-              >
-                {/*
-                  `stroke`, not `strokeWidth` - see the same note on the wordmark
-                  in `logo.tsx`. Tabler reads `stroke` as the stroke width;
-                  `strokeWidth` would still work and still typecheck, by way of
-                  the spread order, and would silently win. 1.75 on a 16px icon
-                  is 1.17px of ink against the 1.33px its neighbours draw, which
-                  is a pre-existing inconsistency rather than one this swap
-                  introduces; it is carried over verbatim so the migration stays
-                  visual-only.
-                */}
-                <IconCirclePlus className='h-4 w-4' stroke={1.75} />
-                <span className='label-print'>{dict.addGift}</span>
-              </Button>
-            </div>
+            {gifts.length > 0 && (
+              <div className='mt-1 border-t border-rule pt-3'>
+                <Button
+                  variant='ghost'
+                  onClick={() => setShowAddGiftForm(true)}
+                  className={cn(
+                    'w-full',
+                    'justify-start',
+                    'gap-2.5',
+                    'px-3',
+                    'text-caption'
+                  )}
+                  data-testid='addGiftButton'
+                >
+                  {/*
+                    `stroke`, not `strokeWidth` - see the same note on the
+                    wordmark in `logo.tsx`. Tabler reads `stroke` as the stroke
+                    width; `strokeWidth` would still work and still typecheck, by
+                    way of the spread order, and would silently win. 1.75 on a
+                    16px icon is 1.17px of ink against the 1.33px its neighbours
+                    draw, which is a pre-existing inconsistency rather than one
+                    this swap introduces; it is carried over verbatim so the
+                    migration stays visual-only.
+                  */}
+                  <IconCirclePlus className='h-4 w-4' stroke={1.75} />
+                  <span className='label-print'>{dict.addGift}</span>
+                </Button>
+              </div>
+            )}
           </>
         )}
 

@@ -10,6 +10,7 @@ const MemberListHeader: React.FC<MemberListHeaderProps> = ({
   onDeleteClick,
   onMemberAdded,
   hasMembers,
+  isRemoving,
 }) => {
   return (
     <div
@@ -48,10 +49,17 @@ const MemberListHeader: React.FC<MemberListHeaderProps> = ({
           'sm:w-auto'
         )}
       >
+        {/*
+          A toggle, so it says it is one. The mode's only other trace is that a
+          remove control appears on every row, which is announced at the row; a
+          screen-reader user holding this button otherwise has no way to know
+          whether the thing they are holding is armed.
+        */}
         <Button
           variant='outline'
           onClick={onDeleteClick}
           disabled={!hasMembers}
+          aria-pressed={isRemoving}
           className={cn(
             'flex',
             'items-center',

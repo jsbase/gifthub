@@ -152,10 +152,32 @@ const MemberList: React.FC<MemberListProps> = ({
             className={cn(
               'relative',
               'grid',
-              'grid-cols-[1fr_auto]',
-              'gap-6',
               'items-center',
+              'gap-x-6',
               'py-5',
+              /*
+                Three columns in removal mode, two outside it - and never an
+                implicit third.
+
+                This row is declared `grid-cols-[1fr_auto]`, which is a promise
+                about how many children it has. The remove control was a third
+                child, so it did not join the row: it wrapped onto an implicit
+                second row, and CSS sized that row from the 44px button plus the
+                24px row-gap on top of the 72px first one. Every member became
+                190px tall with the control tucked under its own name, which is
+                why removal mode looked like a different app - a list with three
+                times the white space, a second reading order, and nothing on the
+                same baseline as the rule above it.
+
+                Declaring the third column up front is the whole fix. The row
+                keeps its height, its rules keep their rhythm, the figure stays on
+                the same baseline as the name, and entering the mode costs the
+                list no vertical space at all. The control is 44px against the
+                row's 72px floor, so it can never become the tall thing either.
+              */
+              showDeleteButtons
+                ? 'grid-cols-[1fr_auto_auto]'
+                : 'grid-cols-[1fr_auto]',
               // The contents page arriving, once, in order.
               'animate-reveal-in'
             )}
@@ -217,14 +239,7 @@ const MemberList: React.FC<MemberListProps> = ({
             <SheetProgress unbought={unbought} total={total} />
 
             {showDeleteButtons && (
-              <div
-                className={cn(
-                  'animate-row-reveal',
-                  'flex',
-                  'items-center',
-                  'pl-2'
-                )}
-              >
+              <div className={cn('animate-row-reveal', 'flex', 'items-center')}>
                 <Button
                   variant='ghost'
                   size='icon'
@@ -262,6 +277,7 @@ const MemberList: React.FC<MemberListProps> = ({
         onDeleteClick={toggleDeleteButtons}
         onMemberAdded={onMemberDeleted}
         hasMembers={members.length > 0}
+        isRemoving={showDeleteButtons}
       />
 
       {members.length > 0 ? (

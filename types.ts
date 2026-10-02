@@ -55,6 +55,13 @@ export interface Translations {
   enterGroupName: string;
   enterPassword: string;
   loginToGroup: string;
+  /**
+   * What the login sheet is FOR, in one sentence. It used to be `enterGroupName`
+   * - the first field's own name - which put "Gruppenname" on screen three times
+   * in a row: once as the sheet's description, once as the printed label over the
+   * field, and once as the placeholder inside it.
+   */
+  loginDescription: string;
   groupName: string;
   password: string;
   confirmPassword: string;
@@ -62,8 +69,18 @@ export interface Translations {
   members: string;
   addMember: string;
   logout: string;
+  changeLanguage: string;
   noMembers: string;
   features: Features;
+  landing: {
+    /**
+     * The one sentence under the claim on the landing page: what the group model
+     * actually is, in concrete terms, rather than a second adjective about the
+     * product. Written to stand at 46ch in the claim column and to survive being
+     * four lines of German or Russian on a 390px phone.
+     */
+    standfirst: string;
+  };
   preview: LandingPreviewTranslations;
   errors: {
     loginRequired: string;
@@ -187,7 +204,20 @@ export interface Translations {
  * a member actually sees.
  */
 export interface LandingPreviewTranslations {
-  /** Says plainly that this is the whole screen, which is the claim it makes. */
+  /**
+   * The specimen's own title: a real group's name, set in the serif. The
+   * dashboard's header shows the group's name in place of the product's, which
+   * is how the product stops being a tool and becomes that group's list, and the
+   * plate has to carry the same line or the quotation is missing the one thing
+   * the product is actually about.
+   */
+  group: string;
+  /**
+   * The caption under the plate. It used to claim the plate was "the whole
+   * screen", which was true when the plate reproduced the dashboard at full size
+   * and is not true now that it is reproduced as a tipped-in plate beside the
+   * claim. It now says what the reader is looking at.
+   */
   lead: string;
   /**
    * `count` is how many ideas are still OPEN - which is what the lead sentence
@@ -266,6 +296,13 @@ export interface MemberGiftsTranslations {
   cancel: string;
   adding: string;
   noGifts: string;
+  /**
+   * What actually goes in a cell, so a blank one can say it. The only thing the
+   * add form insists on is a title, and a person staring at an empty page has no
+   * way of knowing that - "notiz und link are optional" is the sentence that turns
+   * a blank cell from a wall into one field.
+   */
+  emptyCellHint: string;
   markAsPurchased: string;
   markAsAvailable: string;
   deleteGift: string;
@@ -317,7 +354,7 @@ export interface RootLayoutProps {
 
 export interface HeaderProps {
   groupName?: string;
-  dict?: Pick<Translations, 'logout'>;
+  dict?: Pick<Translations, 'logout' | 'changeLanguage'>;
   onLogout?: () => void;
   showAuth?: boolean;
 }
@@ -332,6 +369,12 @@ export interface PageProps {
 export interface FeatureCardProps {
   title: string;
   description: string;
+  /**
+   * `lead` is the product's own claim, set large on the landing page; `entry` is
+   * a mechanism, set as a line of a catalogue index beneath it. The default is
+   * `entry` so a caller that does not care gets the quiet one.
+   */
+  variant?: 'lead' | 'entry';
 }
 
 export interface FooterProps {
@@ -373,6 +416,16 @@ export interface LanguageFlagProps {
   width: number;
   height: number;
   className?: string;
+}
+
+export interface LanguageSwitcherProps {
+  /**
+   * The localised name for the control's action ("Change language"). The current
+   * language is appended to it by the switcher, because a trigger labelled only
+   * with the language it is showing is ambiguous: it reads equally as the current
+   * state and as the thing you press to change it.
+   */
+  label?: string;
 }
 
 export interface LoginFormProps {
@@ -451,4 +504,11 @@ export interface MemberListHeaderProps {
   onDeleteClick: () => void;
   onMemberAdded: () => void;
   hasMembers: boolean;
+  /**
+   * Whether removal mode is on. The control is a toggle and it is the only
+   * announcement of the mode's state: the row's own change is that a remove
+   * control appears, which a screen reader is told about at the row and not at
+   * the control that caused it.
+   */
+  isRemoving: boolean;
 }

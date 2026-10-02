@@ -3,41 +3,84 @@ import { cn } from '@/lib/utils';
 import type { FeatureCardProps } from '@/types';
 
 /**
- * No box, no border, no shadow, no background: these three are sentences about
- * how the group works, not three objects to compare, so putting them in cards
- * would claim they are. Whitespace and a short printed rule separate them.
+ * One claim about how the group works, in one of two registers.
  *
- * The rule is the album's tell rather than the layout's: a catalogue marks the
- * start of an entry with a short line of ink, and three such lines in a row read
- * as three entries in one page rather than as three floating blocks.
+ * There are no boxes, borders, shadows or backgrounds: a claim is a sentence, and
+ * putting three sentences in cards would claim they were three objects to
+ * compare. What separates them instead is the type itself - one claim set large
+ * and the others set as the index of a catalogue, title in a narrow column and
+ * description beside it. Hierarchy does the work a grid used to.
+ *
+ * The version this replaced was a `sm:grid-cols-3` row: three equal columns, one
+ * short rule at the same height above each, a title at the same size in each.
+ * Three claims in three identical boxes is a category default, and the page's own
+ * vocabulary - tone and hairline - was doing all the work anyway.
  */
-const FeatureCard: React.FC<FeatureCardProps> = ({ title, description }) => (
-  <div className={cn('max-w-[36ch]')}>
-    <span
-      aria-hidden='true'
-      className='mb-4 block h-px w-8 bg-furniture'
-    />
-    <h2
+const FeatureCard: React.FC<FeatureCardProps> = ({
+  title,
+  description,
+  variant = 'entry',
+}) => {
+  if (variant === 'lead') {
+    return (
+      <div className={cn('max-w-[54ch]')}>
+        <span aria-hidden='true' className='mb-5 block h-px w-16 bg-furniture' />
+        <h2
+          className={cn(
+            'font-semibold',
+            'text-balance',
+            'text-ink',
+            'text-[1.375rem]',
+            'leading-[1.22]'
+          )}
+        >
+          {title}
+        </h2>
+        <p
+          className={cn(
+            'mt-3',
+            'text-[1rem]',
+            'leading-[1.6]',
+            'text-pretty',
+            'text-caption'
+          )}
+        >
+          {description}
+        </p>
+      </div>
+    );
+  }
+
+  /*
+    `text-balance` is deliberately absent on the entry title: it is set in a fixed
+    narrow column, where balancing two or three lines of a German or Russian claim
+    would stretch one word per line to make them even.
+  */
+  return (
+    <div
       className={cn(
-        'text-lg',
-        'font-semibold',
-        'leading-snug',
-        'text-balance'
+        'grid',
+        'gap-x-8',
+        'gap-y-1.5',
+        'sm:grid-cols-[minmax(0,12rem)_minmax(0,1fr)]'
       )}
     >
-      {title}
-    </h2>
-    <p
-      className={cn(
-        'mt-2',
-        'text-[0.9375rem]',
-        'leading-relaxed',
-        'text-caption'
-      )}
-    >
-      {description}
-    </p>
-  </div>
-);
+      <h2 className={cn('font-semibold', 'text-[0.9375rem]', 'text-ink')}>
+        {title}
+      </h2>
+      <p
+        className={cn(
+          'max-w-[46ch]',
+          'text-[0.9375rem]',
+          'leading-[1.65]',
+          'text-pretty',
+          'text-caption'
+        )}
+      >
+        {description}
+      </p>
+    </div>
+  );
+};
 
 export default memo(FeatureCard);
