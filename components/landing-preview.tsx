@@ -9,36 +9,34 @@ import type { Translations } from '@/types';
 /**
  * One page of the album, reproduced as a plate tipped in beside the claim.
  *
- * It has to be a faithful reproduction, not a flattering one. Every sample member
- * is fully un-collected, so `pct` is 0 for all three and the member's ink is set
- * on every row and painted on none of them: the plate shows no colour at all.
- * That is what the dashboard draws for those three members too. Giving the rows
- * some ink would need a `collected` figure in `preview.members` that the approved
- * data does not carry. Mia's dashed rule does come through, because the approved
- * data has a zero there and a zero means "no list yet", which is a state worth
- * quoting.
+ * It has to be a faithful reproduction, not a flattering one, and it takes its
+ * anatomy from the real contents page rather than describing it: one row per list,
+ * the list's name in the serif, `SheetProgress` at the right, and the count words
+ * behind the figure from `giftCountLabel` - the same function, not a second
+ * ladder. The three sample rows carry 3/2, 1/2 and 0/4 open/collected, so the plate
+ * shows all four count states the dashboard shows: two rows with a part-filled
+ * rule, one row nearly full, and the zero row where the figure is replaced by a
+ * check. The zero row is the reason `collected` exists as a separate figure - with
+ * open counts alone the rule could never leave zero, which reads as an empty bar
+ * rather than as progress.
  *
- * **The plate is titled, and the caption is below it.** Both are catalogue
- * furniture. The title is a real group's name in the serif, which is the same
- * line the dashboard's header puts in place of the product's own - the plate is
- * about one group's list, not about the software. The caption sits underneath,
- * where a caption sits, so the plate can be tipped high against the claim beside
- * it instead of being pushed down by a paragraph.
- *
- * The plate is no longer the same size as the dashboard's sheet, and the old
- * caption's claim that it was "the whole screen" went with that. What still makes
- * it the same product is the material and the anatomy - the same stock, the same
- * printed rule, the same crop marks, the same ruled head, the same name in Source
- * Serif 4, the same member ink on the progress rule and the same printed numeral
- * at the right. That is what a reader compares; the pixel width is not.
+ * **One ink for the whole plate, set once.** The rows are all one person's lists -
+ * the plate's title line is the one that stands in for the name the header would
+ * put where the wordmark goes, which is what makes the product that person's list
+ * rather than a tool. So the ink is hashed from that one line and inherited by
+ * every row, instead of being hashed per row name. Hashing the rows separately
+ * would give one plate three unrelated colours and read as three people, which is
+ * the confusion this page exists to end. The tray is written for one id and one
+ * person; `lib/member-ink.ts` is being re-keyed to the owner account id, and this
+ * is the call site that will follow it.
  *
  * `SheetProgress` in `components/sheet-progress.tsx` is the authority for the
  * figure and is imported rather than copied: a second copy is a second thing to
  * forget.
  */
 const LandingPreview: React.FC<
-  Pick<Translations, 'preview' | 'giftCount' | 'members'>
-> = ({ preview, giftCount, members: membersHeading }) => (
+  Pick<Translations, 'preview' | 'giftCount' | 'yourLists'>
+> = ({ preview, giftCount, yourLists }) => (
   <figure className={cn('flex', 'flex-col')}>
     <div
       data-testid='landingQuote'
@@ -56,10 +54,12 @@ const LandingPreview: React.FC<
       <CropMarks />
 
       {/*
-        The plate's title. The dashboard puts the group's name in the app header
-        rather than on the sheet, so this is a plate title and not a quotation of
-        the sheet's own first line - which is why it sits above the ruled head
-        instead of inside it.
+        The plate's title, in the serif, above the ruled head. The real contents
+        page puts the signed-in person's name in the app header rather than on the
+        sheet, so this is a plate title rather than a quotation of the sheet's own
+        first line - which is why it sits above the rule instead of inside it. It is
+        the one line that says the plate is about one person's lists and not about
+        the software, so it is the line the plate must not be missing.
       */}
       <p
         className={cn(
@@ -73,12 +73,12 @@ const LandingPreview: React.FC<
           'leading-tight'
         )}
       >
-        {preview.group}
+        {preview.list}
       </p>
 
-      {/* `MemberListHeader` without its two buttons: a specimen of the contents
-          page, not a working one, and a quotation that offered "Add member"
-          would be offering to add a member to a group that does not exist. */}
+      {/* The contents page's own section head and nothing else: a specimen of that
+          page, not a working one, and a quotation that offered "Create list" would
+          be offering to create a list on an account that does not exist. */}
       <div
         className={cn(
           'flex',
@@ -89,63 +89,64 @@ const LandingPreview: React.FC<
           'pb-4'
         )}
       >
-        <h2 className='label-print pt-1 text-caption'>{membersHeading}</h2>
+        <h2 className='label-print pt-1 text-caption'>{yourLists}</h2>
       </div>
 
-      <ul className='divide-y divide-rule'>
-        {preview.members.map((member) => {
+      <ul style={memberInkStyle(preview.list)} className='divide-y divide-rule'>
+        {preview.items.map((item) => {
           /*
-            Derived once, then read twice - by the words under the name and by
+            Derived once, then read twice - by the words behind the name and by
             the rule beneath it. It was summed twice inline, which is only a
             problem the first time one of the two is edited.
           */
           const sheet = {
-            unbought: member.count,
-            total: member.count + member.collected,
+            unbought: item.count,
+            total: item.count + item.collected,
           };
 
           return (
             <li
-            key={member.name}
-            style={memberInkStyle(member.name)}
-            className={cn(
-              'grid',
-              'grid-cols-[1fr_auto]',
-              'items-center',
-              'gap-x-5',
-              'gap-y-2',
-              'py-4'
-            )}
-          >
-            <div className='flex w-full min-w-0 flex-col items-start gap-2'>
-              <span className='max-w-full break-words'>
-                <span
-                  className={cn(
-                    'font-serif',
-                    'text-xl',
-                    'font-semibold',
-                    'leading-tight'
-                  )}
-                >
-                  {member.name}
+              key={item.name}
+              className={cn(
+                'grid',
+                'grid-cols-[1fr_auto]',
+                'items-center',
+                'gap-x-5',
+                'gap-y-2',
+                'py-4'
+              )}
+            >
+              <div className='flex w-full min-w-0 flex-col items-start gap-2'>
+                <span className='max-w-full break-words'>
+                  <span
+                    className={cn(
+                      'font-serif',
+                      'text-xl',
+                      'font-semibold',
+                      'leading-tight'
+                    )}
+                  >
+                    {item.name}
+                  </span>
                 </span>
-              </span>
-              <span className='sr-only'>
                 {/*
-                  `giftCountLabel`, not a second ladder. The inline ternary this
-                  replaces mapped a zero to `giftCount.zero` - "nothing left to
-                  buy" - on the same row that draws the dashed placeholder, which
-                  everywhere else in this app means the opposite: no ideas at all,
-                  and the member who most needs a present. The figure and the
-                  words behind it were telling a visitor two opposite things
-                  about the same person.
+                  `giftCountLabel`, not a second ladder, and not the count itself:
+                  the figure is a numeral in printed type and means nothing read
+                  aloud, so the same fact arrives here as the words the dashboard
+                  uses. The inline ternary this replaces mapped a zero to
+                  `giftCount.zero` - "nothing left to buy" - on the same row that
+                  draws the dashed placeholder, which everywhere else in this app
+                  means the opposite: no ideas at all. The figure and the words
+                  behind it were telling a visitor two opposite things about the
+                  same list.
                 */}
-                {giftCountLabel(sheet, { giftCount })}
-              </span>
-            </div>
+                <span className='sr-only'>
+                  {giftCountLabel(sheet, { giftCount })}
+                </span>
+              </div>
 
-            <SheetProgress unbought={sheet.unbought} total={sheet.total} />
-          </li>
+              <SheetProgress unbought={sheet.unbought} total={sheet.total} />
+            </li>
           );
         })}
       </ul>
@@ -157,6 +158,11 @@ const LandingPreview: React.FC<
       it would be a line of interface chrome that the real screen does not have.
       Narrower than the claim above it and wider than an index entry, so the three
       measures on this page stay three.
+
+      Its own measure is the one number on this page worth stating: the German
+      caption is 117 characters and lands at four lines inside `44ch` on a 390px
+      phone, which is a caption and not a paragraph. It was written against this
+      cap.
     */}
     <figcaption
       className={cn(

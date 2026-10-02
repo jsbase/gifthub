@@ -71,10 +71,10 @@ test.describe('Switch language', () => {
     const loginButton = page.getByTestId('OpenLogin');
     await loginButton.click();
 
-    await page.fill('#groupName', 'testgroup');
-    await page.fill('#password', 'test123');
+    await page.fill('#email', 'anna@example.test');
+    await page.fill('#password', 'test1234');
 
-    const submitButton = page.getByRole('button', { name: 'SubmitLogin' });
+    const submitButton = page.getByTestId('SubmitLogin');
     await submitButton.click();
 
     await page.waitForNavigation();

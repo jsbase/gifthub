@@ -3,11 +3,10 @@ import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
-const GROUP_NAME = 'testgroup';
-const GROUP_PASSWORD = 'test123';
+const PASSWORD = 'test1234';
 
-// The four `deleteMany` calls below are unfiltered: they empty `gift`, `userGroup`,
-// `user` and `group` in whatever database DATABASE_URL names. In CI that is
+// The four `deleteMany` calls below are unfiltered: they empty `gift`, `listAccess`,
+// `list` and `account` in whatever database DATABASE_URL names. In CI that is
 // `CI_DATABASE_URL`, and nothing forces it to be a Neon *branch* rather than the
 // parent the deployed app reads - a workflow comment asks for a branch, but a
 // comment is not a check. So a misconfigured secret would destroy the demo data
@@ -33,7 +32,8 @@ const GROUP_PASSWORD = 'test123';
 //   - Commit the demo endpoint id here and compare against it. That would
 //     discriminate, but it publishes infrastructure identity in a tracked file
 //     and rots the moment the project is renamed. SEED_EXPECT_HOST keeps the demo
-//     host out of the repository entirely - the value lives only in CI secrets.
+//     host out of the repository entirely - the value lives only in CI secrets and
+//     in each developer's own env files.
 //
 // Check 2 is skipped when SEED_EXPECT_HOST is unset, so a bare local
 // `SEED_ALLOW_WIPE=1 npx prisma db seed` still works. That is a real gap in the
@@ -50,7 +50,7 @@ function assertDisposableTarget() {
 
   if (process.env[WIPE_MARKER] !== WIPE_MARKER_VALUE) {
     reasons.push(
-      `${WIPE_MARKER} is ${JSON.stringify(process.env[WIPE_MARKER] ?? '')} instead of ${JSON.stringify(WIPE_MARKER_VALUE)}`,
+      `${WIPE_MARKER} is ${JSON.stringify(process.env[WIPE_MARKER] ?? '')} instead of ${JSON.stringify(WIPE_MARKER_VALUE)}`
     );
   }
 
@@ -69,7 +69,7 @@ function assertDisposableTarget() {
     if (expected !== undefined && host !== null && host !== expected) {
       reasons.push(
         `DATABASE_URL points at ${JSON.stringify(host)}, which is not the ${JSON.stringify(expected)} named in ${EXPECT_HOST}. ` +
-          'Either the connection is misconfigured or the expectation is stale; neither is safe to wipe through.',
+          'Either the connection is misconfigured or the expectation is stale; neither is safe to wipe through.'
       );
     }
   }
@@ -77,11 +77,11 @@ function assertDisposableTarget() {
   if (reasons.length > 0) {
     console.error(
       [
-        'Refusing to seed: this script deletes every row in gift, userGroup, user and group.',
+        'Refusing to seed: this script deletes every row in gift, listAccess, list and account.',
         ...reasons.map((r) => `  - ${r}`),
         '',
         `Set ${WIPE_MARKER}=${WIPE_MARKER_VALUE} to confirm DATABASE_URL points at a throwaway database (a Neon branch, not the parent the deployed app uses), then re-run.`,
-      ].join('\n'),
+      ].join('\n')
     );
     process.exit(1);
   }
@@ -92,46 +92,116 @@ async function main() {
 
   // Reset in FK-safe order so re-seeding is idempotent.
   await prisma.gift.deleteMany();
-  await prisma.userGroup.deleteMany();
-  await prisma.user.deleteMany();
-  await prisma.group.deleteMany();
+  await prisma.listAccess.deleteMany();
+  await prisma.list.deleteMany();
+  await prisma.account.deleteMany();
 
-  const password = await bcrypt.hash(GROUP_PASSWORD, 10);
-  const group = await prisma.group.create({
-    data: { name: GROUP_NAME, password },
-  });
+  const password = await bcrypt.hash(PASSWORD, 10);
 
-  const members = [
-    { name: 'Alice', gifts: [{ title: 'Mechanical keyboard', url: 'https://example.com/keyboard' }, { title: 'Desk lamp' }] },
-    { name: 'Bob', gifts: [{ title: 'Noise cancelling headphones', isPurchased: true }] },
-    { name: 'Charlie', gifts: [] },
-  ];
+  /*
+    Three accounts rather than one, because the product no longer has a shared
+    credential and a demo that cannot demonstrate sharing is a demo of nothing.
+    `.test` is reserved by RFC 6761 precisely so nothing here can resolve or be
+    delivered to a real mailbox.
 
-  for (const member of members) {
-    const user = await prisma.user.create({
-      data: { name: member.name, password: await bcrypt.hash('demo', 10) },
+    The addresses are stored the way `lib/email.ts` stores them - already
+    lowercase, already trimmed - so a login in the specs that types `Anna@Example.test`
+    finds this account rather than creating a second one.
+  */
+  const accounts = {};
+  for (const [key, email, displayName] of [
+    ['anna', 'anna@example.test', 'Anna'],
+    ['ben', 'ben@example.test', 'Ben'],
+    ['mia', 'mia@example.test', 'Mia'],
+  ]) {
+    accounts[key] = await prisma.account.create({
+      data: { email, displayName, password },
     });
-
-    const userGroup = await prisma.userGroup.create({
-      data: { userId: user.id, groupId: group.id },
-    });
-
-    for (const gift of member.gifts) {
-      await prisma.gift.create({
-        data: {
-          title: gift.title,
-          url: gift.url,
-          description: gift.description,
-          isPurchased: gift.isPurchased ?? false,
-          groupId: group.id,
-          forMemberId: userGroup.id,
-        },
-      });
-    }
   }
 
-  console.log(`Seeded group "${GROUP_NAME}" with ${members.length} members.`);
-  console.log(`Login with ${GROUP_NAME} / ${GROUP_PASSWORD}`);
+  // Anna's private list: the state a list starts in, and the one nobody else can see.
+  const privateList = await prisma.list.create({
+    data: {
+      name: 'Für mich',
+      visibility: 'PRIVATE',
+      ownerId: accounts.anna.id,
+    },
+  });
+
+  await prisma.gift.createMany({
+    data: [
+      {
+        title: 'Mechanical keyboard',
+        url: 'https://example.com/keyboard',
+        listId: privateList.id,
+      },
+      { title: 'Desk lamp', listId: privateList.id },
+    ],
+  });
+
+  /*
+    Anna's shared list, with Ben added.
+
+    One idea on it is already bought, and `purchasedById` names Ben. That field is
+    never returned by any endpoint - the point of seeding it is that the e2e suite
+    can exercise the one rule that depends on it: an owner looking at somebody
+    else's mark may not clear it, and the spec asserts exactly that.
+  */
+  const sharedList = await prisma.list.create({
+    data: {
+      name: 'Weihnachten',
+      visibility: 'SHARED',
+      ownerId: accounts.anna.id,
+    },
+  });
+
+  await prisma.listAccess.create({
+    data: { listId: sharedList.id, accountId: accounts.ben.id },
+  });
+
+  await prisma.gift.createMany({
+    data: [
+      { title: 'Noise cancelling headphones', listId: sharedList.id },
+      {
+        title: 'Winter jacket',
+        listId: sharedList.id,
+        isPurchased: true,
+        purchasedById: accounts.ben.id,
+      },
+    ],
+  });
+
+  // Ben's shared list, with Mia added, so the suite has a second shared list whose
+  // audience does not overlap the first. That is what makes "Mia gets 404 for
+  // Anna's list" a real assertion rather than a vacuous one.
+  const bensList = await prisma.list.create({
+    data: {
+      name: 'Geburtstag',
+      visibility: 'SHARED',
+      ownerId: accounts.ben.id,
+    },
+  });
+
+  await prisma.listAccess.create({
+    data: { listId: bensList.id, accountId: accounts.mia.id },
+  });
+
+  await prisma.gift.createMany({
+    data: [{ title: 'Kaffeemühle', listId: bensList.id }],
+  });
+
+  console.log('Seeded three accounts:');
+  for (const [key, email] of Object.entries({
+    anna: 'anna@example.test',
+    ben: 'ben@example.test',
+    mia: 'mia@example.test',
+  })) {
+    console.log(`  ${key}: ${email}`);
+  }
+  console.log(`Password for all three: ${PASSWORD}`);
+  console.log("Anna's PRIVATE list 'Für mich' (2 open ideas)");
+  console.log("Anna's SHARED list 'Weihnachten', shared with Ben (1 open, 1 bought by Ben)");
+  console.log("Ben's SHARED list 'Geburtstag', shared with Mia (1 open idea)");
 }
 
 main()

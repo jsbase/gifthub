@@ -2,21 +2,31 @@
  * The ink tray.
  *
  * An album has six or seven coloured inks on the desk beside it, and a
- * collector reaches for the same one each time. Each member of a group owns one
- * ink here, assigned from a hash of their id so the colour is stable across
- * sessions, devices and reloads - a member whose ink changed on refresh would
+ * collector reaches for the same one each time. Each **account** owns one ink
+ * here, assigned from a hash of their id so the colour is stable across
+ * sessions, devices and reloads - an account whose ink changed on refresh would
  * read as a different person.
+ *
+ * The key is the account that **owns** the lists, not the list and not the reader.
+ * Keying it on the list would give one person's four sheets four colours, which
+ * reads as four people; keying it on the reader would give every row on the
+ * contents page the same ink and lose the distinction entirely. The owner's id
+ * means all of one person's lists carry one ink, and that ink survives renaming
+ * the list, sharing it and un-sharing it.
+ *
+ * Nothing in this module had to change to make that work: `memberInkStyle` takes
+ * an opaque id and hashes it, so it never knew what the id was. Only the callers
+ * changed, which is the most this could have cost.
  *
  * The discipline that keeps this from becoming confetti: an ink never fills a
  * region. It appears in exactly two places, always at the same weight of
- * ink - the rule under that member's name on the contents page, and the
- * collected mark in the margin of a cell on their sheet. Six members on one
- * page therefore read as one printed sheet with six annotations, not as six
- * colours.
+ * ink - the rule under a row on the contents page, and the collected mark in the
+ * margin of a cell on the sheet. Several lists on one page therefore read as one
+ * printed sheet with several annotations, not as several colours.
  *
  * The index is taken modulo the tray length rather than from a palette lookup
- * so two members can share an ink when a group is larger than the tray. That is
- * deliberate: the ink identifies a person loosely, the name identifies them
+ * so two accounts can share an ink when there are more of them than colours. That
+ * is deliberate: the ink identifies a person loosely, the name identifies them
  * exactly, and duplicating a colour is better than running out.
  */
 export const MEMBER_INKS = [

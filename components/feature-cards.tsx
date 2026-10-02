@@ -6,12 +6,14 @@ import type { Translations } from '@/types';
 /**
  * Which claim leads the index.
  *
- * Not a preference. The bought flag is the one thing a neighbouring product could
- * not copy without changing what it is: every other wishlist tool lets each
- * person tick off what they personally intend to buy, and here the tick belongs
- * to the group the moment it is set. "Nobody buys it twice" is therefore the
- * product's claim and the other two are the mechanics that make it true, so the
- * claim is set large and the mechanics are set as an index beneath it.
+ * Not a preference. The bought mark is the one thing a neighbouring product could
+ * not copy without changing what it is: every other wishlist tool lets each person
+ * tick off what they personally intends to buy, and here the tick belongs to the
+ * list the moment it is set - it shows to everyone that list is shared with, it
+ * cannot be cleared by the owner once somebody else has set it, and it never names
+ * who set it. "Nobody buys it twice" is therefore the product's claim and the other
+ * two are the mechanics that make it true, so the claim is set large and the
+ * mechanics are set as an index beneath it.
  *
  * The key is a constant rather than a position in the object, because the order
  * the features are written in the dictionary is not the order they are read in.
