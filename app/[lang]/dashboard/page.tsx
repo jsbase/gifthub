@@ -270,6 +270,24 @@ const DashboardPage: NextPage<PageProps> = ({ params }) => {
                   // it (ui/dialog.tsx:146) got its documented 6px. One sheet,
                   // one radius.
                   'sm:rounded-lg',
+                  // The same floor the dialog primitive gives every sheet on a
+                  // phone, for the same reason. The gift sheet that opens on top
+                  // of this one is the whole page below the header, so this
+                  // sheet - which is a page, not a card, below `sm` - ends at
+                  // the foot of the screen rather than wherever its last member
+                  // happens to stop. It used to hug its contents, and at 375x667
+                  // with three members that put the third row's rule under the
+                  // fold: the sheet looked truncated rather than scrollable,
+                  // and there was no way to tell those two apart except by
+                  // scrolling and finding out.
+                  //
+                  // `100dvh`, not `100vh`: on a phone the two differ by the
+                  // browser's own chrome, and `100vh` is the taller of them, so
+                  // a sheet measured in `vh` is taller than the page it is the
+                  // page of - which reintroduces the same clipped foot, one
+                  // browser bar lower.
+                  'min-h-[calc(100dvh-var(--header-height)-1px)]',
+                  'sm:min-h-0',
                   'sm:px-8',
                   'sm:py-7'
                 )}

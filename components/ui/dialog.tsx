@@ -127,13 +127,29 @@ const DialogContent = React.forwardRef<
         // `height: auto` to the gap between them, so the caller's height could
         // not bind, the sheet stood the full height of the remaining page, and
         // the override that was supposed to release it had to be repeated in
-        // every caller to get one rule to work. Here the sheet is as tall as
-        // what is written on it, up to a cap that keeps its bottom edge 15px
-        // clear of the viewport, and it scrolls once it hits the cap. A caller
-        // that wants a different cap says so once, and nothing has to release an
-        // edge that is no longer there.
-        'xs:h-auto',
-        'xs:max-h-[calc(100dvh-var(--header-height)-1rem)]',
+        // every caller to get one rule to work. A caller that wants a different
+        // cap says so once, and nothing has to release an edge that is no
+        // longer there.
+        //
+        // The floor and the cap are the SAME measure, so a sheet on a phone is
+        // always exactly the page below the header: a short one is padded out to
+        // it with blank label stock, a long one scrolls. It used to hug its
+        // contents up to the cap instead, and on a 375x667 screen that meant a
+        // three-row members sheet ending in the middle of the fold with the
+        // last row cut in half - a sheet that looks like the page was truncated
+        // rather than like a page you can scroll. A bottom edge that can land
+        // anywhere on the screen is not an edge at all; on a phone the sheet is
+        // the page, so its foot is the foot of the screen.
+        //
+        // `-1px`, not a gap. The cap used to leave the foot 15px clear of the
+        // viewport, which was right for a sheet that floated over the board and
+        // is wrong for one that IS the page: it put a 15px strip of scrim
+        // between the paper and the bottom of the screen, which is the one cue
+        // that reads as a card. The `-1px` is the header's own `border-b`, and it
+        // mirrors `xs:top-*` above, so the sheet runs from the header's rule to
+        // the bottom edge with nothing of the board left showing.
+        'xs:min-h-[calc(100dvh-var(--header-height)-1px)]',
+        'xs:max-h-[calc(100dvh-var(--header-height)-1px)]',
         'xs:top-[calc(var(--header-height)+1px)]',
         'xs:w-screen',
         'xs:left-0',
@@ -179,6 +195,16 @@ const DialogContent = React.forwardRef<
         past `xs:max-h-*` / `sm:max-h-[85dvh]` and this would not scroll at all
         - it would just overflow the sheet and be clipped by the frame. Zeroing
         the automatic minimum is what lets the parent's cap bind.
+
+        `grow` is what makes the floor above legible from the inside. Growth
+        keeps `flex-basis: auto`, so at `sm` and up, where the frame has no
+        minimum, the box is still exactly its content and nothing moves; below
+        `sm` the frame's `min-h` opens up space the content does not fill, and
+        this fills it. That is what lets a caller's `xs:mt-auto` foot - the two
+        choices of a destructive confirmation - drop to the bottom of the sheet
+        into the thumb zone, instead of sitting 500px above the bottom edge with
+        a screenful of blank stock under it. `flex-1` would have been wrong here:
+        its `0%` basis makes the frame's auto height resolve to zero above `sm`.
       */}
       <div
         className={cn(
@@ -190,7 +216,7 @@ const DialogContent = React.forwardRef<
           // instead. Positioned here, it scrolls away with the text it belongs
           // to, which is also how it behaved before.
           'relative',
-          'flex min-h-0 flex-col gap-5 overflow-y-auto',
+          'flex grow min-h-0 flex-col gap-5 overflow-y-auto',
           'overflow-x-hidden',
           'p-5 xs:gap-4 xs:p-4'
         )}

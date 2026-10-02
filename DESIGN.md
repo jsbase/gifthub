@@ -468,7 +468,15 @@ is a decision rather than an accident of how the JSON happens to be sorted.
   two-choice prompt with an X is a third, ambiguous exit from a dialog about
   deleting something.
 - **Toasts:** positioned bottom-right from 640px and top-centre below it, so a toast
-  never covers the primary control on a phone.
+  never covers the primary control on a phone. Two numbers make that true below
+  640px, and both are load-bearing rather than decorative. **One toast at a
+  time**: a phone is 664px tall and a toast is 54px, so three of them stacked
+  reach a quarter of the screen — past the two controls at the head of the
+  contents sheet, which made them unreachable for four seconds after any two
+  quick mutations. **An offset of 57px**, the running head and its own rule:
+  at the default the toast lands on the wordmark and the header controls, and
+  under the rule it lands on the sheet's top margin, which is the one band of
+  the page holding nothing you can press.
 
 ## Do's and Don'ts
 
