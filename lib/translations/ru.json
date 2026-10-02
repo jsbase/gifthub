@@ -66,6 +66,7 @@
   "login": "Войти",
   "loginToGroup": "Войти",
   "logout": "Выйти",
+  "changeLanguage": "Сменить язык",
   "memberGifts": {
     "addGift": "Добавить идею подарка",
     "adding": "Добавление...",

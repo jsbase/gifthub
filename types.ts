@@ -69,6 +69,7 @@ export interface Translations {
   members: string;
   addMember: string;
   logout: string;
+  changeLanguage: string;
   noMembers: string;
   features: Features;
   landing: {
@@ -353,7 +354,7 @@ export interface RootLayoutProps {
 
 export interface HeaderProps {
   groupName?: string;
-  dict?: Pick<Translations, 'logout'>;
+  dict?: Pick<Translations, 'logout' | 'changeLanguage'>;
   onLogout?: () => void;
   showAuth?: boolean;
 }
@@ -415,6 +416,16 @@ export interface LanguageFlagProps {
   width: number;
   height: number;
   className?: string;
+}
+
+export interface LanguageSwitcherProps {
+  /**
+   * The localised name for the control's action ("Change language"). The current
+   * language is appended to it by the switcher, because a trigger labelled only
+   * with the language it is showing is ambiguous: it reads equally as the current
+   * state and as the thing you press to change it.
+   */
+  label?: string;
 }
 
 export interface LoginFormProps {

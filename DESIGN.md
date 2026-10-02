@@ -296,8 +296,11 @@ every focusable element, so a new control cannot be added without inheriting a
 visible keyboard focus. It is **two tones by construction**: a 2px gap in the local
 ground, then a 2px registration-cyan ring. No single flat colour clears 3:1 against
 both a buff board and an ink-filled button, and WCAG 2.4.11 accepts a two-colour
-indicator when one tone clears — the gap does, by a wide margin, on every ground in
-both themes. Both tones are `box-shadow`, because `outline-color` falls back to
+indicator when one tone clears — and it is the ring that clears, at 7.16:1 on the dark board,
+6.57:1 against its own gap, 3.65:1 on the light board and 4.52:1 against its own gap. The gap is
+not what clears; it sits at 1.09:1 and 1.24:1 against the grounds, because its job is to be the
+ground the ring is cut out against, not to be seen.
+Both tones are `box-shadow`, because `outline-color` falls back to
 `currentColor` and would put a ring the same colour as the text on a destructive
 button: no indicator at all. A transparent `outline` stays for forced-colors mode,
 where box-shadow is dropped.

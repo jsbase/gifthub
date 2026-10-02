@@ -3,6 +3,11 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 @custom-variant xs (@media (max-width: 639px));
+/* Below the narrowest phone this project claims to support (360px is the classic
+   Android baseline, 320 the old iPhone SE). Only used in the header, and only to
+   buy back the ~28px the two-letter language code occupies so a long group name
+   has more of the row to itself. */
+@custom-variant narrow (@media (max-width: 359px));
 
 /*
   "A page in the family album."
@@ -186,9 +191,16 @@
 
     It is two tones by construction: a 2px gap in the local ground, then a 2px
     registration-cyan ring. No single flat colour can clear 3:1 against both a
-    buff board and an ink-filled button, and WCAG 2.4.11 accepts a two-colour
-    indicator as long as one of the tones clears 3:1 against what it sits on -
-    here the gap tone does, by a wide margin, on every ground in both themes.
+    buff board and an ink-filled button, and WCAG 2.4.11 accepts a multi-colour
+    indicator as long as one of the tones clears 3:1 against what it sits on.
+
+    Measured, it is the ring that carries it, on both of its edges: 7.16:1
+    against the dark board and 6.57:1 against its own gap, 3.65:1 against the
+    light board and 4.52:1 against its own gap. The gap tone is *not* what
+    clears - it sits at 1.09:1 on the dark board and 1.24:1 on the light one,
+    because its job is to be the ground the ring is cut out against, not to be
+    seen. An earlier version of this comment claimed the gap cleared 3:1 "by a
+    wide margin"; it does not, and the ring alone is sufficient.
 
     Both tones are box-shadow rather than outline. The obvious outline version
     was measured in the browser and outline-*colour* fell back to currentColor,
@@ -196,6 +208,17 @@
     indicator at all. Box-shadow is not subject to that fallback. The transparent
     outline stays for forced-colors mode, where Windows High Contrast paints its
     own focus colour and box-shadow is dropped.
+
+    `hsl()` around both tokens is load-bearing, and the reason this ring was
+    invisible app-wide until it was measured. `--register` and `--register-gap`
+    hold bare HSL *components* (`193 68% 48%`), because that is what lets the
+    theme map them once in @theme and reuse them in either theme. Substituted
+    raw into a colour position they are not a colour at all, so the whole
+    box-shadow declaration was invalid at computed-value time and silently
+    dropped: every focusable element in the app computed `box-shadow: none` and
+    kept only the transparent outline, which is to say no visible indicator.
+    `getComputedStyle` reports the drop as `none`, so nothing in the cascade
+    looks wrong - it has to be read off a focused element to be seen.
   */
   :where(
       a,
@@ -209,8 +232,8 @@
     outline: 2px solid transparent;
     outline-offset: 2px;
     box-shadow:
-      0 0 0 2px var(--register-gap),
-      0 0 0 4px var(--register) !important;
+      0 0 0 2px hsl(var(--register-gap)),
+      0 0 0 4px hsl(var(--register)) !important;
   }
 
   /*
