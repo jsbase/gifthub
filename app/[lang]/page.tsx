@@ -6,34 +6,44 @@ import AuthButtons from '@/components/auth-buttons';
 import Footer from '@/components/footer';
 import FeatureCards from '@/components/feature-cards';
 import LandingPreview from '@/components/landing-preview';
-import { CropMarks } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
 import type { PageProps, Translations } from '@/types';
 
 /**
- * The album's cover, its front matter, and a specimen of the contents page.
+ * The album's cover: the claim, the two ways in, and one page of the album itself.
  *
- * Three bands, and the material of each one is the argument:
+ * It is Persuade, not Operate, so the hierarchy is the opposite of the
+ * dashboard's: the claim and the two buttons are the loudest things here and the
+ * specimen plate is evidence beside them, not a screenshot underneath them.
  *
- *   a sheet   the claim and the two ways in. Label stock mounted on the board,
- *             crop marks in the corners, board showing around it on all four
- *             sides. This is what the app is, before anything is explained.
- *   the board three sentences about how the group works. No box, no fill, no
- *             edge - they are descriptions rather than objects, and a frame
- *             would claim they were objects.
- *   a sheet   the contents page, quoted rather than described.
+ * **One grid, two rows, nothing centred.** Both rows are the same `7fr / 5fr`
+ * split, and that shared division is the whole composition:
  *
- * It is Persuade, not Operate, so the hierarchy is inverted against the
- * dashboard's: here the claim and the two buttons are the loudest things on the
- * page and the sample list is evidence.
+ *   row 1  the claim fills the wide column; the plate is tipped into the narrow
+ *          one, dropped 6rem so its top edge falls between the claim's first and
+ *          second line. Two masses of different widths with different top edges
+ *          and different left and right margins.
+ *   row 2  the three mechanisms run down the wide column and the narrow one is
+ *          left as bare board.
  *
- * The claim is the display line and the product's name is not. `wishy` is
- * already in the header at every width on every route, in the same serif, and
- * a second copy of it 40px below the first answered a question the visitor
- * already had answered while answering the one they had not - which is what
- * this is, and why they should care. `dict.tagline` is that sentence. It used to
- * be set at 17px in the caption weight, the quietest treatment on a page whose
- * whole job is to be believed, while the name above it was the loudest.
+ * The eye therefore travels claim → plate → mechanisms, a diagonal, instead of
+ * straight down a centred axis. Nothing on the page shares a left edge with
+ * anything below it, and that is the point: the previous version was a hero
+ * rectangle, a three-up feature row and a second rectangle of exactly the same
+ * size, all on one centre line, which is the composition every generated landing
+ * page arrives at.
+ *
+ * It also drops `max-w-5xl` and its own `px-4 sm:px-6`. The `container` utility
+ * already supplies the page's horizontal padding, so that inner column was
+ * padding the padding: it put the content's left edge 72px right of the header
+ * wordmark and of the footer's copyright, on the same screen, on every route.
+ * Without it the claim starts on the header's left edge and the plate ends on the
+ * header's right edge, which is the only alignment the two rows of furniture and
+ * the content between them can all share.
+ *
+ * The dashboard keeps its own `max-w-5xl`: a mounted sheet is meant to sit inset
+ * from the desk on all four sides, and there the inset is the design. Here the
+ * content is the page, not a sheet lying on it.
  */
 const Home: NextPage<PageProps> = async ({ params }) => {
   const { lang } = await params;
@@ -42,90 +52,138 @@ const Home: NextPage<PageProps> = async ({ params }) => {
   return (
     <div className={cn('flex', 'flex-col', 'min-h-screen', 'bg-board')}>
       <Header dict={dict} />
-      {/*
-        `container` is the outer element and the plate column nests inside it, so
-        the hand-written container ladder in globals.css is never fought by a
-        max-width utility on the same element.
-
-        The plate ladder below is the dashboard's, character for character:
-        `max-w-5xl px-4 py-8 sm:px-6 sm:py-12`. That is not tidiness. It is the
-        only reason the two sheets on this page and the contents sheet on the
-        dashboard are visibly the same piece of stock at the same distance from
-        the edge of the desk, which is the whole of what "same product" looks
-        like when nobody has seen the dashboard and only has this page.
-
-        What fills the space below the features is the preview's own content, not
-        a layout trick. An earlier version had `flex-1` on this column and
-        `mt-auto` on the preview and both were inert - the container utility is
-        `display: block`, so the column was a block child with a
-        content-derived height, `flex-1` had no free space to distribute, and
-        `mt-auto` computed to 0px. Removing them moves the preview 0.00px.
-      */}
       <main className={cn('flex', 'flex-1', 'flex-col')}>
         <div className={cn('container', 'mx-auto')}>
-          <div
-            className={cn(
-              'mx-auto',
-              'max-w-5xl',
-              'px-4',
-              'py-8',
-              'sm:px-6',
-              'sm:py-12'
-            )}
-          >
+          <div className={cn('py-10', 'sm:py-14', 'lg:py-20')}>
             <div
               className={cn(
-                'relative',
-                'border',
-                'border-rule',
-                'bg-sheet',
-                'px-5',
-                'py-8',
-                'sm:px-10',
-                'sm:py-12'
+                'grid',
+                'gap-x-14',
+                'gap-y-16',
+                'lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)]'
               )}
             >
-              {/* The same corner furniture the contents sheet and every floating
-                  sheet carry. On this page it does more work than elsewhere:
-                  without it a white rectangle on a buff ground is a card, and a
-                  card is the one shape this world does not have. */}
-              <CropMarks />
               {/*
-                The `leading-[1.15]` is written AFTER the size on purpose. In
+                `leading-[1.08]` is written AFTER the size on purpose. In
                 tailwind-merge 3.7.0, which `cn` is built on, a font-size class
                 eats a preceding `leading-*` from the same call:
-                `cn('leading-[1.15]', 'text-[clamp(...)]')` resolves to
-                `text-[clamp(...)]` alone, and `cn('leading-tight', 'text-3xl')`
-                to `text-3xl`. Reversed, both survive. Written in the natural
-                reading order this claim silently fell back to the 1.5 the
-                browser gives a 34px paragraph, which is why the sentence
-                read as two separate lines of body copy instead of one
-                statement. A scan of every `cn()` call in the repo finds no
+                `cn('leading-[1.08]', 'text-[clamp(...)]')` resolves to the size
+                alone. Reversed, both survive. Written in the natural reading
+                order this claim silently fell back to the 1.5 the browser gives
+                a 44px paragraph, which is why it read as body copy rather than
+                as a statement. A scan of every `cn()` call in the repo finds no
                 other call losing a leading class today - every existing site
                 happens to order `leading-*` last.
+
+                No `max-w` here on purpose. The grid column IS the measure, and a
+                cap wide enough to matter measured identical to it at 1440, 1024
+                and 390 - three breakpoints, three equalities - so it was a class
+                that read as a decision and bound nothing. `text-balance` then does
+                the real work of evening the rag across whatever the column is.
               */}
-              <p
-                className={cn(
-                  'max-w-[46ch]',
-                  'font-medium',
-                  'text-balance',
-                  'text-ink',
-                  'text-[clamp(1.375rem,5vw,2.125rem)]',
-                  'leading-[1.15]'
-                )}
-              >
-                {dict.tagline}
-              </p>
-              <div className={cn('mt-8', 'sm:mt-10')}>
-                <AuthButtons dict={dict} />
+              <div className={cn('flex', 'flex-col')}>
+                <p
+                  className={cn(
+                    'order-1',
+                    'font-semibold',
+                    'tracking-[-0.02em]',
+                    'text-balance',
+                    'text-ink',
+                    'text-[clamp(1.75rem,3.4vw,2.75rem)]',
+                    'leading-[1.08]'
+                  )}
+                >
+                  {dict.tagline}
+                </p>
+
+                {/*
+                  The album's entry rule: a catalogue marks the start of an entry
+                  with a short line of ink. It sits between the claim and the
+                  sentence that explains it, so the two read as different registers
+                  of the same voice rather than as a heading and its subtitle.
+                */}
+                <span
+                  aria-hidden='true'
+                  className={cn(
+                    'order-2',
+                    'mt-9',
+                    'block',
+                    'h-px',
+                    'w-16',
+                    'bg-furniture'
+                  )}
+                />
+
+                {/*
+                  A standfirst, not a subtitle: what the group model actually is,
+                  in concrete terms. Deliberately narrower than the claim above it
+                  and narrower than the plate beside it, so the page carries three
+                  measures rather than one - the widest for the thing being said,
+                  the middle for the thing being shown, the narrowest for the
+                  sentence that ties them.
+
+                  `order-4` below `sm` and `order-3` from `sm` up: on a phone the
+                  standfirst moves UNDER the two buttons, and on anything with
+                  room it goes back between the rule and the buttons, which is
+                  where a standfirst belongs.
+
+                  That reorder is the adaptation, and it is structural rather than
+                  cosmetic. The actions used to sit under this sentence, so how far
+                  down the page they landed depended on how long the sentence was -
+                  four lines of German on a 360px phone and three of Russian, and
+                  the second button finished below the fold on both 320x568 and
+                  360x640, which is where most small Androids are. Moving the
+                  explanation below the action makes the claim, the rule and the
+                  two buttons a fixed block whose height is the claim's own line
+                  count, so the controls are clear of the fold on the smallest
+                  screen this app supports and stop depending on prose length at
+                  all. Above `sm` the source order is restored and the page is
+                  exactly what it was.
+                */}
+                <p
+                  className={cn(
+                    'order-4',
+                    'mt-8',
+                    'max-w-[52ch]',
+                    'text-[1.0625rem]',
+                    'leading-[1.6]',
+                    'text-pretty',
+                    'text-caption',
+                    'sm:order-3',
+                    'sm:mt-6'
+                  )}
+                >
+                  {dict.landing.standfirst}
+                </p>
+
+                <div className={cn('order-3', 'mt-9', 'sm:order-4')}>
+                  <AuthButtons dict={dict} />
+                </div>
+              </div>
+
+              {/* Tipped in low. The offset is 6rem, about a line and a half of
+                  the claim above it, so the plate's top rule lands inside the
+                  claim's block instead of above it. */}
+              <div className={cn('lg:mt-24')}>
+                <LandingPreview
+                  preview={dict.preview}
+                  giftCount={dict.giftCount}
+                  members={dict.members}
+                />
               </div>
             </div>
-            <FeatureCards features={dict.features} />
-            <LandingPreview
-              preview={dict.preview}
-              giftCount={dict.giftCount}
-              members={dict.members}
-            />
+
+            <div
+              className={cn(
+                'mt-16',
+                'grid',
+                'gap-x-14',
+                'lg:mt-28',
+                'lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)]'
+              )}
+            >
+              <FeatureCards features={dict.features} />
+            </div>
           </div>
         </div>
       </main>

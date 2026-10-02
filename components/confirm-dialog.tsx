@@ -44,13 +44,24 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
       `xs:left-0 xs:right-0`. The primitive now owns the mobile geometry, so
       there is nothing here to override - and no way for the next caller to
       reintroduce the same two dead classes.
+
+      The one thing that IS this dialog's to decide is where its two choices
+      sit. The primitive now stands every sheet on a phone at the full height
+      below the header, which for a two-choice prompt is a screenful of stock
+      holding one question - so `xs:mt-auto` drops the pair to the foot of the
+      sheet, into the thumb zone, with the question left at the head. That is
+      the one place in this app where a control is deliberately far from the text
+      it belongs to, and it earns it: on a phone the hand is at the bottom, and
+      the cheapest thing to get right in a dialog you cannot back out of is
+      where the button is. Above `sm` the sheet hugs its contents and the margin
+      resolves to the same 16px as before.
     */}
     <DialogContent className='sm:max-w-md' hideClose>
       <DialogHeader>
         <DialogTitle>{title}</DialogTitle>
         <DialogDescription>{description}</DialogDescription>
       </DialogHeader>
-      <DialogFooter className='mt-4'>
+      <DialogFooter className='mt-4 xs:mt-auto'>
         <Button
           type='button'
           variant='outline'

@@ -143,4 +143,84 @@ test.describe('Dashboard functionality', () => {
 
     await expect(noMembersMessage).toBeVisible();
   });
+
+  /*
+    The header is the only chrome on every page, and it used to carry two
+    regressions that no other test could see: the language trigger overrode the
+    44px `icon` size with `h-9 w-9`, so the one control that changes the locale
+    sat at 36px, and the app-wide focus ring resolved to `box-shadow: none` on
+    every focusable element in the app. Both are invisible to a screenshot diff
+    and to a smoke test, so they are asserted here on geometry and on computed
+    style.
+
+    This spec's `beforeEach` has already logged in, so the logout control - which
+    only renders for an authenticated group - is on the page.
+  */
+  test('Header controls meet the 44px floor and keep a visible focus ring', async ({
+    page,
+  }) => {
+    const switcher = page.getByTestId('language-switcher');
+    const logout = page.getByTestId('logout');
+    const logo = page.getByTestId('logo');
+
+    for (const control of [switcher, logout, logo]) {
+      const box = await control.boundingBox();
+      expect(box, 'header control has no box').not.toBeNull();
+      // Both axes are floors, not just height: a 44px-tall control 20px wide is
+      // still a miss on a phone held in one hand.
+      expect(box!.height).toBeGreaterThanOrEqual(44);
+      expect(box!.width).toBeGreaterThanOrEqual(44);
+    }
+
+    // The two controls must not touch: two 44px targets 4px apart is one target
+    // with a seam, and mis-hits on the wrong one of two adjacent actions.
+    const sBox = (await switcher.boundingBox())!;
+    const lBox = (await logout.boundingBox())!;
+    expect(sBox.x + sBox.width).toBeLessThanOrEqual(lBox.x - 8);
+
+    // Logout is a bare glyph below 640px and carries the word above it, and it is
+    // never an unlabelled icon at either width. The narrow viewport has to be set
+    // before the first assertion, not just before the second: the Playwright
+    // default is wider than 640px, so the label is already on screen.
+    await page.setViewportSize({ width: 375, height: 667 });
+
+    const logoutLabel = logout.locator('span');
+    await expect(logout).toHaveAttribute('aria-label', /./);
+    await expect(logoutLabel).toBeHidden();
+
+    await page.setViewportSize({ width: 800, height: 800 });
+    await expect(logoutLabel).toBeVisible();
+    await expect(logoutLabel).toHaveText('Log out');
+
+    // The switcher names its action and the language it is currently on, and
+    // states that language in letters as well as in a flag, so it does not depend
+    // on recognising the flag to be usable.
+    await expect(switcher).toHaveAttribute(
+      'aria-label',
+      'Change language: English'
+    );
+    await expect(switcher).toContainText('EN');
+    await expect(switcher.locator('svg')).toHaveCount(1); // the chevron
+
+    // The two-tone ring, read off a focused element: the gap in the local ground,
+    // then the registration-cyan ring. Asserted as two shadows because a single
+    // flat colour cannot clear 3:1 on both the board and an ink-filled button.
+    await page.getByTestId('logo').focus();
+    await page.keyboard.press('Tab');
+
+    const ring = await switcher.evaluate((el) => {
+      const s = getComputedStyle(el);
+      return { shadow: s.boxShadow, matches: el.matches(':focus-visible') };
+    });
+    expect(ring.matches, 'switcher is not the focus-visible element').toBe(true);
+    const shadows = ring.shadow.split(/,(?![^(]*\))/);
+    expect(shadows.length, `expected a two-tone ring, got: ${ring.shadow}`)
+      .toBe(2);
+    for (const shadow of shadows) {
+      expect(shadow).toMatch(/rgba?\(\d+,\s*\d+,\s*\d+/);
+    }
+    // A dropped declaration computes to `none`, which is how the ring went
+    // missing without anything in the cascade looking wrong.
+    expect(ring.shadow).not.toBe('none');
+  });
 });

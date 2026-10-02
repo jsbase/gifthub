@@ -38,7 +38,31 @@ export const proxy: (
 
   const hasLocale = hasLocaleInPath(pathname);
 
-  if (pathname.startsWith('/dashboard')) {
+  /*
+    The dashboard is `app/[lang]/dashboard/page.tsx`, so the only path that
+    exists is `/{locale}/dashboard`. This used to test
+    `pathname.startsWith('/dashboard')`, which no real request can ever
+    satisfy: `proxy.ts` below redirects `/dashboard` to `/de/dashboard`
+    before it could ever be served, so the token check here never ran and the
+    localized dashboard reached the network unguarded. Matching against the
+    `locales` list keeps the three languages in one place instead of
+    duplicating them in a regex.
+
+    The client is not a backstop either: `verifyAuth()` in `lib/auth.ts`
+    resolves to an object on every path, including `{ success: false }`, so
+    the `if (!auth)` check in the dashboard's `init()` is never true. An
+    unauthenticated visitor used to get the loading spinner for as long as
+    they cared to wait, rather than being sent back to the landing page.
+  */
+  const isDashboard =
+    pathname === '/dashboard' ||
+    locales.some(
+      (locale) =>
+        pathname === `/${locale}/dashboard` ||
+        pathname.startsWith(`/${locale}/dashboard/`)
+    );
+
+  if (isDashboard) {
     const token = request.cookies.get('auth-token');
 
     if (!token) {

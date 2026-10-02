@@ -64,7 +64,10 @@ node_modules/
 /.github/hooks
 
 # agent plan workspace
-/docs/superpowers/
+# Local planning and audit documents only. Nothing under /docs belongs in the
+# repo - audits, implementation plans and the SDD workspace are working material
+# for the session that produced them.
+/docs/
 # the SDD ledger and its review diffs. Its own nested .gitignore covers it with
 # `*`, but that file ignores itself, so deleting it would expose all of it.
 /.superpowers/

@@ -20,7 +20,7 @@ const SIZES = {
 
 const Logo: React.FC<LogoProps> = ({ size = 'md', className, groupName }) => {
   const containerClasses = useMemo(
-    () => cn('flex', 'items-center', 'gap-2.5', className),
+    () => cn('flex', 'min-w-0', 'items-center', 'gap-2.5', className),
     [className]
   );
 
@@ -33,6 +33,16 @@ const Logo: React.FC<LogoProps> = ({ size = 'md', className, groupName }) => {
         'leading-none',
         'tracking-[-0.02em]',
         'text-balance',
+        /*
+          A group name is whatever somebody typed into a field, and German and
+          Russian names are long. The header gives this row to the name first
+          and the instruments second, so the name is the one thing allowed to
+          give way - with an ellipsis, and never by pushing the controls off the
+          row. `min-w-0` on the flex child is what lets it shrink below its
+          content width; without it a flex item floors at its longest word.
+        */
+        'min-w-0',
+        'truncate',
         'text-ink'
       ),
     [size]
