@@ -236,9 +236,24 @@ The landing page also **drops the dashboard's `max-w-5xl` and its own horizontal
 padding**, because the `container` utility already supplies the page's padding and
 that column was padding the padding — it put the content 72px right of the header
 wordmark and of the footer's copyright, on the same screen. Content here starts on
-the header's left edge and ends on its right. The dashboard keeps its `max-w-5xl`: a
-mounted sheet is *meant* to sit inset from the desk on all four sides, and there the
-inset is the design rather than an accident.
+the header's left edge and ends on its right.
+
+The dashboard keeps its `max-w-5xl`: a mounted sheet is *meant* to sit inset from
+the desk on all four sides, and from `sm` up that inset is the design rather than an
+accident.
+
+**Below `sm` the dashboard sheet is not inset, and that is the same rule the
+dialog already follows.** `ui/dialog.tsx` states it: below `sm` a sheet "becomes
+the whole page below the header, squared at the top: a sheet pulled out of an
+album, not a card floating on one." The dashboard's member sheet was the one surface
+that did not obey it — inset 32px on a phone while the gift sheet opening on top of
+it ran edge to edge, 32px apart, both on screen at once. It now pulls back over the
+`container`'s 1rem (`-mx-4`, reset at `sm`) so its border lands on the viewport
+edge, and its crop marks come to rest 12px from it: registration marks near the
+paper edge, which is what they are for. Content indents by the same 16px the dialog
+indents (`px-4`), so both sheets line up. **Do not reintroduce a horizontal inset
+on the dashboard below `sm`, and do not reintroduce the column's own `px-4` at any
+width** — that padding is what put the two sheets 32px apart.
 
 ### Below `sm`, the standfirst moves under the two buttons
 

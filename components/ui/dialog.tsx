@@ -45,15 +45,24 @@ DialogOverlay.displayName = DialogPrimitive.Overlay.displayName;
  * absolutely positioned elements and they are the single detail that tells you
  * this is a printed page rather than a card - which is the difference this whole
  * world is making.
+ *
+ * They are positioned for the padding they sit in. A mark is 8px wide, so
+ * `left-3` puts its outer edge at 20px and its inner edge at 12px: against the
+ * dialog's `p-5` that ends exactly where the content starts, and against
+ * `xs:p-4` it ran 4px over the first cell. Hence `xs:left-2` and its siblings -
+ * the marks belong in the margin, never on top of what is printed.
+ *
+ * They are also `pointer-events-none` and must stay that way. A mark that
+ * cannot be tapped is furniture; a mark that eats a tap is a bug.
  */
 export const CropMarks = () => (
   <>
     {(
       [
-        ['top-3 left-3', 'border-l border-t'],
-        ['top-3 right-3', 'border-r border-t'],
-        ['bottom-3 left-3', 'border-l border-b'],
-        ['bottom-3 right-3', 'border-r border-b'],
+        ['top-3 left-3 xs:top-2 xs:left-2', 'border-l border-t'],
+        ['top-3 right-3 xs:top-2 xs:right-2', 'border-r border-t'],
+        ['bottom-3 left-3 xs:bottom-2 xs:left-2', 'border-l border-b'],
+        ['bottom-3 right-3 xs:bottom-2 xs:right-2', 'border-r border-b'],
       ] as const
     ).map(([position, edges]) => (
       <span
@@ -91,18 +100,24 @@ const DialogContent = React.forwardRef<
         'fixed z-50',
         'flex flex-col',
         'w-full',
-        'gap-5',
         'border',
         'border-rule',
         'bg-sheet',
         'text-ink',
-        'p-5 xs:p-4',
         // The only shadow in the app: a sheet genuinely floats above the board,
         // and this is a long soft falloff rather than a generic card shadow.
         'shadow-[0_22px_60px_-16px_rgb(0_0_0/0.34)]',
         'duration-200',
-        'overflow-y-auto',
-        'overflow-x-hidden',
+        // The sheet is the FRAME. The padding and the scrolling live on the
+        // inner element below, and this box does not scroll - so the crop marks
+        // and the close button, which are positioned against this box, stay put.
+        //
+        // They did not used to. `absolute` children of a scroll container scroll
+        // with its content, so `overflow-y-auto` on this box took the bottom two
+        // marks up into the middle of the gift list and the X up with them. The
+        // furniture on a sheet of label stock is fixed to the paper, not printed
+        // on whatever happens to be showing.
+        'overflow-hidden',
         // Below sm the sheet becomes the whole page below the header, squared at
         // the top: a sheet pulled out of an album, not a card floating on one.
         //
@@ -121,7 +136,6 @@ const DialogContent = React.forwardRef<
         'xs:max-h-[calc(100dvh-var(--header-height)-1rem)]',
         'xs:top-[calc(var(--header-height)+1px)]',
         'xs:w-screen',
-        'xs:gap-4',
         'xs:left-0',
         'xs:right-0',
         'xs:rounded-none',
@@ -156,31 +170,57 @@ const DialogContent = React.forwardRef<
       {...props}
     >
       <CropMarks />
-      {children}
-      {!hideClose && (
-        <DialogPrimitive.Close
-          className={cn(
-            'absolute',
-            'right-3',
-            'top-3',
-            'grid',
-            'h-11',
-            'w-11',
-            'place-items-center',
-            'rounded-md',
-            'text-caption',
-            'transition-colors',
-            'hover:bg-wash',
-            'hover:text-ink',
-            'data-[state=open]:bg-wash',
-            'data-[state=open]:text-ink'
-          )}
-          data-testid='dialogClose'
-        >
-          <IconX className='h-4 w-4' />
-          <span className='sr-only'>{closeLabel}</span>
-        </DialogPrimitive.Close>
-      )}
+      {/*
+        The scrolling half of the sheet: padding, the stack gap, and the close
+        control - everything that belongs to the content rather than to the frame.
+
+        `min-h-0` is load-bearing. A flex item defaults to `min-height: auto`,
+        which refuses to shrink below its content, so the inner box would push
+        past `xs:max-h-*` / `sm:max-h-[85dvh]` and this would not scroll at all
+        - it would just overflow the sheet and be clipped by the frame. Zeroing
+        the automatic minimum is what lets the parent's cap bind.
+      */}
+      <div
+        className={cn(
+          // `relative` is what makes the close control belong to the content
+          // instead of to the frame. Without it, `absolute` resolves against
+          // this component's own `relative` root, so the X stayed pinned over
+          // the scrolling list and sat on top of a gift's delete button in nine
+          // of eleven scroll positions - a tap meant to delete closed the sheet
+          // instead. Positioned here, it scrolls away with the text it belongs
+          // to, which is also how it behaved before.
+          'relative',
+          'flex min-h-0 flex-col gap-5 overflow-y-auto',
+          'overflow-x-hidden',
+          'p-5 xs:gap-4 xs:p-4'
+        )}
+      >
+        {children}
+        {!hideClose && (
+          <DialogPrimitive.Close
+            className={cn(
+              'absolute',
+              'right-3',
+              'top-3',
+              'grid',
+              'h-11',
+              'w-11',
+              'place-items-center',
+              'rounded-md',
+              'text-caption',
+              'transition-colors',
+              'hover:bg-wash',
+              'hover:text-ink',
+              'data-[state=open]:bg-wash',
+              'data-[state=open]:text-ink'
+            )}
+            data-testid='dialogClose'
+          >
+            <IconX className='h-4 w-4' />
+            <span className='sr-only'>{closeLabel}</span>
+          </DialogPrimitive.Close>
+        )}
+      </div>
     </DialogPrimitive.Content>
   </DialogPortal>
 ));
