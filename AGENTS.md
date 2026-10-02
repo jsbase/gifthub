@@ -18,7 +18,7 @@ wishy gives one group a single shared list of gift ideas, so nobody in it buys t
 - `proxy.ts` — the Next 16 replacement for `middleware.ts`: locale negotiation plus the dashboard auth gate.
 - `public/sw.js` — the actual service worker, plus `offline.html`, `flags/`, `site.webmanifest`.
 - `scripts/lint-ratchet.mjs` + `lint-baseline.json` — the lint warning gate. Read the script before touching either.
-- `docs/` — planning documents. Not instructions.
+- `docs/` — not part of the repo. `/docs/` is gitignored (`.gitignore:70`) and nothing under it is tracked; it holds local planning and audit material from whichever session produced it. Do not read it as project truth, and do not expect a colleague to have it.
 - `DESIGN.md` — the design system as YAML frontmatter (colour, type, spacing). `PRODUCT.md` — the product brief, including a list of unfulfilled README claims that are explicitly off-limits to build on.
 - `.github/workflows/` — exactly one workflow, `playwright.yml`. It is the full CI gate.
 
