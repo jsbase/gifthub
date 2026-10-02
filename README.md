@@ -1,91 +1,62 @@
-[![Playwright](https://github.com/jsbase/gifthub/actions/workflows/playwright.yml/badge.svg)](https://github.com/jsbase/gifthub/actions/workflows/playwright.yml)
-[![CodeQL](https://github.com/jsbase/gifthub/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/jsbase/gifthub/actions/workflows/github-code-scanning/codeql)
-[![Dependabot Updates](https://github.com/jsbase/gifthub/actions/workflows/dependabot/dependabot-updates/badge.svg)](https://github.com/jsbase/gifthub/actions/workflows/dependabot/dependabot-updates)
+# wishy
 
-# 🎁 wishy
+wishy gives one group a single shared list of gift ideas, so nobody in it buys the same present twice. A `Group` is a name plus a shared password; there is no per-person account, and a `User` row is a member name recorded inside the group. Marking an idea bought is one shared, permanent, group-wide mark rather than a personal tick, which is what makes double-buying impossible instead of merely discouraged; bought ideas stay on the list, struck through. Three locales ship: de (default), en, ru.
 
-> The smart way to organize and track gifts for your family, friends, and groups! Never buy duplicate presents or miss a special occasion again.
+## Live URL
 
-## 🎯 What is wishy?
+https://wishy-store.vercel.app/
 
-wishy helps you manage gift-giving within your family or other groups. Create wishlists, track who's buying what, and ensure everyone gets something special - all while keeping the surprise! Perfect for birthdays, holidays, or any gift-giving occasion.
+## Tech stack
 
-## ✨ Features
+- Next.js 16 (App Router) with React 19
+- TypeScript 5.9
+- Tailwind CSS v4 via `@tailwindcss/postcss`
+- Prisma 6 + PostgreSQL (Neon in practice)
+- Radix UI primitives: dialog, dropdown-menu, label, slot
+- `@tabler/icons-react` for icons
+- `class-variance-authority`, `tailwind-merge` and `clsx` for variant and class composition
+- `next-themes` for the dark mode switch, `sonner` for toasts
+- `jose` for the session JWT, `bcryptjs` for password hashing
+- `accept-language` for locale negotiation
+- Playwright for end-to-end tests
+- ESLint 9 (flat config) plus a lint warning ratchet (`npm run lint:ratchet`)
 
-- 👨‍👩‍👧‍👦 Create and manage family/group gift lists
-- 🎯 Add items to wishlists
-- 🤫 Secretly mark items as "being bought"
-- 📅 Track special occasions and deadlines
-- 🎨 Modern UI with [Radix UI](https://www.radix-ui.com/) components
-- 🌙 Dark mode support
-- 🔒 Secure authentication
-- 💅 Beautiful, responsive design
-
----
-
-Built with [Next.js](https://nextjs.org) and bootstrapped using [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
-
-## 🛠 Setup
-
-wishy keeps its data in PostgreSQL. Start from `.env.example` and copy it
-to **both** `.env` and `.env.local`, then fill in the values: Next.js reads
-`.env.local`, while the Prisma CLI reads `.env`, so a value that exists in
-only one of the two works in one tool and fails in the other. Both files are
-gitignored and have to stay that way — a filled-in copy is a secret.
-
-- `DATABASE_URL` — pooled connection string, used by the running app
-- `DIRECT_URL` — non-pooled connection string to the same database, used by
-  `prisma migrate`; the pooled endpoint breaks the advisory locks it needs
-- `JWT_SECRET` — secret used to sign the session JWT
-- `NEXT_PUBLIC_BASE_URL` — base URL the app and the end-to-end tests talk to
-
-Once the values are in place, set the database up:
+## Local setup
 
 ```bash
-npm install
-npx prisma generate
+npm install   # postinstall runs `prisma generate`
+```
+
+Copy `.env.example` to **both** `.env` and `.env.local` and keep them in sync. Next.js reads `.env.local`, the Prisma CLI reads `.env`; a value present in only one works in one tool and fails in the other. Neither file may be committed.
+
+```dotenv
+DATABASE_URL=          # pooled connection string, used by the running app
+DIRECT_URL=            # non-pooled connection string to the same database
+JWT_SECRET=            # secret used to sign the session JWT
+NEXT_PUBLIC_BASE_URL=  # base URL the app and the e2e tests talk to
+```
+
+`DIRECT_URL` is required by `prisma migrate`: the pooled endpoint sits behind a pooler in transaction mode, which breaks the advisory locks migrate relies on.
+
+Set up the database:
+
+```bash
 npx prisma migrate deploy
 SEED_ALLOW_WIPE=1 npx prisma db seed
 ```
 
-The seed creates the group `testgroup` with the password `test123` and three
-members, so there is something to log in to right away.
+The seed is `prisma/seed.mjs`. It deletes every row in `gift`, `userGroup`, `user` and `group` with no filter, so it refuses to run unless `SEED_ALLOW_WIPE=1` is set. If `SEED_EXPECT_HOST` is also set, it refuses to run unless the host in `DATABASE_URL` matches it exactly; CI always sets it, locally it is optional. It creates group `testgroup` with password `test123` and three members.
 
-`SEED_ALLOW_WIPE=1` is required because the seed empties `gift`, `userGroup`,
-`user` and `group` before it writes anything, with no filter of any kind. It is
-there to make that deletion a decision rather than a side effect of typing one
-command.
-
-It asserts *intent*, though, and intent can be wrong. If you also set
-`SEED_EXPECT_HOST` to the hostname your `DATABASE_URL` points at, the seed
-additionally refuses to run when the two disagree — so a connection string that
-has been repointed by accident is caught rather than obeyed. CI always sets it;
-locally it is optional.
-
-## 🚀 Quick Start
-
-1. Install dependencies:
+Run the app:
 
 ```bash
-npm install
+npm run dev   # http://localhost:3000, the port is explicit in the dev script
 ```
 
-2. Fire up the dev server:
+Tests: `npm run test:e2e`, plus `:ui`, `:headed` and `:debug` variants. There are no unit tests; `tests/` holds four Playwright specs covering the app shell, auth buttons, dashboard and language switcher.
 
-```bash
-npm run dev
-```
+## Deploy notes
 
-3. Open [http://localhost:3000](http://localhost:3000) to see your app! 🎉
-
-## 📚 Learn More
-
-- 📖 [Next.js Documentation](https://nextjs.org/docs)
-- 🎓 [Interactive Next.js Tutorial](https://nextjs.org/learn)
-- 🐙 [Next.js GitHub Repository](https://github.com/vercel/next.js)
-
-## 🚀 Deployment
-
-Deploy with [Vercel](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) - the platform from the creators of Next.js.
-
-📚 Check out the [deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Vercel builds the Next.js app. The database is hosted Postgres (Neon) reached through `DATABASE_URL` and `DIRECT_URL`.
+- `preview` is the integration branch, `main` is production.
+- CI is a single workflow, `.github/workflows/playwright.yml`, triggered on `pull_request`. It typechecks, lints, runs the ratchet and builds, then, when the database secrets are configured, applies `prisma migrate deploy`, seeds and runs the Playwright suite. Pull requests from forks cannot read repository secrets, so the database half is skipped for them.
