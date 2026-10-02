@@ -2,31 +2,44 @@ import type { Translations } from '@/types';
 
 const dictionaryCache: Record<string, Promise<Translations>> = {};
 
-const dictionaries = {
-  en: () =>
-    import('@/lib/translations/en.json').then(
-      (module) => module.default as Translations
-    ),
-  de: () =>
-    import('@/lib/translations/de.json').then(
-      (module) => module.default as Translations
-    ),
-  ru: () =>
-    import('@/lib/translations/ru.json').then(
-      (module) => module.default as Translations
-    ),
-};
+type SupportedLocale = 'en' | 'de' | 'ru';
 
-type SupportedLocale = keyof typeof dictionaries;
+const dictionaries = new Map<SupportedLocale, () => Promise<Translations>>([
+  [
+    'en',
+    () =>
+      import('@/lib/translations/en.json').then(
+        (module) => module.default as Translations
+      ),
+  ],
+  [
+    'de',
+    () =>
+      import('@/lib/translations/de.json').then(
+        (module) => module.default as Translations
+      ),
+  ],
+  [
+    'ru',
+    () =>
+      import('@/lib/translations/ru.json').then(
+        (module) => module.default as Translations
+      ),
+  ],
+]);
 
 const isSupportedLocale = (locale: string): locale is SupportedLocale =>
-  Object.prototype.hasOwnProperty.call(dictionaries, locale);
+  locale === 'en' || locale === 'de' || locale === 'ru';
 
 const getDictionary = async (locale: string): Promise<Translations> => {
   const safeLocale: SupportedLocale = isSupportedLocale(locale) ? locale : 'en';
 
   if (!dictionaryCache[safeLocale]) {
-    dictionaryCache[safeLocale] = dictionaries[safeLocale]();
+    const loader = dictionaries.get(safeLocale) ?? dictionaries.get('en');
+    if (typeof loader !== 'function') {
+      throw new Error('No dictionary loader configured for locale.');
+    }
+    dictionaryCache[safeLocale] = loader();
   }
   return dictionaryCache[safeLocale];
 };
