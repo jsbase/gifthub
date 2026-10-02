@@ -43,7 +43,9 @@ const Toaster = ({ ...props }: ToasterProps) => {
     `offset` - at the default the first toast lands on top of the running head,
     over the wordmark and the two controls in it. Starting the stack under the
     header's rule puts it over the sheet's top margin instead, which is the one
-    band of this page that holds nothing you can press.
+    band of this page that holds nothing you can press. Both props are needed:
+    sonner keeps a separate `mobileOffset` and uses that one below its own
+    breakpoint, so `offset` alone moves nothing on the device this is for.
   */
 
   return (
@@ -52,6 +54,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
       className={cn('toaster', 'group')}
       position={isPhone ? 'top-center' : 'bottom-right'}
       offset={isPhone ? HEADER_OFFSET : undefined}
+      mobileOffset={isPhone ? HEADER_OFFSET : undefined}
       visibleToasts={isPhone ? 1 : undefined}
       toastOptions={{
         classNames: {
