@@ -3,7 +3,7 @@
 import { cn } from '@/lib/utils';
 import { useTheme } from 'next-themes';
 import { Toaster as Sonner } from 'sonner';
-import { useState, useEffect } from 'react';
+import { useSyncExternalStore } from 'react';
 
 type ToasterProps = React.ComponentProps<typeof Sonner>;
 
@@ -15,13 +15,40 @@ type ToasterProps = React.ComponentProps<typeof Sonner>;
  */
 const HEADER_OFFSET = 57;
 
+/*
+  Tailwind's `sm`, and the line the phone placement is drawn above. Stated once
+  as a media query because it has to be *observed*, not sampled: the state used to
+  be set once on mount from `window.innerWidth`, so rotating a tablet or resizing
+  a desktop window left placement, offset and `visibleToasts` describing the
+  viewport the page had loaded in. `useSyncExternalStore` rather than an effect
+  and a setState, because the store is already external and the effect version
+  rendered once with the wrong answer before correcting itself.
+*/
+const PHONE_VIEWPORT = '(max-width: 639px)';
+
+const subscribeToPhoneViewport = (onStoreChange: () => void) => {
+  const query = window.matchMedia(PHONE_VIEWPORT);
+  query.addEventListener('change', onStoreChange);
+  return () => query.removeEventListener('change', onStoreChange);
+};
+
+const phoneViewportMatches = () => window.matchMedia(PHONE_VIEWPORT).matches;
+
+/*
+  The server snapshot must not touch `window`, so it answers for the phone
+  placement instead - the conservative answer, and the one the markup was already
+  rendered with before the first client read corrected it. Reading the real query
+  here is what threw `window is not defined` during the first server render.
+*/
+const serverSnapshotAssumesPhone = () => true;
+
 const Toaster = ({ ...props }: ToasterProps) => {
   const { theme = 'system' } = useTheme();
-  const [isPhone, setIsPhone] = useState(true);
-
-  useEffect(() => {
-    setIsPhone(window.innerWidth < 640);
-  }, []);
+  const isPhone = useSyncExternalStore(
+    subscribeToPhoneViewport,
+    phoneViewportMatches,
+    serverSnapshotAssumesPhone
+  );
 
   /*
     Two placements, and the phone one is the constrained one. Above 640px the

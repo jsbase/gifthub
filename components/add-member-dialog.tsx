@@ -7,6 +7,10 @@ import { IconUserPlus } from '@tabler/icons-react';
 import { useDebounce } from '@/hooks/use-debounce';
 import getDictionary from '@/app/[lang]/dictionaries';
 import {
+  isMemberNameRefusal,
+  type MemberNameRefusal,
+} from '@/lib/member-name';
+import {
   Dialog,
   DialogContent,
   DialogHeader,
@@ -113,20 +117,24 @@ const AddMemberDialog: React.FC<Omit<AddMemberDialogProps, 'dict'>> = ({
         Both of the route's 400s are the same verdict about the same field, so
         they get one table and one rendering path: there is exactly one way this
         form says "I will not accept that name", and it is the one from round 1.
-        A 400 carrying any other `code`, or none at all, misses the table and
-        falls through to the generic toast below exactly as it did before -
-        `hasOwnProperty` rather than a bare lookup because `code` is
-        attacker-reachable JSON, and `{"code":"constructor"}` would otherwise
-        find `Object.prototype.constructor` and render it as a name error.
+
+        The table is keyed by the shared `MemberNameRefusal` union rather than by
+        two bare strings, so a refusal added on the server without a sentence
+        here is a type error rather than a missing case. The narrowing is
+        `isMemberNameRefusal` - two comparisons against literals, which cannot
+        reach `Object.prototype`, so it holds against a `{"code":"constructor"}`
+        body without the `hasOwnProperty` call that used to guard it. A 400
+        carrying any other code, or none at all, misses the table and falls
+        through to the generic toast below exactly as before.
       */
-      const nameFailures: Record<string, string | undefined> = {
+      const nameFailures: Record<MemberNameRefusal, string | undefined> = {
         invalid_name_format: dict?.errors.invalidNameFormat ?? data.message,
         duplicate_name: dict?.errors.duplicateName ?? data.message,
       };
+      const code = data?.code;
       const nameFailure =
-        response.status === 400 &&
-        Object.prototype.hasOwnProperty.call(nameFailures, data?.code)
-          ? nameFailures[data.code]
+        response.status === 400 && isMemberNameRefusal(code)
+          ? nameFailures[code]
           : undefined;
 
       if (nameFailure !== undefined) {

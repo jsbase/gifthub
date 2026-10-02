@@ -44,9 +44,23 @@ const useDebounce = <T extends (...args: any[]) => any>(
         clearTimeout(timeoutRef.current);
       }
 
+      /*
+        The window is armed in every case, including the leading one. It used to
+        `return` from this branch, which meant `timeoutRef.current` stayed
+        undefined forever whenever `leading` was set - so the same-args guard
+        above could never engage, and a call site asking for a 300ms leading-edge
+        debounce got a call per click. Three call sites do exactly that
+        (`gift-card`, `member-list`, `language-switcher`), and all three wrap a
+        destructive request or a navigation.
+
+        The timer is the marker for "inside the window"; whether it *fires* the
+        callback is a separate question, answered by `trailing` below. With
+        `trailing: false` it now expires quietly, which is what leading-only
+        means: the first call in each window runs, the rest are dropped.
+      */
       if (options.leading && !timeoutRef.current) {
         lastCalledRef.current = now;
-        return callbackRef.current(...args);
+        callbackRef.current(...args);
       }
 
       timeoutRef.current = setTimeout(() => {
