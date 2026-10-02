@@ -43,8 +43,13 @@
     }
   },
   "groupName": "Gruppe",
+  "landing": {
+    "standfirst": "Eine Gruppe, ein Name, ein Passwort. Für jede Person eine Seite — und was schon besorgt ist, bleibt durchgestrichen darauf stehen."
+  },
+  "loginDescription": "Der Gruppenname und das Passwort, mit denen sich alle in der Gruppe anmelden.",
   "preview": {
-    "lead": "Das ist der ganze Bildschirm: alle in der Gruppe, und wie viele Geschenkideen für jeden von ihnen noch offen sind.",
+    "group": "Omas Geburtstag",
+    "lead": "Eine Seite aus dem Album. Jede Person in der Gruppe hat eine, und die Zahl rechts ist die Anzahl der Ideen, die noch offen sind.",
     "members": [
       { "name": "Anna", "count": 3, "collected": 2 },
       { "name": "Ben", "count": 1, "collected": 2 },

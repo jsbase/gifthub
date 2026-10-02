@@ -43,8 +43,13 @@
     }
   },
   "groupName": "Group",
+  "landing": {
+    "standfirst": "One group, one name, one password. Everyone gets a page — and what has already been bought stays on it, struck through."
+  },
+  "loginDescription": "The group name and the password that everyone in the group signs in with.",
   "preview": {
-    "lead": "That is the whole screen: everyone in the group, and how many gift ideas are still open for each of them.",
+    "group": "Grandma's birthday",
+    "lead": "One page from the album. Everyone in the group has one, and the number on the right is how many gift ideas are still open.",
     "members": [
       { "name": "Anna", "count": 3, "collected": 2 },
       { "name": "Ben", "count": 1, "collected": 2 },

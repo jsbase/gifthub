@@ -55,6 +55,13 @@ export interface Translations {
   enterGroupName: string;
   enterPassword: string;
   loginToGroup: string;
+  /**
+   * What the login sheet is FOR, in one sentence. It used to be `enterGroupName`
+   * - the first field's own name - which put "Gruppenname" on screen three times
+   * in a row: once as the sheet's description, once as the printed label over the
+   * field, and once as the placeholder inside it.
+   */
+  loginDescription: string;
   groupName: string;
   password: string;
   confirmPassword: string;
@@ -64,6 +71,15 @@ export interface Translations {
   logout: string;
   noMembers: string;
   features: Features;
+  landing: {
+    /**
+     * The one sentence under the claim on the landing page: what the group model
+     * actually is, in concrete terms, rather than a second adjective about the
+     * product. Written to stand at 46ch in the claim column and to survive being
+     * four lines of German or Russian on a 390px phone.
+     */
+    standfirst: string;
+  };
   preview: LandingPreviewTranslations;
   errors: {
     loginRequired: string;
@@ -187,7 +203,20 @@ export interface Translations {
  * a member actually sees.
  */
 export interface LandingPreviewTranslations {
-  /** Says plainly that this is the whole screen, which is the claim it makes. */
+  /**
+   * The specimen's own title: a real group's name, set in the serif. The
+   * dashboard's header shows the group's name in place of the product's, which
+   * is how the product stops being a tool and becomes that group's list, and the
+   * plate has to carry the same line or the quotation is missing the one thing
+   * the product is actually about.
+   */
+  group: string;
+  /**
+   * The caption under the plate. It used to claim the plate was "the whole
+   * screen", which was true when the plate reproduced the dashboard at full size
+   * and is not true now that it is reproduced as a tipped-in plate beside the
+   * claim. It now says what the reader is looking at.
+   */
   lead: string;
   /**
    * `count` is how many ideas are still OPEN - which is what the lead sentence
@@ -332,6 +361,12 @@ export interface PageProps {
 export interface FeatureCardProps {
   title: string;
   description: string;
+  /**
+   * `lead` is the product's own claim, set large on the landing page; `entry` is
+   * a mechanism, set as a line of a catalogue index beneath it. The default is
+   * `entry` so a caller that does not care gets the quiet one.
+   */
+  variant?: 'lead' | 'entry';
 }
 
 export interface FooterProps {

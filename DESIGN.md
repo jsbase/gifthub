@@ -211,6 +211,35 @@ Spacing is a 4px unit and the scale is deliberately small: 6 / 16 / 24 / 32 / 48
 Header height is a token (`--header-height`) because the mobile dialog is positioned
 from it.
 
+### The landing page is a spread, and it is the only asymmetric layout here
+
+The dashboard and the sheets are **Operate**: one centred column, everything on one
+axis, because a person looking for a name is scanning, not reading. The landing page
+is **Persuade** and is laid out the other way on purpose, on a single `7fr / 5fr`
+grid that both of its rows share:
+
+- the claim fills the wide column, set large with the grid column itself as its
+  measure — no `max-w`, because a cap measured identical to the column at 1440,
+  1024 and 390 and bound nothing;
+- the specimen plate is tipped into the narrow column and **dropped 6rem**, so its
+  top rule lands inside the claim's block rather than above it;
+- the mechanisms run down the wide column below, and the narrow column is left as
+  bare board.
+
+The eye travels claim → plate → mechanisms, a diagonal, instead of straight down a
+centre line. What this replaced was the category default: a hero rectangle, a
+three-up feature row, and a second rectangle of exactly the same size, all centred on
+one axis. **Do not reintroduce a same-size pair of plates, a centred feature row, or
+a second full-width sheet on this page.** One plate, tipped in, beside the claim.
+
+The landing page also **drops the dashboard's `max-w-5xl` and its own horizontal
+padding**, because the `container` utility already supplies the page's padding and
+that column was padding the padding — it put the content 72px right of the header
+wordmark and of the footer's copyright, on the same screen. Content here starts on
+the header's left edge and ends on its right. The dashboard keeps its `max-w-5xl`: a
+mounted sheet is *meant* to sit inset from the desk on all four sides, and there the
+inset is the design rather than an accident.
+
 **The 44px floor is not a preference.** This is used one-handed on a phone by
 someone in a hurry. Both a control's width and its height are floors; the tick and
 the delete button are `min-h-11` and stretch, so they are 44px on a one-line row and
@@ -329,6 +358,40 @@ a hundred ideas produced a hundred cells, so it was capped and the cap printed a
 **When nothing is left, the numeral is replaced by a green check** and the rule turns
 green.
 
+### The specimen plate — the landing page's quotation of the contents page
+
+The plate on the landing page is the same contents page **reproduced at a different
+size**, tipped into the narrow column of the spread. What makes it the same product
+is material and anatomy, not width: the same stock, the same printed rule, the same
+crop marks, the same ruled head, the same name in Source Serif 4, the same member ink
+on the progress rule, the same printed numeral. It is drawn with `SheetProgress`
+imported, not copied, and it carries the same count words behind the figure for
+anyone who cannot see it.
+
+Two pieces of catalogue furniture it has and the dashboard sheet does not:
+
+- **A plate title**, a real group's name in the serif. The dashboard puts the group's
+  name in the app *header*; the plate has no header, so the line that makes the
+  product about one group rather than about software would otherwise be missing.
+- **A caption underneath**, on the board, in caption ink. It used to sit above the
+  plate and used to claim the plate was "the whole screen", which stopped being true
+  the moment the plate stopped being the same size as the dashboard's sheet. A
+  caption belongs below the thing it captions.
+
+Do not restore the "whole screen" claim, and do not grow the plate back to full width:
+a same-size pair of plates is the layout this page exists to stop doing.
+
+### The mechanisms — a claim and an index
+
+The three feature claims are **not three cards and not three columns**. One of them
+is the product's own claim — the bought flag belongs to the group, which is the thing
+a neighbouring product cannot copy without changing what it is — and it is set large
+on the full measure with a short entry rule above it. The other two are the mechanics
+that make it true, and they are set as two lines of a catalogue index beneath: claim
+in a fixed narrow column, description beside it, a hairline between entries. The
+leading claim is chosen by dictionary **key**, not by position, so the reading order
+is a decision rather than an accident of how the JSON happens to be sorted.
+
 ### Buttons, inputs, dialogs, toasts
 
 - **Buttons:** solid ink for the one action a surface exists to perform; outline for
@@ -360,6 +423,9 @@ green.
   side by side.
 - Verify contrast in the theme you changed. A colour that clears 4.5:1 on the board
   can sit at 2.1:1 on a collected cell.
+- Read the computed values, not the class names. A `max-w` that measures identical to
+  the column it sits in binds nothing at any breakpoint and still reads as a
+  decision.
 
 **Don't**
 - **Don't put things in cards.** There are none. A repeated item is a row of a list
@@ -378,9 +444,19 @@ green.
   duplicates one that already performs the action. Both have caused real
   accessibility bugs in this codebase.
 - **Don't gate hover on Tailwind's `hover:`** where a touch device can reach it.
+- **Don't centre the landing page, and don't give it a second full-width plate.** It
+  is the one asymmetric layout in this product; see Layout.
+- **Don't print a field's own name where a dialog should be saying what it is for.**
+  The login sheet's description used to be `enterGroupName`, which put "Gruppenname"
+  on screen three times in a row — description, printed label, placeholder.
 
 ## Known debts
 
+- **The landing page's bare board is a decision, and it is load-bearing.** The narrow
+  column below the plate is roughly 440 × 560px of empty board at 1440. It reads as
+  intentional only because the plate is clearly tipped in and the claim beside it is
+  clearly set; anything that grows into that space, or anything that re-centres the
+  page, removes the reason the space reads as a desk.
 - **The dark cell frame is weak.** Cell on sheet measures 1.24:1 and the hairline on
   the cell 1.49:1, so the dark grid does rely on that hairline and the hairline is
   near-invisible. The lift is real but subtle. A per-theme separation would fix it

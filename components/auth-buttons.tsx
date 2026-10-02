@@ -106,7 +106,7 @@ const AuthButtons: React.FC<AuthButtonsProps> = ({ dict }) => {
         */}
         <AuthDialog
           title={dict.loginToGroup}
-          description={dict.enterGroupName}
+          description={dict.loginDescription}
           closeLabel={dict.close}
         >
           <LoginForm dict={dict} isLoading={isLoading} onSubmit={handleLogin} />
