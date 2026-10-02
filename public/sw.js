@@ -93,24 +93,3 @@ self.addEventListener('fetch', (event) => {
       })
   );
 });
-
-// Handle push notifications
-self.addEventListener('push', async (event) => {
-  // Check if we have permission first
-  const hasPermission = await self.registration.pushManager.permissionState({
-    userVisibleOnly: true,
-  });
-
-  if (hasPermission !== 'granted') {
-    console.log('Notification permission not granted');
-    return;
-  }
-
-  const options = {
-    body: event.data?.text() ?? 'New update available',
-    icon: '/android-chrome-192x192.png',
-    badge: '/maskable_icon.png',
-  };
-
-  event.waitUntil(self.registration.showNotification('wishy', options));
-});

@@ -1,28 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
-import prisma from '@/lib/prisma';
-import { getGroupIdFromToken } from '@/lib/auth-server';
+import { requireGroupId } from '@/lib/auth-server';
+import { addGift, listGifts } from '@/lib/gift-write';
 
 export const GET: (request: NextRequest) => Promise<NextResponse> = async (
   request
 ) => {
   try {
-    const groupId = await getGroupIdFromToken(request);
+    const groupId = await requireGroupId();
     if (!groupId) {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
 
     const { searchParams } = new URL(request.url);
-    const memberId = searchParams.get('memberId');
-
-    const gifts = await prisma.gift.findMany({
-      where: {
-        groupId,
-        ...(memberId ? { forMemberId: memberId } : {}),
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
-    });
+    const gifts = await listGifts(groupId, searchParams.get('memberId'));
 
     return NextResponse.json({ gifts });
   } catch (error) {
@@ -38,7 +28,7 @@ export const POST: (request: NextRequest) => Promise<NextResponse> = async (
   request
 ) => {
   try {
-    const groupId = await getGroupIdFromToken(request);
+    const groupId = await requireGroupId();
     if (!groupId) {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
@@ -59,15 +49,15 @@ export const POST: (request: NextRequest) => Promise<NextResponse> = async (
       );
     }
 
-    const gift = await prisma.gift.create({
-      data: {
+    const gift = await addGift(
+      {
         title: title.trim(),
         description: description?.trim(),
         url: url?.trim(),
-        groupId,
         forMemberId,
       },
-    });
+      groupId
+    );
 
     return NextResponse.json({
       success: true,

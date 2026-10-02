@@ -93,8 +93,19 @@ const LandingPreview: React.FC<
       </div>
 
       <ul className='divide-y divide-rule'>
-        {preview.members.map((member) => (
-          <li
+        {preview.members.map((member) => {
+          /*
+            Derived once, then read twice - by the words under the name and by
+            the rule beneath it. It was summed twice inline, which is only a
+            problem the first time one of the two is edited.
+          */
+          const sheet = {
+            unbought: member.count,
+            total: member.count + member.collected,
+          };
+
+          return (
+            <li
             key={member.name}
             style={memberInkStyle(member.name)}
             className={cn(
@@ -129,22 +140,14 @@ const LandingPreview: React.FC<
                   words behind it were telling a visitor two opposite things
                   about the same person.
                 */}
-                {giftCountLabel(
-                  {
-                    unbought: member.count,
-                    total: member.count + member.collected,
-                  },
-                  { giftCount }
-                )}
+                {giftCountLabel(sheet, { giftCount })}
               </span>
             </div>
 
-            <SheetProgress
-              unbought={member.count}
-              total={member.count + member.collected}
-            />
+            <SheetProgress unbought={sheet.unbought} total={sheet.total} />
           </li>
-        ))}
+          );
+        })}
       </ul>
     </div>
 
