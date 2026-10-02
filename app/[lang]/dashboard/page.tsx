@@ -89,7 +89,16 @@ const DashboardPage: NextPage<PageProps> = ({ params }) => {
       setDict(translations);
 
       const auth = await verifyAuth();
-      if (!auth) {
+      /*
+        `!auth.success`, not `!auth`: `verifyAuth` resolves to an object on
+        every path, including `{ success: false }` when the request fails or
+        the cookie is gone. Testing the object itself was therefore never
+        true, the redirect never ran, and an unauthenticated visitor sat on
+        `loading` with an empty `groupName` - a spinner that never resolves
+        into anything, because the `fetchData` effect is gated on `groupName`
+        and nothing ever sets it.
+      */
+      if (!auth.success) {
         router.replace(`/${lang}`);
         toast.error(translations.errors.loginRequired);
         return;
