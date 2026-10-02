@@ -295,6 +295,13 @@ export interface MemberGiftsTranslations {
   cancel: string;
   adding: string;
   noGifts: string;
+  /**
+   * What actually goes in a cell, so a blank one can say it. The only thing the
+   * add form insists on is a title, and a person staring at an empty page has no
+   * way of knowing that - "notiz und link are optional" is the sentence that turns
+   * a blank cell from a wall into one field.
+   */
+  emptyCellHint: string;
   markAsPurchased: string;
   markAsAvailable: string;
   deleteGift: string;
@@ -486,4 +493,11 @@ export interface MemberListHeaderProps {
   onDeleteClick: () => void;
   onMemberAdded: () => void;
   hasMembers: boolean;
+  /**
+   * Whether removal mode is on. The control is a toggle and it is the only
+   * announcement of the mode's state: the row's own change is that a remove
+   * control appears, which a screen reader is told about at the row and not at
+   * the control that caused it.
+   */
+  isRemoving: boolean;
 }

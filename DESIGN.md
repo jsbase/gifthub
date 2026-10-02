@@ -240,6 +240,24 @@ the header's left edge and ends on its right. The dashboard keeps its `max-w-5xl
 mounted sheet is *meant* to sit inset from the desk on all four sides, and there the
 inset is the design rather than an accident.
 
+### Below `sm`, the standfirst moves under the two buttons
+
+On a phone the reading order is **claim → rule → the two ways in → the sentence that
+explains them**. From `sm` up it is claim → rule → standfirst → buttons, which is
+where a standfirst belongs.
+
+This is a structural adaptation, not a squeeze. The actions used to sit under that
+sentence, so how far down the page they landed was a function of how long the
+sentence was: four lines of German on a 360px phone, and the second button finished
+**below the fold** on 320×568 and 360×640 — where most small Androids are. Moving
+the explanation below the action makes claim + rule + buttons a block whose height
+is the claim's own line count, so the controls clear the fold on the smallest screen
+this app supports in every locale, and their position stops depending on prose
+length at all. Measured at rest against a realistic 85% fold (the viewport minus a
+phone's browser chrome and safe area), the second button's bottom edge is 54px clear
+at 320×568, 115px at 360×640, 168px at 375×667 and 318px at 390×844 — and the block
+lands on the same y in German and Russian, which is the point.
+
 **The 44px floor is not a preference.** This is used one-handed on a phone by
 someone in a hurry. Both a control's width and its height are floors; the tick and
 the delete button are `min-h-11` and stretch, so they are 44px on a one-line row and
@@ -344,6 +362,19 @@ dashed plate at full content width. Dashed because a solid rule means "there is 
 cell" and a dashed one means "there is room for one" — which is the same language the
 contents page uses for a member with no ideas.
 
+**The blank plate is the add control.** It is a `<button>` spanning the full width of
+a cell, not a paragraph with a quiet ghost row pinned to the foot of the sheet
+underneath it. Two reasons, and both were defects: on an empty sheet the only thing
+a person can do was the quietest object on it (11px tracked caption below a rule), and
+the invitation and the control that carried it out were two separate things with a
+rule between them. A dashed plate means there is room for a cell, and the only thing
+you can do with room for a cell is write in it. The foot row now renders only once
+the sheet has something on it, so there is never a second control doing the same job.
+The plate carries the field's own name in the label face, the invitation in ink, and
+one line saying what actually goes in ("a name is enough; a note and a link are
+optional") — which is the sentence that turns a blank cell from a wall into one
+field.
+
 ### The contents page
 
 The album's index: one mounted sheet, one row per member, name in Source Serif 4 at
@@ -357,6 +388,18 @@ a hundred ideas produced a hundred cells, so it was capped and the cap printed a
 
 **When nothing is left, the numeral is replaced by a green check** and the rule turns
 green.
+
+**Removal mode costs the list no vertical space.** The row declares
+`grid-cols-[1fr_auto]` — or `grid-cols-[1fr_auto_auto]` while removal mode is on — and
+the third column is declared up front. It used to be an implicit third child in a
+two-column grid, so the remove control did not join the row: it wrapped onto a
+second, CSS-sized row, and every member grew from 112px to about 190px with the
+control tucked under its own name and nothing on the baseline of the rule above it.
+Mode is a change of what the right-hand side of the row *is*, never a change of the
+row's height: measured, the row is 112px in both modes at 390px and 1440px, and the
+name, the figure and the remove control all sit on the same centre line. The toggle
+carries `aria-pressed`, because the mode's only other trace is a control appearing
+at each row, which is announced at the row and not at the control that caused it.
 
 ### The specimen plate — the landing page's quotation of the contents page
 

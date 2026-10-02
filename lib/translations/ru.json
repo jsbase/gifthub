@@ -72,6 +72,7 @@
     "cancel": "Отмена",
     "deleteGift": "Удалить идею подарка",
     "deleteGiftConfirm": "Удалить эту идею подарка?",
+    "emptyCellHint": "Достаточно названия. Заметка и ссылка — по желанию.",
     "enterDescription": "Добавить заметку",
     "enterGiftTitle": "Идея подарка",
     "enterUrl": "Ссылка",

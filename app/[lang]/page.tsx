@@ -81,9 +81,10 @@ const Home: NextPage<PageProps> = async ({ params }) => {
                 that read as a decision and bound nothing. `text-balance` then does
                 the real work of evening the rag across whatever the column is.
               */}
-              <div>
+              <div className={cn('flex', 'flex-col')}>
                 <p
                   className={cn(
+                    'order-1',
                     'font-semibold',
                     'tracking-[-0.02em]',
                     'text-balance',
@@ -103,7 +104,14 @@ const Home: NextPage<PageProps> = async ({ params }) => {
                 */}
                 <span
                   aria-hidden='true'
-                  className={cn('mt-9', 'block', 'h-px', 'w-16', 'bg-furniture')}
+                  className={cn(
+                    'order-2',
+                    'mt-9',
+                    'block',
+                    'h-px',
+                    'w-16',
+                    'bg-furniture'
+                  )}
                 />
 
                 {/*
@@ -113,21 +121,42 @@ const Home: NextPage<PageProps> = async ({ params }) => {
                   measures rather than one - the widest for the thing being said,
                   the middle for the thing being shown, the narrowest for the
                   sentence that ties them.
+
+                  `order-4` below `sm` and `order-3` from `sm` up: on a phone the
+                  standfirst moves UNDER the two buttons, and on anything with
+                  room it goes back between the rule and the buttons, which is
+                  where a standfirst belongs.
+
+                  That reorder is the adaptation, and it is structural rather than
+                  cosmetic. The actions used to sit under this sentence, so how far
+                  down the page they landed depended on how long the sentence was -
+                  four lines of German on a 360px phone and three of Russian, and
+                  the second button finished below the fold on both 320x568 and
+                  360x640, which is where most small Androids are. Moving the
+                  explanation below the action makes the claim, the rule and the
+                  two buttons a fixed block whose height is the claim's own line
+                  count, so the controls are clear of the fold on the smallest
+                  screen this app supports and stop depending on prose length at
+                  all. Above `sm` the source order is restored and the page is
+                  exactly what it was.
                 */}
                 <p
                   className={cn(
-                    'mt-6',
+                    'order-4',
+                    'mt-8',
                     'max-w-[52ch]',
                     'text-[1.0625rem]',
                     'leading-[1.6]',
                     'text-pretty',
-                    'text-caption'
+                    'text-caption',
+                    'sm:order-3',
+                    'sm:mt-6'
                   )}
                 >
                   {dict.landing.standfirst}
                 </p>
 
-                <div className={cn('mt-9')}>
+                <div className={cn('order-3', 'mt-9', 'sm:order-4')}>
                   <AuthButtons dict={dict} />
                 </div>
               </div>

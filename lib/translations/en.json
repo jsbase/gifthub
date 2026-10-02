@@ -72,6 +72,7 @@
     "cancel": "Cancel",
     "deleteGift": "Delete gift idea",
     "deleteGiftConfirm": "Delete this gift idea?",
+    "emptyCellHint": "A name is enough. A note and a link are optional.",
     "enterDescription": "Add a note",
     "enterGiftTitle": "Gift idea",
     "enterUrl": "Link",

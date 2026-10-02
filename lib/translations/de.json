@@ -72,6 +72,7 @@
     "cancel": "Abbrechen",
     "deleteGift": "Geschenkidee löschen",
     "deleteGiftConfirm": "Diese Geschenkidee löschen?",
+    "emptyCellHint": "Ein Name reicht. Notiz und Link sind optional.",
     "enterDescription": "Notiz hinzufügen",
     "enterGiftTitle": "Geschenkidee",
     "enterUrl": "Link",
