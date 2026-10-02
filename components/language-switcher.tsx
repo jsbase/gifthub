@@ -4,7 +4,6 @@ import React, { lazy, memo, Suspense, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { IconChevronDown } from '@tabler/icons-react';
 import { useDebounce } from '@/hooks/use-debounce';
-import { loadTranslations } from '@/app/[lang]/actions';
 import LanguageFlag from '@/components/language-flag';
 import { Button } from '@/components/ui/button';
 import {
@@ -26,12 +25,18 @@ const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({ label }) => {
   const selectedLanguage = getCurrentLanguage(path);
 
   const switchLanguageBase = async (langCode: LanguageCode) => {
+    /*
+      No server round trip before the navigation. This awaited a server action
+      that only re-exported `getDictionary`, threw the result away, and was
+      followed immediately by the `router.push` that loads the dictionary anyway -
+      so it was a request that bought nothing and could delay the switch. The
+      dictionary is fetched on the destination page.
+    */
     try {
       setIsChangingLanguage(true);
       document.cookie = `NEXT_LOCALE=${langCode};path=/;max-age=${
         365 * 24 * 60 * 60
       };SameSite=Lax`;
-      await loadTranslations(langCode);
       const newPath = path.split('/').slice(2).join('/');
       await router.push(`/${langCode}${newPath ? `/${newPath}` : ''}`);
     } finally {

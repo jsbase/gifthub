@@ -10,7 +10,6 @@ import LoginForm from '@/components/login-form';
 import RegisterForm from '@/components/register-form';
 import { login, register } from '@/lib/auth';
 import { cn } from '@/lib/utils';
-import { useDebounce } from '@/hooks/use-debounce';
 import type { AuthButtonsProps } from '@/types';
 
 const AuthButtons: React.FC<AuthButtonsProps> = ({ dict }) => {
@@ -76,10 +75,19 @@ const AuthButtons: React.FC<AuthButtonsProps> = ({ dict }) => {
     }
   };
 
-  const handleLogin = useDebounce(handleLoginBase, 500, { leading: true });
-  const handleRegister = useDebounce(handleRegisterBase, 500, {
-    leading: true,
-  });
+  /*
+    These two are not debounced, and the reason is that they cannot be. A form
+    submit handler has to call `preventDefault()` and read `FormData` off
+    `e.currentTarget`, both of which are only valid while React is dispatching
+    the event. Wrapping either in `useDebounce` hands the callback a synthetic
+    event whose target has already been recycled by the time it runs - which is
+    why this used to appear to work: the leading branch returned before the timer
+    was armed, so the callback always ran synchronously and no trailing call
+    existed to fail. The window did nothing except hide that.
+
+    The double-submit guard these actually need is the `isLoading` check at the
+    top of each handler, and the sheet that renders it.
+  */
 
   return (
     <div className={cn('flex', 'flex-col', 'gap-3', 'sm:flex-row', 'sm:gap-4')}>
@@ -109,7 +117,7 @@ const AuthButtons: React.FC<AuthButtonsProps> = ({ dict }) => {
           description={dict.loginDescription}
           closeLabel={dict.close}
         >
-          <LoginForm dict={dict} isLoading={isLoading} onSubmit={handleLogin} />
+          <LoginForm dict={dict} isLoading={isLoading} onSubmit={handleLoginBase} />
         </AuthDialog>
       </Dialog>
 
@@ -133,7 +141,7 @@ const AuthButtons: React.FC<AuthButtonsProps> = ({ dict }) => {
           <RegisterForm
             dict={dict}
             isLoading={isLoading}
-            onSubmit={handleRegister}
+            onSubmit={handleRegisterBase}
           />
         </AuthDialog>
       </Dialog>

@@ -85,11 +85,6 @@ function trayIndex(id: string): number {
   return hash(id) % MEMBER_INKS.length;
 }
 
-/** The ink token for a member. Falls back to the first ink for an empty id. */
-export function memberInk(id: string): string {
-  return MEMBER_INKS[trayIndex(id)];
-}
-
 /**
  * The same ink as a style object. Every use is `style={{ ...memberInkStyle(id) }}`
  * on the element that owns the ink, and its children read `var(--member-ink)` -
