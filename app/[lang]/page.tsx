@@ -6,15 +6,17 @@ import AuthButtons from '@/components/auth-buttons';
 import Footer from '@/components/footer';
 import FeatureCards from '@/components/feature-cards';
 import LandingPreview from '@/components/landing-preview';
+import LandingRoles from '@/components/landing-roles';
+import LandingStoryboard from '@/components/landing-storyboard';
 import { cn } from '@/lib/utils';
 import type { PageProps, Translations } from '@/types';
 
 /**
- * The album's cover: the claim, the two ways in, and one page of the album itself.
+ * The album's cover: the claim, the two ways in, and one list of the reader's own.
  *
  * It is Persuade, not Operate, so the hierarchy is the opposite of the
  * dashboard's: the claim and the two buttons are the loudest things here and the
- * specimen plate is evidence beside them, not a screenshot underneath them.
+ * plate is evidence beside them, not a screenshot underneath them.
  *
  * **One grid, two rows, nothing centred.** Both rows are the same `7fr / 5fr`
  * split, and that shared division is the whole composition:
@@ -23,12 +25,12 @@ import type { PageProps, Translations } from '@/types';
  *          one, dropped 6rem so its top edge falls between the claim's first and
  *          second line. Two masses of different widths with different top edges
  *          and different left and right margins.
- *   row 2  the three mechanisms run down the wide column and the narrow one is
- *          left as bare board.
+ *   row 2  the rest of the list's arc, the two roles and the three mechanisms run
+ *          down the wide column and the narrow one is left as bare board.
  *
- * The eye therefore travels claim → plate → mechanisms, a diagonal, instead of
- * straight down a centred axis. Nothing on the page shares a left edge with
- * anything below it, and that is the point: the previous version was a hero
+ * The eye therefore travels claim → plate → arc → roles → mechanisms, a diagonal,
+ * instead of straight down a centred axis. Nothing on the page shares a left edge
+ * with anything below it, and that is the point: the previous version was a hero
  * rectangle, a three-up feature row and a second rectangle of exactly the same
  * size, all on one centre line, which is the composition every generated landing
  * page arrives at.
@@ -129,16 +131,19 @@ const Home: NextPage<PageProps> = async ({ params }) => {
 
                   That reorder is the adaptation, and it is structural rather than
                   cosmetic. The actions used to sit under this sentence, so how far
-                  down the page they landed depended on how long the sentence was -
-                  four lines of German on a 360px phone and three of Russian, and
-                  the second button finished below the fold on both 320x568 and
-                  360x640, which is where most small Androids are. Moving the
-                  explanation below the action makes the claim, the rule and the
-                  two buttons a fixed block whose height is the claim's own line
-                  count, so the controls are clear of the fold on the smallest
-                  screen this app supports and stop depending on prose length at
-                  all. Above `sm` the source order is restored and the page is
-                  exactly what it was.
+                  down the page they landed was a function of how long the sentence
+                  was - four lines of German on a 360px phone and three of Russian,
+                  and the second button finished below the fold on both 320x568 and
+                  360x640, which is where most small Androids are. Those numbers
+                  belong to the stand before this one, and the sentence above is
+                  longer than that one was (148 characters of German against 129),
+                  which is exactly why the order may no longer be argued from the
+                  copy: moving the explanation below the action makes the claim, the
+                  rule and the two buttons a block whose height is the claim's own
+                  line count, and the claim is now 58 characters of German where it
+                  was 98 - so the controls clear the fold on the smallest screen
+                  this app supports whatever a translator writes. Above `sm` the
+                  source order is restored and the page is exactly what it was.
                 */}
                 <p
                   className={cn(
@@ -187,7 +192,29 @@ const Home: NextPage<PageProps> = async ({ params }) => {
                 'lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)]'
               )}
             >
-              <FeatureCards features={dict.features} />
+              {/*
+                Everything below the hero runs down the wide column and the narrow
+                one stays bare board, so the spread is still two masses of different
+                widths rather than a centred stack. The three are 3rem apart, the
+                `mt-12` the index used to carry above its own list, and the gap is
+                `gap-y-*` rather than three `mt-*` values so that dropping or adding
+                a section cannot leave one behind with a margin of its own.
+
+                Storyboard, roles, mechanisms: a picture, a frame, and an index. No
+                heading above any of them - the page has exactly one printed head,
+                the `yourLists` line inside the plate, and inventing a second one
+                here would say the three are sections of a kind, which two of them
+                are not.
+              */}
+              <div className={cn('flex', 'flex-col', 'gap-y-12')}>
+                <LandingStoryboard
+                  states={dict.preview.states}
+                  yourLists={dict.yourLists}
+                  giftCount={dict.giftCount}
+                />
+                <LandingRoles roles={dict.landing.roles} />
+                <FeatureCards features={dict.features} />
+              </div>
             </div>
           </div>
         </div>

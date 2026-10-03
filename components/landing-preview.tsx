@@ -23,10 +23,10 @@ const OWNER_INK_SEED = 'wishy:landing:owner';
  * One state of one list, drawn as a plate on the board.
  *
  * This is the reader's own contents page rather than an illustration of it, which
- * is why the plate no longer carries a title of its own: the title said "Anna's
- * lists" and made the plate a specimen of somebody else's screen, while the
- * section head the real contents page prints - `yourLists` - says the same thing
- * without naming a character the page is not about. The action line under the
+ * is why the plate no longer carries a title of its own: the title named somebody
+ * else's lists and made the plate a specimen of a character who is not on this
+ * page, while the section head the real contents page prints - `yourLists` - says
+ * the same thing about the reader without naming anyone. The action line under the
  * plate is the caption in the only sense this page still needs: it says what has
  * happened to this list, in the reader's own person.
  *
@@ -140,9 +140,9 @@ const LandingPreview: React.FC<LandingPreviewProps> = ({
 
       The cap keeps this page's third measure. It binds where the plate is narrower
       than it and nowhere else: in the storyboard pair each plate is 294px at 1280,
-      so the German action of the first state (65 characters) is two lines there,
-      while in the hero's narrow column - 442px at the same width - the column
-      itself is the measure and the cap never takes effect.
+      so the longest German action (75 characters, the second state) is two lines
+      there, while in the hero's narrow column - 442px at the same width - the
+      column itself is the measure and the cap never takes effect.
     */}
     <figcaption
       data-testid={actionTestId}
