@@ -1,6 +1,9 @@
 import React, { memo } from 'react';
 import LandingPreview from '@/components/landing-preview';
-import { HERO_STATE_INDEX } from '@/lib/landing-states';
+import {
+  FIRST_AFTER_THE_HERO,
+  statePosition,
+} from '@/lib/landing-states';
 import { cn } from '@/lib/utils';
 import type { LandingStoryboardProps } from '@/types';
 
@@ -13,13 +16,15 @@ import type { LandingStoryboardProps } from '@/types';
  * cannot be here as well - a check visible in the first plate would spend the
  * moment before the reader has seen the count move.
  *
- * `HERO_STATE_INDEX` is not repeated here. The hero tips that state into the narrow
- * column and drops it 6rem, which a component below the hero cannot apply to itself
- * without knowing it sits in a grid row, so the two sides share one declaration
- * rather than two assumptions: `slice(HERO_STATE_INDEX + 1)` here, and the same
- * constant read by the page. A fourth state appears as a third plate here rather
- * than as a fourth page row, and the numbering below falls out of the same
- * constant.
+ * Where this pair starts and what it calls itself are declared once, in
+ * `lib/landing-states.ts`, and read by both halves of the page. The hero tips
+ * `HERO_STATE_INDEX` into the narrow column and drops it 6rem, which a component
+ * below the hero cannot apply to itself without knowing it sits in a grid row, so
+ * that one state belongs to the page and this renders everything from
+ * `FIRST_AFTER_THE_HERO` on. A fourth state therefore appears as a third plate here
+ * rather than as a fourth page row - and each plate numbers itself through
+ * `statePosition`, so the ids come from the page's one declaration counted rather
+ * than from a second offset kept in step here by hand.
  *
  * **Equal sizes, deliberately.** A descending series was rejected: the narrowest
  * state is the one with the check, and shrinking it would claim it matters least.
@@ -50,7 +55,7 @@ const LandingStoryboard: React.FC<LandingStoryboardProps> = ({
   yourLists,
   giftCount,
 }) => {
-  const after = states.slice(HERO_STATE_INDEX + 1);
+  const after = states.slice(FIRST_AFTER_THE_HERO);
 
   if (after.length === 0) return null;
 
@@ -61,13 +66,15 @@ const LandingStoryboard: React.FC<LandingStoryboardProps> = ({
     >
       {after.map((state, offset) => {
         /*
-          Numbered in reading order from 1, and the hero owns the state before this
-          slice, so the third state is `landingState3` whatever the dictionary holds.
-          Keyed on the same number rather than on the list name: all three states
-          show the same list, and a name key would collide on the first pair of
-          plates.
+          What this state is called on the page: both test ids and the React key
+          come from it, so the pair numbers itself 2 and 3 - the third state is
+          `landingState3` whatever the dictionary holds - and cannot land on the
+          number the hero's plate above already carries. The offset counts into the
+          slice, so it is turned back into an index before it is numbered; keying on
+          the list name instead would collide on the first pair of plates, all three
+          states showing the same list.
         */
-        const position = HERO_STATE_INDEX + offset + 1;
+        const position = statePosition(FIRST_AFTER_THE_HERO + offset);
 
         return (
           <LandingPreview
