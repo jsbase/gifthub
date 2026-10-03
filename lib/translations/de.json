@@ -1,5 +1,5 @@
 {
-  "tagline": "Jede Person hat ihre eigene Liste. Geteilt wird sie nur mit den Menschen, die du selbst dazuholst.",
+  "tagline": "Niemand besorgt zweimal, was auf deiner Wunschliste steht.",
   "login": "Anmelden",
   "register": "Konto erstellen",
   "loading": "Wird geladen...",
@@ -47,16 +47,39 @@
   },
 
   "landing": {
-    "standfirst": "Eine Liste pro Person, ein Konto pro E-Mail-Adresse — was besorgt ist, bleibt durchgestrichen stehen, der Name des Kaufenden nie."
+    "standfirst": "Du schreibst die Ideen auf. Die Menschen, die du einträgst, haken ab, was sie gekauft haben — für jeden sichtbar. Niemand erfährt, wer abgehakt hat.",
+    "roles": {
+      "owner": {
+        "title": "Du hast etwas, das du dir wünschst",
+        "description": "Du legst eine Liste an, trägst die Ideen ein und teilst sie mit genau den Menschen, die du selbst auswählst."
+      },
+      "buyer": {
+        "title": "Du suchst ein Geschenk für jemanden",
+        "description": "Du öffnest eine Liste, die mit dir geteilt wurde und haken ab, was du besorgt hast. Namen stehen nirgends."
+      }
+    }
   },
 
   "preview": {
-    "list": "Annas Listen",
-    "lead": "Die Inhaltsseite, wie Anna sie sieht. Jede Zeile ist eine ihrer Listen, und die Zahl rechts zählt die Ideen, die noch offen sind.",
-    "items": [
-      { "name": "Omas Geburtstag", "count": 3, "collected": 2 },
-      { "name": "Weihnachten", "count": 1, "collected": 2 },
-      { "name": "Mias Hochzeit", "count": 0, "collected": 4 }
+    "states": [
+      {
+        "action": "Du hast deine Ideen eingetragen und die Liste mit Ben und Mia geteilt.",
+        "items": [
+          { "name": "Omas Geburtstag", "count": 3, "collected": 2 }
+        ]
+      },
+      {
+        "action": "Zwei Ideen sind gekauft. Jeder sieht es sofort — die Namen stehen nirgends.",
+        "items": [
+          { "name": "Omas Geburtstag", "count": 1, "collected": 4 }
+        ]
+      },
+      {
+        "action": "Alles ist gekauft. Ein Häkchen erscheint.",
+        "items": [
+          { "name": "Omas Geburtstag", "count": 0, "collected": 5 }
+        ]
+      }
     ]
   },
 

@@ -174,6 +174,22 @@ export interface Translations {
      * of German or Russian on a 390px phone.
      */
     standfirst: string;
+    /**
+     * The two roles a person can hold on a list, in `PRODUCT.md`'s vocabulary
+     * rather than invented ones: the one who writes the list down and the one who
+     * buys from it.
+     *
+     * Both are written in the reader's own person and both say who does what,
+     * because the pair is the answer to "which one am I?" for somebody who has not
+     * registered yet - and they are entries of the same index as the three
+     * mechanisms below rather than two cards of their own, because `FeatureCard`
+     * is that index's anatomy and draws no box, shadow or background: a shape here
+     * would have to be a second one.
+     */
+    roles: {
+      owner: { title: string; description: string };
+      buyer: { title: string; description: string };
+    };
   };
   preview: LandingPreviewTranslations;
   errors: ErrorTranslations;
@@ -319,33 +335,46 @@ export interface SuccessTranslations {
 }
 
 /**
- * The sample lists on the landing page. It renders with the same count strings and
- * the same row anatomy as the real contents page, so it cannot drift away from
- * what a person actually sees.
+ * One real list in one state, as the landing page shows it three times.
+ *
+ * The states are the same list, not three sample lists: the reader watches one
+ * sheet's open count fall, and the fall is the argument. `items` therefore holds
+ * one row per state rather than a base list plus overrides, so that every
+ * translation can read a state without the previous one.
  */
-export interface LandingPreviewTranslations {
+export interface LandingState {
   /**
-   * The specimen's own title: a real list name, set in the serif. The dashboard's
-   * header shows the signed-in person's name in place of the product's, which is
-   * how the product stops being a tool and becomes that person's list, and the
-   * plate has to carry the same line or the quotation is missing the one thing the
-   * product is actually about.
+   * What happened, in the reader's own person.
+   *
+   * Naming nobody who bought is not a copy rule, it is the product: no buyer is
+   * ever named anywhere, and a sentence that attributed a purchase would assert
+   * something the app deliberately refuses to deliver. The first state may name
+   * the people the list was shared with - those are the reader's own choices, and
+   * they are what makes the state a shared list at all.
    */
-  list: string;
+  action: string;
   /**
-   * The caption under the plate. It says what the reader is looking at.
-   */
-  lead: string;
-  /**
-   * `count` is how many ideas are still OPEN - which is what the lead sentence
-   * promises. `collected` is how many of the same list's ideas are already bought,
-   * and exists so the row's progress rule has real fill: with open counts alone the
-   * rule could only ever stand at zero, which read as an empty bar rather than as
-   * progress.
+   * `count` is how many ideas are still OPEN - the number the row's count words
+   * say out loud. `collected` is how many of the same list's ideas are already
+   * bought, and exists so the row's progress rule has real fill: with open counts
+   * alone the rule could only ever stand at zero, which read as an empty bar
+   * rather than as progress. At `count: 0` `SheetProgress` replaces the figure
+   * with a check, which is why the third state is the one that carries it.
    *
    * Numbers, not strings, so this costs no copy in any locale.
    */
   items: { name: string; count: number; collected: number }[];
+}
+
+/**
+ * The landing page's storyboard: one list in three states.
+ *
+ * It used to be three sample lists under one plate title, which made the plate a
+ * specimen of the software rather than a page of somebody's, and meant the only
+ * interesting count - the zero - was one row of three. See `LandingState`.
+ */
+export interface LandingPreviewTranslations {
+  states: LandingState[];
 }
 
 /**
@@ -654,6 +683,46 @@ export interface MemberGiftCounts {
 
 export interface AuthButtonsProps {
   dict: Translations;
+}
+
+/**
+ * One plate of the landing page's storyboard: the reader's own contents page in
+ * one state.
+ *
+ * A `LandingState` rather than the whole `preview` dictionary, because the page is
+ * what decides which state a plate shows - state one is tipped into the hero's
+ * narrow column and the rest belong to the storyboard - and a component that took
+ * the dictionary would have to know about that split to render half of it.
+ *
+ * `testId` and `actionTestId` are separate because the plate and the line of prose
+ * under it are separate things, and a spec that has to assert "this state's count
+ * has fallen, and this sentence says so" addresses them separately. They were one
+ * id (`landingQuote`) while there was one plate; three plates sharing it would have
+ * made it ambiguous.
+ */
+export interface LandingPreviewProps {
+  state: LandingState;
+  /** The contents page's own section head, and the plate's only heading. */
+  yourLists: string;
+  giftCount: Translations['giftCount'];
+  testId: string;
+  actionTestId: string;
+}
+
+/**
+ * Every state after the first, which the hero owns.
+ *
+ * The dictionary is passed whole rather than pre-sliced so that the page does not
+ * have to know how many states there are.
+ */
+export interface LandingStoryboardProps {
+  states: LandingState[];
+  yourLists: string;
+  giftCount: Translations['giftCount'];
+}
+
+export interface LandingRolesProps {
+  roles: Translations['landing']['roles'];
 }
 
 export interface AuthResponse {

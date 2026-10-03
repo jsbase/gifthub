@@ -1,5 +1,5 @@
 {
-  "tagline": "Everyone has a list of their own. It is shared only with the people you add.",
+  "tagline": "Nobody buys the same thing twice from your wishlist.",
   "login": "Log in",
   "register": "Create account",
   "loading": "Loading...",
@@ -47,16 +47,39 @@
   },
 
   "landing": {
-    "standfirst": "One list per person, one account per email address — what has been bought stays struck through, and the buyer is never named."
+    "standfirst": "You write down your ideas. The people you add tick off what they have bought — visible to everyone. Nobody finds out who.",
+    "roles": {
+      "owner": {
+        "title": "You want something for yourself",
+        "description": "You create a list, write down your ideas and share it with exactly the people you add."
+      },
+      "buyer": {
+        "title": "You are looking for a gift for somebody",
+        "description": "You open a list that was shared with you and tick off what you bought. There are no names on it."
+      }
+    }
   },
 
   "preview": {
-    "list": "Anna's lists",
-    "lead": "The contents page as Anna sees it. Every row is one of her lists, and the number on the right counts the ideas that are still open.",
-    "items": [
-      { "name": "Grandma's birthday", "count": 3, "collected": 2 },
-      { "name": "Christmas", "count": 1, "collected": 2 },
-      { "name": "Mia's wedding", "count": 0, "collected": 4 }
+    "states": [
+      {
+        "action": "You wrote down your ideas and shared the list with Ben and Mia.",
+        "items": [
+          { "name": "Grandma's birthday", "count": 3, "collected": 2 }
+        ]
+      },
+      {
+        "action": "Two ideas are bought. Everyone sees it at once — no names anywhere.",
+        "items": [
+          { "name": "Grandma's birthday", "count": 1, "collected": 4 }
+        ]
+      },
+      {
+        "action": "Everything is bought. A check appears.",
+        "items": [
+          { "name": "Grandma's birthday", "count": 0, "collected": 5 }
+        ]
+      }
     ]
   },
 

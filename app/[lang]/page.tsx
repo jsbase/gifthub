@@ -163,12 +163,17 @@ const Home: NextPage<PageProps> = async ({ params }) => {
 
               {/* Tipped in low. The offset is 6rem, about a line and a half of
                   the claim above it, so the plate's top rule lands inside the
-                  claim's block instead of above it. */}
+                  claim's block instead of above it. It carries the first of the
+                  three states: the one where the list exists and nobody has bought
+                  from it yet, which is the state the reader has to have seen
+                  before the count falls and the check appears. */}
               <div className={cn('lg:mt-24')}>
                 <LandingPreview
-                  preview={dict.preview}
-                  giftCount={dict.giftCount}
+                  state={dict.preview.states[0]}
                   yourLists={dict.yourLists}
+                  giftCount={dict.giftCount}
+                  testId='landingState1'
+                  actionTestId='landingAction1'
                 />
               </div>
             </div>

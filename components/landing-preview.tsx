@@ -4,42 +4,49 @@ import { giftCountLabel } from '@/lib/gift-count';
 import { memberInkStyle } from '@/lib/member-ink';
 import SheetProgress from '@/components/sheet-progress';
 import { cn } from '@/lib/utils';
-import type { Translations } from '@/types';
+import type { LandingPreviewProps } from '@/types';
 
 /**
- * One page of the album, reproduced as a plate tipped in beside the claim.
+ * One ink for all three plates, seeded from a constant rather than from a name.
  *
- * It has to be a faithful reproduction, not a flattering one, and it takes its
- * anatomy from the real contents page rather than describing it: one row per list,
- * the list's name in the serif, `SheetProgress` at the right, and the count words
- * behind the figure from `giftCountLabel` - the same function, not a second
- * ladder. The three sample rows carry 3/2, 1/2 and 0/4 open/collected, so the plate
- * shows all four count states the dashboard shows: two rows with a part-filled
- * rule, one row nearly full, and the zero row where the figure is replaced by a
- * check. The zero row is the reason `collected` exists as a separate figure - with
- * open counts alone the rule could never leave zero, which reads as an empty bar
- * rather than as progress.
- *
- * **One ink for the whole plate, set once.** The rows are all one person's lists -
- * the plate's title line is the one that stands in for the name the header would
- * put where the wordmark goes, which is what makes the product that person's list
- * rather than a tool. So the ink is hashed from that one line and inherited by
- * every row, instead of being hashed per row name. Hashing the rows separately
- * would give one plate three unrelated colours and read as three people, which is
- * the confusion this page exists to end. The tray is written for one id and one
- * person; `lib/member-ink.ts` is being re-keyed to the owner account id, and this
- * is the call site that will follow it.
- *
- * `SheetProgress` in `components/sheet-progress.tsx` is the authority for the
- * figure and is imported rather than copied: a second copy is a second thing to
- * forget.
+ * The plate has no title any more - `yourLists` is the only heading on it - so
+ * there is no line left to hash, and this is where the tray index comes from. It
+ * is a module constant and not a dictionary key on purpose: a key would be
+ * translatable, and the same page would print a different ink in German than in
+ * Russian for what is one and the same person. The three plates are three states
+ * of one list, so they are one ink - hashing them apart would read as three
+ * people, which is the confusion this page exists to end.
  */
-const LandingPreview: React.FC<
-  Pick<Translations, 'preview' | 'giftCount' | 'yourLists'>
-> = ({ preview, giftCount, yourLists }) => (
+const OWNER_INK_SEED = 'wishy:landing:owner';
+
+/**
+ * One state of one list, drawn as a plate on the board.
+ *
+ * This is the reader's own contents page rather than an illustration of it, which
+ * is why the plate no longer carries a title of its own: the title said "Anna's
+ * lists" and made the plate a specimen of somebody else's screen, while the
+ * section head the real contents page prints - `yourLists` - says the same thing
+ * without naming a character the page is not about. The action line under the
+ * plate is the caption in the only sense this page still needs: it says what has
+ * happened to this list, in the reader's own person.
+ *
+ * The anatomy is imported rather than described, so it cannot drift from what the
+ * app shows: the same stock, the same printed rule, the same crop marks, the same
+ * ruled head, the same name in Source Serif 4, the same count words behind the
+ * figure. `SheetProgress` is the authority for the figure itself - at
+ * `count: 0` it replaces the numeral with a check in `--done`, which is the whole
+ * point of the third state and the reason that state exists at all.
+ */
+const LandingPreview: React.FC<LandingPreviewProps> = ({
+  state,
+  yourLists,
+  giftCount,
+  testId,
+  actionTestId,
+}) => (
   <figure className={cn('flex', 'flex-col')}>
     <div
-      data-testid='landingQuote'
+      data-testid={testId}
       className={cn(
         'relative',
         'border',
@@ -53,47 +60,18 @@ const LandingPreview: React.FC<
     >
       <CropMarks />
 
-      {/*
-        The plate's title, in the serif, above the ruled head. The real contents
-        page puts the signed-in person's name in the app header rather than on the
-        sheet, so this is a plate title rather than a quotation of the sheet's own
-        first line - which is why it sits above the rule instead of inside it. It is
-        the one line that says the plate is about one person's lists and not about
-        the software, so it is the line the plate must not be missing.
-      */}
-      <p
-        className={cn(
-          'max-w-full',
-          'break-words',
-          'pr-10',
-          'font-serif',
-          'font-semibold',
-          'text-ink',
-          'text-[1.375rem]',
-          'leading-tight'
-        )}
-      >
-        {preview.list}
-      </p>
-
       {/* The contents page's own section head and nothing else: a specimen of that
           page, not a working one, and a quotation that offered "Create list" would
-          be offering to create a list on an account that does not exist. */}
-      <div
-        className={cn(
-          'flex',
-          'flex-col',
-          'mt-5',
-          'border-b',
-          'border-rule',
-          'pb-4'
-        )}
-      >
+          be offering to create a list on an account that does not exist. It is the
+          plate's only heading - the title that stood above it left with the sample
+          lists, and its `mt-5` with it, because a gap sized for a line that is no
+          longer there reads as the title having been cut out of the plate. */}
+      <div className={cn('border-b', 'border-rule', 'pb-4')}>
         <h2 className='label-print pt-1 text-caption'>{yourLists}</h2>
       </div>
 
-      <ul style={memberInkStyle(preview.list)} className='divide-y divide-rule'>
-        {preview.items.map((item) => {
+      <ul style={memberInkStyle(OWNER_INK_SEED)} className='divide-y divide-rule'>
+        {state.items.map((item) => {
           /*
             Derived once, then read twice - by the words behind the name and by
             the rule beneath it. It was summed twice inline, which is only a
@@ -138,7 +116,8 @@ const LandingPreview: React.FC<
                   draws the dashed placeholder, which everywhere else in this app
                   means the opposite: no ideas at all. The figure and the words
                   behind it were telling a visitor two opposite things about the
-                  same list.
+                  same list. It is also what makes the 3 -> 1 -> 0 arc readable
+                  without sight of it.
                 */}
                 <span className='sr-only'>
                   {giftCountLabel(sheet, { giftCount })}
@@ -153,18 +132,20 @@ const LandingPreview: React.FC<
     </div>
 
     {/*
-      Below the plate, where a caption belongs, and in caption ink on the board:
-      it is the catalogue's own sentence about the plate, and printed on the stock
-      it would be a line of interface chrome that the real screen does not have.
-      Narrower than the claim above it and wider than an index entry, so the three
-      measures on this page stay three.
+      The action, on the board, in caption ink, under the thing it describes: a
+      catalogue prints the caption below the plate and never above it. It is the
+      only prose this component writes, and it is written in the reader's own
+      person and names nobody who bought - the product never names a buyer, so an
+      action line that did would claim an attribution the app does not deliver.
 
-      Its own measure is the one number on this page worth stating: the German
-      caption is 117 characters and lands at four lines inside `44ch` on a 390px
-      phone, which is a caption and not a paragraph. It was written against this
-      cap.
+      The cap keeps this page's third measure. It binds where the plate is narrower
+      than it and nowhere else: in the storyboard pair each plate is 294px at 1280,
+      so the German action of the first state (65 characters) is two lines there,
+      while in the hero's narrow column - 442px at the same width - the column
+      itself is the measure and the cap never takes effect.
     */}
     <figcaption
+      data-testid={actionTestId}
       className={cn(
         'mt-5',
         'max-w-[44ch]',
@@ -174,7 +155,7 @@ const LandingPreview: React.FC<
         'text-caption'
       )}
     >
-      {preview.lead}
+      {state.action}
     </figcaption>
   </figure>
 );
