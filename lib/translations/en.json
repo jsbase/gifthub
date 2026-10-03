@@ -1,5 +1,5 @@
 {
-  "tagline": "Nobody buys the same thing twice from your wishlist.",
+  "tagline": "Out of gift ideas again?\nwishy knows. Pick, tick, done.",
   "login": "Log in",
   "register": "Create account",
   "loading": "Loading...",
@@ -47,7 +47,7 @@
   },
 
   "landing": {
-    "standfirst": "You write down your ideas. The people you add tick off what they have bought — visible to everyone. Nobody finds out who.",
+    "standfirst": "Make a list, write down your ideas — and then? wishy takes care of the rest.",
     "roles": {
       "owner": {
         "title": "You want something for yourself",
@@ -61,7 +61,7 @@
   },
 
   "preview": {
-    "action": "You wrote down your ideas and shared the list with Ben and Mia.",
+    "action": "Only Ben and Mia can see this list.",
     "items": [{ "name": "Grandma's birthday", "count": 3, "collected": 2 }]
   },
 

@@ -1,5 +1,5 @@
 {
-  "tagline": "Niemand besorgt zweimal, was auf deiner Wunschliste steht.",
+  "tagline": "Schon wieder keine Geschenkidee?\nDie wishy weiß es. Aussuchen, abhaken, fertig.",
   "login": "Anmelden",
   "register": "Konto erstellen",
   "loading": "Wird geladen...",
@@ -47,7 +47,7 @@
   },
 
   "landing": {
-    "standfirst": "Du schreibst die Ideen auf. Die Menschen, die du einträgst, haken ab, was sie gekauft haben — für jeden sichtbar. Niemand erfährt, wer abgehakt hat.",
+    "standfirst": "Leg eine Liste an, trag deine Ideen ein, und dann? Alles Weitere macht wishy für dich.",
     "roles": {
       "owner": {
         "title": "Du hast etwas, das du dir wünschst",
@@ -61,7 +61,7 @@
   },
 
   "preview": {
-    "action": "Du hast deine Ideen eingetragen und die Liste mit Ben und Mia geteilt.",
+    "action": "Nur Ben und Mia sehen diese Liste.",
     "items": [{ "name": "Omas Geburtstag", "count": 3, "collected": 2 }]
   },
 
