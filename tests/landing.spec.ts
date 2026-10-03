@@ -7,14 +7,24 @@ import { locales } from '@/lib/i18n-config';
 import type { LanguageCode, Translations } from '@/types';
 
 /*
-  The landing page: a claim, and one list watched three times.
+  The landing page: a claim, one list of the reader's own, and the two roles.
 
   What this spec pins is the argument the page makes rather than its furniture.
-  The claim is the product's own sentence; tipped into the narrow column beside
-  it is one plate of the reader's own contents page; below that the same list
-  three times over, its open count falling 3 -> 1 -> 0 until the figure becomes
-  a check. Then the two roles and the three mechanisms, as one index with no
-  lead above it and no heading over the picture.
+  The claim is the product's own sentence; tipped into the narrow column beside it
+  is one plate of the reader's own contents page, with a single row at three ideas
+  still open and a caption under it saying what happened. Then the two roles and
+  the three mechanisms, as one index with no lead above it and no heading over the
+  plate.
+
+  It also pins the number of plates, which is the load-bearing claim here. The page
+  once drew the same list three times over, its open count falling 3 -> 1 -> 0
+  until the figure became a check. It was rendered, looked at and rejected: three
+  plates with the same head, the same list name and the same one row read as
+  repetition rather than as a story, the hero's plate and the pair below it broke
+  one asymmetric spread into three scattered rectangles, and the plate carrying the
+  check read as a different list rather than as a later state of this one. So
+  `landingPlate` is asserted to resolve to exactly one element, on its own, before
+  anything that would be ambiguous if it were two.
 
   Four things this file deliberately does not do.
 
@@ -25,17 +35,17 @@ import type { LanguageCode, Translations } from '@/types';
 
   It writes no translated sentence down. Every string it expects is read from
   the dictionary it is testing, and the count words come from `giftCountLabel`,
-  the same function the plate calls. Six hand-written expectations would be a
-  second dictionary, and a copy change in any of the three would leave them
-  behind as a passing test asserting sentences the page no longer prints.
+  the same function the plate calls. Hand-written expectations would be a second
+  dictionary, and a copy change in any of the three would leave them behind as a
+  passing test asserting sentences the page no longer prints.
 
-  It does not read the fall out of the dictionary. 3, 1 and 0 are this file's
-  claim about the story: a spec that took the counts from `preview.states` would
-  agree with whatever the dictionary said and prove nothing about an arc that no
-  longer falls. Only the total is read from the dictionary, and only because
-  `giftCountLabel` has to know the sheet is not empty - an empty sheet says
-  something else entirely, and a state that lost its `collected` count would
-  otherwise read as a fourth state rather than as a broken one.
+  It does not read the open count out of the dictionary. 3 is this file's claim
+  about the plate: a spec that took the number from `preview.items[0].count` would
+  agree with whatever the dictionary said and prove nothing. Only the total is
+  read from the dictionary, and only because `giftCountLabel` has to know the sheet
+  is not empty - an empty sheet says something else entirely, and a row that lost
+  its `collected` count would otherwise read as a plate with nothing to fill the
+  progress rule rather than as a broken one.
 
   It runs in all three languages, because a German-only run of this file would
   not notice a key missing from `ru.json`, and the three dictionaries have to
@@ -49,67 +59,21 @@ const BASE_URL = (
 const DICTIONARIES: Record<LanguageCode, Translations> = { de, en, ru };
 
 /*
-  The arc, as the page numbers its plates.
+  The open count the one plate stands at.
 
-  `position` is the number in `landingState1|2|3` and `landingAction1|2|3`, and
-  the dictionary index is one below it: the hero owns `preview.states[0]` and the
-  page counts from one, so a spec that walked the dictionary instead of reading
-  the ids would look for `landingState0` and find nothing.
-
-  Both columns are this file's, not the dictionary's. That is what makes the
-  second one an assertion.
+  Not the dictionary's, deliberately: this is the file's claim about the plate,
+  and a plate at zero would print a check instead of a number, which is a
+  different picture rather than a different value.
 */
-const THE_ARC = [
-  { position: 1, open: 3 },
-  { position: 2, open: 1 },
-  { position: 3, open: 0 },
-];
-
-/**
- * The count words the plate at `position` has to print, in this dictionary's
- * words, for an open count of `open`.
- */
-const countWords = (
-  dict: Translations,
-  position: number,
-  open: number
-): string => {
-  const item = dict.preview.states[position - 1].items[0];
-  return giftCountLabel(
-    { unbought: open, total: item.count + item.collected },
-    dict
-  );
-};
-
-/*
-  The check is the one thing on this page with no id and no string of its own:
-  `SheetProgress` draws it as an icon and hides the figure behind it, and there is
-  nothing to assert against but the number of pictures in the plate. The four crop
-  marks are spans, not SVGs, so a plate with something bought from it has no SVG
-  in it at all and the finished one has exactly one.
-
-  Counting pictures rather than looking for the numeral is what makes the two
-  halves of the claim separable: "zero left" is also printed as a numeral
-  elsewhere, and an assertion on the numeral would pass on a page that replaced
-  it with a picture and on one that printed it, which are the same picture and
-  its opposite.
-*/
-const checksIn = (plate: ReturnType<typeof plateLocator>) =>
-  plate.locator('svg');
-
-/** The plate the page numbers `position`, as its own `data-testid` names it. */
-const plateLocator = (
-  page: import('@playwright/test').Page,
-  position: number
-) => page.getByTestId(`landingState${position}`);
+const OPEN_ON_THE_PLATE = 3;
 
 for (const lang of locales) {
   /*
     Every string the landing page prints out of the dictionary has to be there
-    in every language, and the states have to be three. TypeScript cannot see
-    either: `app/[lang]/dictionaries.ts` casts each JSON module to `Translations`
-    with `as` rather than checking it against the interface, and an array of two
-    states is a perfectly well-typed array of two states.
+    in every language. TypeScript cannot see it: `app/[lang]/dictionaries.ts`
+    casts each JSON module to `Translations` with `as` rather than checking it
+    against the interface, so a missing key is invisible to `npx tsc` and only
+    shows up as an empty string on the page.
 
     So this is the assertion the parametrisation exists for, and it is worth its
     own test rather than being spread across the ones that read these keys: an
@@ -117,7 +81,7 @@ for (const lang of locales) {
     that emptied a claim would otherwise pass the test that looks for it.
   */
   test.describe(`Landing page dictionary (${lang})`, () => {
-    test('Carries every string the page prints, and three states', async () => {
+    test('Carries every string the page prints', async () => {
       const dict = DICTIONARIES[lang];
 
       const printed: Array<[string, string]> = [
@@ -150,32 +114,45 @@ for (const lang of locales) {
         expect(value, `${key} is empty in ${lang}.json`).toBeTruthy();
       }
 
+      expect(
+        dict.preview.action,
+        `preview.action is empty in ${lang}.json`
+      ).toBeTruthy();
+
       /*
-        Three, because the story is three states of one list and the hero owns
-        the first. Two would leave the pair below the hero with one plate and no
-        finished one; four would render a fourth state the page never promised to
-        show. Either is a dictionary that has to be argued about rather than a
-        page that reflowed.
+        One row, and a named one. The plate is a specimen of a contents page, so
+        `items` is a list rather than a single row - but a second row would put a
+        second list on a page whose plate exists to show one list in one state, and
+        a row with no name would print a plate with nothing on its left-hand side
+        while every assertion below still passed.
       */
       expect(
-        dict.preview.states.length,
-        `preview.states must hold three states in ${lang}.json`
-      ).toBe(THE_ARC.length);
+        dict.preview.items.length,
+        `preview.items draws one row in ${lang}.json`
+      ).toBe(1);
+      expect(
+        dict.preview.items[0].name,
+        `preview.items[0] names its list in ${lang}.json`
+      ).toBeTruthy();
 
-      for (const [index, state] of dict.preview.states.entries()) {
-        expect(
-          state.action,
-          `preview.states[${index}].action is empty in ${lang}.json`
-        ).toBeTruthy();
-        expect(
-          state.items.length,
-          `state ${index + 1} draws one row in ${lang}.json`
-        ).toBeGreaterThan(0);
-        expect(
-          state.items[0].name,
-          `state ${index + 1} names its list in ${lang}.json`
-        ).toBeTruthy();
-      }
+      /*
+        The count words have to read differently in this language, or the number
+        on the plate is invisible in it: a `ru.json` whose `one` and `many` said
+        the same words would satisfy every expectation below while the reader
+        watched a numeral they could not place against its sentence.
+
+        Both come off this row's own total, so the only thing that differs is the
+        open count - which is the thing `giftCountLabel` reads.
+      */
+      const item = dict.preview.items[0];
+      const total = item.count + item.collected;
+      expect(
+        new Set([
+          giftCountLabel({ unbought: 1, total }, dict),
+          giftCountLabel({ unbought: OPEN_ON_THE_PLATE, total }, dict),
+        ]).size,
+        `1 and ${OPEN_ON_THE_PLATE} must read differently in ${lang}.json`
+      ).toBe(2);
     });
   });
 
@@ -243,126 +220,78 @@ for (const lang of locales) {
     });
 
     /*
-      One list, watched three times.
+      One plate, and it stands at three open.
 
-      Each plate is checked three ways, because each of the three can fail on its
-      own. The count words behind the figure are what a screen reader announces
-      and the only form of the count a person can read aloud; the figure is the
-      same fact in printed type; and the check is the moment the count stops being
-      a quantity. An assertion on the words alone would pass on a plate that
-      printed the right sentence and the wrong number beside it.
+      The count is checked three ways because each can fail on its own: the count
+      words behind the figure are what a screen reader announces and the only form
+      of the number a person can read aloud; the figure is the same fact in
+      printed type; and the absence of a check is the half that says the plate is
+      not a finished list. An assertion on the words alone would pass on a plate
+      that printed the right sentence and the wrong number beside it, and an
+      assertion on the number alone would pass on a plate whose words had been
+      another count's.
+
+      `toHaveCount(1)` is on its own here, before anything that would be ambiguous
+      if it were two: a second plate would resolve every locator below to two
+      elements, and one reaching for `.first()` would be asserting about a plate it
+      had not chosen. That is what the storyboard's return would look like.
 
       The figure is read as the plate's own text with the count words taken out,
       rather than through a locator on the number: the number sits in a `<span>`
       inside a flex row with no id of its own, and every way of naming that span
       means naming a class or guessing at its position in the markup.
     */
-    test(
-      'The open count falls 3, 1, 0, and only the last plate carries the check',
-      async ({ page }) => {
-        const dict = DICTIONARIES[lang];
-
-        /*
-          The three counts have to read differently in this language, or the fall
-          this test exists to pin is invisible in it: a `ru.json` whose `one` and
-          `many` said the same words would satisfy every expectation below while
-          the reader watched three plates claim three.
-        */
-        const words = THE_ARC.map(({ position, open }) =>
-          countWords(dict, position, open)
-        );
-        expect(
-          new Set(words).size,
-          `3, 1 and 0 must read differently in ${lang}.json`
-        ).toBe(THE_ARC.length);
-
-        for (const [index, { position, open }] of THE_ARC.entries()) {
-          const plate = plateLocator(page, position);
-          await expect(plate).toBeVisible();
-
-          const text = (await plate.textContent()) ?? '';
-          expect(text, `plate ${position} must say its open count`).toContain(
-            words[index]
-          );
-
-          const figure = text.split(words[index]).join('');
-          if (open === 0) {
-            /*
-              Zero is a conclusion rather than a quantity, so at zero the figure
-              is gone and a check stands in its place. What is asserted absent here
-              is the numeral, and what says it is gone on purpose is the check
-              below: either half alone would pass on the other half's failure.
-            */
-            expect(
-              figure,
-              `plate ${position} has nothing left, so it prints no figure`
-            ).not.toContain('0');
-          } else {
-            expect(
-              figure,
-              `plate ${position} prints ${open} beside the count words`
-            ).toContain(String(open));
-          }
-
-          await expect(
-            checksIn(plate),
-            'only the plate with nothing left carries the check'
-          ).toHaveCount(open === 0 ? 1 : 0);
-        }
-      }
-    );
-
-    /*
-      Three plates of the same anatomy stand on this page, and their ids are how
-      a spec tells them apart - so `landingState1` printed twice is a real defect
-      rather than a cosmetic one: an assertion on the hero's plate would resolve
-      to two elements, and a spec that reached for `.first()` would be asserting
-      about a plate it had not chosen. The number of the plates is therefore
-      asserted on its own, before anything that would be ambiguous if it were
-      wrong.
-    */
-    test('The hero owns the first plate and the storyboard the pair', async ({
+    test('There is one plate, and it stands at three open', async ({
       page,
     }) => {
-      await expect(page.getByTestId('landingState1')).toHaveCount(1);
+      const dict = DICTIONARIES[lang];
+      const item = dict.preview.items[0];
 
-      const storyboard = page.getByTestId('landingStory');
-      await expect(storyboard).toBeVisible();
+      const words = giftCountLabel(
+        { unbought: OPEN_ON_THE_PLATE, total: item.count + item.collected },
+        dict
+      );
+
+      const plate = page.getByTestId('landingPlate');
+      await expect(plate).toHaveCount(1);
+      await expect(plate).toBeVisible();
+
+      const text = (await plate.textContent()) ?? '';
+      expect(text, 'the plate must say its open count').toContain(words);
+      expect(
+        text.split(words).join(''),
+        `the plate prints ${OPEN_ON_THE_PLATE} beside the count words`
+      ).toContain(String(OPEN_ON_THE_PLATE));
 
       /*
-        Everything the hero does not own: two plates today, and a fourth state
-        would arrive here as a third plate in the pair rather than as a fourth row
-        of the page, which is what `FIRST_AFTER_THE_HERO` is for.
+        The crop marks are spans rather than SVGs, so a plate with something
+        bought from it has no SVG in it at all, and a check would be exactly one.
+        This is the assertion that the plate is the open list and not the finished
+        one: the plate that carried the check is gone, and a page that kept drawing
+        it here would be claiming the list was done.
       */
-      for (const { position } of THE_ARC.slice(1)) {
-        await expect(
-          storyboard.getByTestId(`landingState${position}`)
-        ).toHaveCount(1);
-      }
-
-      // And the hero's plate is not one of them.
-      await expect(storyboard.getByTestId('landingState1')).toHaveCount(0);
+      await expect(
+        plate.locator('svg'),
+        'a plate with three open carries no check'
+      ).toHaveCount(0);
     });
 
     /*
       What has happened to the list, under the plate it happened to, in the
       dictionary's own words.
 
-      Asserted against each state rather than against the three at once, because
-      one caption shared by all three plates would pass a test that only counted
-      them, and a caption printed in the wrong order would pass one that only
-      checked that all three are somewhere on the page.
+      `toHaveCount(1)` beside `toHaveText`, because the caption is the one piece
+      of prose this page writes and a second copy of it anywhere would be a
+      sentence the reader has to reconcile. `toHaveText` is the form that pins the
+      sentence rather than its existence.
     */
-    test('Each plate carries the caption for its own state', async ({
+    test('The plate carries one caption, and it is its own', async ({
       page,
     }) => {
-      const dict = DICTIONARIES[lang];
+      const caption = page.getByTestId('landingCaption');
 
-      for (const { position } of THE_ARC) {
-        await expect(page.getByTestId(`landingAction${position}`)).toHaveText(
-          dict.preview.states[position - 1].action
-        );
-      }
+      await expect(caption).toHaveCount(1);
+      await expect(caption).toHaveText(DICTIONARIES[lang].preview.action);
     });
 
     /*
@@ -395,8 +324,10 @@ for (const lang of locales) {
       the two roles are entries of the same kind. Two things fall out of the one
       list: a fourth entry would be the lead this index used to carry above the
       other three, which read as a headline of its own rather than as one of
-      three, and the three plates would grow four more headings if their
-      `yourLists` label ever went back to being an `<h2>` instead of a label.
+      three, and the plate would add a sixth heading if its `yourLists` label
+      ever went back to being an `<h2>` instead of a label - a plate is a
+      quotation of the contents page, and this page has no section for a head to
+      open.
 
       `ORDER` in `feature-cards.tsx` is the reading order, and it is a reading
       order rather than a whitelist - a claim added to a dictionary still renders,

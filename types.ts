@@ -335,22 +335,36 @@ export interface SuccessTranslations {
 }
 
 /**
- * One real list in one state, as the landing page shows it three times.
+ * The one plate the landing page draws: one real list, in one state.
  *
- * The states are the same list, not three sample lists: the reader watches one
- * sheet's open count fall, and the fall is the argument. `items` therefore holds
- * one row per state rather than a base list plus overrides, so that every
- * translation can read a state without the previous one.
+ * It is a flat object again, and that is a decision rather than a leftover. It has
+ * been a list twice. First three sample lists under one plate title, which made
+ * the plate a specimen of the software rather than a page of somebody's, and put
+ * the only interesting count - the zero - in one row of three. Then one list drawn
+ * three times, its open count falling 3 -> 1 -> 0 and its figure becoming a check
+ * in the last one. That version was built, rendered, looked at and rejected:
+ * three plates carrying the same head, the same list name and the same single row
+ * read as repetition rather than as a story, the plate in the hero's right column
+ * and the pair below broke one asymmetric spread into three scattered rectangles,
+ * and the plate with the check read as a *different* list rather than as a later
+ * state of this one. Nothing about the plate was wrong. Three of them were, and the
+ * number 3 was carrying the argument the plate should have carried.
+ *
+ * So: one plate, one state, and nothing to enumerate. An array here would be
+ * nothing but standing room for a second plate, which is exactly the shape the
+ * next reader of this file will be tempted to fill. `tests/landing.spec.ts` counts
+ * the plates on the page and forces the number to be one, which is the cheapest
+ * place that invitation gets refused.
  */
-export interface LandingState {
+export interface LandingPreviewTranslations {
   /**
-   * What happened, in the reader's own person.
+   * What happened to this list, in the reader's own person.
    *
    * Naming nobody who bought is not a copy rule, it is the product: no buyer is
    * ever named anywhere, and a sentence that attributed a purchase would assert
-   * something the app deliberately refuses to deliver. The first state may name
-   * the people the list was shared with - those are the reader's own choices, and
-   * they are what makes the state a shared list at all.
+   * something the app deliberately refuses to deliver. This one does name the
+   * people the list was shared with - those are the reader's own choices, and
+   * they are what makes the plate a shared list at all.
    */
   action: string;
   /**
@@ -358,23 +372,18 @@ export interface LandingState {
    * say out loud. `collected` is how many of the same list's ideas are already
    * bought, and exists so the row's progress rule has real fill: with open counts
    * alone the rule could only ever stand at zero, which read as an empty bar
-   * rather than as progress. At `count: 0` `SheetProgress` replaces the figure
-   * with a check, which is why the third state is the one that carries it.
+   * rather than as progress.
+   *
+   * An array because the plate is a specimen of a contents page, and a contents
+   * page is a list of things. It holds one row today, at 3 open and 2 bought,
+   * because a list somebody can still be surprised by is the honest opening and a
+   * list with nothing left to buy is not. `SheetProgress` replaces the figure with
+   * a check at `count: 0`; the page does not stand there, which is the choice and
+   * not an oversight.
    *
    * Numbers, not strings, so this costs no copy in any locale.
    */
   items: { name: string; count: number; collected: number }[];
-}
-
-/**
- * The landing page's storyboard: one list in three states.
- *
- * It used to be three sample lists under one plate title, which made the plate a
- * specimen of the software rather than a page of somebody's, and meant the only
- * interesting count - the zero - was one row of three. See `LandingState`.
- */
-export interface LandingPreviewTranslations {
-  states: LandingState[];
 }
 
 /**
@@ -686,42 +695,30 @@ export interface AuthButtonsProps {
 }
 
 /**
- * One plate of the landing page's storyboard: the reader's own contents page in
- * one state.
+ * The one plate of the landing page: the reader's own contents page.
  *
- * A `LandingState` rather than the whole `preview` dictionary, because the page is
- * what decides which state a plate shows - state one is tipped into the hero's
- * narrow column and the rest belong to the storyboard - and a component that took
- * the dictionary would have to know about that split to render half of it.
+ * The whole `preview` dictionary, rather than one state out of it. While the page
+ * drew three states this took a single one of them, because choosing which a plate
+ * showed was the page's business - the hero owned the first and the pair below
+ * owned the rest. That split is the storyboard's shape, not the plate's, and it is
+ * gone; a component handed the dictionary renders all of it and needs to know
+ * nothing about how the page is laid out.
  *
  * `testId` and `actionTestId` are separate because the plate and the line of prose
- * under it are separate things, and a spec that has to assert "this state's count
- * has fallen, and this sentence says so" addresses them separately. They were one
- * id (`landingQuote`) while there was one plate; three plates sharing it would have
- * made it ambiguous.
+ * under it are separate things, and a spec that has to assert "this count, and
+ * this sentence" addresses them at two different places. They are unnumbered: the
+ * numbers were only ever there because there was more than one plate.
  */
 export interface LandingPreviewProps {
-  state: LandingState;
+  preview: LandingPreviewTranslations;
   /**
    * The contents page's own section head, which the specimen prints as a label and
-   * not as a heading - three plates carry it and none of them is a section.
+   * not as a heading - this page has no section for a head to open.
    */
   yourLists: string;
   giftCount: Translations['giftCount'];
   testId: string;
   actionTestId: string;
-}
-
-/**
- * Every state after `HERO_STATE_INDEX`, which the hero owns.
- *
- * The dictionary is passed whole rather than pre-sliced so that the page does not
- * have to know how many states there are.
- */
-export interface LandingStoryboardProps {
-  states: LandingState[];
-  yourLists: string;
-  giftCount: Translations['giftCount'];
 }
 
 export interface LandingRolesProps {

@@ -61,26 +61,8 @@
   },
 
   "preview": {
-    "states": [
-      {
-        "action": "Du hast deine Ideen eingetragen und die Liste mit Ben und Mia geteilt.",
-        "items": [
-          { "name": "Omas Geburtstag", "count": 3, "collected": 2 }
-        ]
-      },
-      {
-        "action": "Zwei Ideen sind gekauft. Jeder sieht es sofort — die Namen stehen nirgends.",
-        "items": [
-          { "name": "Omas Geburtstag", "count": 1, "collected": 4 }
-        ]
-      },
-      {
-        "action": "Alles ist gekauft. Ein Häkchen erscheint.",
-        "items": [
-          { "name": "Omas Geburtstag", "count": 0, "collected": 5 }
-        ]
-      }
-    ]
+    "action": "Du hast deine Ideen eingetragen und die Liste mit Ben und Mia geteilt.",
+    "items": [{ "name": "Omas Geburtstag", "count": 3, "collected": 2 }]
   },
 
   "errors": {

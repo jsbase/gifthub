@@ -7,8 +7,6 @@ import Footer from '@/components/footer';
 import FeatureCards from '@/components/feature-cards';
 import LandingPreview from '@/components/landing-preview';
 import LandingRoles from '@/components/landing-roles';
-import LandingStoryboard from '@/components/landing-storyboard';
-import { HERO_STATE_INDEX } from '@/lib/landing-states';
 import { cn } from '@/lib/utils';
 import type { PageProps, Translations } from '@/types';
 
@@ -26,15 +24,22 @@ import type { PageProps, Translations } from '@/types';
  *          one, dropped 6rem so its top edge falls between the claim's first and
  *          second line. Two masses of different widths with different top edges
  *          and different left and right margins.
- *   row 2  the rest of the list's arc, the two roles and the three mechanisms run
- *          down the wide column and the narrow one is left as bare board.
+ *   row 2  the two roles and the three mechanisms run down the wide column and
+ *          the narrow one is left as bare board.
  *
- * The eye therefore travels claim → plate → arc → roles → mechanisms, a diagonal,
- * instead of straight down a centred axis. Nothing on the page shares a left edge
- * with anything below it, and that is the point: the previous version was a hero
+ * The eye therefore travels claim → plate → roles → mechanisms, a diagonal, instead
+ * of straight down a centred axis. Nothing on the page shares a left edge with
+ * anything below it, and that is the point: the previous version was a hero
  * rectangle, a three-up feature row and a second rectangle of exactly the same
  * size, all on one centre line, which is the composition every generated landing
  * page arrives at.
+ *
+ * One plate, not three. Row 1 used to carry the hero's plate in the narrow column
+ * and row 2 a pair of the same list again in the wide one, which is what broke
+ * this composition: a third rectangle below the fold did not read as a later state
+ * of the same list but as a separate block, and the check on the finished one read
+ * as a different list entirely. The plate is the reader's own contents page, and
+ * one of it says the same thing three times would only have muddled.
  *
  * It also drops `max-w-5xl` and its own `px-4 sm:px-6`. The `container` utility
  * already supplies the page's horizontal padding, so that inner column was
@@ -174,18 +179,19 @@ const Home: NextPage<PageProps> = async ({ params }) => {
 
               {/* Tipped in low. The offset is 6rem, about a line and a half of
                   the claim above it, so the plate's top rule lands inside the
-                  claim's block instead of above it. It carries `HERO_STATE_INDEX`,
-                  the state this page owns and the storyboard below does not: the
-                  one where the list exists and nobody has bought from it yet, and
-                  the one the reader has to have seen before the count falls and
-                  the check appears. */}
+                  claim's block instead of above it. It is the only plate on the
+                  page and it shows the whole `preview` dictionary: the list the
+                  reader has written down and shared, at three ideas still open.
+                  There is a count on this list and there is something left to tick
+                  off it, which is the honest opening - a plate at zero would show
+                  the check and a list with nothing left on it. */}
               <div className={cn('lg:mt-24')}>
                 <LandingPreview
-                  state={dict.preview.states[HERO_STATE_INDEX]}
+                  preview={dict.preview}
                   yourLists={dict.yourLists}
                   giftCount={dict.giftCount}
-                  testId='landingState1'
-                  actionTestId='landingAction1'
+                  testId='landingPlate'
+                  actionTestId='landingCaption'
                 />
               </div>
             </div>
@@ -202,23 +208,20 @@ const Home: NextPage<PageProps> = async ({ params }) => {
               {/*
                 Everything below the hero runs down the wide column and the narrow
                 one stays bare board, so the spread is still two masses of different
-                widths rather than a centred stack. The three are 3rem apart, the
+                widths rather than a centred stack. The two are 3rem apart, the
                 `mt-12` the index used to carry above its own list, and the gap is
-                `gap-y-*` rather than three `mt-*` values so that dropping or adding
+                `gap-y-*` rather than two `mt-*` values so that dropping or adding
                 a section cannot leave one behind with a margin of its own.
 
-                Storyboard, roles, mechanisms: a picture, a frame, and an index. No
-                heading above any of them - the three are not sections of a kind,
-                and the `yourLists` line every plate carries belongs to the
-                illustration rather than to the document, which is why it is printed
-                as a label and not as a heading.
+                Roles, mechanisms: a frame and an index. No heading above either -
+                they are not sections of a kind, and the `yourLists` line the plate
+                carries belongs to the illustration rather than to the document,
+                which is why it is printed as a label and not as a heading. Nothing
+                is lost by leaving the block unheaded either: a reader who navigates
+                by heading reaches the roles and the mechanisms and sees the plate
+                for the evidence it is.
               */}
               <div className={cn('flex', 'flex-col', 'gap-y-12')}>
-                <LandingStoryboard
-                  states={dict.preview.states}
-                  yourLists={dict.yourLists}
-                  giftCount={dict.giftCount}
-                />
                 <LandingRoles roles={dict.landing.roles} />
                 <FeatureCards features={dict.features} />
               </div>

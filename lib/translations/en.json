@@ -61,26 +61,8 @@
   },
 
   "preview": {
-    "states": [
-      {
-        "action": "You wrote down your ideas and shared the list with Ben and Mia.",
-        "items": [
-          { "name": "Grandma's birthday", "count": 3, "collected": 2 }
-        ]
-      },
-      {
-        "action": "Two ideas are bought. Everyone sees it at once — no names anywhere.",
-        "items": [
-          { "name": "Grandma's birthday", "count": 1, "collected": 4 }
-        ]
-      },
-      {
-        "action": "Everything is bought. A check appears.",
-        "items": [
-          { "name": "Grandma's birthday", "count": 0, "collected": 5 }
-        ]
-      }
-    ]
+    "action": "You wrote down your ideas and shared the list with Ben and Mia.",
+    "items": [{ "name": "Grandma's birthday", "count": 3, "collected": 2 }]
   },
 
   "errors": {
