@@ -1,21 +1,8 @@
 import React, { memo } from 'react';
 import LandingPreview from '@/components/landing-preview';
+import { HERO_STATE_INDEX } from '@/lib/landing-states';
 import { cn } from '@/lib/utils';
 import type { LandingStoryboardProps } from '@/types';
-
-/**
- * Where the storyboard starts, in the list of states.
- *
- * The first state belongs to the hero: the page tips it into the narrow column and
- * drops it 6rem so its top rule lands inside the claim's block, and a component
- * below the hero cannot apply that offset to itself without knowing it sits in a
- * grid row. So the hero takes state one and this renders the rest.
- *
- * It is a `slice` rather than a hard-coded pair on purpose. A fourth state has to
- * appear as a third plate here, not as a fourth page row, and the numbering below
- * follows from the slice rather than from a list of two.
- */
-const FIRST_AFTER_THE_HERO = 1;
 
 /**
  * The states after the first, as an equally sized pair.
@@ -26,13 +13,19 @@ const FIRST_AFTER_THE_HERO = 1;
  * cannot be here as well - a check visible in the first plate would spend the
  * moment before the reader has seen the count move.
  *
+ * `HERO_STATE_INDEX` is not repeated here. The hero tips that state into the narrow
+ * column and drops it 6rem, which a component below the hero cannot apply to itself
+ * without knowing it sits in a grid row, so the two sides share one declaration
+ * rather than two assumptions: `slice(HERO_STATE_INDEX + 1)` here, and the same
+ * constant read by the page. A fourth state appears as a third plate here rather
+ * than as a fourth page row, and the numbering below falls out of the same
+ * constant.
+ *
  * **Equal sizes, deliberately.** A descending series was rejected: the narrowest
  * state is the one with the check, and shrinking it would claim it matters least.
- * Two plates of the same width say two moments of one list, which is what they
- * are, and the pair is the one place on this page that is allowed to repeat a
- * shape - `DESIGN.md` forbade a same-size pair of plates on the theory that a
- * second rectangle is a category default, and this pair is two states rather than
- * two alternatives.
+ * Two plates of the same width are two moments of one list rather than two
+ * alternatives to choose between, and equal size is what says so - a pair of
+ * identical rectangles reads as a sequence, a narrowing run reads as a ranking.
  *
  * The pair only forms where a plate can still carry its own row. Below `xl` the
  * two stack, because at 1024 the wide column is 498px and a pair would leave the
@@ -44,17 +37,20 @@ const FIRST_AFTER_THE_HERO = 1;
  * pair forms exactly where this page's ladder stops narrowing - and stacked, the
  * two plates are still the same width as each other.
  *
- * No heading. One printed head exists on this page - `yourLists`, inside the plate
- * - and a `label-print` line above this block would claim that a picture, a pair of
- * roles and an index of mechanisms are three sections of one kind, which two of
- * them are not.
+ * No heading above this block. What the page stacks under the hero is a picture, a
+ * frame and an index, and a printed head over each would say the three are
+ * sections of one kind, which two of them are not. Nothing is lost by leaving them
+ * unheaded either: the `yourLists` line every plate carries belongs to the
+ * illustration rather than to the document, which is why it is printed as a label
+ * and not as a heading - a reader who navigates by heading reaches the roles and
+ * the mechanisms and sees this block as the evidence it is.
  */
 const LandingStoryboard: React.FC<LandingStoryboardProps> = ({
   states,
   yourLists,
   giftCount,
 }) => {
-  const after = states.slice(FIRST_AFTER_THE_HERO);
+  const after = states.slice(HERO_STATE_INDEX + 1);
 
   if (after.length === 0) return null;
 
@@ -65,12 +61,13 @@ const LandingStoryboard: React.FC<LandingStoryboardProps> = ({
     >
       {after.map((state, offset) => {
         /*
-          Numbered in reading order from 1, and the hero owns 1, so the third state
-          is `landingState3` whatever the dictionary holds. Keyed on the same number
-          rather than on the list name: all three states show the same list, and a
-          name key would collide on the first pair of plates.
+          Numbered in reading order from 1, and the hero owns the state before this
+          slice, so the third state is `landingState3` whatever the dictionary holds.
+          Keyed on the same number rather than on the list name: all three states
+          show the same list, and a name key would collide on the first pair of
+          plates.
         */
-        const position = FIRST_AFTER_THE_HERO + offset + 1;
+        const position = HERO_STATE_INDEX + offset + 1;
 
         return (
           <LandingPreview

@@ -702,7 +702,10 @@ export interface AuthButtonsProps {
  */
 export interface LandingPreviewProps {
   state: LandingState;
-  /** The contents page's own section head, and the plate's only heading. */
+  /**
+   * The contents page's own section head, which the specimen prints as a label and
+   * not as a heading - three plates carry it and none of them is a section.
+   */
   yourLists: string;
   giftCount: Translations['giftCount'];
   testId: string;
@@ -710,7 +713,7 @@ export interface LandingPreviewProps {
 }
 
 /**
- * Every state after the first, which the hero owns.
+ * Every state after `HERO_STATE_INDEX`, which the hero owns.
  *
  * The dictionary is passed whole rather than pre-sliced so that the page does not
  * have to know how many states there are.

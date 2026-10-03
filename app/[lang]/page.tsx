@@ -8,6 +8,7 @@ import FeatureCards from '@/components/feature-cards';
 import LandingPreview from '@/components/landing-preview';
 import LandingRoles from '@/components/landing-roles';
 import LandingStoryboard from '@/components/landing-storyboard';
+import { HERO_STATE_INDEX } from '@/lib/landing-states';
 import { cn } from '@/lib/utils';
 import type { PageProps, Translations } from '@/types';
 
@@ -168,13 +169,14 @@ const Home: NextPage<PageProps> = async ({ params }) => {
 
               {/* Tipped in low. The offset is 6rem, about a line and a half of
                   the claim above it, so the plate's top rule lands inside the
-                  claim's block instead of above it. It carries the first of the
-                  three states: the one where the list exists and nobody has bought
-                  from it yet, which is the state the reader has to have seen
-                  before the count falls and the check appears. */}
+                  claim's block instead of above it. It carries `HERO_STATE_INDEX`,
+                  the state this page owns and the storyboard below does not: the
+                  one where the list exists and nobody has bought from it yet, and
+                  the one the reader has to have seen before the count falls and
+                  the check appears. */}
               <div className={cn('lg:mt-24')}>
                 <LandingPreview
-                  state={dict.preview.states[0]}
+                  state={dict.preview.states[HERO_STATE_INDEX]}
                   yourLists={dict.yourLists}
                   giftCount={dict.giftCount}
                   testId='landingState1'
@@ -201,10 +203,10 @@ const Home: NextPage<PageProps> = async ({ params }) => {
                 a section cannot leave one behind with a margin of its own.
 
                 Storyboard, roles, mechanisms: a picture, a frame, and an index. No
-                heading above any of them - the page has exactly one printed head,
-                the `yourLists` line inside the plate, and inventing a second one
-                here would say the three are sections of a kind, which two of them
-                are not.
+                heading above any of them - the three are not sections of a kind,
+                and the `yourLists` line every plate carries belongs to the
+                illustration rather than to the document, which is why it is printed
+                as a label and not as a heading.
               */}
               <div className={cn('flex', 'flex-col', 'gap-y-12')}>
                 <LandingStoryboard

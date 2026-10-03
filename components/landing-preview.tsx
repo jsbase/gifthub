@@ -9,13 +9,13 @@ import type { LandingPreviewProps } from '@/types';
 /**
  * One ink for all three plates, seeded from a constant rather than from a name.
  *
- * The plate has no title any more - `yourLists` is the only heading on it - so
- * there is no line left to hash, and this is where the tray index comes from. It
- * is a module constant and not a dictionary key on purpose: a key would be
- * translatable, and the same page would print a different ink in German than in
- * Russian for what is one and the same person. The three plates are three states
- * of one list, so they are one ink - hashing them apart would read as three
- * people, which is the confusion this page exists to end.
+ * The plate has no title any more - the `yourLists` label is the only line of type
+ * above the rows - so there is nothing left to hash, and this is where the tray
+ * index comes from. It is a module constant and not a dictionary key on purpose: a
+ * key would be translatable, and the same page would print a different ink in
+ * German than in Russian for what is one and the same person. The three plates are
+ * three states of one list, so they are one ink - hashing them apart would read as
+ * three people, which is the confusion this page exists to end.
  */
 const OWNER_INK_SEED = 'wishy:landing:owner';
 
@@ -25,10 +25,11 @@ const OWNER_INK_SEED = 'wishy:landing:owner';
  * This is the reader's own contents page rather than an illustration of it, which
  * is why the plate no longer carries a title of its own: the title named somebody
  * else's lists and made the plate a specimen of a character who is not on this
- * page, while the section head the real contents page prints - `yourLists` - says
- * the same thing about the reader without naming anyone. The action line under the
- * plate is the caption in the only sense this page still needs: it says what has
- * happened to this list, in the reader's own person.
+ * page, while the section head the real contents page prints - `yourLists`, set as
+ * the label it is and not as a heading - says the same thing about the reader
+ * without naming anyone. The action line under the plate is the caption in the only
+ * sense this page still needs: it says what has happened to this list, in the
+ * reader's own person.
  *
  * The anatomy is imported rather than described, so it cannot drift from what the
  * app shows: the same stock, the same printed rule, the same crop marks, the same
@@ -60,14 +61,26 @@ const LandingPreview: React.FC<LandingPreviewProps> = ({
     >
       <CropMarks />
 
-      {/* The contents page's own section head and nothing else: a specimen of that
-          page, not a working one, and a quotation that offered "Create list" would
-          be offering to create a list on an account that does not exist. It is the
-          plate's only heading - the title that stood above it left with the sample
-          lists, and its `mt-5` with it, because a gap sized for a line that is no
-          longer there reads as the title having been cut out of the plate. */}
+      {/*
+        The contents page's own section head and nothing else: a specimen of that
+        page, not a working one, and a quotation that offered "Create list" would
+        be offering to create a list on an account that does not exist.
+
+        Printed as a label and not as a heading. This plate is drawn three times on
+        the page - once tipped into the hero and twice in the storyboard below - and
+        three identical `<h2>`s in a row would claim three document sections where
+        there is one thing illustrated three times, which is an outline defect on a
+        page whose whole argument is hierarchy. The `label-print` classes are
+        untouched, so the specimen is optically identical to the screen it quotes and
+        a sighted reader cannot tell; the real contents page keeps its `<h2>`, where
+        it heads a real section of a real page.
+
+        The title that stood above it left with the sample lists, and its `mt-5`
+        with it, because a gap sized for a line that is no longer there reads as the
+        title having been cut out of the plate.
+      */}
       <div className={cn('border-b', 'border-rule', 'pb-4')}>
-        <h2 className='label-print pt-1 text-caption'>{yourLists}</h2>
+        <p className='label-print pt-1 text-caption'>{yourLists}</p>
       </div>
 
       <ul style={memberInkStyle(OWNER_INK_SEED)} className='divide-y divide-rule'>
@@ -138,11 +151,13 @@ const LandingPreview: React.FC<LandingPreviewProps> = ({
       person and names nobody who bought - the product never names a buyer, so an
       action line that did would claim an attribution the app does not deliver.
 
-      The cap keeps this page's third measure. It binds where the plate is narrower
-      than it and nowhere else: in the storyboard pair each plate is 294px at 1280,
-      so the longest German action (75 characters, the second state) is two lines
-      there, while in the hero's narrow column - 442px at the same width - the
-      column itself is the measure and the cap never takes effect.
+      The cap keeps this page's third measure, and which of the two plate widths it
+      binds on depends on where the plate stands. In the storyboard pair each plate
+      is 294px at 1280, narrower than the cap, so there the plate's own width is the
+      measure and `max-w-[44ch]` never takes effect. In the hero's narrow column -
+      443px at the same width - the cap does take effect and pulls the caption in to
+      44ch, short of its column, which is what it is for: the sentence under the
+      plate must not run as wide as the claim beside it.
     */}
     <figcaption
       data-testid={actionTestId}

@@ -20,9 +20,10 @@ const ROLE_ORDER = ['owner', 'buyer'] as const;
  * The pair answers "which one am I?" for somebody standing in front of the sign-in
  * buttons who has not registered yet, and it does that by being the anatomy the
  * page already has: a claim in a narrow column, its explanation beside it, a
- * hairline above each. No new shape, and no heading - a heading would say these are
- * a section, and they are a frame around the two ways to use the product rather
- * than a third claim about it.
+ * hairline above each. No new shape, and no section heading of its own - a printed
+ * head over the block would say these are a section, and they are a frame around
+ * the two ways to use the product rather than a third claim about it. Each entry
+ * keeps the title `FeatureCard` gives every entry of this kind.
  */
 const LandingRoles: React.FC<LandingRolesProps> = ({ roles }) => (
   <div data-testid='landingRoles' className={cn('flex', 'flex-col', 'gap-y-8')}>
