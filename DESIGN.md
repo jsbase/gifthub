@@ -179,9 +179,9 @@ audience, not a degradation.
 - **Golos Text** — a Cyrillic-first grotesque. Body, controls, labels. It was drawn
   for Cyrillic, so this product's longest strings are its native case.
 - **Source Serif 4** — the specimen label, reserved for **a name**: the wordmark, a
-  group, a person. This is the one typographic commitment carried over from the
+  list, a person. This is the one typographic commitment carried over from the
   previous world, and it is better motivated here — a museum label is exactly where
-  a serif belongs.
+  a serif belongs. (A *group* was in that list once; there are no groups.)
 - **PT Sans Narrow** — the printed chrome. Section heads, cell titles, the numerals.
   Confined to 11–12px, where a condensed face reads as stamped type rather than as
   a third body font.
@@ -218,19 +218,48 @@ axis, because a person looking for a name is scanning, not reading. The landing 
 is **Persuade** and is laid out the other way on purpose, on a single `7fr / 5fr`
 grid that both of its rows share:
 
-- the claim fills the wide column, set large with the grid column itself as its
-  measure — no `max-w`, because a cap measured identical to the column at 1440,
-  1024 and 390 and bound nothing;
+- the claim fills the wide column, set at `clamp(1.75rem, 3.4vw, 2.75rem)` on `1.08`
+  with the grid column itself as its measure — no `max-w`, because a cap measured
+  identical to the column at 1440, 1024 and 390 and bound nothing;
 - the specimen plate is tipped into the narrow column and **dropped 6rem**, so its
   top rule lands inside the claim's block rather than above it;
-- the mechanisms run down the wide column below, and the narrow column is left as
-  bare board.
+- below, the rest of that list's arc, the two roles and the three mechanisms run down
+  the wide column, and the narrow column is left as bare board.
 
-The eye travels claim → plate → mechanisms, a diagonal, instead of straight down a
-centre line. What this replaced was the category default: a hero rectangle, a
-three-up feature row, and a second rectangle of exactly the same size, all centred on
-one axis. **Do not reintroduce a same-size pair of plates, a centred feature row, or
-a second full-width sheet on this page.** One plate, tipped in, beside the claim.
+The page carries **three measures** rather than one: the claim's column for the thing
+being said, the plate's own width for the thing being shown, and a `52ch` standfirst
+for the sentence that ties them together. The claim's leading is written
+*after* the size in the same `cn()` call on purpose — tailwind-merge lets a
+font-size class eat a preceding `leading-*`, and in the natural reading order the
+claim silently fell back to the `1.5` a browser gives a 44px paragraph, which is why
+it read as body copy rather than as a statement. `text-balance` does the real work of
+evening the rag across whatever the column turns out to be.
+
+The three things stacked under the hero are **a picture, a frame and an index** — the
+storyboard of one list in three states, the two roles, the three mechanisms — and
+they carry no headings of their own. That is the point rather than an omission: a
+printed head over each would say the three are sections of one kind, and two of them
+are not. The `yourLists` line every plate carries belongs to the illustration rather
+than to the document, which is why it is printed as a label and not as a heading; a
+reader who navigates by heading reaches the roles and the mechanisms and sees the
+storyboard as the evidence it is. The three are 3rem apart, carried by one `gap-y-*`
+on the column rather than by three `mt-*` values, so dropping or adding a section
+cannot leave one behind with a margin of its own.
+
+The eye travels claim → plate → arc → roles → mechanisms, a diagonal, instead of
+straight down a centre line. What this replaced was the category default: a hero
+rectangle, a three-up feature row, and a second rectangle of exactly the same size,
+all centred on one axis. **Do not reintroduce a same-size pair of plates, a centred
+feature row, or a second full-width sheet on this page** — and read that prohibition
+the way it was meant, because the spread now contains more than one plate. The pair in
+the wide column **is** two plates of the same size, and that is required: they are two
+states of *one* list in sequence rather than two alternatives to choose between, and
+two identical rectangles read as a sequence where a narrowing run would read as a
+ranking. A descending series was the rejected alternative precisely because the
+narrowest state is the one carrying the check, and shrinking it would claim it matters
+least. What the rule forbids is the pair becoming an alternative to the hero plate
+instead of a continuation of its story, and either of them growing to the hero plate's
+width.
 
 The landing page also **drops the dashboard's `max-w-5xl` and its own horizontal
 padding**, because the `container` utility already supplies the page's padding and
@@ -268,10 +297,21 @@ sentence was: four lines of German on a 360px phone, and the second button finis
 the explanation below the action makes claim + rule + buttons a block whose height
 is the claim's own line count, so the controls clear the fold on the smallest screen
 this app supports in every locale, and their position stops depending on prose
-length at all. Measured at rest against a realistic 85% fold (the viewport minus a
-phone's browser chrome and safe area), the second button's bottom edge is 54px clear
-at 320×568, 115px at 360×640, 168px at 375×667 and 318px at 390×844 — and the block
-lands on the same y in German and Russian, which is the point.
+length at all.
+
+**The budget is larger than the last time this was measured, and the reason is the
+copy.** The claim is 58 characters of German where it was 98, and the standfirst is
+148 where it was 129. The sentence that must not push the buttons down is now *longer*
+than the one it replaced, so the whole argument rests on the claim being short — a
+future claim that grows back towards a sentence is what breaks this, and the reorder
+cannot then be argued from the copy at all.
+
+> **PENDING MEASUREMENT — replaced by the browser pass, not by an estimate.** At rest
+> against a realistic 85% fold (the viewport minus a phone's browser chrome and safe
+> area), the second button's bottom edge clears the fold by _to be measured_ at 320×568,
+> 360×640, 375×667 and 390×844, in de and ru. The figures recorded here before —
+> 54px, 115px, 168px and 318px — were measured against the 98-character claim and the
+> 129-character standfirst, and they are **not** a claim about this page.
 
 **The 44px floor is not a preference.** This is used one-handed on a phone by
 someone in a hurry. Both a control's width and its height are floors; the tick and
@@ -421,37 +461,82 @@ at each row, which is announced at the row and not at the control that caused it
 
 ### The specimen plate — the landing page's quotation of the contents page
 
-The plate on the landing page is the same contents page **reproduced at a different
-size**, tipped into the narrow column of the spread. What makes it the same product
-is material and anatomy, not width: the same stock, the same printed rule, the same
-crop marks, the same ruled head, the same name in Source Serif 4, the same member ink
-on the progress rule, the same printed numeral. It is drawn with `SheetProgress`
-imported, not copied, and it carries the same count words behind the figure for
-anyone who cannot see it.
+The plates on the landing page are the contents page **reproduced at a different
+size**: once tipped into the narrow column of the spread, and twice as the pair below
+it. What makes them the same product is material and anatomy, not width — the same
+stock, the same printed rule, the same crop marks, the same ruled head, the same list
+name in Source Serif 4, the same member ink on the progress rule, the same printed
+numeral. The anatomy is imported rather than described, so it cannot drift from what
+the app shows, and `SheetProgress` is the authority for the figure itself. Each plate
+carries the same count words behind the number for anyone who cannot see it.
 
-Two pieces of catalogue furniture it has and the dashboard sheet does not:
+Three things were taken away from it, and each of them is a rule rather than a
+preference:
 
-- **A plate title**, a real group's name in the serif. The dashboard puts the group's
-  name in the app *header*; the plate has no header, so the line that makes the
-  product about one group rather than about software would otherwise be missing.
-- **A caption underneath**, on the board, in caption ink. It used to sit above the
-  plate and used to claim the plate was "the whole screen", which stopped being true
-  the moment the plate stopped being the same size as the dashboard's sheet. A
-  caption belongs below the thing it captions.
+- **There is no plate title.** It used to name somebody *else's* lists — "Annas
+  Listen" — which made the plate a specimen of a character who is not on this page.
+  The plate has no header, so it prints the contents page's own section head instead,
+  `yourLists`: the same statement about whose lists these are, made about the reader
+  and naming nobody. A title is not restored by moving it above the rows.
+- **That head is a label, not a heading.** The plate is drawn three times on one page,
+  and three identical `<h2>`s in a row would claim three document sections where
+  there is one thing illustrated three times — an outline defect on a page whose whole
+  argument is hierarchy. The real contents page keeps its `<h2>`, where it heads a
+  real section of a real page; the specimen prints the label it is, in the same
+  `label-print` classes, so the two are optically identical and a sighted reader
+  cannot tell the difference.
+- **One row per state, and one ink for all three plates.** The ink is seeded from a
+  module constant in `landing-preview.tsx` rather than from a dictionary key, because
+  a key would be translatable and the same page would print a different ink in German
+  than in Russian for what is one and the same person. The three plates are three
+  states of one list, so they are one ink: hashing them apart would read as three
+  people, which is the confusion this page exists to end.
 
-Do not restore the "whole screen" claim, and do not grow the plate back to full width:
-a same-size pair of plates is the layout this page exists to stop doing.
+The caption sits **under** the plate, on the board, in caption ink, and it is the
+action line: what has happened to this list, in the reader's own person. It used to
+sit above the plate and used to claim the plate was "the whole screen", which stopped
+being true the moment the plate stopped being the same size as the dashboard's sheet.
+A caption belongs below the thing it captions. It is capped at `44ch`, which binds in
+the hero's narrow column and does not bind on the narrower plates of the pair — and
+that is what the cap is for: the sentence under the plate must not run as wide as the
+claim beside it.
 
-### The mechanisms — a claim and an index
+Do not restore the "whole screen" claim, do not give the plate a title again, and do
+not let the pair below grow into full-width plates: two plates the width of the
+hero's is the layout this page exists to stop doing.
 
-The three feature claims are **not three cards and not three columns**. One of them
-is the product's own claim — the bought flag belongs to the group, which is the thing
-a neighbouring product cannot copy without changing what it is — and it is set large
-on the full measure with a short entry rule above it. The other two are the mechanics
-that make it true, and they are set as two lines of a catalogue index beneath: claim
-in a fixed narrow column, description beside it, a hairline between entries. The
-leading claim is chosen by dictionary **key**, not by position, so the reading order
-is a decision rather than an accident of how the JSON happens to be sorted.
+### The mechanisms — an index of three, all at the same weight
+
+The three feature claims are **not three cards and not three columns**, and they are
+not one claim above two others either. All three render as entries of the same index:
+claim in a fixed narrow column, description beside it, a hairline above each. This
+once had two registers — one claim set large on the full measure with a short entry
+rule above it, the other two as lines of an index beneath — because the bought mark
+belongs to the list and to everyone it is shared with, which is the thing a
+neighbouring product cannot copy without changing what it is. The typography was
+carrying an argument the page now makes in copy, and it carried it badly: a lead set
+above the other two reads as a headline of its own rather than as one of three.
+
+**The claim is therefore repeated on purpose.** The hero says nobody buys the same
+thing twice in the reader's own person, and this index says it again as a mechanism.
+An alternative was to drop the hero's version and let the index carry the product's
+central claim alone; it was refused because the index would then lose its duplication
+and the page's hierarchy would be sharper than the argument needs. A reader who
+notices the echo is reading it correctly.
+
+The reading order is a constant — `ORDER` in `components/feature-cards.tsx` — and not
+the order the claims happen to be written in the dictionaries, so the order is a
+decision rather than an accident of how the JSON is sorted. It is a reading order and
+not a whitelist: a named key the dictionary does not have is skipped rather than
+leaving a hole in the index, and a key the list does not name still renders, after
+the named ones, in dictionary order.
+
+**Do not reintroduce a lead register.** Removing it also removed the 4rem entry rule
+that stood above it and the 3rem stand-off between it and the list, so the index's
+first hairline now sits at the top of its own block instead of 3rem down, and the
+distance to the section above is the caller's to set. That was a visible rhythm
+change, and it is the one thing about this section that is easy to mistake for a
+regression.
 
 ### Buttons, inputs, dialogs, toasts
 
@@ -514,24 +599,48 @@ is a decision rather than an accident of how the JSON happens to be sorted.
   accessibility bugs in this codebase.
 - **Don't gate hover on Tailwind's `hover:`** where a touch device can reach it.
 - **Don't centre the landing page, and don't give it a second full-width plate.** It
-  is the one asymmetric layout in this product; see Layout.
+  is the one asymmetric layout in this product; see Layout. The pair of plates under
+  the hero is not that second plate — it continues the hero plate's story at a
+  smaller size, and it stays that size.
+- **Don't put a heading over the landing page's three blocks under the hero.** A
+  picture, a frame and an index are not three sections of one kind, and the printed
+  chrome a head would bring back is what the hero abolished.
+- **Don't restore the large lead claim** in the mechanisms index. All three entries
+  weigh the same, and the repetition of the hero's claim here is deliberate; see The
+  mechanisms.
 - **Don't print a field's own name where a dialog should be saying what it is for.**
-  The login sheet's description used to be `enterGroupName`, which put "Gruppenname"
-  on screen three times in a row — description, printed label, placeholder.
+  The login sheet's description once repeated the identifier field's own label, which
+  put "Gruppenname" on screen three times in a row — description, printed label,
+  placeholder. Two of those are still there by design; the placeholder is gone.
+- **Don't print a permanent hint under a field.** The sentence explaining what a
+  nickname *is* lives in the sheet description instead, where it is read once with the
+  title: the question is asked once, on the way in, and a line printed for the whole
+  interaction answers it again on every later glance, standing between the reader and
+  the one control the sheet exists to offer.
 
 ## Known debts
 
-- **The landing page's bare board is a decision, and it is load-bearing.** The narrow
-  column below the plate is roughly 440 × 560px of empty board at 1440. It reads as
-  intentional only because the plate is clearly tipped in and the claim beside it is
-  clearly set; anything that grows into that space, or anything that re-centres the
-  page, removes the reason the space reads as a desk.
+- **The landing page's bare board is a decision, and it is load-bearing — but it has
+  grown.** The narrow column is empty from below the tipped plate all the way past the
+  storyboard, the roles and the mechanisms, so the area beside them is now much larger
+  than the one this decision was made for. It still reads as a desk because the plate
+  is clearly tipped in and the claim beside it is clearly set; anything that grows into
+  that space, or anything that re-centres the page, removes the reason it reads as
+  intentional.
+  > **PENDING MEASUREMENT — replaced by the browser pass, not by an estimate.** The
+  > exact extent of that empty column at 1440, in px. The figures previously recorded
+  > here — roughly 440 × 560 — were measured when the column beside it held nothing but
+  > the mechanisms index, and they are **not** a claim about this page.
 - **The dark cell frame is weak.** Cell on sheet measures 1.24:1 and the hairline on
   the cell 1.49:1, so the dark grid does rely on that hairline and the hairline is
   near-invisible. The lift is real but subtle. A per-theme separation would fix it
   and has not been done.
-- **Group registration has no name validation** while member names do, so the
-  asymmetry is real and unresolved.
+- **A list's name has almost no validation while a person's does.** An account display
+  name goes through `acceptedDisplayName` — Unicode letters and marks, NFC-composed,
+  1–100 characters, with the two pasted characters rewritten — and a list name is
+  refused only when it is empty after trimming. The asymmetry is real and unresolved,
+  and it is the one place where the system's serif is reserved for a name the product
+  has never decided how to accept.
 - **Sonner's success icon is the library's**, not the system's.
 - **`giftStrikethrough`** is the test id for the buy control. The name predates this
   design and no longer describes what the control does.
