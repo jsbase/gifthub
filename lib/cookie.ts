@@ -38,6 +38,15 @@ export const cookieIsSecure = (request: NextRequest): boolean => {
     return forwarded.split(',')[0]?.trim() === 'https';
   }
 
+  /*
+    The `NODE_ENV` clause is not a shortcut and is not to be removed. `Secure` on a
+    plain-http request is not a weaker cookie - in WebKit and Safari it is no cookie at
+    all, and the session is simply gone. Dev and CI both serve over http on localhost,
+    so dropping this line takes sign-in down in two of the five browsers the suite
+    runs, while deployed traffic is https either way and so never notices. That
+    asymmetry is the whole reason the fallback exists and the reason this reads as
+    deliberate: it is the only line here that is wrong in one direction on purpose.
+  */
   return (
     request.nextUrl.protocol === 'https:' ||
     process.env.NODE_ENV !== 'production'
