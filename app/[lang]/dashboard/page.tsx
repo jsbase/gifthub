@@ -296,7 +296,10 @@ const DashboardPage: NextPage<PageProps> = ({ params }) => {
         onClose={() => setPendingDeletion(null)}
         onConfirm={handleDeleteList}
         title={dict.removeListConfirm}
-        description={dict.confirmations.deleteList}
+        description={dict.confirmations.deleteListNamed.replace(
+          '{name}',
+          pendingDeletion?.name ?? ''
+        )}
         confirmLabel={dict.deleteList}
         cancelLabel={dict.cancel}
       />

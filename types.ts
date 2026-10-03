@@ -458,7 +458,14 @@ export interface ToastTranslations {
 
 export interface ConfirmationTranslations {
   deleteGift: string;
-  deleteList: string;
+  /**
+   * Names the list, because both callers delete one and both are irreversible.
+   * It used to be a fixed sentence about "this list" - and the sheet that
+   * confirmation opens over measures 93.2% of a 390x844 viewport, so on the
+   * device this product is used on there is no longer a board on screen to work
+   * out which list the sentence is about.
+   */
+  deleteListNamed: string;
 }
 
 export interface CreateListDialogDictionary {
@@ -755,6 +762,13 @@ export interface ConfirmDialogProps {
 
 export interface RootLayoutProps {
   children: ReactNode;
+  /*
+    The locale segment, because the root layout lives at `app/[lang]/layout.tsx`
+    rather than at `app/layout.tsx`. `<html lang>` is a property of the document
+    and the document is the one thing that has to know which of the three
+    locales it is carrying.
+  */
+  params: Promise<{ lang: string }>;
 }
 
 export interface HeaderProps {

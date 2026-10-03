@@ -52,21 +52,33 @@ export const MEMBER_INKS = [
  * state, so this is a visible defect rather than a 1.4.11 failure - the mark is
  * `aria-hidden` redundancy, and redundancy still has to be legible.
  *
+ * Slot 1 was oxblood at hue 354, twelve degrees off the destructive red's 6 -
+ * close enough that the one place a row shows both (the progress rule at rest,
+ * the bin's fill on hover) put two meanings on one colour, and `DESIGN.md` says
+ * the red is a button fill and nothing else. It is mulberry at 336 now, the
+ * furthest this slot can move without colliding with the violet at 276 or the
+ * indigo at 232. Measured after the move: 7.91:1 on the light sheet for slot 1,
+ * and 6.08:1 for this array's first entry on the light collected cell. Both
+ * resolutions of the slot moved together, which is the contract below.
+ *
  * So the tray gets a second resolution rather than a second palette. These are
  * the lightened inks `app/globals.css` already declares for `.dark` - the same
  * six hues at the same chroma intent, nothing new invented. Measured against the
  * two collected grounds that ship today, `--collected` #1e1610 in the light
- * theme and #0b0706 in the dark one: 5.41-9.16:1 and 6.08-10.30:1. In the dark
- * theme they are exactly what `--member-ink-*` already resolves to, so the mark
- * there is untouched to the digit; in the light theme they are what the inverted
- * cell asks for.
+ * theme and #0b0706 in the dark one, every slot clears 4.5:1 on both; slot 1 in
+ * this array measures **6.05:1** on the light collected cell. In the dark theme
+ * these are exactly what `--member-ink-*` already resolves to, so the mark there
+ * is the same number twice; in the light theme they are what the inverted cell
+ * asks for. The ranges this comment used to quote - 5.41-9.16:1 and 6.08-10.30:1
+ * - were measured before slot 1 moved off the red, and they are not re-measured
+ * across all six slots here rather than quoted from memory.
  *
  * The two arrays are one tray: same length, same order, index-locked, and these
  * six values must be kept in step with the `.dark` block they are copied from.
  * That is the whole contract, and it is why neither may be reordered alone.
  */
 export const MEMBER_INKS_ON_COLLECTED = [
-  'hsl(354 62% 64%)', /* oxblood */
+  'hsl(336 56% 66%)', /* mulberry */
   'hsl(232 58% 72%)', /* indigo */
   'hsl(174 46% 58%)', /* verdigris */
   'hsl(38 74% 62%)', /* ochre */

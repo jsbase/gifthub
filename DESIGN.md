@@ -2,16 +2,21 @@
 name: wishy
 description: A list written on good paper — a buff album board, white label-stock cells, warm near-black ink, and one colour that means "finished".
 colors:
-  board: "#E3DACA"
-  sheet: "#FDFCF8"
-  cell: "#FDFCF8"
-  collected: "#190F0A"
-  ink: "#1E1410"
-  caption: "#5B5049"
+  # Resolved from the HSL triplets `app/globals.css` declares, light theme.
+  # These were stale — nine of the ten were approximations that no longer
+  # described the shipped colour, and `--rule` matched only by coincidence. A
+  # hex-keyed block is what a token-sync tool reads, so it has to be the value
+  # the browser actually paints.
+  board: "#EAE5DC"
+  sheet: "#FDFDFC"
+  cell: "#FDFDFC"
+  collected: "#1E1610"
+  ink: "#221B16"
+  caption: "#71655B"
   rule: "#807260"
-  done: "#18773F"
-  destructive: "#B32D18"
-  register: "#0B7EA3"
+  done: "#216E4A"
+  destructive: "#B43122"
+  register: "#0E7BA0"
 typography:
   display:
     fontFamily: "Golos Text, ui-sans-serif, system-ui, sans-serif"
@@ -20,9 +25,21 @@ typography:
     letterSpacing: "-0.01em"
   name:
     fontFamily: "Source Serif 4, ui-serif, Georgia, serif"
-    fontSize: "1.125rem"
+    fontSize: "1.25rem"
     fontWeight: 600
     lineHeight: 1.25
+  dense:
+    # The one step below `body`, and it is a step rather than an accident: the
+    # `sm` density of every control (a smaller height there would put the target
+    # under the 44px floor, so `sm` trades size for width) and the refusal
+    # sentences a dialog prints under a field. Six call sites on the contents
+    # page alone, and it was the one size in the product this block did not
+    # name — which is what `impeccable detect` reports as a font size outside
+    # the system, correctly.
+    fontFamily: "Golos Text, ui-sans-serif, system-ui, sans-serif"
+    fontSize: "0.875rem"
+    fontWeight: 400
+    lineHeight: 1.5
   sheet-head:
     fontFamily: "PT Sans Narrow, Golos Text, sans-serif"
     fontSize: "0.6875rem"
@@ -145,6 +162,21 @@ the reason nobody buys the same present twice.
 Dark mode is not a desaturated light mode: the board drops to a **warm** near-black
 (`28 15% 7%`), the saturation stays, the sheet lifts to `30 13% 14%` and the cell
 lifts again to `32 13% 20%`.
+
+**Two tokens were lifted out of their light values to make the dark theme a
+theme and not a dimmer one, and both were lifted for a measured reason rather
+than for looks.** `--rule` is the printed rule and the only thing drawing a row
+boundary on the contents page (`divide-y divide-rule`), and at its old dark value
+of `30 10% 30%` it measured **1.85:1 on the dark sheet** — under the 3:1 a
+structural boundary needs, so the line that tells a scanning reader where one
+list ends and the next begins all but disappeared. It is `32 10% 43%` now and
+measures 3.11:1 on the sheet and 3.76:1 on the board. `--destructive` is both a
+button *fill* and the destructive *sentence* on the sheet's delete control and
+in the share dialog's refusal, and at its old dark value of `8 72% 58%` the
+sentence measured **4.25:1 on the dark sheet** while the fill cleared 6:1 — one
+token serving two roles, so a text-only fix was not available. At `8 72% 62%` the
+sentence measures 4.80:1 and the fill 5.71:1: both roles gain. Cell-on-sheet
+separation is a *third* thing and is still open; see Known Debts.
 
 ### The three rules that govern colour
 
@@ -488,10 +520,18 @@ two-column grid, so the remove control did not join the row: it wrapped onto a
 second, CSS-sized row, and every member grew from 112px to about 190px with the
 control tucked under its own name and nothing on the baseline of the rule above it.
 Mode is a change of what the right-hand side of the row *is*, never a change of the
-row's height: measured, the row is 112px in both modes at 390px and 1440px, and the
-name, the figure and the remove control all sit on the same centre line. The toggle
-carries `aria-pressed`, because the mode's only other trace is a control appearing
-at each row, which is announced at the row and not at the control that caused it.
+row's height: measured, the row is **137–142px at 390px and 85–90px at 1440px** in both
+modes — not the 112px this used to claim, which was measured before the row gained its
+own second line below `sm` — and the name, the figure and the remove control all sit on
+the same centre line. The toggle carries `aria-pressed`, because the mode's only other
+trace is a control appearing at each row, which is announced at the row and not at the
+control that caused it.
+
+**Below `sm` the four owner controls sit at the right edge, not the left.** The cluster
+occupies its own CSS-sized second row and spans `col-span-2`, so before this it measured
+**358px of a 358px row — 100.00% of the width** — and three owned lists printed three
+identical full-bleed icon stripes before any list content. Right-aligned, they form one
+scannable column under the figure; above `sm` the track is `auto`, so it costs nothing.
 
 ### The specimen plate — the landing page's quotation of the contents page
 
@@ -694,10 +734,14 @@ regression.
 > that differs between locales at desktop. The empty column beneath it runs from
 > there to the footer. The figures previously recorded here — roughly 440 × 560 —
 > were measured when the column beside it held nothing but the mechanisms index.
-- **The dark cell frame is weak.** Cell on sheet measures 1.24:1 and the hairline on
-  the cell 1.49:1, so the dark grid does rely on that hairline and the hairline is
-  near-invisible. The lift is real but subtle. A per-theme separation would fix it
-  and has not been done.
+- **The dark cell frame is still weak, and the rule lift did not finish it.** Cell on sheet
+  measures 1.24:1, which is deliberate — the rule draws the boundary, not a tone difference —
+  and the hairline on the cell went from 1.49:1 to **2.51:1** when `--rule` was lifted in dark
+  (see Colors). That is a real improvement and still under the 3:1 a boundary wants, so the
+  dark grid continues to depend on a hairline that does not quite clear. Finishing it needs a
+  second token: one value cannot clear 3:1 on both grounds at once, and the contents page's row
+  dividers (sheet) and the sheet's cell borders (cell) are different boundaries. **The row
+  dividers on the dashboard are fixed; the cell frame on the list sheet is not.**
 - **A list's name has almost no validation while a person's does.** An account display
   name goes through `acceptedDisplayName` and its one regex: letters, combining marks,
   numbers, space, dot, hyphen and either apostrophe, NFC-composed, at least one letter

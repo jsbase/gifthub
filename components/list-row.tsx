@@ -132,6 +132,16 @@ const ListRow: React.FC<ListRowProps> = ({
           implicit third child in a two-column grid wrapped onto a second,
           CSS-sized row and every row grew from 112px to about 190px - so the
           row declares its shape rather than letting its children discover it.
+
+          And the reason the controls below `sm` sit right rather than left, which
+          is not visible in this declaration and is in the cluster's. Measured at
+          390px the cluster was 358px wide - 100.00% of the row - so three owned
+          lists produced three identical full-bleed icon stripes before any list
+          content, and the page was majority furniture. Right-aligned, the four
+          controls form one scannable column down the edge the eye already goes
+          to for them and directly under the figure. Above `sm` it costs nothing:
+          the third track is `auto`, so the cluster is exactly as wide as its
+          contents.
         */
         'grid-cols-[1fr_auto]',
         'grid-rows-[auto_auto]',
@@ -231,19 +241,26 @@ const ListRow: React.FC<ListRowProps> = ({
             )}
 
             {/*
-              How many people can also read it, and only when that number is not
-              zero. A private list has no audience, so the sentence would be
-              "shared with: 0" - which is not a fact about a private list, it is
-              a fact about a counter. One sentence, one count, and the count
-              comes from the same `sharedWithCount` the server counted rather
-              than from a list length the client kept in step by hand.
+              How many people can also read it - and, when that is nobody, the
+              sentence the list sheet already uses for the same fact about the
+              same object. It used to print `sharedWithCount` unconditionally, so a
+              `SHARED` list nobody had been added to carried "shared with: 0",
+              which is not a fact about a private list either - it is a fact about
+              a counter. `visibility.sharedWithNobody` says the true thing, and it
+              is read from the visibility section rather than duplicated here
+              because it is one fact about one list and it already has one
+              sentence. The count itself comes from the same `sharedWithCount` the
+              server counted rather than from a list length the client kept in step
+              by hand.
             */}
             {isShared && (
               <span className='text-[0.8125rem] leading-snug text-caption'>
-                {dict.listBoard.sharedWithCount.replace(
-                  '{count}',
-                  String(list.sharedWithCount)
-                )}
+                {list.sharedWithCount > 0
+                  ? dict.listBoard.sharedWithCount.replace(
+                      '{count}',
+                      String(list.sharedWithCount)
+                    )
+                  : dict.visibility.sharedWithNobody}
               </span>
             )}
           </span>
@@ -274,6 +291,7 @@ const ListRow: React.FC<ListRowProps> = ({
             'row-start-2',
             'flex',
             'items-center',
+            'justify-end',
             'gap-1',
             'sm:col-span-1',
             'sm:col-start-3',
@@ -283,30 +301,43 @@ const ListRow: React.FC<ListRowProps> = ({
           {ownerActions.map((action) => {
             const Icon = action.icon;
             return (
-              <Button
-                key={action.key}
-                variant='ghost'
-                size='icon'
-                /*
-                  `disabled`, and not only a pointer-events guard. Blocking the
-                  mouse leaves the button keyboard-activatable, so Enter during an
-                  in-flight PATCH would fire the second mutation at the same row -
-                  which is what `busyId` exists to make impossible.
-                */
-                disabled={isBusy}
-                onClick={() => action.onSelect?.(list.id)}
-                aria-label={action.label}
-                data-testid={action.testId}
-                className={cn(
-                  'text-caption',
-                  'transition-colors',
-                  action.destructive
-                    ? '[@media(hover:hover)_and_(pointer:fine)]:hover:bg-destructive [@media(hover:hover)_and_(pointer:fine)]:hover:text-ink-foreground'
-                    : '[@media(hover:hover)_and_(pointer:fine)]:hover:text-ink'
+              <React.Fragment key={action.key}>
+                {/*
+                  A hairline before the destructive control, and not colour. At
+                  rest the bin and the pencil are the same ink at the same weight
+                  and four identical glyphs in a row read as one undifferentiated
+                  group; the rule is what this product separates things with, and
+                  `DESIGN.md` reserves the red for a button fill, so tinting the
+                  bin would spend the one semantic colour in the app on a resting
+                  state that is not yet destructive.
+                */}
+                {action.destructive && (
+                  <span aria-hidden='true' className='mx-1.5 h-6 w-px bg-rule' />
                 )}
-              >
-                <Icon className='h-4 w-4' aria-hidden='true' />
-              </Button>
+                <Button
+                  variant='ghost'
+                  size='icon'
+                  /*
+                    `disabled`, and not only a pointer-events guard. Blocking the
+                    mouse leaves the button keyboard-activatable, so Enter during an
+                    in-flight PATCH would fire the second mutation at the same row -
+                    which is what `busyId` exists to make impossible.
+                  */
+                  disabled={isBusy}
+                  onClick={() => action.onSelect?.(list.id)}
+                  aria-label={action.label}
+                  data-testid={action.testId}
+                  className={cn(
+                    'text-caption',
+                    'transition-colors',
+                    action.destructive
+                      ? '[@media(hover:hover)_and_(pointer:fine)]:hover:bg-destructive [@media(hover:hover)_and_(pointer:fine)]:hover:text-ink-foreground'
+                      : '[@media(hover:hover)_and_(pointer:fine)]:hover:text-ink'
+                  )}
+                >
+                  <Icon className='h-4 w-4' aria-hidden='true' />
+                </Button>
+              </React.Fragment>
             );
           })}
         </div>
