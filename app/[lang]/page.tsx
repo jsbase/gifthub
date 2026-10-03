@@ -6,7 +6,6 @@ import AuthButtons from '@/components/auth-buttons';
 import Footer from '@/components/footer';
 import FeatureCards from '@/components/feature-cards';
 import LandingPreview from '@/components/landing-preview';
-import LandingRoles from '@/components/landing-roles';
 import { cn } from '@/lib/utils';
 import type { PageProps, Translations } from '@/types';
 
@@ -24,10 +23,10 @@ import type { PageProps, Translations } from '@/types';
  *          one, dropped 6rem so its top edge falls between the claim's first and
  *          second line. Two masses of different widths with different top edges
  *          and different left and right margins.
- *   row 2  the two roles and the three mechanisms run down the wide column and
- *          the narrow one is left as bare board.
+ *   row 2  the three mechanisms run down the wide column and the narrow one is left
+ *          as bare board.
  *
- * The eye therefore travels claim → plate → roles → mechanisms, a diagonal, instead
+ * The eye therefore travels claim → plate → mechanisms, a diagonal, instead
  * of straight down a centred axis. Nothing on the page shares a left edge with
  * anything below it, and that is the point: the previous version was a hero
  * rectangle, a three-up feature row and a second rectangle of exactly the same
@@ -108,8 +107,8 @@ const Home: NextPage<PageProps> = async ({ params }) => {
                 {/*
                   The album's entry rule: a catalogue marks the start of an entry
                   with a short line of ink. It sits between the claim and the
-                  sentence that explains it, so the two read as different registers
-                  of the same voice rather than as a heading and its subtitle.
+                  sentence under it, so the two read as different registers of the
+                  same voice rather than as a heading and its subtitle.
                 */}
                 <span
                   aria-hidden='true'
@@ -124,12 +123,12 @@ const Home: NextPage<PageProps> = async ({ params }) => {
                 />
 
                 {/*
-                  A standfirst, not a subtitle: what the product actually is, in
-                  concrete terms. Deliberately narrower than the claim above it and
-                  narrower than the plate beside it, so the page carries three
-                  measures rather than one - the widest for the thing being said,
-                  the middle for the thing being shown, the narrowest for the
-                  sentence that ties them.
+                  A standfirst, not a subtitle: it answers the claim, rather than
+                  describing the product a second time. Deliberately narrower than
+                  the claim above it and narrower than the plate beside it, so the
+                  page carries three measures rather than one - the widest for the
+                  thing being said, the middle for the thing being shown, the
+                  narrowest for the sentence that ties them.
 
                   `order-4` below `sm` and `order-3` from `sm` up: on a phone the
                   standfirst moves UNDER the two buttons, and on anything with
@@ -143,18 +142,19 @@ const Home: NextPage<PageProps> = async ({ params }) => {
                   and the second button finished below the fold on both 320x568 and
                   360x640, which is where most small Androids are. Those numbers
                   belong to the stand before this one, and the sentence above is
-                  longer than that one was (148 characters of German against 129),
-                  which is exactly why the order may no longer be argued from the
-                  copy: moving the explanation below the action makes the claim, the
-                  rule and the two buttons a block whose height is the claim's own
-                  line count, and the claim is now 58 characters of German where it
-                  was 98. What that buys is that no translator can move the controls
-                  by rewriting the sentence underneath them - the buttons cannot wrap
-                  either, `whitespace-nowrap` and `h-12` see to that in
-                  `components/ui/button.tsx`. How much room the block then clears
-                  the fold by is a MEASUREMENT and is not asserted here; `DESIGN.md`
-                  carries it as pending against the browser pass. Above `sm` the
-                  source order is restored and the page is exactly what it was.
+                  shorter than either of those (50 characters of German against 148
+                  and 129), which is exactly why the order may no longer be argued
+                  from the copy: moving the sentence below the action makes the
+                  claim, the rule and the two buttons a block whose height is the
+                  claim's own line count, and the claim is now 32 characters of
+                  German where it was 98. What that buys is that no translator can
+                  move the controls by rewriting the sentence underneath them - the
+                  buttons cannot wrap either, `whitespace-nowrap` and `h-12` see to
+                  that in `components/ui/button.tsx`. How much room the block then
+                  clears the fold by is a MEASUREMENT and is not asserted here;
+                  `DESIGN.md` carries it as pending against the browser pass. Above
+                  `sm` the source order is restored and the page is exactly what it
+                  was.
                 */}
                 <p
                   className={cn(
@@ -208,21 +208,20 @@ const Home: NextPage<PageProps> = async ({ params }) => {
               {/*
                 Everything below the hero runs down the wide column and the narrow
                 one stays bare board, so the spread is still two masses of different
-                widths rather than a centred stack. The two are 3rem apart, the
-                `mt-12` the index used to carry above its own list, and the gap is
-                `gap-y-*` rather than two `mt-*` values so that dropping or adding
-                a section cannot leave one behind with a margin of its own.
+                widths rather than a centred stack. The distance to the hero is this
+                wrapper's own `mt-16 lg:mt-28`; the `gap-y-12` inside it used to sit
+                between two blocks and now sits between one and nothing, which is the
+                point of having chosen `gap-y-*` over two `mt-*` values - dropping a
+                section leaves no margin behind it.
 
-                Roles, mechanisms: a frame and an index. No heading above either -
-                they are not sections of a kind, and the `yourLists` line the plate
-                carries belongs to the illustration rather than to the document,
-                which is why it is printed as a label and not as a heading. Nothing
-                is lost by leaving the block unheaded either: a reader who navigates
-                by heading reaches the roles and the mechanisms and sees the plate
-                for the evidence it is.
+                One index, no heading above it: it is not a section of a kind, and
+                the `yourLists` line the plate carries belongs to the illustration
+                rather than to the document, which is why it is printed as a label
+                and not as a heading. Nothing is lost by leaving the block unheaded:
+                a reader who navigates by heading reaches the mechanisms and sees the
+                plate for the evidence it is.
               */}
               <div className={cn('flex', 'flex-col', 'gap-y-12')}>
-                <LandingRoles roles={dict.landing.roles} />
                 <FeatureCards features={dict.features} />
               </div>
             </div>

@@ -47,17 +47,7 @@
   },
 
   "landing": {
-    "standfirst": "Die wishy weiß es. Aussuchen, abhaken, fertig.",
-    "roles": {
-      "owner": {
-        "title": "Du hast etwas, das du dir wünschst",
-        "description": "Du legst eine Liste an, trägst die Ideen ein und teilst sie mit genau den Menschen, die du selbst auswählst."
-      },
-      "buyer": {
-        "title": "Du suchst ein Geschenk für jemanden",
-        "description": "Du öffnest eine Liste, die mit dir geteilt wurde und haken ab, was du besorgt hast. Namen stehen nirgends."
-      }
-    }
+    "standfirst": "Die Wishy App weiß es. Aussuchen, abhaken, fertig."
   },
 
   "preview": {

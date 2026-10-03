@@ -168,28 +168,12 @@ export interface Translations {
   features: Features;
   landing: {
     /**
-     * The one sentence under the claim on the landing page: what the product
-     * actually is, in concrete terms, rather than a second adjective about it.
-     * Written to stand at 46ch in the claim column and to survive being four lines
-     * of German or Russian on a 390px phone.
+     * The one sentence under the claim on the landing page: what the reader gets,
+     * said plainly, rather than a second adjective about the product. Written to
+     * hold its own measure at `max-w-[52ch]` and to survive a 390px phone, where
+     * the German and the Russian are the longest of the three.
      */
     standfirst: string;
-    /**
-     * The two roles a person can hold on a list, in `PRODUCT.md`'s vocabulary
-     * rather than invented ones: the one who writes the list down and the one who
-     * buys from it.
-     *
-     * Both are written in the reader's own person and both say who does what,
-     * because the pair is the answer to "which one am I?" for somebody who has not
-     * registered yet - and they are entries of the same index as the three
-     * mechanisms below rather than two cards of their own, because `FeatureCard`
-     * is that index's anatomy and draws no box, shadow or background: a shape here
-     * would have to be a second one.
-     */
-    roles: {
-      owner: { title: string; description: string };
-      buyer: { title: string; description: string };
-    };
   };
   preview: LandingPreviewTranslations;
   errors: ErrorTranslations;
@@ -719,10 +703,6 @@ export interface LandingPreviewProps {
   giftCount: Translations['giftCount'];
   testId: string;
   actionTestId: string;
-}
-
-export interface LandingRolesProps {
-  roles: Translations['landing']['roles'];
 }
 
 export interface AuthResponse {

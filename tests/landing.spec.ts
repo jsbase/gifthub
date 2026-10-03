@@ -7,14 +7,14 @@ import { locales } from '@/lib/i18n-config';
 import type { LanguageCode, Translations } from '@/types';
 
 /*
-  The landing page: a claim, one list of the reader's own, and the two roles.
+  The landing page: a claim, one list of the reader's own, and the three
+  mechanisms.
 
   What this spec pins is the argument the page makes rather than its furniture.
   The claim is the product's own sentence; tipped into the narrow column beside it
   is one plate of the reader's own contents page, with a single row at three ideas
-  still open and a caption under it saying what happened. Then the two roles and
-  the three mechanisms, as one index with no lead above it and no heading over the
-  plate.
+  still open and a caption under it saying what happened. Then the three
+  mechanisms, as one index with no heading over the plate.
 
   It also pins the number of plates, which is the load-bearing claim here. The page
   once drew the same list three times over, its open count falling 3 -> 1 -> 0
@@ -88,16 +88,6 @@ for (const lang of locales) {
         ['tagline', dict.tagline],
         ['yourLists', dict.yourLists],
         ['landing.standfirst', dict.landing.standfirst],
-        ['landing.roles.owner.title', dict.landing.roles.owner.title],
-        [
-          'landing.roles.owner.description',
-          dict.landing.roles.owner.description,
-        ],
-        ['landing.roles.buyer.title', dict.landing.roles.buyer.title],
-        [
-          'landing.roles.buyer.description',
-          dict.landing.roles.buyer.description,
-        ],
         ['features.simple.title', dict.features.simple.title],
         ['features.simple.description', dict.features.simple.description],
         ['features.tracking.title', dict.features.tracking.title],
@@ -295,39 +285,14 @@ for (const lang of locales) {
     });
 
     /*
-      The two roles, in the order the product names them.
-
-      `ROLE_ORDER` in `landing-roles.tsx` is a constant rather than `Object.keys`
-      because the order a JSON object happens to be written in is not a
-      translation's to decide, and the array below is how that decision is held:
-      swap the two and this fails.
-    */
-    test('Both roles are there, with their explanation', async ({ page }) => {
-      const dict = DICTIONARIES[lang];
-      const roles = page.getByTestId('landingRoles');
-
-      await expect(roles).toBeVisible();
-      await expect(roles.getByRole('heading', { level: 2 })).toHaveText([
-        dict.landing.roles.owner.title,
-        dict.landing.roles.buyer.title,
-      ]);
-
-      await expect(roles).toContainText(dict.landing.roles.owner.description);
-      await expect(roles).toContainText(dict.landing.roles.buyer.description);
-    });
-
-    /*
-      The index: three mechanisms, one reading order, and no lead.
+      The index: three mechanisms and one reading order.
 
       The whole page's level-2 outline is asserted at once, because the index is
-      not a separate region - `FeatureCards` has no `data-testid` of its own, and
-      the two roles are entries of the same kind. Two things fall out of the one
-      list: a fourth entry would be the lead this index used to carry above the
-      other three, which read as a headline of its own rather than as one of
-      three, and the plate would add a sixth heading if its `yourLists` label
-      ever went back to being an `<h2>` instead of a label - a plate is a
-      quotation of the contents page, and this page has no section for a head to
-      open.
+      not a separate region - `FeatureCards` has no `data-testid` of its own. One
+      thing falls out of the one list: the plate would add a fourth heading if its
+      `yourLists` label ever went back to being an `<h2>` instead of a label - a
+      plate is a quotation of the contents page, and this page has no section for a
+      head to open.
 
       `ORDER` in `feature-cards.tsx` is the reading order, and it is a reading
       order rather than a whitelist - a claim added to a dictionary still renders,
@@ -335,16 +300,12 @@ for (const lang of locales) {
       automatically a defect; this is where that decision gets taken, and a new
       claim that belongs in the index has to be added here too.
     */
-    test('The index has three entries, in one order, and no lead', async ({
-      page,
-    }) => {
+    test('The index has three entries, in one order', async ({ page }) => {
       const dict = DICTIONARIES[lang];
 
       await expect(
         page.getByRole('main').getByRole('heading', { level: 2 })
       ).toHaveText([
-        dict.landing.roles.owner.title,
-        dict.landing.roles.buyer.title,
         dict.features.simple.title,
         dict.features.tracking.title,
         dict.features.updates.title,

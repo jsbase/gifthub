@@ -47,17 +47,7 @@
   },
 
   "landing": {
-    "standfirst": "wishy knows. Pick, tick, done.",
-    "roles": {
-      "owner": {
-        "title": "You want something for yourself",
-        "description": "You create a list, write down your ideas and share it with exactly the people you add."
-      },
-      "buyer": {
-        "title": "You are looking for a gift for somebody",
-        "description": "You open a list that was shared with you and tick off what you bought. There are no names on it."
-      }
-    }
+    "standfirst": "The wishy app knows. Pick, tick, done."
   },
 
   "preview": {
