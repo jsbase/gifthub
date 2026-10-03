@@ -1,10 +1,37 @@
+import { fixupPluginRules } from '@eslint/compat';
 import { defineConfig, globalIgnores } from 'eslint/config';
 import next from 'eslint-config-next';
 import nextTs from 'eslint-config-next/typescript';
 
+// eslint-config-next 16.3.8 pins eslint-plugin-react, eslint-plugin-import
+// and eslint-plugin-jsx-a11y, and all three still call `context.getFilename()`,
+// which ESLint 10 removed. eslint-plugin-react's peer range stops at ^9.7, so
+// there is no version to upgrade to. `fixupPluginRules` re-adds the removed
+// context members to each rule, which is the migration path ESLint documents
+// for plugins that have not shipped v10 support yet.
+//
+// This shim is what keeps the lint gate runnable at all, so it must be wrapped
+// around the plugin objects rather than left to a peer range: removing it turns
+// `npm run lint` into a crash on the first React file, not into a warning.
+// Delete it once eslint-config-next ships a plugin set that declares ^10.
+const shimPlugins = (configs) =>
+  configs.map((config) =>
+    config.plugins
+      ? {
+          ...config,
+          plugins: Object.fromEntries(
+            Object.entries(config.plugins).map(([name, plugin]) => [
+              name,
+              fixupPluginRules(plugin),
+            ])
+          ),
+        }
+      : config
+  );
+
 export default defineConfig([
-  ...next,
-  ...nextTs,
+  ...shimPlugins(next),
+  ...shimPlugins(nextTs),
   {
     // Rules that eslint-config-next 16 / typescript-eslint promote to errors on
     // code that predates the lint gate, downgraded to warnings. Rewriting these

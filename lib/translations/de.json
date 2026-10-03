@@ -209,8 +209,8 @@
     "title": "Datenschutzrichtlinie",
     "sections": [
       {
-        "title": "1. Allgemeine Informationen und Pflichtangaben",
-        "content": "Der Schutz Ihrer persönlichen Daten ist uns wichtig. Wir behandeln Ihre personenbezogenen Daten vertraulich und entsprechend der gesetzlichen Datenschutzvorschriften sowie dieser Datenschutzerklärung. Diese Richtlinie erklärt, welche Daten wir erheben, wie wir sie verwenden und welche Rechte Sie in Bezug auf Ihre Daten haben."
+        "title": "1. Allgemeine Informationen",
+        "content": "Wir behandeln Ihre personenbezogenen Daten vertraulich und nach den gesetzlichen Datenschutzvorschriften. Diese Richtlinie erklärt, welche Daten wir erheben, wie wir sie verwenden und welche Rechte Sie haben."
       },
       {
         "title": "2. Verantwortliche Stelle für die Datenverarbeitung",
@@ -222,41 +222,37 @@
       },
       {
         "title": "4. Verwendung der Daten zur Verwaltung der Wunschlisten",
-        "content": "Jede Wunschliste gehört genau einer Person. Sie ist zuerst privat und nur für die Person sichtbar, der sie gehört. Wird sie geteilt, sehen genau die Personen diese Liste und die darin enthaltenen Ideen, die dort ausdrücklich eingetragen wurden. Diese Personen können eine Idee als gekauft markieren; Einträge hinzufügen, ändern oder löschen können sie nicht. Produktlinks und Ideen werden in unserer Datenbank gespeichert."
+        "content": "Jede Wunschliste gehört genau einer Person. Sie ist zuerst privat und nur für die Person sichtbar, der sie gehört. Wird sie geteilt, sehen genau die Personen diese Liste und die darin enthaltenen Ideen, die dort ausdrücklich eingetragen sind. Diese Personen können eine Idee als gekauft markieren; Einträge hinzufügen, ändern oder löschen können sie nicht. Produktlinks und Ideen werden in unserer Datenbank gespeichert."
       },
       {
-        "title": "5. Premium-Modell und Zahlungsdaten",
-        "content": "Wenn Sie unser Premium-Modell wählen, werden zusätzliche Informationen gespeichert, die für die Zahlungsabwicklung erforderlich sind. Dazu gehören: Zahlungsmethoden, Transaktionsdaten, Zahlungsstatus. Zahlungsdaten werden ausschließlich zur Abwicklung der Premium-Mitgliedschaft verwendet und sicher in unserer Datenbank gespeichert."
+        "title": "5. Weitergabe und Übermittlung von Daten",
+        "content": "Wir geben Ihre persönlichen Daten nur weiter, wenn es für die Erfüllung unserer Dienstleistung notwendig ist oder wir gesetzlich dazu verpflichtet sind. An Dritte geben wir sie nur mit Ihrer ausdrücklichen Zustimmung weiter."
       },
       {
-        "title": "6. Weitergabe und Übermittlung von Daten",
-        "content": "Wir geben Ihre persönlichen Daten nur weiter, wenn es zur Erfüllung unserer Dienstleistung notwendig ist oder wenn wir gesetzlich dazu verpflichtet sind. Eine Weitergabe an Dritte erfolgt ohne Ihre ausdrückliche Zustimmung nicht."
+        "title": "6. Aufbewahrung und Löschung von Daten",
+        "content": "Wir bewahren Ihre persönlichen Daten nur so lange auf, wie es für die in dieser Richtlinie genannten Zwecke erforderlich ist oder gesetzlich vorgeschrieben ist. In der Regel löschen wir die Daten nach Beendigung der Vertragsbeziehung und nach Ablauf gesetzlicher Aufbewahrungsfristen."
       },
       {
-        "title": "7. Aufbewahrung und Löschung von Daten",
-        "content": "Wir bewahren Ihre persönlichen Daten nur so lange auf, wie es zur Erfüllung der in dieser Richtlinie genannten Zwecke erforderlich ist oder gesetzlich vorgeschrieben ist. Daten werden in der Regel nach Beendigung der Vertragsbeziehung und nach Ablauf gesetzlicher Aufbewahrungsfristen gelöscht."
+        "title": "7. Ihre Rechte",
+        "content": "Sie haben jederzeit das Recht, Auskunft über die Daten zu verlangen, die wir über Sie gespeichert haben, unrichtige Daten zu berichtigen, die Verarbeitung einzuschränken, Ihre Daten zu löschen, soweit gesetzlich zulässig, und der Verarbeitung Ihrer Daten zu widersprechen. Fragen zur Verarbeitung Ihrer personenbezogenen Daten und zur Ausübung Ihrer Rechte richten Sie bitte an: jsbase.dev@gmail.com."
       },
       {
-        "title": "8. Ihre Rechte",
-        "content": "Sie haben das Recht, jederzeit: Auskunft über die Daten, die wir über Sie gespeichert haben, zu verlangen, Berichtigung unrichtiger Daten zu verlangen, Einschränkung der Verarbeitung zu verlangen, Löschung Ihrer Daten, soweit gesetzlich zulässig, zu verlangen, Widerspruch gegen die Verarbeitung Ihrer Daten einzulegen. Zur Ausübung Ihrer Rechte oder bei weiteren Fragen zur Verarbeitung Ihrer personenbezogenen Daten kontaktieren Sie uns bitte unter: jsbase.dev@gmail.com."
+        "title": "8. Datensicherheit",
+        "content": "Wir setzen geeignete technische und organisatorische Sicherheitsmaßnahmen ein, um Ihre Daten vor unbefugtem Zugriff, Verlust oder Manipulation zu schützen."
       },
       {
-        "title": "9. Datensicherheit",
-        "content": "Wir setzen geeignete technische und organisatorische Sicherheitsmaßnahmen ein, um Ihre Daten vor unbefugtem Zugriff, Verlust oder Manipulation zu schützen. Unsere Sicherheitsmaßnahmen werden entsprechend der technologischen Entwicklung kontinuierlich verbessert."
-      },
-      {
-        "title": "10. Änderungen dieser Datenschutzrichtlinie",
-        "content": "Wir behalten uns das Recht vor, diese Datenschutzrichtlinie zu ändern, um rechtlichen Anforderungen oder Änderungen in der Funktionalität unserer Web-App zu entsprechen. Die aktuelle Version der Datenschutzrichtlinie ist jederzeit in unserer Web-App verfügbar."
+        "title": "9. Änderungen dieser Datenschutzrichtlinie",
+        "content": "Wir können diese Datenschutzrichtlinie ändern, wenn sich rechtliche Anforderungen oder der Funktionsumfang unserer Web-App ändern. Die aktuelle Fassung steht jederzeit in der Web-App."
       }
     ],
     "subsections": [
       {
         "title": "a) Beim Besuch unserer Web-App",
-        "content": "Beim Zugriff auf unsere Web-App werden automatisch bestimmte Daten durch unseren Server erfasst, wie: IP-Adresse, Datum und Uhrzeit des Zugriffs, verwendeter Browser und Betriebssystem, besuchte Seiten und Aktionen innerhalb der Web-App. Diese Daten werden ausschließlich zur Sicherstellung eines reibungslosen Betriebs und zur Verbesserung unserer Web-App verwendet und anschließend automatisch gelöscht."
+        "content": "Beim Zugriff auf die Web-App speichert unser Server automatisch die IP-Adresse, Datum und Uhrzeit des Zugriffs, den verwendeten Browser und das Betriebssystem sowie die besuchten Seiten und Aktionen in der Web-App. Wir verwenden diese Daten nur für einen reibungslosen Betrieb und die Verbesserung der Web-App; anschließend werden sie automatisch gelöscht."
       },
       {
         "title": "b) Registrierung und Anmeldung zur Nutzung der Web-App",
-        "content": "Um die Web-App zu nutzen, ist ein Konto mit E-Mail-Adresse, Passwort und Anzeigename erforderlich. Bei der Registrierung und Anmeldung speichern wir: Kontodaten (E-Mail-Adresse, Passwort und Anzeigename), die eigenen Wunschlisten mit ihren Geschenkideen und Links zu Produkten sowie bei geteilten Listen die E-Mail-Adresse und den Anzeigenamen der Personen, mit denen sie geteilt wurden. Das Passwort wird vor der Speicherung gehasht und ist im Klartext nicht wiederherstellbar. Zu jeder als gekauft markierten Idee speichern wir außerdem das Konto, das sie abgehakt hat. Die Markierung gehört allen, mit denen die Liste geteilt ist: Sie können sie untereinander korrigieren. Nur die Person, der die Liste gehört, kann eine von jemand anderem gesetzte Markierung nicht aufheben. Der Name wird in der Web-App nicht angezeigt."
+        "content": "Um die Web-App zu nutzen, ist ein Konto mit einem Nickname, einer E-Mail-Adresse und einem Passwort erforderlich; den Anzeigamen leiten wir aus dem Nickname ab. Bei der Registrierung speichern wir die Kontodaten (Nickname, E-Mail-Adresse, Passwort und Anzeigename), die eigenen Wunschlisten mit ihren Geschenkideen und Links zu Produkten sowie bei geteilten Listen die E-Mail-Adresse und den Anzeigenamen der Personen, mit denen sie geteilt wurden. Das Passwort wird vor der Speicherung gehasht und lässt sich nicht im Klartext wiederherstellen. Zu jeder als gekauft markierten Idee speichern wir außerdem das Konto, das sie abgehakt hat. Alle, mit denen die Liste geteilt ist, sehen dieselbe Markierung und können sie untereinander korrigieren. Die Person, der die Liste gehört, kann eine von jemand anderem gesetzte Markierung nicht aufheben. Der Name wird in der Web-App nicht angezeigt."
       }
     ]
   },
@@ -270,7 +266,7 @@
       },
       {
         "title": "2. Leistungsbeschreibung",
-        "content": "wishy ermöglicht es Nutzern, Geschenkwünsche zu organisieren, Wunschlisten zu erstellen und den Überblick über geplante Geschenke zu behalten. Die App dient der Koordination von Geschenken zwischen den Personen, die eine Liste teilen, wobei die Überraschung gewahrt bleibt."
+        "content": "wishy hilft, Geschenkwünsche zu ordnen, Wunschlisten anzulegen und den Stand der geplanten Geschenke zu sehen. Die App koordiniert Geschenke zwischen den Personen, die eine Liste teilen, und wahrt dabei die Überraschung."
       },
       {
         "title": "3. Registrierung und Nutzerkonto",
@@ -282,7 +278,7 @@
       },
       {
         "title": "5. Datenschutz",
-        "content": "Der Schutz personenbezogener Daten hat höchste Priorität. Details sind in unserer Datenschutzerklärung zu finden."
+        "content": "Details sind in unserer Datenschutzerklärung zu finden."
       },
       {
         "title": "6. Haftungsausschluss",

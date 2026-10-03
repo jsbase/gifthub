@@ -209,8 +209,8 @@
     "title": "Privacy Policy",
     "sections": [
       {
-        "title": "1. General Information and Mandatory Notices",
-        "content": "Protecting your personal data is important to us. We treat your personal information confidentially and in accordance with legal data protection regulations as well as this privacy policy. This policy explains what data we collect, how we use it, and what rights you have regarding your data."
+        "title": "1. General Information",
+        "content": "We treat your personal information confidentially and in accordance with legal data protection regulations. This policy explains what data we collect, how we use it, and what rights you have regarding your data."
       },
       {
         "title": "2. Responsible Party for Data Processing",
@@ -225,38 +225,34 @@
         "content": "Each wishlist belongs to exactly one person. It is private at first and visible only to the person it belongs to. Once it is shared, exactly the people who have been entered on it can see that list and the ideas on it. Those people may mark an idea as bought; they cannot add, change or delete entries. Product links and ideas are stored in our database."
       },
       {
-        "title": "5. Premium Model and Payment Data",
-        "content": "If you choose our premium model, additional information necessary for payment processing will be stored. This includes: Payment methods, Transaction data, Payment status. Payment data is used exclusively for processing the premium membership and is securely stored in our database."
+        "title": "5. Data Sharing and Transfer",
+        "content": "We share your personal data only when it is necessary to provide our service or when the law requires it. We pass data to third parties only with your explicit consent."
       },
       {
-        "title": "6. Data Sharing and Transfer",
-        "content": "We only share your personal data if it is necessary for fulfilling our service or if we are legally required to do so. No data is transferred to third parties without your explicit consent."
+        "title": "6. Data Retention and Deletion",
+        "content": "We keep your personal data only for as long as the purposes listed in this policy or the law require. In most cases we delete it after the contractual relationship has ended and the statutory retention periods have passed."
       },
       {
-        "title": "7. Data Retention and Deletion",
-        "content": "We retain your personal data only as long as necessary to fulfill the purposes outlined in this policy or as legally required. Data is typically deleted after the end of the contractual relationship and upon completion of statutory retention periods."
+        "title": "7. Your Rights",
+        "content": "You have the right at any time to ask what data we hold about you, to have incorrect data corrected, to have processing restricted, to have your data deleted where the law allows it, and to object to the processing of your data. Write to jsbase.dev@gmail.com to exercise these rights or if you have questions about how we process your personal data."
       },
       {
-        "title": "8. Your Rights",
-        "content": "You have the right at any time to: Request information about the data we have stored about you, Request correction of incorrect data, Request restriction of processing, Request deletion of your data, as permitted by law, Object to the processing of your data. To exercise your rights or if you have any further questions regarding the processing of your personal data, please contact us at: jsbase.dev@gmail.com."
+        "title": "8. Data Security",
+        "content": "We use appropriate technical and organizational security measures to protect your data against unauthorized access, loss or manipulation."
       },
       {
-        "title": "9. Data Security",
-        "content": "We employ appropriate technical and organizational security measures to protect your data against unauthorized access, loss, or manipulation. Our security measures are continuously improved in line with technological advancements."
-      },
-      {
-        "title": "10. Changes to This Privacy Policy",
-        "content": "We reserve the right to amend this privacy policy to comply with changes in legal requirements or in the functionality of our web app. The current version of the privacy policy is available on our web app at any time."
+        "title": "9. Changes to this policy",
+        "content": "We may change this privacy policy when legal requirements or the way the app works change. The current version of the policy is always available in the app."
       }
     ],
     "subsections": [
       {
         "title": "a) When Visiting Our Web App",
-        "content": "When you access our web app, certain data is automatically collected by our server, such as: IP address, Date and time of access, Browser and operating system used, Pages visited and actions within the web app. This data is used exclusively to ensure smooth operation and improve our web app, and is automatically deleted afterward."
+        "content": "When you open the app, our server automatically stores your IP address, the date and time of the visit, the browser and operating system you used, the pages you visited and the actions you took in the app. We use this data only to keep the app running smoothly and to improve it; it is deleted automatically afterwards."
       },
       {
         "title": "b) Registration and Login for Using the Web App",
-        "content": "To use the web app, an account with an email address, a password and a display name is required. During registration and login, we store: account data (email address, password and display name), your own wishlists with their gift ideas and links to products, and on shared lists the email address and display name of the people it is shared with. The password is hashed before it is stored and cannot be recovered in plain text. For every idea marked as bought we also store the account that marked it. The mark belongs to everyone the list is shared with: they can correct each other's marks. Only the person who owns the list is unable to remove a mark somebody else set; the name is never shown in the web app."
+        "content": "To use the app you need an account with a nickname, an email address and a password; we derive the display name from the nickname. When you register we store your account data (nickname, email address, password and display name), your own wishlists with their gift ideas and product links, and on shared lists the email address and display name of the people the list is shared with. The password is hashed before it is stored and cannot be recovered as plain text. For every idea marked as bought we also store the account that marked it. Everyone the list is shared with sees the same mark and can correct each other's marks. The person who owns the list cannot take away a mark somebody else set. The name is never shown in the app."
       }
     ]
   },
@@ -270,7 +266,7 @@
       },
       {
         "title": "2. Service Description",
-        "content": "wishy enables users to organize gift wishes, create wishlists, and keep track of planned gifts. The app serves to coordinate gifts between the people who share a list, while maintaining the element of surprise."
+        "content": "wishy helps you organize gift wishes, create wishlists and keep track of planned gifts. The app coordinates gifts between the people who share a list, and the surprise stays."
       },
       {
         "title": "3. Registration and User Account",
@@ -282,7 +278,7 @@
       },
       {
         "title": "5. Privacy",
-        "content": "The protection of personal data is our highest priority. Details can be found in our Privacy Policy."
+        "content": "Details are in our privacy policy."
       },
       {
         "title": "6. Disclaimer",
