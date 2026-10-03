@@ -231,35 +231,42 @@ being said, the plate's own width for the thing being shown, and a `52ch` standf
 for the sentence that ties them together. The claim's leading is written
 *after* the size in the same `cn()` call on purpose — tailwind-merge lets a
 font-size class eat a preceding `leading-*`, and in the natural reading order the
-claim silently fell back to the `1.5` a browser gives a 44px paragraph, which is why
-it read as body copy rather than as a statement. `text-balance` does the real work of
-evening the rag across whatever the column turns out to be.
+claim silently fell back to the `1.5` Tailwind's preflight sets on `html`, which is
+what a 44px paragraph inherits with no `leading-*` of its own, and it read as body
+copy rather than as a statement. `text-balance` does the real work of evening the rag
+across whatever the column turns out to be.
 
 The three things stacked under the hero are **a picture, a frame and an index** — the
 storyboard of one list in three states, the two roles, the three mechanisms — and
-they carry no headings of their own. That is the point rather than an omission: a
-printed head over each would say the three are sections of one kind, and two of them
-are not. The `yourLists` line every plate carries belongs to the illustration rather
-than to the document, which is why it is printed as a label and not as a heading; a
-reader who navigates by heading reaches the roles and the mechanisms and sees the
-storyboard as the evidence it is. The three are 3rem apart, carried by one `gap-y-*`
-on the column rather than by three `mt-*` values, so dropping or adding a section
-cannot leave one behind with a margin of its own.
+**none of them carries a heading above it**. That is the point rather than an
+omission: a printed head over each would say the three are sections of one kind, and
+two of them are not.
+
+The roles and the mechanisms do carry the heading each of their own entries already
+had — `FeatureCard` emits an `<h2>` per entry, so this page contributes five, and all
+five are deliberate. The storyboard contributes none, because its only title is the
+plate's `yourLists` label, which belongs to the illustration rather than to the
+document. A reader who navigates by heading therefore reaches the roles and the
+mechanisms and sees the storyboard as the evidence it is, which is the argument this
+page is making. The three are 3rem apart, carried by one `gap-y-*` on the column
+rather than by three `mt-*` values, so dropping or adding a section cannot leave one
+behind with a margin of its own.
 
 The eye travels claim → plate → arc → roles → mechanisms, a diagonal, instead of
 straight down a centre line. What this replaced was the category default: a hero
 rectangle, a three-up feature row, and a second rectangle of exactly the same size,
-all centred on one axis. **Do not reintroduce a same-size pair of plates, a centred
-feature row, or a second full-width sheet on this page** — and read that prohibition
-the way it was meant, because the spread now contains more than one plate. The pair in
-the wide column **is** two plates of the same size, and that is required: they are two
-states of *one* list in sequence rather than two alternatives to choose between, and
-two identical rectangles read as a sequence where a narrowing run would read as a
-ranking. A descending series was the rejected alternative precisely because the
-narrowest state is the one carrying the check, and shrinking it would claim it matters
-least. What the rule forbids is the pair becoming an alternative to the hero plate
-instead of a continuation of its story, and either of them growing to the hero plate's
-width.
+all centred on one axis. **Two rules keep it that way.** No centred feature row, and
+no second full-width sheet: every plate on this page is either tipped into a column or
+stacked below the hero, and none of them is laid across the full measure.
+
+The pair in the wide column **is** two plates of the same size, and that is required:
+they are two states of *one* list in sequence rather than two alternatives to choose
+between, and two identical rectangles read as a sequence where a narrowing run would
+read as a ranking. A descending series was the rejected alternative precisely because
+the narrowest state is the one carrying the check, and shrinking it would claim it
+matters least. So the pair stays at that size, stays a continuation of the hero
+plate's story rather than becoming an alternative to it, and neither plate grows to
+the hero plate's width.
 
 The landing page also **drops the dashboard's `max-w-5xl` and its own horizontal
 padding**, because the `container` utility already supplies the page's padding and
@@ -293,18 +300,24 @@ where a standfirst belongs.
 This is a structural adaptation, not a squeeze. The actions used to sit under that
 sentence, so how far down the page they landed was a function of how long the
 sentence was: four lines of German on a 360px phone, and the second button finished
-**below the fold** on 320×568 and 360×640 — where most small Androids are. Moving
-the explanation below the action makes claim + rule + buttons a block whose height
-is the claim's own line count, so the controls clear the fold on the smallest screen
-this app supports in every locale, and their position stops depending on prose
-length at all.
+**below the fold** on 320×568 and 360×640 — where most small Androids are. Below
+`sm` the standfirst is now the *last* thing in the column, so what stands above it is
+the claim, the entry rule and the two buttons — and that block's height is a function
+of the claim's own line count and of nothing else. No translator can move those
+controls by rewriting the sentence underneath them, and that independence is the whole
+property the reorder buys.
 
-**The budget is larger than the last time this was measured, and the reason is the
-copy.** The claim is 58 characters of German where it was 98, and the standfirst is
-148 where it was 129. The sentence that must not push the buttons down is now *longer*
-than the one it replaced, so the whole argument rests on the claim being short — a
-future claim that grows back towards a sentence is what breaks this, and the reorder
-cannot then be argued from the copy at all.
+How much room that leaves against the fold is a measurement rather than a derivation,
+and it is taken below rather than argued here.
+
+**The block is shorter than the last time this was checked, and that follows from the
+copy rather than from a browser.** The claim is 58 characters of German where it was
+98, and the standfirst is 148 where it was 129. A shorter claim cannot break into more
+lines, so the block standing above the standfirst can only have lost height. Note the
+direction of the other number: the sentence that must not push the buttons down is now
+*longer* than the one it replaced, so the reorder survives only because the claim got
+much shorter — a future claim that grows back towards a sentence is what breaks this,
+and the reorder cannot then be argued from the copy at all.
 
 > **PENDING MEASUREMENT — replaced by the browser pass, not by an estimate.** At rest
 > against a realistic 85% fold (the viewport minus a phone's browser chrome and safe
@@ -636,11 +649,12 @@ regression.
   near-invisible. The lift is real but subtle. A per-theme separation would fix it
   and has not been done.
 - **A list's name has almost no validation while a person's does.** An account display
-  name goes through `acceptedDisplayName` — Unicode letters and marks, NFC-composed,
-  1–100 characters, with the two pasted characters rewritten — and a list name is
-  refused only when it is empty after trimming. The asymmetry is real and unresolved,
-  and it is the one place where the system's serif is reserved for a name the product
-  has never decided how to accept.
+  name goes through `acceptedDisplayName` and its one regex: letters, combining marks,
+  numbers, space, dot, hyphen and either apostrophe, NFC-composed, at least one letter
+  required, 1–100 characters, with the no-break space and non-breaking hyphen rewritten
+  on the way in. A list name is refused only when it is empty after trimming. The
+  asymmetry is real and unresolved, and it is the one place where the system's serif is
+  reserved for a name the product has never decided how to accept.
 - **Sonner's success icon is the library's**, not the system's.
 - **`giftStrikethrough`** is the test id for the buy control. The name predates this
   design and no longer describes what the control does.
