@@ -72,9 +72,10 @@ const Home: NextPage<PageProps> = async ({ params }) => {
                 eats a preceding `leading-*` from the same call:
                 `cn('leading-[1.08]', 'text-[clamp(...)]')` resolves to the size
                 alone. Reversed, both survive. Written in the natural reading
-                order this claim silently fell back to the 1.5 the browser gives
-                a 44px paragraph, which is why it read as body copy rather than
-                as a statement. A scan of every `cn()` call in the repo finds no
+                order this claim silently fell back to the 1.5 Tailwind's preflight
+                sets on `html`, which is what a 44px paragraph inherits with no
+                `leading-*` of its own, and it read as body copy rather than as a
+                statement. A scan of every `cn()` call in the repo finds no
                 other call losing a leading class today - every existing site
                 happens to order `leading-*` last.
 
@@ -142,8 +143,12 @@ const Home: NextPage<PageProps> = async ({ params }) => {
                   copy: moving the explanation below the action makes the claim, the
                   rule and the two buttons a block whose height is the claim's own
                   line count, and the claim is now 58 characters of German where it
-                  was 98 - so the controls clear the fold on the smallest screen
-                  this app supports whatever a translator writes. Above `sm` the
+                  was 98. What that buys is that no translator can move the controls
+                  by rewriting the sentence underneath them - the buttons cannot wrap
+                  either, `whitespace-nowrap` and `h-12` see to that in
+                  `components/ui/button.tsx`. How much room the block then clears
+                  the fold by is a MEASUREMENT and is not asserted here; `DESIGN.md`
+                  carries it as pending against the browser pass. Above `sm` the
                   source order is restored and the page is exactly what it was.
                 */}
                 <p

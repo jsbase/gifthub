@@ -257,7 +257,15 @@ straight down a centre line. What this replaced was the category default: a hero
 rectangle, a three-up feature row, and a second rectangle of exactly the same size,
 all centred on one axis. **Two rules keep it that way.** No centred feature row, and
 no second full-width sheet: every plate on this page is either tipped into a column or
-stacked below the hero, and none of them is laid across the full measure.
+stacked below the hero.
+
+Where the columns exist, that means neither plate is laid across the full measure —
+the hero's sits in the narrow one from `lg`, the pair side by side in the wide one
+from `xl`. **Below those widths the grid is a single column and a plate does span it.**
+That is a stacked phone layout rather than a second full-width sheet, and the rule is
+about the spread, not about every width: what it forbids is a plate that reaches the
+page's edges *beside* another mass, which is what turned two plates into a category
+default.
 
 The pair in the wide column **is** two plates of the same size, and that is required:
 they are two states of *one* list in sequence rather than two alternatives to choose
@@ -302,10 +310,13 @@ sentence, so how far down the page they landed was a function of how long the
 sentence was: four lines of German on a 360px phone, and the second button finished
 **below the fold** on 320×568 and 360×640 — where most small Androids are. Below
 `sm` the standfirst is now the *last* thing in the column, so what stands above it is
-the claim, the entry rule and the two buttons — and that block's height is a function
-of the claim's own line count and of nothing else. No translator can move those
-controls by rewriting the sentence underneath them, and that independence is the whole
-property the reorder buys.
+the claim, the entry rule and the two ways in — and that block's height is a function
+of the claim's own line count. The two ways in are the fixed part of it, and they are
+fixed rather than content-driven on purpose: `buttonVariants` gives every button
+`whitespace-nowrap` and `size='lg'` gives these two `h-12`, so a label cannot wrap and
+a longer translation cannot make either button taller. What is left is the claim, and
+no translator can move those controls by rewriting the sentence underneath them —
+which is the whole property the reorder buys.
 
 How much room that leaves against the fold is a measurement rather than a derivation,
 and it is taken below rather than argued here.
