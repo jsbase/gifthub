@@ -391,7 +391,17 @@ const ShareListDialog: React.FC<ShareListDialogProps> = ({
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogContent closeLabel={dict.close} className='sm:max-w-md'>
         <DialogHeader>
-          <DialogTitle>{dict.shareList.shareTitle}</DialogTitle>
+          {/*
+            `font-sans text-xl` against the primitive's serif default, and the
+            reason is written down twice in this file already: the title is a
+            verb, and a serif on a verb is the one thing the type division does
+            not allow. It was taking the 24px serif default anyway, which is what
+            put this sheet's title in a different face at a different size from
+            the create, rename and visibility sheets beside it.
+          */}
+          <DialogTitle className='font-sans text-xl'>
+            {dict.shareList.shareTitle}
+          </DialogTitle>
           {/*
             Which list, in the printed label face the sheet uses for its section
             heads. The title above it is a verb and there is only ever one of them

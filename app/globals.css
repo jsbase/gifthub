@@ -194,12 +194,16 @@
     buff board and an ink-filled button, and WCAG 2.4.11 accepts a multi-colour
     indicator as long as one of the tones clears 3:1 against what it sits on.
 
-    Measured, it is the ring that carries it, on both of its edges: 7.16:1
-    against the dark board and 6.57:1 against its own gap, 3.65:1 against the
+    Measured, it is the ring that carries it, on both of its edges: 6.87:1
+    against the dark board and 6.57:1 against its own gap, 3.84:1 against the
     light board and 4.52:1 against its own gap. The gap tone is *not* what
     clears - it sits at 1.09:1 on the dark board and 1.24:1 on the light one,
     because its job is to be the ground the ring is cut out against, not to be
-    seen. An earlier version of this comment claimed the gap cleared 3:1 "by a
+    seen. An earlier version of this comment claimed the ring cleared 7.16:1 on
+    the dark board and 3.65:1 on the light one; re-measured in the browser it is
+    the other way round - it is stronger against the dark ground than the light
+    one - so the numbers here are the measured ones and not the assumed ones.
+    An even earlier version of this comment claimed the gap cleared 3:1 "by a
     wide margin"; it does not, and the ring alone is sufficient.
 
     Both tones are box-shadow rather than outline. The obvious outline version
@@ -332,7 +336,7 @@
   --done: 152 54% 28%; /* nothing left       ~#18773F */
   --done-foreground: 152 54% 28%;
 
-  --member-ink-1: 354 58% 36%; /* oxblood */
+  --member-ink-1: 336 58% 36%; /* mulberry, off the red */
   --member-ink-2: 232 46% 40%; /* indigo */
   --member-ink-3: 174 46% 26%; /* verdigris */
   --member-ink-4: 36 70% 36%; /* ochre */
@@ -363,18 +367,35 @@
   --scrim: 28 15% 2%; /* deeper than board    ~#060504 */
   --ink: 42 24% 93%; /* ~#F2EDE4 */
   --caption: 35 10% 66%; /* ~#AF9F92 */
-  --rule: 30 10% 30%; /* ~#4A3E37 */
+  /* The rule is the boundary, and it is the only thing carrying it: `--cell` is
+     equal to `--sheet` in this theme, so a cell has no tone of its own. Light
+     measures 4.59:1 on the sheet, comfortably structural.
+     Dark is lifted off its old 30% lightness, which measured 1.85:1 on the dark
+     sheet and 1.49:1 on the dark cell - a 1px line that all but disappeared,
+     and the row dividers on the contents page (`divide-y divide-rule`) are drawn
+     with it. At 43% it measures 3.11:1 on the dark sheet and 3.76:1 on the dark
+     board, so the divider that tells a scanning reader where one list ends and
+     the next begins survives the theme. Cell-on-sheet separation is a separate
+     debt and is not fixed by this; see the Known Debts entry in DESIGN.md. */
+  --rule: 32 10% 43%; /* the printed rule   ~#796E63 */
   --ink-foreground: 28 15% 8%;
 
   --register: 193 68% 48%; /* ~#35B2D4 */
   --register-gap: 28 15% 9%; /* the local ground */
   --furniture: 32 10% 42%;
 
-  --destructive: 8 72% 58%; /* ~#E8705C */
+  /* Lifted from 58% for the same reason `--rule` above was: this token is a
+     button FILL and also the destructive SENTENCE on the sheet's delete control
+     and in the share dialog's refusal, and at 58% the text measured 4.25:1 on
+     the dark sheet - under the 4.5:1 body text needs - while the fill cleared
+     6:1 against its own foreground. One token serves both roles, so the fix
+     cannot be a text-only colour: at 62% the sentence measures 4.80:1 on the
+     sheet and the fill 5.71:1, so both roles gain. */
+  --destructive: 8 72% 62%; /* red pencil         ~#E46B58 */
   --done: 150 44% 60%; /* ~#64D394 */
   --done-foreground: 150 44% 60%;
 
-  --member-ink-1: 354 62% 64%;
+  --member-ink-1: 336 56% 66%;
   --member-ink-2: 232 58% 72%;
   --member-ink-3: 174 46% 58%;
   --member-ink-4: 38 74% 62%;
@@ -510,11 +531,32 @@
   The printed label: the small tracked uppercase line that heads a section of
   the sheet. It is the one place PT Sans Narrow is used at body size, and it is
   how a specimen catalogue marks its sections.
+
+  The family is spelled out rather than reached through `var(--font-label)`, and
+  that is a repair rather than a duplication. `--font-label` is declared inside
+  `@theme inline`, which substitutes a theme token's value into the utilities
+  Tailwind generates and does NOT emit it as a custom property - so the Tailwind
+  `font-label` utility inlines the whole stack correctly and a raw
+  `var(--font-label)` inside a hand-written `@utility` resolves against nothing.
+  Measured in the browser: `getComputedStyle(document.body).getPropertyValue(
+  '--font-label')` returned the empty string while the two next/font variables it
+  is built from were both present, and every `label-print` element on the
+  contents page computed to `"Golos Text", ...` - the body face. The size, the
+  tracking and the uppercase case all survived, so the label still looked like a
+  stamped label and the failure was invisible to review; what it actually cost
+  was the printed register, which was rendering in two faces inside a single
+  row: `PRIVAT` in Golos Text and the count numeral four pixels away in PT Sans
+  Narrow. Reference the next/font variables directly and both register.
 */
 @utility label-print {
-  font-family: var(--font-label);
+  font-family:
+    var(--font-pt-narrow), var(--font-golos), ui-sans-serif, system-ui, sans-serif;
   font-size: 0.6875rem;
-  font-weight: 600;
+  /* 700, and not the 600 this used to ask for. PT Sans Narrow ships 400 and 700
+     only (`app/layout.tsx`), so a 600 request matched 700 by CSS font-matching
+     rules anyway - the right weight arrived by accident rather than by
+     decision, which is the same class of defect as the family above it. */
+  font-weight: 700;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   line-height: 1;

@@ -26,6 +26,17 @@ const PASSWORD = 'test1234';
 // duplicate case below is reachable without touching the seeded accounts.
 const NEW_ACCOUNT = 'e2e-register@example.test';
 
+/*
+  The clause about the nickname, which the sign-in sheet reads out with its title
+  instead of printing under the field for as long as the sheet is open.
+
+  Taken as the description's first sentence rather than written out here, because
+  this file asserts the dictionary and never a literal: a copy change would
+  otherwise leave a string behind in a test that the sheet no longer prints, and
+  the failure would point at the test rather than at the copy.
+*/
+const NICKNAME_SENTENCE = `${dict.loginDescription.split('.')[0]}.`;
+
 const prisma = new PrismaClient();
 
 /*
@@ -413,5 +424,228 @@ test.describe('Login and Registration', () => {
       dict.errors.invalidIdentifier
     );
     await expect(page.getByTestId('loginPasswordError')).toHaveCount(0);
+  });
+
+  /*
+    Where the nickname sentence is, and what a field is described by.
+
+    It used to be a paragraph printed under the identifier field for as long as
+    the sheet was open, with `aria-describedby` pointing at it, and it is now in
+    the sheet's description - which the dialog reads out with the title, once. The
+    count is the assertion rather than a presence check, because "the hint is gone"
+    and "the hint now lives in the description" are different claims: a hint that
+    survived beside the description prints one sentence twice, one of them standing
+    between the reader and the field they came to fill.
+
+    `aria-describedby` is asserted in both of its states, which is the whole
+    subtlety. "Nothing describes this field yet" is half the design, and on its own
+    it is satisfied just as well by a build that had deleted the attribute outright
+    - a sheet that says nothing to a screen reader at the one moment it has
+    something to say. So the second half follows: after a formally invalid
+    identifier the field is described by that error and by nothing else. Which
+    sentence that refusal carries is the existing `invalidIdentifier` test's job;
+    this one runs the same refusal only to read the attribute, which is the half
+    of it that test cannot see.
+
+    The third claim is the exit, and it is here for the same reason the absent
+    attribute is: `loginCreateAccount` is missing from a sheet in which nothing has
+    been refused, so the control cannot be mistaken for something the app offers
+    whoever opens it.
+  */
+  test(
+    'The nickname sentence is printed once, the field described only by a refusal, and the exit waits for one',
+    async ({ page }) => {
+      await page.getByTestId('OpenLogin').click();
+
+      const dialog = page.locator('[role="dialog"]');
+      await expect(dialog).toBeVisible();
+
+      /*
+        Visible before it is denied anything: a negative attribute assertion is also
+        satisfied by an element that is not on the page at all, so without this the
+        two assertions about `aria-describedby` below would pass against a sheet
+        with no field on it.
+      */
+      const identifier = page.locator('#identifier');
+      await expect(identifier).toBeVisible();
+
+      // The DOM's text rather than the rendered text, so a soft line break inside
+      // the description cannot split the clause that is being counted.
+      const sheetText = (await dialog.textContent()) ?? '';
+
+      expect(
+        sheetText.split(dict.loginDescription).length - 1,
+        'the sheet reads its description once, with the title'
+      ).toBe(1);
+      expect(
+        sheetText.split(NICKNAME_SENTENCE).length - 1,
+        'the sentence about the nickname belongs to that description and to nothing else'
+      ).toBe(1);
+
+      await expect(
+        identifier,
+        'a field described by a constant describes nothing about what was typed'
+      ).not.toHaveAttribute('aria-describedby');
+
+      // And no way out before anything has been refused: this button answers a
+      // refusal, and printing it in front of a reader who has not failed yet is a
+      // suggestion about whether they have an account.
+      await expect(page.getByTestId('loginCreateAccount')).toHaveCount(0);
+
+      await page.fill('#identifier', '!!!');
+      await page.fill('#password', PASSWORD);
+      await page.getByTestId('SubmitLogin').click();
+
+      await expect(page.getByTestId('loginIdentifierError')).toBeVisible({
+        timeout: 10000,
+      });
+      await expect(identifier).toHaveAttribute(
+        'aria-describedby',
+        'loginIdentifierError'
+      );
+    }
+  );
+
+  test(
+    'A wrong password is refused with the one sentence and a way into registration',
+    async ({ page }) => {
+      /*
+        Counted rather than read off the render. A `<button>` with no type inside a
+        form re-posts it, so an exit that had lost its `type` would send the very
+        credentials that were just refused a second time, from a control whose label
+        says "create an account". What the assertions below see is the second answer
+        and not the second request: it fills the shared `passwordError` slot and the
+        register sheet prints `registerPasswordError` in a form the refusal has
+        nothing to do with - and if that answer never comes back at all, the sheet
+        prints nothing and the credentials have still gone out twice. This is the one
+        assertion here that measures the request instead of what it leaves behind.
+      */
+      let signInRequests = 0;
+      page.on('request', (request) => {
+        if (request.url().includes('/api/auth/login')) signInRequests += 1;
+      });
+
+      await page.getByTestId('OpenLogin').click();
+      await page.fill('#identifier', ANNA);
+      await page.fill('#password', 'definitely-not-the-password');
+      await page.getByTestId('SubmitLogin').click();
+
+      /*
+        The sentence, and which one it is. The route answers an unknown identifier
+        and a wrong password with the same 401 on purpose, so the wording that is
+        true of both is the only wording this sheet may print; nothing here decides
+        which of the two the reader got wrong, because the product does not know
+        either.
+      */
+      const passwordError = page.getByTestId('loginPasswordError');
+      await expect(passwordError).toBeVisible({ timeout: 10000 });
+      expect(await passwordError.textContent()).toContain(
+        dict.errors.loginRejected
+      );
+
+      // Printed under the failure it answers, in the dictionary's own words.
+      const exit = page.getByTestId('loginCreateAccount');
+      await expect(exit).toBeVisible();
+      await expect(exit).toContainText(dict.errors.createAccountInstead);
+
+      await exit.click();
+
+      /*
+        A real door, and a clean one. The sign-in sheet closes and the registration
+        sheet is there with its own submit - and the verdict did not follow the
+        reader into it, because both sheets read the same error slots: a refusal
+        left standing would be waiting under a password field in a form that has
+        nothing to do with it.
+      */
+      await expect(page.getByTestId('SubmitRegister')).toBeVisible();
+      await expect(page.getByTestId('SubmitLogin')).toHaveCount(0);
+      await expect(page.getByTestId('registerPasswordError')).toHaveCount(0);
+
+      expect(
+        signInRequests,
+        'the exit must not re-post the credentials it was printed under'
+      ).toBe(1);
+    }
+  );
+
+  /*
+    The next two tests are the only ones here that touch the network, and they
+    need the service worker out of the way. `public/sw.js` declines `/api/`, so
+    Chromium and Firefox let `page.route` reach the request anyway - but WebKit
+    hands the fetch to the registered worker first, the request never reaches the
+    network stack Playwright is intercepting, and both tests fail on a page that
+    is behaving correctly. Blocking the worker for these two tests costs nothing:
+    neither of them is about the worker.
+   */
+  test.describe('the two branches that need the network', () => {
+    test.use({ serviceWorkers: 'block' });
+
+    test(
+      'A sign-in that never reached the server is answered as a lost connection',
+      async ({ page }) => {
+        /*
+        The network is the only way into this branch, and it is a deliberate one:
+        nothing in the app fails on demand, and the two branches above are about
+        what the server *said*, which is the one thing a dead connection cannot
+        say. Aborted rather than answered with a status, because a status would
+        make this test about the sentence for a status - which the next test owns.
+      */
+        await page.route('**/api/auth/login', (route) => route.abort());
+
+        await page.getByTestId('OpenLogin').click();
+        await page.fill('#identifier', ANNA);
+        await page.fill('#password', PASSWORD);
+        await page.getByTestId('SubmitLogin').click();
+
+        const passwordError = page.getByTestId('loginPasswordError');
+        await expect(passwordError).toBeVisible({ timeout: 10000 });
+        expect(await passwordError.textContent()).toContain(
+          dict.errors.loginOffline
+        );
+
+        // And no way out of it: this failure is on this side of the wire, and an
+        // offer to register does not answer "try again".
+        await expect(page.getByTestId('loginCreateAccount')).toHaveCount(0);
+      }
+    );
+
+    test(
+      'A sign-in the server failed is answered differently from a refusal',
+      async ({ page }) => {
+        /*
+        Fulfilled with a JSON body, and that is load-bearing: `login()` throws on a
+        body it cannot parse, and the `catch` answers `loginOffline`. A bare
+        `status: 500` would therefore land in the sentence the previous test owns -
+        passing or failing for a reason that has nothing to do with the 5xx branch.
+      */
+      await page.route('**/api/auth/login', (route) =>
+        route.fulfill({
+          status: 500,
+          contentType: 'application/json',
+          body: JSON.stringify({}),
+        })
+      );
+
+      await page.getByTestId('OpenLogin').click();
+      await page.fill('#identifier', ANNA);
+      await page.fill('#password', PASSWORD);
+      await page.getByTestId('SubmitLogin').click();
+
+      const passwordError = page.getByTestId('loginPasswordError');
+      await expect(passwordError).toBeVisible({ timeout: 10000 });
+      expect(await passwordError.textContent()).toContain(
+        dict.errors.loginServerError
+      );
+
+      /*
+        The server broke rather than the values, and the two want opposite advice:
+        a refusal is answered by doing something else, a fault by doing the same
+        thing again in a moment. The exit into registration follows the sentence
+        and not the other way round - showing it after a fault would suggest the
+        reader has no account, which is exactly the thing this sheet may not say.
+      */
+      await expect(page.getByTestId('loginCreateAccount')).toHaveCount(0);
+    }
+  );
   });
 });

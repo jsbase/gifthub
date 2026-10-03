@@ -1,74 +1,77 @@
 {
-  "tagline": "Jede Person hat ihre eigene Liste. Geteilt wird sie nur mit den Menschen, die du selbst dazuholst.",
+  "tagline": "Schon wieder keine Geschenkidee?",
   "login": "Anmelden",
   "register": "Konto erstellen",
   "loading": "Wird geladen...",
   "cancel": "Abbrechen",
   "close": "Schließen",
-
   "email": "E-Mail-Adresse",
   "displayName": "Anzeigename",
-    "nickname": "Nickname",
+  "nickname": "Nickname",
   "password": "Passwort",
   "confirmPassword": "Passwort bestätigen",
   "loginBtn": "Anmelden",
   "registerBtn": "Konto erstellen",
-    "loginIdentifier": "Nickname oder E-Mail-Adresse",
-    "loginIdentifierHint": "Dein Nickname ist einmalig — damit meldest du dich an.",
-    "registerNicknameHint": "Dein Nickname ist einmalig. Andere sehen dich unter diesem Namen.",
-
-  "loginDescription": "Nach der Anmeldung siehst du deine Listen und die, die andere mit dir geteilt haben.",
+  "loginIdentifier": "Nickname oder E-Mail-Adresse",
+  "registerNicknameHint": "Dein Nickname ist einmalig. Andere sehen dich unter diesem Namen.",
+  "loginDescription": "Dein Nickname ist einmalig — damit meldest du dich an. Nach der Anmeldung siehst du deine Listen und die, die andere mit dir geteilt haben.",
   "registerDescription": "Mit diesem Konto gehören dir alle Listen, die du anlegst — und du allein entscheidest, wer sie sieht.",
-
   "logout": "Abmelden",
   "changeLanguage": "Sprache ändern",
-
   "yourLists": "Deine Listen",
-  "sharedWithYou": "Mit dir geteilt",
+  "sharedWithYou": "Liste deiner Liebsten",
   "createList": "Liste erstellen",
   "createListDescription": "Eine Liste gehört dir. Private siehst nur du, geteilte nur die Menschen, die du einträgst.",
   "deleteList": "Liste löschen",
   "removeListConfirm": "Diese Liste löschen?",
-  "noLists": "Noch keine Listen. Lege die erste an.",
-  "noSharedLists": "Dir hat noch niemand eine Liste geteilt.",
-
+  "noLists": "Lege deine erste Wunschliste an.",
+  "noSharedLists": "Es wurden noch keine Wunschlisten mit dir geteilt.",
   "features": {
-    "simple": {
-      "title": "Eine Idee in Sekunden",
-      "description": "Ein Titel genügt. Notiz und Link sind optional, mehr braucht es nicht."
+    "wish": {
+      "title": "Bekomme, was du dir wünschst",
+      "description": "Alle sehen, was fehlt."
     },
-    "tracking": {
-      "title": "Niemand kauft es zweimal",
-      "description": "Die anderen haken selbst ab, was sie besorgt haben — sichtbar für jeden, und ohne Namen."
+    "once": {
+      "title": "Keine doppelten Geschenke",
+      "description": "Gekauft? Einfach abhaken."
     },
-    "updates": {
+    "surprise": {
       "title": "Die Überraschung bleibt",
-      "description": "Eine neue Liste sieht außer dir niemand. Auch die Person nicht, für die sie ist."
+      "description": "Niemand weiß, wer's gekauft hat."
     }
   },
-
   "landing": {
-    "standfirst": "Eine Liste pro Person, ein Konto pro E-Mail-Adresse — was besorgt ist, bleibt durchgestrichen stehen, der Name des Kaufenden nie."
+    "standfirst": "Die Wishy App weiß es. Aussuchen, abhaken, fertig."
   },
-
   "preview": {
-    "list": "Annas Listen",
-    "lead": "Die Inhaltsseite, wie Anna sie sieht. Jede Zeile ist eine ihrer Listen, und die Zahl rechts zählt die Ideen, die noch offen sind.",
     "items": [
-      { "name": "Omas Geburtstag", "count": 3, "collected": 2 },
-      { "name": "Weihnachten", "count": 1, "collected": 2 },
-      { "name": "Mias Hochzeit", "count": 0, "collected": 4 }
+      {
+        "name": "Geburtstagswünsche",
+        "count": 3,
+        "collected": 2
+      },
+      {
+        "name": "Weihnachten",
+        "count": 1,
+        "collected": 2
+      },
+      {
+        "name": "Valentinstag",
+        "count": 0,
+        "collected": 4
+      }
     ]
   },
-
   "errors": {
     "loginRequired": "Anmeldung erforderlich",
     "failedToLoad": "Listen nicht geladen",
     "failedToLoadGifts": "Geschenkideen nicht geladen",
-    "loginFailed": "Anmeldung fehlgeschlagen",
+    "loginRejected": "Nickname oder E-Mail-Adresse und Passwort passen nicht zusammen.",
+    "loginOffline": "Keine Verbindung. Bitte versuch es noch einmal.",
+    "loginServerError": "Das hat nicht geklappt. Bitte versuch es später noch einmal.",
+    "createAccountInstead": "Noch kein Konto? Konto erstellen",
     "passwordMismatch": "Passwörter stimmen nicht überein",
     "registrationFailed": "Konto konnte nicht erstellt werden",
-
     "invalidEmail": "Bitte eine gültige E-Mail-Adresse eingeben.",
     "invalidNickname": "Bitte einen Nickname aus Buchstaben, Ziffern, Punkt, Strich oder Unterstrich eingeben (2–32 Zeichen).",
     "duplicateNickname": "Dieser Nickname ist schon vergeben.",
@@ -79,7 +82,6 @@
     "duplicateEmail": "Zu dieser E-Mail-Adresse gibt es schon ein Konto. Ein vergessenes Passwort lässt sich nicht zurücksetzen.",
     "weakPassword": "Mindestens 8 Zeichen.",
     "invalidDisplayName": "Der Name darf Buchstaben, Zahlen, Leerzeichen, Punkte, Bindestriche und Apostrophe enthalten, höchstens 100 Zeichen.",
-
     "noSuchAccount": "Zu dieser E-Mail-Adresse gibt es noch kein Konto. Bitte frag die Person direkt, ob sie sich registriert hat.",
     "alreadyShared": "Diese Person kann die Liste schon sehen.",
     "cannotShareWithOwner": "Die Liste gehört dir selbst.",
@@ -88,11 +90,9 @@
     "forbidden": "Das ist auf dieser Liste nicht erlaubt.",
     "notFound": "Diese Liste gibt es nicht."
   },
-
   "success": {
     "loggedOut": "Abgemeldet"
   },
-
   "toasts": {
     "giftAdded": "Geschenkidee hinzugefügt",
     "giftAddFailed": "Geschenkidee nicht hinzugefügt",
@@ -116,12 +116,10 @@
     "loginSuccess": "Erfolgreich angemeldet",
     "registrationSuccess": "Konto erstellt"
   },
-
   "confirmations": {
     "deleteGift": "Damit verschwindet die Idee von dieser Liste — auch für alle, mit denen du sie teilst.",
-    "deleteList": "Damit werden auch alle Ideen auf dieser Liste gelöscht. Das lässt sich nicht rückgängig machen."
+    "deleteListNamed": "„{name}“ wird gelöscht, mit allen Ideen darauf. Das lässt sich nicht rückgängig machen."
   },
-
   "visibility": {
     "private": "Privat",
     "shared": "Geteilt",
@@ -131,7 +129,6 @@
     "sharedWith": "Geteilt mit",
     "sharedWithNobody": "Noch mit niemandem geteilt"
   },
-
   "listSheet": {
     "listHint": "Auf dieser Liste schreibst nur du.",
     "addGift": "Geschenkidee hinzufügen",
@@ -153,7 +150,6 @@
     "markedBySomeoneElse": "Jemand anderes hat das abgehakt — die Markierung bleibt.",
     "backToLists": "Zurück zu den Listen"
   },
-
   "shareList": {
     "shareTitle": "Liste teilen",
     "shareLead": "Jede eingetragene Adresse sieht die ganze Liste und darf Ideen abhaken. Sonst nichts.",
@@ -166,7 +162,6 @@
     "privateFirst": "Solange die Liste privat ist, kannst du niemanden eintragen. Teile sie zuerst.",
     "makeShared": "Jetzt teilen"
   },
-
   "createListDialog": {
     "createListTitle": "Neue Liste",
     "enterListName": "Name der Liste",
@@ -178,10 +173,9 @@
     "shared": "Geteilt",
     "sharedHint": "Genau die, die du später mit einer Adresse einträgst."
   },
-
   "listBoard": {
     "yourLists": "Deine Listen",
-    "sharedWithYou": "Mit dir geteilt",
+    "sharedWithYou": "Liste deiner Liebsten",
     "createList": "Liste erstellen",
     "addGift": "Geschenkidee hinzufügen",
     "rename": "Umbenennen",
@@ -193,18 +187,17 @@
     "changeVisibility": "Sichtbarkeit ändern",
     "share": "Teilen",
     "sharedWithCount": "Geteilt mit: {count}",
-    "noLists": "Noch keine Listen. Lege die erste an.",
-    "noSharedLists": "Dir hat noch niemand eine Liste geteilt.",
+    "noLists": "Lege deine erste Wunschliste an.",
+    "noSharedLists": "Es wurden noch keine Wunschlisten mit dir geteilt.",
+    "emptyPlateHint": "Ein Name reicht. Wer sie sieht, entscheidest du.",
     "private": "Privat",
     "shared": "Geteilt"
   },
-
   "footer": {
     "copyright": "© 2026 wishy",
     "privacyPolicy": "Datenschutz",
     "termsConditions": "AGB"
   },
-
   "privacy": {
     "title": "Datenschutzrichtlinie",
     "sections": [
@@ -260,7 +253,6 @@
       }
     ]
   },
-
   "terms": {
     "title": "Allgemeine Geschäftsbedingungen",
     "sections": [
@@ -290,7 +282,6 @@
       }
     ]
   },
-
   "giftCount": {
     "none": "noch keine Geschenkidee",
     "zero": "nichts mehr zu kaufen",

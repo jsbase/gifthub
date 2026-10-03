@@ -166,10 +166,7 @@ const ListBoard: React.FC<ListBoardProps> = ({
             that pinned a single name would pass on whichever section happened to
             render first.
           */
-          <EmptyState
-            message={dict.listBoard.noLists}
-            testId='noLists'
-          />
+          <CreatePlate dict={dict} onCreate={onCreateList} />
         )}
       </section>
 
@@ -202,7 +199,7 @@ const ListBoard: React.FC<ListBoardProps> = ({
             ))}
           </ul>
         ) : (
-          <EmptyState
+          <EmptyNote
             message={dict.listBoard.noSharedLists}
             testId='noSharedLists'
           />
@@ -264,29 +261,97 @@ const SectionHead: React.FC<{ label: string; action?: React.ReactNode }> = ({
 );
 
 /**
- * Nothing here yet.
+ * The empty board's blank plate, and it is the control.
  *
- * Dashed, and for the reason the empty cell on a list's sheet is dashed: a solid
- * rule means there is a row and a dashed one means there is room for one. The
- * old board used the same rectangle for "no members", where the room was for a
- * name; here it is the room for a list.
+ * The same arrangement an empty list sheet uses for its blank cell, and for the
+ * same reason: a printed rule means there is a row and a dashed one means there
+ * is room for one, and the only thing you can do with room for a row is make it.
+ * So the whole plate is the target rather than a sentence with a button somewhere
+ * else, and the invitation and the action are one object.
+ *
+ * This used to be a `<p>` in a dashed box reading "Lege deine erste Wunschliste
+ * an." - an imperative in a shape that looks pressable, with the one working
+ * control 60px above it and 570px to the right. It is the first thing every new
+ * account sees, and the emptiest the product can be, and it was the largest
+ * object on the sheet carrying no action at all.
+ *
+ * The hint is what earns the plate: without a second line saying what actually
+ * goes in, a large dashed rectangle with a sentence in it is a wall.
  */
-const EmptyState: React.FC<{ message: string; testId: string }> = ({
-  message,
-  testId,
+const CreatePlate: React.FC<{ dict: Translations; onCreate: () => void }> = ({
+  dict,
+  onCreate,
 }) => (
-  <p
+  <button
+    type='button'
+    onClick={onCreate}
+    data-testid='noLists'
     className={cn(
-      'max-w-[44ch]',
+      // Full content width, for the reason the sheet's blank cell is: a row on
+      // this page is full content width, and a plate that stopped two thirds of
+      // the way across would be a different shape from the row it stands for.
+      'flex w-full flex-col items-start gap-2.5',
       'border',
       'border-dashed',
       'border-rule',
       'px-5',
-      'py-8',
-      'text-[0.9375rem]',
-      'leading-relaxed',
-      'text-caption'
+      'py-7',
+      'text-left',
+      // Gated on a real pointer, as every other hover affordance in this product
+      // is: a touch device that can reach this button cannot hover it, and an
+      // unhoverable target that repaints on tap is the tap-to-nothing pattern.
+      '[@media(hover:hover)_and_(pointer:fine)]:hover:bg-wash',
+      'rounded-md'
     )}
+  >
+    {/* The invitation, in ink rather than in caption. On an empty board this
+        sentence is the entire content of the section, and it was set at the same
+        weight as the section head above it. */}
+    <span
+      className={cn(
+        'text-[0.9375rem]',
+        'leading-relaxed',
+        'text-pretty',
+        'text-ink'
+      )}
+    >
+      {dict.listBoard.noLists}
+    </span>
+
+    {/* What actually goes in. `aria-hidden` rather than repeated, for the reason
+        the sheet's own blank cell gives: it restates what the dialog it opens
+        will label field by field, and a second sentence in the control's
+        accessible name is more than the control needs to announce. */}
+    <span
+      aria-hidden='true'
+      className={cn('text-[0.8125rem]', 'leading-relaxed', 'text-caption')}
+    >
+      {dict.listBoard.emptyPlateHint}
+    </span>
+  </button>
+);
+
+/**
+ * Nobody has shared a list with this account. A sentence, and deliberately no
+ * plate around it.
+ *
+ * It used to print the same dashed box as the section above it, which is the one
+ * place on this page where the design system's own vocabulary is used against
+ * its own meaning: a dashed rule means there is room for a row, and the only
+ * thing anybody can do with room for a row in *this* section is wait for
+ * somebody else. The sheet's empty state draws the same line - a buyer on an
+ * empty list gets the sentence alone - and this is that case.
+ *
+ * It is set at `meta` rather than at the size the sentence above it used to be,
+ * because it is now the only thing in its section rather than the largest object
+ * on the sheet, and there is no longer an action for it to compete with.
+ */
+const EmptyNote: React.FC<{ message: string; testId: string }> = ({
+  message,
+  testId,
+}) => (
+  <p
+    className={cn('max-w-[44ch]', 'text-[0.8125rem]', 'leading-relaxed', 'text-caption')}
     data-testid={testId}
   >
     {message}

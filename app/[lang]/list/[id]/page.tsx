@@ -232,7 +232,10 @@ const ListPage: NextPage<ListPageProps> = ({ params }) => {
         onClose={() => setPendingDeletion(false)}
         onConfirm={handleDeleteList}
         title={dict.removeListConfirm}
-        description={dict.confirmations.deleteList}
+        description={dict.confirmations.deleteListNamed.replace(
+          '{name}',
+          list.name
+        )}
         confirmLabel={dict.deleteList}
         cancelLabel={dict.cancel}
       />
