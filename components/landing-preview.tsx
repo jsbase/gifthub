@@ -21,27 +21,35 @@ import type { LandingPreviewProps } from '@/types';
 const OWNER_INK_SEED = 'wishy:landing:owner';
 
 /**
- * One list of the reader's own, drawn as a plate on the board.
+ * The reader's own lists, drawn as one plate on the board.
  *
  * This is the reader's contents page rather than an illustration of it, which is
  * why the plate carries no title of its own: the title named somebody else's
  * lists and made the plate a specimen of a character who is not on this page,
  * while the section head the real contents page prints - `yourLists`, set as the
  * label it is and not as a heading - says the same thing about the reader without
- * naming anyone. The action line under the plate is the caption in the only sense
- * this page needs: it says what has happened to this list, in the reader's own
- * person.
+ * naming anyone.
  *
- * There is one plate, and that is the whole point of the current design rather
- * than a leftover. It was three once - the same list three times over, its open
- * count falling 3 -> 1 -> 0 until the figure became a check - and the rendered
- * page was rejected: three plates with the same head, the same list name and the
- * same single row read as repetition rather than as a story, the plate in the
- * hero's right column and the pair below it broke the one asymmetric spread into
- * three scattered rectangles, and the plate carrying the check read as a different
- * list rather than as a later state of this one. The check is still what
- * `SheetProgress` draws at zero, and this page stands at three open precisely so
- * that a reader is looking at a list somebody can still be surprised by.
+ * Three rows, and that is what makes the plate worth reading. One row said
+ * nothing: a single name, a rule and a numeral is a fragment, and the rendered
+ * page was rejected for exactly that. Three rows carry the product's whole
+ * vocabulary at a glance - a list nobody has bought from yet, one nearly done,
+ * and one finished, where `SheetProgress` replaces the numeral with the check and
+ * the rule fills to the end in green. The four count words the dashboard uses sit
+ * behind every row, so the whole arc arrives as language too.
+ *
+ * The row names are occasions rather than people, and that is load-bearing. Names
+ * like "Ben and Mia" were tried here and read as random: nobody on this page has
+ * been introduced, so a caption naming them asserted a cast the page never set up.
+ * "Geburtstagswünsche", "Weihnachten" and "Valentinstag" need no introduction and
+ * no cast, which is what an occasion is for.
+ *
+ * There is no caption under the plate, and there was one for most of this
+ * branch's life. It has to earn its place: the last version named two people the
+ * reader had never heard of, in order to say who may see the list - a rule the
+ * standfirst and the index already carry. A caption that repeats what the page
+ * says elsewhere is the plate's caption explaining the plate, which is the habit
+ * this page was rewritten to break. The rows speak for themselves.
  *
  * The anatomy is imported rather than described, so it cannot drift from what the
  * app shows: the same stock, the same printed rule, the same crop marks, the same
@@ -53,7 +61,6 @@ const LandingPreview: React.FC<LandingPreviewProps> = ({
   yourLists,
   giftCount,
   testId,
-  actionTestId,
 }) => (
   <figure className={cn('flex', 'flex-col')}>
     <div
@@ -153,35 +160,6 @@ const LandingPreview: React.FC<LandingPreviewProps> = ({
         })}
       </ul>
     </div>
-
-    {/*
-      The action, on the board, in caption ink, under the thing it describes: a
-      catalogue prints the caption below the plate and never above it. It is the
-      only prose this component writes, and it is written in the reader's own
-      person and names nobody who bought - the product never names a buyer, so an
-      action line that did would claim an attribution the app does not deliver.
-
-      The cap keeps this page's third measure, the narrowest of the three. The
-      plate stands in the hero's narrow column, 443px at 1280 where the cap does
-      take effect and pulls the caption in to 44ch, short of its column: the
-      sentence under the plate must not run as wide as the claim beside it. It was
-      a second question to answer while there were three plates, because the
-      storyboard pair was 294px each and narrower than the cap, so there the
-      plate's own width was the measure. There is one plate and one width again.
-    */}
-    <figcaption
-      data-testid={actionTestId}
-      className={cn(
-        'mt-5',
-        'max-w-[44ch]',
-        'text-[0.9375rem]',
-        'leading-relaxed',
-        'text-pretty',
-        'text-caption'
-      )}
-    >
-      {preview.action}
-    </figcaption>
   </figure>
 );
 

@@ -23,26 +23,26 @@
   "changeLanguage": "Change language",
 
   "yourLists": "Your lists",
-  "sharedWithYou": "Shared with you",
+  "sharedWithYou": "Your loved ones' lists",
   "createList": "Create list",
   "createListDescription": "A list belongs to you. You alone see a private one, and a shared one only the people you add.",
   "deleteList": "Delete list",
   "removeListConfirm": "Delete this list?",
-  "noLists": "No lists yet. Create the first one.",
-  "noSharedLists": "Nobody has shared a list with you yet.",
+  "noLists": "Create your first wish list.",
+  "noSharedLists": "No wish lists have been shared with you yet.",
 
   "features": {
-    "simple": {
-      "title": "One idea in seconds",
-      "description": "A title is enough. A note and a link are optional, and that is all it takes."
+    "wish": {
+      "title": "You always get what you asked for",
+      "description": "You share it with whoever you like. Everyone sees what is missing."
     },
-    "tracking": {
-      "title": "Nobody buys it twice",
-      "description": "The people you shared with mark off what they have bought themselves — visible to everyone, and without names."
+    "once": {
+      "title": "Never the same gift twice",
+      "description": "Whoever bought something ticks it off. Everyone sees it at once."
     },
-    "updates": {
-      "title": "The surprise stays a surprise",
-      "description": "A new list is seen by nobody but you. Not even by the person it is for."
+    "surprise": {
+      "title": "The surprise stays",
+      "description": "Nobody finds out who bought what."
     }
   },
 
@@ -51,8 +51,11 @@
   },
 
   "preview": {
-    "action": "Only Ben and Mia can see this list.",
-    "items": [{ "name": "Grandma's birthday", "count": 3, "collected": 2 }]
+    "items": [
+      { "name": "Birthday wishes", "count": 3, "collected": 2 },
+      { "name": "Christmas", "count": 1, "collected": 2 },
+      { "name": "Valentine's Day", "count": 0, "collected": 4 }
+    ]
   },
 
   "errors": {
@@ -178,7 +181,7 @@
 
   "listBoard": {
     "yourLists": "Your lists",
-    "sharedWithYou": "Shared with you",
+    "sharedWithYou": "Your loved ones' lists",
     "createList": "Create list",
     "addGift": "Add gift idea",
     "rename": "Rename",
@@ -190,8 +193,9 @@
     "changeVisibility": "Change visibility",
     "share": "Share",
     "sharedWithCount": "Shared with: {count}",
-    "noLists": "No lists yet. Create the first one.",
-    "noSharedLists": "Nobody has shared a list with you yet.",
+    "noLists": "Create your first wish list.",
+    "noSharedLists": "No wish lists have been shared with you yet.",
+    "emptyPlateHint": "A name is enough. Who sees it, you decide.",
     "private": "Private",
     "shared": "Shared"
   },

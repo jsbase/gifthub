@@ -323,34 +323,29 @@ export interface SuccessTranslations {
  *
  * It is a flat object again, and that is a decision rather than a leftover. It has
  * been a list twice. First three sample lists under one plate title, which made
- * the plate a specimen of the software rather than a page of somebody's, and put
- * the only interesting count - the zero - in one row of three. Then one list drawn
- * three times, its open count falling 3 -> 1 -> 0 and its figure becoming a check
- * in the last one. That version was built, rendered, looked at and rejected:
- * three plates carrying the same head, the same list name and the same single row
- * read as repetition rather than as a story, the plate in the hero's right column
- * and the pair below broke one asymmetric spread into three scattered rectangles,
- * and the plate with the check read as a *different* list rather than as a later
- * state of this one. Nothing about the plate was wrong. Three of them were, and the
- * number 3 was carrying the argument the plate should have carried.
+ * the plate a specimen of the software rather than a page of somebody's. Then one
+ * list drawn three times, its open count falling 3 -> 1 -> 0 and its figure
+ * becoming a check in the last one. That version was built, rendered, looked at
+ * and rejected: three plates carrying the same head, the same list name and the
+ * same single row read as repetition rather than as a story, the plate in the
+ * hero's right column and the pair below broke one asymmetric spread into three
+ * scattered rectangles, and the plate with the check read as a *different* list
+ * rather than as a later state of this one. Nothing about the plate was wrong.
+ * Three of them were.
  *
- * So: one plate, one state, and nothing to enumerate. An array here would be
- * nothing but standing room for a second plate, which is exactly the shape the
- * next reader of this file will be tempted to fill. `tests/landing.spec.ts` counts
- * the plates on the page and forces the number to be one, which is the cheapest
- * place that invitation gets refused.
+ * So `items` is a list of rows rather than one row, and that is not a relapse: the
+ * plate went back to being too thin, which is the other half of the same rejection.
+ * One row is a fragment - a name, a rule and a numeral - and it said nothing about
+ * a product whose whole argument is what happens to a list over time. Three rows
+ * say it at a glance, and they say it in the app's own vocabulary rather than in a
+ * caption: one list nobody has bought from yet, one nearly done, one finished, the
+ * count words behind every figure.
+ *
+ * What is flat, and must stay flat, is the plate: one of them. The array below is
+ * rows *inside* the one plate, not plates beside it. `tests/landing.spec.ts` counts
+ * the plates and the rows separately for exactly that reason.
  */
 export interface LandingPreviewTranslations {
-  /**
-   * What happened to this list, in the reader's own person.
-   *
-   * Naming nobody who bought is not a copy rule, it is the product: no buyer is
-   * ever named anywhere, and a sentence that attributed a purchase would assert
-   * something the app deliberately refuses to deliver. This one does name the
-   * people the list was shared with - those are the reader's own choices, and
-   * they are what makes the plate a shared list at all.
-   */
-  action: string;
   /**
    * `count` is how many ideas are still OPEN - the number the row's count words
    * say out loud. `collected` is how many of the same list's ideas are already
@@ -517,8 +512,27 @@ export interface ListBoardDictionary {
   share: string;
   /** The trailing sentence on a shared row: who else can see it. */
   sharedWithCount: string;
+  /**
+   * The contents page with nothing on it, and the plate it prints. `noLists` is
+   * the sentence and it is the control: the empty board's blank plate is a
+   * button spanning the full content width, so the invitation and the action are
+   * one object - the same arrangement the blank cell of an empty list sheet
+   * uses. It names the thing being made rather than counting what is missing,
+   * because the section head above it already says whose lists these are.
+   */
   noLists: string;
+  /**
+   * Nobody has shared a list with this account. It gets a sentence and no plate:
+   * a dashed rule means there is room for a row, and the only thing anybody can
+   * do with room for a row here is create a list.
+   */
   noSharedLists: string;
+  /**
+   * The plate's second line, and the one that earns the plate: what actually goes
+   * in. Without it a large dashed rectangle with a sentence in it is a wall, and
+   * the reader cannot tell what pressing it will ask of them.
+   */
+  emptyPlateHint: string;
   private: string;
   shared: string;
 }
@@ -681,17 +695,16 @@ export interface AuthButtonsProps {
 /**
  * The one plate of the landing page: the reader's own contents page.
  *
- * The whole `preview` dictionary, rather than one state out of it. While the page
- * drew three states this took a single one of them, because choosing which a plate
+ * The whole `preview` dictionary, rather than one part of it. While the page drew
+ * three states this took a single one of them, because choosing which a plate
  * showed was the page's business - the hero owned the first and the pair below
- * owned the rest. That split is the storyboard's shape, not the plate's, and it is
+ * owned the rest. That split was the storyboard's shape, not the plate's, and it is
  * gone; a component handed the dictionary renders all of it and needs to know
  * nothing about how the page is laid out.
  *
- * `testId` and `actionTestId` are separate because the plate and the line of prose
- * under it are separate things, and a spec that has to assert "this count, and
- * this sentence" addresses them at two different places. They are unnumbered: the
- * numbers were only ever there because there was more than one plate.
+ * `testId` is unnumbered: the numbers were only ever there because there was more
+ * than one plate. The plate prints no caption of its own, so there is nothing else
+ * here to address.
  */
 export interface LandingPreviewProps {
   preview: LandingPreviewTranslations;
@@ -702,7 +715,6 @@ export interface LandingPreviewProps {
   yourLists: string;
   giftCount: Translations['giftCount'];
   testId: string;
-  actionTestId: string;
 }
 
 export interface AuthResponse {

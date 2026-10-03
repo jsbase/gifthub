@@ -23,26 +23,26 @@
   "changeLanguage": "Sprache ändern",
 
   "yourLists": "Deine Listen",
-  "sharedWithYou": "Mit dir geteilt",
+  "sharedWithYou": "Liste deiner Liebsten",
   "createList": "Liste erstellen",
   "createListDescription": "Eine Liste gehört dir. Private siehst nur du, geteilte nur die Menschen, die du einträgst.",
   "deleteList": "Liste löschen",
   "removeListConfirm": "Diese Liste löschen?",
-  "noLists": "Noch keine Listen. Lege die erste an.",
-  "noSharedLists": "Dir hat noch niemand eine Liste geteilt.",
+  "noLists": "Lege deine erste Wunschliste an.",
+  "noSharedLists": "Es wurden noch keine Wunschlisten mit dir geteilt.",
 
   "features": {
-    "simple": {
-      "title": "Eine Idee in Sekunden",
-      "description": "Ein Titel genügt. Notiz und Link sind optional, mehr braucht es nicht."
+    "wish": {
+      "title": "Bekomme immer das, was du dir wünschst",
+      "description": "Du teilst sie mit wem du willst. Alle sehen dann, was noch fehlt."
     },
-    "tracking": {
-      "title": "Niemand kauft es zweimal",
-      "description": "Die anderen haken selbst ab, was sie besorgt haben — sichtbar für jeden, und ohne Namen."
+    "once": {
+      "title": "Keine doppelten Geschenke",
+      "description": "Wer etwas besorgt, hakt es ab. Alle sehen es sofort."
     },
-    "updates": {
+    "surprise": {
       "title": "Die Überraschung bleibt",
-      "description": "Eine neue Liste sieht außer dir niemand. Auch die Person nicht, für die sie ist."
+      "description": "Niemand erfährt, wer etwas abgehakt hat."
     }
   },
 
@@ -51,8 +51,11 @@
   },
 
   "preview": {
-    "action": "Nur Ben und Mia sehen diese Liste.",
-    "items": [{ "name": "Omas Geburtstag", "count": 3, "collected": 2 }]
+    "items": [
+      { "name": "Geburtstagswünsche", "count": 3, "collected": 2 },
+      { "name": "Weihnachten", "count": 1, "collected": 2 },
+      { "name": "Valentinstag", "count": 0, "collected": 4 }
+    ]
   },
 
   "errors": {
@@ -178,7 +181,7 @@
 
   "listBoard": {
     "yourLists": "Deine Listen",
-    "sharedWithYou": "Mit dir geteilt",
+    "sharedWithYou": "Liste deiner Liebsten",
     "createList": "Liste erstellen",
     "addGift": "Geschenkidee hinzufügen",
     "rename": "Umbenennen",
@@ -190,8 +193,9 @@
     "changeVisibility": "Sichtbarkeit ändern",
     "share": "Teilen",
     "sharedWithCount": "Geteilt mit: {count}",
-    "noLists": "Noch keine Listen. Lege die erste an.",
-    "noSharedLists": "Dir hat noch niemand eine Liste geteilt.",
+    "noLists": "Lege deine erste Wunschliste an.",
+    "noSharedLists": "Es wurden noch keine Wunschlisten mit dir geteilt.",
+    "emptyPlateHint": "Ein Name reicht. Wer sie sieht, entscheidest du.",
     "private": "Privat",
     "shared": "Geteilt"
   },

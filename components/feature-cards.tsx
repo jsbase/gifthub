@@ -7,11 +7,12 @@ import type { Translations } from '@/types';
  * The order the index is read in.
  *
  * A decision that lives here rather than in the order the claims happen to be
- * written in the dictionaries: `simple` is what it takes to put one idea down,
- * `tracking` is what makes "nobody buys it twice" true, and `updates` is what the
- * person being surprised gets out of it. The order a JSON object happens to be
- * written in is not a translation's to decide, and it is already the reading
- * order - which is exactly why it needs a constant to say so.
+ * written in the dictionaries: `wish` is what the reader gets, `once` is what
+ * keeps two people from buying the same thing, and `surprise` is what the person
+ * being celebrated gets out of it. That is the order the page argues in - what
+ * you get, what stops going wrong, what stays secret - and it runs the other way
+ * round from the order a JSON object happens to be written in, which is not a
+ * translation's to decide and which needs a constant to say so.
  *
  * This is a reading order, not a whitelist. A key named here that the dictionary
  * does not have is skipped, so a dropped translation leaves no hole in the index;
@@ -20,7 +21,7 @@ import type { Translations } from '@/types';
  * component, and a claim added to one of them must not need this file edited
  * before it can reach the page.
  */
-const ORDER = ['simple', 'tracking', 'updates'] as const;
+const ORDER = ['wish', 'once', 'surprise'] as const;
 
 const FeatureCards: React.FC<Pick<Translations, 'features'>> = ({
   features,

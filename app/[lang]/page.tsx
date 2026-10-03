@@ -180,18 +180,18 @@ const Home: NextPage<PageProps> = async ({ params }) => {
               {/* Tipped in low. The offset is 6rem, about a line and a half of
                   the claim above it, so the plate's top rule lands inside the
                   claim's block instead of above it. It is the only plate on the
-                  page and it shows the whole `preview` dictionary: the list the
-                  reader has written down and shared, at three ideas still open.
-                  There is a count on this list and there is something left to tick
-                  off it, which is the honest opening - a plate at zero would show
-                  the check and a list with nothing left on it. */}
+                  page and it shows the whole `preview` dictionary: three of the
+                  reader's own lists, carrying three states at once - one with
+                  three still open, one nearly done, one finished, where the
+                  figure becomes the check. The arc lives in the rows rather than
+                  in three plates that repeated one list, which read as
+                  repetition and broke the spread apart. */}
               <div className={cn('lg:mt-24')}>
                 <LandingPreview
                   preview={dict.preview}
                   yourLists={dict.yourLists}
                   giftCount={dict.giftCount}
                   testId='landingPlate'
-                  actionTestId='landingCaption'
                 />
               </div>
             </div>
