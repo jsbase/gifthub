@@ -46,9 +46,28 @@ export const verifyAuth: (
  * `isRefusal` that decides what the string may be, at the call site, by comparison
  * against literals. Typing it as the union here would claim a guarantee the wire
  * does not make.
+ *
+ * `status` rides along for the caller's classification, and it is the reason the
+ * sheet can say more than one thing. `fetch` only rejects on a transport failure,
+ * so a 401, a 400 and a 500 arrive here as three ordinary returns, and they are
+ * three different problems: the route deliberately answers "no such account" and
+ * "wrong password" with the same 401 (see `app/api/auth/login/route.ts`, where
+ * doing so is what keeps the sign-in from being an account-existence oracle), so
+ * the status cannot separate *those* - and it does not need to, because one
+ * sentence is the honest answer to both. What it does separate is a refusal from a
+ * server that broke, and that is the difference between "try again in a moment" and
+ * "these two values did not sign you in". A caller that saw only `success: false`
+ * could not tell them apart and had to answer both with the same sentence.
  */
 export interface LoginResult {
   success: boolean;
+  /**
+   * The response's HTTP status, read off the response rather than derived from
+   * `success`. `success` folds in the body's own claim as well as the status, so
+   * it cannot tell a fault from a refusal - both of those arrive as `false`, and
+   * they are exactly the two cases that need different sentences.
+   */
+  status: number;
   message?: string;
   code?: unknown;
 }
@@ -68,6 +87,11 @@ export interface LoginResult {
  * produced and the form says the thing the server meant. The client-side gate stays
  * where it is, because answering before the round trip is better than answering
  * after it - but it is now an optimisation rather than the only source of truth.
+ *
+ * The one thing this still throws on is a transport failure: no response arrived
+ * at all, or it was not the JSON this reads. That stays an exception on purpose,
+ * because it is the one case with nothing to narrow - there is no status and no
+ * code, and "no connection" is the whole of what can honestly be said.
  */
 export const login: (
   identifier: string,
@@ -98,6 +122,7 @@ export const login: (
 
   return {
     success: response.ok && body?.success === true,
+    status: response.status,
     message: body?.message,
     code: body?.code,
   };

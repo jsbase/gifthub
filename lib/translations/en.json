@@ -14,10 +14,9 @@
   "loginBtn": "Log in",
   "registerBtn": "Create account",
     "loginIdentifier": "Nickname or email address",
-    "loginIdentifierHint": "Your nickname is unique — that is how you sign in.",
     "registerNicknameHint": "Your nickname is unique. Other people see you under this name.",
 
-  "loginDescription": "Once you log in you see your own lists and the ones other people have shared with you.",
+  "loginDescription": "Your nickname is unique — that is how you sign in. Once you log in you see your own lists and the ones other people have shared with you.",
   "registerDescription": "Every list you create belongs to this account, and you alone decide who gets to see it.",
 
   "logout": "Log out",
@@ -65,7 +64,10 @@
     "loginRequired": "Log in required",
     "failedToLoad": "Lists not loaded",
     "failedToLoadGifts": "Gift ideas not loaded",
-    "loginFailed": "Log in failed",
+    "loginRejected": "That nickname or email address and that password do not go together.",
+    "loginOffline": "No connection. Please try again.",
+    "loginServerError": "That did not work. Please try again later.",
+    "createAccountInstead": "No account yet? Create one",
     "passwordMismatch": "Passwords do not match",
     "registrationFailed": "Account could not be created",
 

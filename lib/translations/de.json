@@ -14,10 +14,9 @@
   "loginBtn": "Anmelden",
   "registerBtn": "Konto erstellen",
     "loginIdentifier": "Nickname oder E-Mail-Adresse",
-    "loginIdentifierHint": "Dein Nickname ist einmalig — damit meldest du dich an.",
     "registerNicknameHint": "Dein Nickname ist einmalig. Andere sehen dich unter diesem Namen.",
 
-  "loginDescription": "Nach der Anmeldung siehst du deine Listen und die, die andere mit dir geteilt haben.",
+  "loginDescription": "Dein Nickname ist einmalig — damit meldest du dich an. Nach der Anmeldung siehst du deine Listen und die, die andere mit dir geteilt haben.",
   "registerDescription": "Mit diesem Konto gehören dir alle Listen, die du anlegst — und du allein entscheidest, wer sie sieht.",
 
   "logout": "Abmelden",
@@ -65,7 +64,10 @@
     "loginRequired": "Anmeldung erforderlich",
     "failedToLoad": "Listen nicht geladen",
     "failedToLoadGifts": "Geschenkideen nicht geladen",
-    "loginFailed": "Anmeldung fehlgeschlagen",
+    "loginRejected": "Nickname oder E-Mail-Adresse und Passwort passen nicht zusammen.",
+    "loginOffline": "Keine Verbindung. Bitte versuch es noch einmal.",
+    "loginServerError": "Das hat nicht geklappt. Bitte versuch es später noch einmal.",
+    "createAccountInstead": "Noch kein Konto? Konto erstellen",
     "passwordMismatch": "Passwörter stimmen nicht überein",
     "registrationFailed": "Konto konnte nicht erstellt werden",
 

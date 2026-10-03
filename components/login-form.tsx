@@ -34,6 +34,19 @@ import type { LoginFormProps } from '@/types';
   * screen three times in a row, as the sheet's description, as the printed label and
   * as the placeholder inside the field. Two of those are already the description and
   * the label.
+  *
+  * There is no permanent hint under the nickname field either, and no
+  * `aria-describedby` naming one. Its sentence - that a nickname is unique and is
+  * what you sign in with - is in `loginDescription` instead, which the dialog reads
+  * out with the title when the sheet opens.
+  *
+  * That is a move about *when* the sentence is read rather than about the room it
+  * took. Every person asks whether a nickname has to be their real name exactly
+  * once, on the way in; a line printed for the whole interaction answers it again on
+  * every later glance, standing between the reader and the one thing this sheet
+  * exists to do. And an `aria-describedby` that names a constant describes nothing
+  * about what was typed - on this field the only description worth giving is the
+  * error the reader earned, which is what `invalidIdentifier` does.
   */
 const LoginForm: React.FC<LoginFormProps> = ({
   dict,
@@ -41,6 +54,8 @@ const LoginForm: React.FC<LoginFormProps> = ({
   onSubmit,
   identifierError,
   passwordError,
+  onCreateAccount,
+  createAccountLabel,
 }) => {
   return (
     <form
@@ -61,20 +76,7 @@ const LoginForm: React.FC<LoginFormProps> = ({
           autoCapitalize='none'
           required
           aria-invalid={identifierError ? true : undefined}
-          aria-describedby='identifierHint'
         />
-        {/*
-          The hint is permanent rather than an error state, because the question it
-          answers - "does this have to be my real name, and can I change it?" - is
-          one every person asks once when a field is called a nickname. It is
-          `aria-describedby` unconditionally so a screen reader meets it either way.
-        */}
-        <p
-          id='identifierHint'
-          className='text-[0.8125rem] leading-snug text-caption'
-        >
-          {dict.loginIdentifierHint}
-        </p>
         {/*
           On the field, not in a toast. A refused identifier is still a form the
           reader is standing in front of, and a toast that leaves in four seconds
@@ -114,6 +116,40 @@ const LoginForm: React.FC<LoginFormProps> = ({
           >
             {passwordError}
           </p>
+        )}
+        {/*
+          The way out for somebody who has no account, printed under the failure it
+          answers - so a reader who mistook the sheet for something they have done
+          before is offered the other door without being told they should use it.
+
+          `type='button'` is not decoration. A `<button>` with no type inside a
+          `<form>` submits it, so this would have re-posted the very credentials
+          that were just refused, on a second click, from a control whose label says
+          "create an account".
+
+          Rendered only when the caller hands over a handler, which is how the caller
+          says "this particular failure is one where you may not have an account
+          yet" - see `LoginFormProps`. A 5xx or a request that never left gets no
+          exit, because an offer to register does not help with either, and showing
+          it in some failures and not others would say more about the reader's
+          account than any of these sentences is allowed to say.
+
+          `self-start` because the column stretches its children: full width, this
+          would read as a second primary action next to the 48px submit below it.
+          Ghost is the right weight for that - the quiet way to offer an action,
+          per `components/ui/button.tsx` - and it inherits the app-wide focus ring
+          and the 44px floor for free.
+        */}
+        {onCreateAccount && (
+          <Button
+            type='button'
+            variant='ghost'
+            onClick={onCreateAccount}
+            data-testid='loginCreateAccount'
+            className='self-start'
+          >
+            {createAccountLabel ?? dict.errors.createAccountInstead}
+          </Button>
         )}
       </div>
       {/*
