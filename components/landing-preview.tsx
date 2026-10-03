@@ -4,42 +4,67 @@ import { giftCountLabel } from '@/lib/gift-count';
 import { memberInkStyle } from '@/lib/member-ink';
 import SheetProgress from '@/components/sheet-progress';
 import { cn } from '@/lib/utils';
-import type { Translations } from '@/types';
+import type { LandingPreviewProps } from '@/types';
 
 /**
- * One page of the album, reproduced as a plate tipped in beside the claim.
+ * One ink for the plate, seeded from a constant rather than from a name.
  *
- * It has to be a faithful reproduction, not a flattering one, and it takes its
- * anatomy from the real contents page rather than describing it: one row per list,
- * the list's name in the serif, `SheetProgress` at the right, and the count words
- * behind the figure from `giftCountLabel` - the same function, not a second
- * ladder. The three sample rows carry 3/2, 1/2 and 0/4 open/collected, so the plate
- * shows all four count states the dashboard shows: two rows with a part-filled
- * rule, one row nearly full, and the zero row where the figure is replaced by a
- * check. The zero row is the reason `collected` exists as a separate figure - with
- * open counts alone the rule could never leave zero, which reads as an empty bar
- * rather than as progress.
- *
- * **One ink for the whole plate, set once.** The rows are all one person's lists -
- * the plate's title line is the one that stands in for the name the header would
- * put where the wordmark goes, which is what makes the product that person's list
- * rather than a tool. So the ink is hashed from that one line and inherited by
- * every row, instead of being hashed per row name. Hashing the rows separately
- * would give one plate three unrelated colours and read as three people, which is
- * the confusion this page exists to end. The tray is written for one id and one
- * person; `lib/member-ink.ts` is being re-keyed to the owner account id, and this
- * is the call site that will follow it.
- *
- * `SheetProgress` in `components/sheet-progress.tsx` is the authority for the
- * figure and is imported rather than copied: a second copy is a second thing to
- * forget.
+ * The plate has no title of its own any more - the `yourLists` label is the only
+ * line of type above the rows - so there is nothing here to hash, and this is
+ * where the tray index comes from. It is a module constant and not a dictionary
+ * key on purpose: a key would be translatable, and the same page would print a
+ * different ink in German than in Russian for what is one and the same person.
+ * That person is the reader, whose ink on the real contents page is keyed on their
+ * own account id - a value nobody has here, and a seed borrowed from any name in
+ * the plate would print a second person's colour on the reader's list.
  */
-const LandingPreview: React.FC<
-  Pick<Translations, 'preview' | 'giftCount' | 'yourLists'>
-> = ({ preview, giftCount, yourLists }) => (
+const OWNER_INK_SEED = 'wishy:landing:owner';
+
+/**
+ * The reader's own lists, drawn as one plate on the board.
+ *
+ * This is the reader's contents page rather than an illustration of it, which is
+ * why the plate carries no title of its own: the title named somebody else's
+ * lists and made the plate a specimen of a character who is not on this page,
+ * while the section head the real contents page prints - `yourLists`, set as the
+ * label it is and not as a heading - says the same thing about the reader without
+ * naming anyone.
+ *
+ * Three rows, and that is what makes the plate worth reading. One row said
+ * nothing: a single name, a rule and a numeral is a fragment, and the rendered
+ * page was rejected for exactly that. Three rows carry the product's whole
+ * vocabulary at a glance - a list nobody has bought from yet, one nearly done,
+ * and one finished, where `SheetProgress` replaces the numeral with the check and
+ * the rule fills to the end in green. The four count words the dashboard uses sit
+ * behind every row, so the whole arc arrives as language too.
+ *
+ * The row names are occasions rather than people, and that is load-bearing. Names
+ * like "Ben and Mia" were tried here and read as random: nobody on this page has
+ * been introduced, so a caption naming them asserted a cast the page never set up.
+ * "Geburtstagswünsche", "Weihnachten" and "Valentinstag" need no introduction and
+ * no cast, which is what an occasion is for.
+ *
+ * There is no caption under the plate, and there was one for most of this
+ * branch's life. It has to earn its place: the last version named two people the
+ * reader had never heard of, in order to say who may see the list - a rule the
+ * standfirst and the index already carry. A caption that repeats what the page
+ * says elsewhere is the plate's caption explaining the plate, which is the habit
+ * this page was rewritten to break. The rows speak for themselves.
+ *
+ * The anatomy is imported rather than described, so it cannot drift from what the
+ * app shows: the same stock, the same printed rule, the same crop marks, the same
+ * ruled head, the same name in Source Serif 4, the same count words behind the
+ * figure. `SheetProgress` is the authority for the figure itself.
+ */
+const LandingPreview: React.FC<LandingPreviewProps> = ({
+  preview,
+  yourLists,
+  giftCount,
+  testId,
+}) => (
   <figure className={cn('flex', 'flex-col')}>
     <div
-      data-testid='landingQuote'
+      data-testid={testId}
       className={cn(
         'relative',
         'border',
@@ -54,45 +79,28 @@ const LandingPreview: React.FC<
       <CropMarks />
 
       {/*
-        The plate's title, in the serif, above the ruled head. The real contents
-        page puts the signed-in person's name in the app header rather than on the
-        sheet, so this is a plate title rather than a quotation of the sheet's own
-        first line - which is why it sits above the rule instead of inside it. It is
-        the one line that says the plate is about one person's lists and not about
-        the software, so it is the line the plate must not be missing.
-      */}
-      <p
-        className={cn(
-          'max-w-full',
-          'break-words',
-          'pr-10',
-          'font-serif',
-          'font-semibold',
-          'text-ink',
-          'text-[1.375rem]',
-          'leading-tight'
-        )}
-      >
-        {preview.list}
-      </p>
+        The contents page's own section head and nothing else: a specimen of that
+        page, not a working one, and a quotation that offered "Create list" would
+        be offering to create a list on an account that does not exist.
 
-      {/* The contents page's own section head and nothing else: a specimen of that
-          page, not a working one, and a quotation that offered "Create list" would
-          be offering to create a list on an account that does not exist. */}
-      <div
-        className={cn(
-          'flex',
-          'flex-col',
-          'mt-5',
-          'border-b',
-          'border-rule',
-          'pb-4'
-        )}
-      >
-        <h2 className='label-print pt-1 text-caption'>{yourLists}</h2>
+        Printed as a label and not as a heading. The page has no section of its own
+        for this head to open - what the plate prints is a quotation of the
+        contents page's own section line - so an `<h2>` here would claim a document
+        section where there is a specimen, which is an outline defect on a page
+        whose whole argument is hierarchy. The `label-print` classes are untouched,
+        so the specimen is optically identical to the screen it quotes and a
+        sighted reader cannot tell; the real contents page keeps its `<h2>`, where
+        it heads a real section of a real page.
+
+        The title that stood above it left with the sample lists, and its `mt-5`
+        with it, because a gap sized for a line that is no longer there reads as the
+        title having been cut out of the plate.
+      */}
+      <div className={cn('border-b', 'border-rule', 'pb-4')}>
+        <p className='label-print pt-1 text-caption'>{yourLists}</p>
       </div>
 
-      <ul style={memberInkStyle(preview.list)} className='divide-y divide-rule'>
+      <ul style={memberInkStyle(OWNER_INK_SEED)} className='divide-y divide-rule'>
         {preview.items.map((item) => {
           /*
             Derived once, then read twice - by the words behind the name and by
@@ -138,7 +146,8 @@ const LandingPreview: React.FC<
                   draws the dashed placeholder, which everywhere else in this app
                   means the opposite: no ideas at all. The figure and the words
                   behind it were telling a visitor two opposite things about the
-                  same list.
+                  same list. It is also what lets the number on the plate be read
+                  aloud by somebody who cannot see the figure at all.
                 */}
                 <span className='sr-only'>
                   {giftCountLabel(sheet, { giftCount })}
@@ -151,31 +160,6 @@ const LandingPreview: React.FC<
         })}
       </ul>
     </div>
-
-    {/*
-      Below the plate, where a caption belongs, and in caption ink on the board:
-      it is the catalogue's own sentence about the plate, and printed on the stock
-      it would be a line of interface chrome that the real screen does not have.
-      Narrower than the claim above it and wider than an index entry, so the three
-      measures on this page stay three.
-
-      Its own measure is the one number on this page worth stating: the German
-      caption is 117 characters and lands at four lines inside `44ch` on a 390px
-      phone, which is a caption and not a paragraph. It was written against this
-      cap.
-    */}
-    <figcaption
-      className={cn(
-        'mt-5',
-        'max-w-[44ch]',
-        'text-[0.9375rem]',
-        'leading-relaxed',
-        'text-pretty',
-        'text-caption'
-      )}
-    >
-      {preview.lead}
-    </figcaption>
   </figure>
 );
 

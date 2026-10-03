@@ -84,10 +84,10 @@ const AuthButtons: React.FC<AuthButtonsProps> = ({ dict }) => {
 
   /*
     One error per field, held here rather than in the forms, because the forms hold
-    no values and are handed nothing but a sentence. Three slots rather than one
-    generic one is the point: a refusal the reader can act on has to say which field
-    to fix, and "that address is already taken" against the address is a different
-    piece of information from the same words under the display name.
+    no values and are handed nothing but a sentence. One slot per field rather than
+    one generic slot is the point: a refusal the reader can act on has to say which
+    field to fix, and "that address is already taken" against the address is a
+    different piece of information from the same words under the display name.
 
     The state outlives the sheet - the forms unmount when their dialog closes, this
     component does not - so the `onOpenChange` handlers clear on the way out.
@@ -102,12 +102,29 @@ const AuthButtons: React.FC<AuthButtonsProps> = ({ dict }) => {
   const [identifierError, setIdentifierError] = useState<string | null>(null);
   const [nicknameError, setNicknameError] = useState<string | null>(null);
 
+  /*
+    Whether the sign-in that just failed is a failure in which "you may not have
+    an account yet" is worth offering - the one extra thing a refused sign-in can
+    say, and the one thing it may never imply on its own.
+
+    A slot of its own rather than a branch on the sentence in `passwordError`,
+    because that sentence is localized: deciding to draw the exit by comparing two
+    translated strings would be a test of the translator rather than of the state.
+    The caller decides and the form obeys - see `LoginFormProps`.
+
+    It lives with the other five and is cleared by the same `clearErrors()`, which
+    is why it needs no reset of its own in each branch below: every submit starts
+    by calling that.
+  */
+  const [canCreateAccount, setCanCreateAccount] = useState(false);
+
   const clearErrors = useCallback(() => {
     setEmailError(null);
     setPasswordError(null);
     setConfirmPasswordError(null);
     setIdentifierError(null);
     setNicknameError(null);
+    setCanCreateAccount(false);
   }, []);
 
   const goToDashboard = useCallback(() => {
@@ -131,17 +148,15 @@ const AuthButtons: React.FC<AuthButtonsProps> = ({ dict }) => {
       it is the disjunction of the same two functions the route runs - which is why
       the route can decide by the presence of an `@` and get the same answer twice.
 
-      `lib/auth.ts`'s `login()` cannot do any of this: it throws on any non-2xx and
-      throws the response body away, so every credential refusal the server has
-      arrives here as one indistinguishable `Error`.
-
-      That discarding is also why the *password* gets no equivalent check. There is
-      no honest field-level sentence for a refused sign-in: the route answers the
-      same 401 for an unknown identifier as for a wrong password, and printing
-      "wrong password" under the password field would confirm which of the two a
-      stranger got wrong. So the sheet says the one thing it can - `loginFailed`,
-      under the password, meaning "these two values did not sign you in" - and no
-      identifier sentence, which would have implied the identifier was good.
+      What the password gets no equivalent check for is a decision about what may be
+      said rather than about effort. There is no honest field-level sentence for a
+      refused sign-in: the route answers the same 401, in the same time, for an
+      unknown identifier as for a wrong password - deliberately, so that signing in
+      cannot be used to find out who is registered - and printing "wrong password"
+      under the password field would confirm exactly which of the two a stranger got
+      wrong. So the password slot carries the one sentence that is true in either
+      case, `loginRejected`, which names both and picks neither; and no identifier
+      sentence, which would have implied the identifier was good.
     */
     if (
       acceptedNickname(identifier) === undefined &&
@@ -151,7 +166,7 @@ const AuthButtons: React.FC<AuthButtonsProps> = ({ dict }) => {
       return;
     }
 
-setIsLoading(true);
+    setIsLoading(true);
     try {
       const result = await login(identifier, password);
 
@@ -160,14 +175,43 @@ setIsLoading(true);
         this file only has the copy it optimistically ran a moment ago. The gate above
         answers sooner, which is the whole point of having it; this answers for real,
         which is the whole point of not having to trust it.
+
+        It also has to come before the status tests below, because
+        `invalid_identifier` is a 400: a 400 that reached them would be classified
+        as a status we cannot read and answered with `loginRejected`, which is one
+        sentence about two values that do not go together and therefore the wrong
+        sentence about the shape of a field.
       */
       if (isLoginRefusal(result.code)) {
         setIdentifierError(dict.errors.invalidIdentifier);
         return;
       }
 
+      /*
+        What is left is not a refusal about the values but something that went
+        wrong, and the two want opposite advice - a refusal is answered by doing
+        something else, a fault by doing the same thing again in a moment. So the
+        status picks the sentence and the follow-up together.
+
+        One branch rather than three because 401 and "a status this build has never
+        seen" are the same answer. The route gives "no account" and "wrong
+        password" one 401 on purpose, so a 401 cannot be read as "wrong password":
+        it means "these two values did not sign you in" and nothing finer. A status
+        that is neither 401 nor 5xx cannot be read either - a failure that does not
+        arrive as an identifiable fault is, as far as this sheet can tell,
+        indistinguishable from a refusal and gets that sentence. Reading more into it
+        would be inventing information about a server that never sent any.
+
+        The exit follows the sentence and not the other way round: an offer to
+        register is for failures where having no account is a live possibility, and
+        is withheld wherever the failure is on our side of the wire.
+      */
       if (!result.success) {
-        setPasswordError(dict.errors.loginFailed);
+        const serverFaulted = result.status >= 500;
+        setPasswordError(
+          serverFaulted ? dict.errors.loginServerError : dict.errors.loginRejected
+        );
+        setCanCreateAccount(!serverFaulted);
         return;
       }
 
@@ -175,9 +219,16 @@ setIsLoading(true);
       setIsLoginOpen(false);
       goToDashboard();
     } catch {
-      // The request never arrived, or the response was not JSON. There is nothing
-      // to narrow and nothing to say about which half was wrong.
-      setPasswordError(dict.errors.loginFailed);
+      /*
+        A response this client could not read: either the request never arrived, or
+        what arrived was not JSON. `result` is never bound in either case, so there
+        is no status and no code here to narrow and nothing honest to say about which
+        of the two halves was wrong - "try again" is the whole of the advice, and the
+        exit stays down because `clearErrors()` at the top of this handler has already
+        put it away. A 5xx whose body was an error page arrives here too; see the note
+        on `login()` in `lib/auth.ts` for why that sentence is still the right one.
+      */
+      setPasswordError(dict.errors.loginOffline);
     } finally {
       setIsLoading(false);
     }
@@ -324,6 +375,22 @@ setIsLoading(true);
     [clearErrors]
   );
 
+  /*
+    The exit out of a refused sign-in: this sheet closes and the registration sheet
+    opens in its place.
+
+    Through `handleLoginOpenChange` rather than `setIsLoginOpen` directly, because
+    that handler is where `clearErrors()` runs - and it has to run, not merely look
+    like it runs. Both sheets read the same error slots, and `passwordError` above
+    all: it is the one a refused sign-in fills, so a verdict left standing by the
+    sheet the reader just left would be waiting for them inside the registration
+    form, where it means something else entirely.
+  */
+  const openRegister = useCallback(() => {
+    handleLoginOpenChange(false);
+    setIsRegisterOpen(true);
+  }, [handleLoginOpenChange]);
+
   return (
     <div className={cn('flex', 'flex-col', 'gap-3', 'sm:flex-row', 'sm:gap-4')}>
       <Dialog open={isLoginOpen} onOpenChange={handleLoginOpenChange}>
@@ -365,6 +432,7 @@ setIsLoading(true);
             onSubmit={handleLoginBase}
             identifierError={identifierError}
             passwordError={passwordError}
+            onCreateAccount={canCreateAccount ? openRegister : undefined}
           />
         </AuthDialog>
       </Dialog>

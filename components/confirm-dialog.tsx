@@ -24,6 +24,12 @@ import type { ConfirmDialogProps } from '@/types';
  * two never say the same thing twice. Nothing is destroyed until the confirm
  * button is pressed, and the cancel button is the one that gets focus and the
  * one that holds focus by default.
+ *
+ * Both callers delete a list, and both now name it. This sheet is the only
+ * irreversible moment in the product, and measured on a 390x844 phone it stands
+ * 787px tall - 93.2% of the viewport - so the board it is covering is not there
+ * to look at. "This list" was a sentence about an object the reader could not
+ * see, on precisely the device this product is used on.
  */
 const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   isOpen,
@@ -58,7 +64,19 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
     */}
     <DialogContent className='sm:max-w-md' hideClose>
       <DialogHeader>
-        <DialogTitle>{title}</DialogTitle>
+        {/*
+          `font-sans text-xl` against the primitive's serif default, deliberately,
+          and this is the fifth dialog to make the same opt-in. The primitive
+          leaves the face to its caller because "the serif in this app is for a
+          name" - the gift sheet is genuinely titled by the list's name and
+          passes the serif through. Every other sheet in the product is titled by
+          a verb ("Log in", "Create list", "Rename", "Share list") or by a
+          question ("Delete this list?"), and three of them were already opting
+          out at 20px while this one and the share sheet took the 24px serif
+          default. Five dialog titles in two faces at two sizes is the
+          inconsistency; this puts the last two on the same side of it.
+        */}
+        <DialogTitle className='font-sans text-xl'>{title}</DialogTitle>
         <DialogDescription>{description}</DialogDescription>
       </DialogHeader>
       <DialogFooter className='mt-4 xs:mt-auto'>
@@ -78,7 +96,7 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
             onConfirm();
             onClose();
           }}
-          className={cn('sm:ml-2')}
+          className={cn('xs:h-12', 'sm:ml-2')}
           data-testid='confirmAction'
         >
           {confirmLabel}

@@ -115,32 +115,34 @@ export interface Translations {
    */
   loginIdentifier: string;
   /**
-   * What the nickname is for, in one sentence.
+   * What the nickname is for, on the registration sheet.
    *
-   * On a product where the display name is a person's own label and the nickname is
-   * their handle, "you pick this once" is worth saying: it is the answer to the
-   * question a person asks when a field is called "nickname", which is whether it
-   * has to be their real name. It does not, and that is not obvious.
-   */
-  loginIdentifierHint: string;
-  /**
-   * The same hint, for the registration sheet.
-   *
-   * A separate key because the two sheets answer different questions. Signing in:
-   * "this is what you chose". Registering: "this is what other people will see you
-   * as, for now" - because the display name is derived from this value rather than
-   * asked for, and sharing one sentence between the two told a first-time user they
-   * could change a display name they had not been given.
+   * Its own key rather than a shared one with the sign-in sheet, because the two
+   * sheets answer different questions. Signing in: "this is what you chose".
+   * Registering: "this is what other people will see you as, for now" - because the
+   * display name is derived from this value rather than asked for, and sharing one
+   * sentence between the two told a first-time user they could change a display
+   * name they had not been given. (The sign-in sheet now says its half of this in
+   * `loginDescription` rather than under the field.)
    */
   registerNicknameHint: string;
   loginBtn: string;
   registerBtn: string;
 
   /**
-   * What the sign-in sheet is FOR, in one sentence. It was `enterGroupName` - the
-   * first field's own name - which put "Gruppenname" on screen three times in a
-   * row: as the sheet's description, as the printed label over the field, and as
-   * the placeholder inside it.
+   * What the sign-in sheet is FOR, plus what the nickname is. It was
+   * `enterGroupName` - the first field's own name - which put "Gruppenname" on
+   * screen three times in a row: as the sheet's description, as the printed label
+   * over the field, and as the placeholder inside it.
+   *
+   * The nickname sentence lives here rather than under the field because of *when*
+   * it is read rather than about the room it took: a dialog description is announced
+   * with the title when the sheet opens, and a person asks whether a nickname has to
+   * be their real name exactly once, on the way in - where a line printed for the
+   * whole interaction answers it again on every later glance. The
+   * `aria-describedby` on that field did not go with the sentence; it now names the
+   * error the reader earned, because a description that is a constant describes
+   * nothing about what was typed.
    */
   loginDescription: string;
   registerDescription: string;
@@ -166,10 +168,10 @@ export interface Translations {
   features: Features;
   landing: {
     /**
-     * The one sentence under the claim on the landing page: what the product
-     * actually is, in concrete terms, rather than a second adjective about it.
-     * Written to stand at 46ch in the claim column and to survive being four lines
-     * of German or Russian on a 390px phone.
+     * The one sentence under the claim on the landing page: what the reader gets,
+     * said plainly, rather than a second adjective about the product. Written to
+     * hold its own measure at `max-w-[52ch]` and to survive a 390px phone, where
+     * the German and the Russian are the longest of the three.
      */
     standfirst: string;
   };
@@ -226,7 +228,52 @@ export interface ErrorTranslations {
   loginRequired: string;
   failedToLoad: string;
   failedToLoadGifts: string;
-  loginFailed: string;
+  /**
+   * A sign-in attempt that was refused, and the reason it is one sentence rather
+   * than two.
+   *
+   * The route answers "no such account" and "wrong password" with the same 401,
+   * both statuses and both in constant time, so that the sign-in cannot be used to
+   * find out who is registered - see the long comment in
+   * `app/api/auth/login/route.ts`. This sentence therefore names both possibilities
+   * and chooses neither, which is the only sentence that is true in either case.
+   * Printing one of them would confirm, to somebody typing an address that is not
+   * theirs, exactly what they guessed.
+   */
+  loginRejected: string;
+  /**
+   * The sign-in never left the device, or came back as something other than JSON.
+   *
+   * Separate from `loginRejected` because it is a different problem with a different
+   * answer: retrying works, and no amount of retyping does. It says nothing about
+   * whether the account exists, because nothing was ever asked about that.
+   */
+  loginOffline: string;
+  /**
+   * The server answered, and the answer was a 5xx.
+   *
+   * Deliberately says "that did not work" rather than naming a cause: the route's
+   * own catch-all logs the real error and returns a fixed message, so a sentence
+   * that guessed at it would be inventing information. "Try again later" is the
+   * honest instruction, and it is what a person can act on.
+   */
+  loginServerError: string;
+  /**
+   * The quiet way out of the sign-in sheet for somebody who has no account.
+   *
+   * A question and its action in one control, which is why the sentence is short
+   * enough to read as a link rather than as a heading.
+   *
+   * Which failures offer it is a security decision, and it is drawn on the status
+   * rather than on the refusal code: `invalid_identifier` is in the closed union too,
+   * so a rule phrased over the union would make every refusal added to it inherit
+   * this offer. What makes it safe to show is that it skips no refusal which could
+   * mean "you may not have an account": it is offered on a 401, both of its causes
+   * alike, and on a status this build cannot read, so its presence can say nothing at
+   * all about whether the reader is registered. `auth-buttons.tsx` is where the line
+   * is drawn.
+   */
+  createAccountInstead: string;
   passwordMismatch: string;
   registrationFailed: string;
 
@@ -272,29 +319,48 @@ export interface SuccessTranslations {
 }
 
 /**
- * The sample lists on the landing page. It renders with the same count strings and
- * the same row anatomy as the real contents page, so it cannot drift away from
- * what a person actually sees.
+ * The one plate the landing page draws: three of the reader's own lists, at three
+ * states.
+ *
+ * It is a flat object, and that is a decision rather than a leftover. It has been a
+ * list twice. First three sample lists under one plate title, which made the plate a
+ * specimen of the software rather than a page of somebody's. Then one list drawn
+ * three times, its open count falling 3 -> 1 -> 0 and its figure becoming a check
+ * in the last one. That version was built, rendered, looked at and rejected: three
+ * plates carrying the same head, the same list name and the same single row read as
+ * repetition rather than as a story, the plate in the hero's right column and the
+ * pair below broke one asymmetric spread into three scattered rectangles, and the
+ * plate with the check read as a *different* list rather than as a later state of
+ * this one. Nothing about the plate was wrong. Three of them were.
+ *
+ * So the plate went back to a single list — and then to a single row, which was
+ * rejected too, and that is why there are three again. One row is a fragment: a
+ * name, a rule and a numeral, saying nothing about a product whose whole argument
+ * is what happens to a list over time. Three rows say it at a glance, in the app's
+ * own vocabulary rather than in a caption, and the arc arrives as three *rows in one
+ * plate* instead of as three plates: nobody has bought from the first yet, one is
+ * nearly done, and one is finished.
+ *
+ * What is flat, and must stay flat, is the plate: one of them. The array below is
+ * rows *inside* the one plate, not plates beside it. `tests/landing.spec.ts` counts
+ * the plates and the rows separately for exactly that reason.
  */
 export interface LandingPreviewTranslations {
   /**
-   * The specimen's own title: a real list name, set in the serif. The dashboard's
-   * header shows the signed-in person's name in place of the product's, which is
-   * how the product stops being a tool and becomes that person's list, and the
-   * plate has to carry the same line or the quotation is missing the one thing the
-   * product is actually about.
-   */
-  list: string;
-  /**
-   * The caption under the plate. It says what the reader is looking at.
-   */
-  lead: string;
-  /**
-   * `count` is how many ideas are still OPEN - which is what the lead sentence
-   * promises. `collected` is how many of the same list's ideas are already bought,
-   * and exists so the row's progress rule has real fill: with open counts alone the
-   * rule could only ever stand at zero, which read as an empty bar rather than as
-   * progress.
+   * `count` is how many ideas are still OPEN - the number the row's count words
+   * say out loud. `collected` is how many of the same list's ideas are already
+   * bought, and exists so the row's progress rule has real fill: with open counts
+   * alone the rule could only ever stand at zero, which read as an empty bar
+   * rather than as progress.
+   *
+   * An array because the plate is a specimen of a contents page, and a contents
+   * page is a list of things. It holds three rows today, at 3 open, 1 open and none,
+   * because that sequence is the plate's whole argument: it shows a list somebody
+   * can still be surprised by, one that is nearly done, and one that is finished,
+   * where `SheetProgress` replaces the figure with a check. A plate showing only an
+   * untouched list, or only a finished one, would be a third rejected shape - the
+   * first argued that nobody can be surprised any more, which is not what a
+   * wishlist is for.
    *
    * Numbers, not strings, so this costs no copy in any locale.
    */
@@ -392,7 +458,14 @@ export interface ToastTranslations {
 
 export interface ConfirmationTranslations {
   deleteGift: string;
-  deleteList: string;
+  /**
+   * Names the list, because both callers delete one and both are irreversible.
+   * It used to be a fixed sentence about "this list" - and the sheet that
+   * confirmation opens over measures 93.2% of a 390x844 viewport, so on the
+   * device this product is used on there is no longer a board on screen to work
+   * out which list the sentence is about.
+   */
+  deleteListNamed: string;
 }
 
 export interface CreateListDialogDictionary {
@@ -448,8 +521,27 @@ export interface ListBoardDictionary {
   share: string;
   /** The trailing sentence on a shared row: who else can see it. */
   sharedWithCount: string;
+  /**
+   * The contents page with nothing on it, and the plate it prints. `noLists` is
+   * the sentence and it is the control: the empty board's blank plate is a
+   * button spanning the full content width, so the invitation and the action are
+   * one object - the same arrangement the blank cell of an empty list sheet
+   * uses. It names the thing being made rather than counting what is missing,
+   * because the section head above it already says whose lists these are.
+   */
   noLists: string;
+  /**
+   * Nobody has shared a list with this account. It gets a sentence and no plate:
+   * a dashed rule means there is room for a row, and the only thing anybody can
+   * do with room for a row here is create a list.
+   */
   noSharedLists: string;
+  /**
+   * The plate's second line, and the one that earns the plate: what actually goes
+   * in. Without it a large dashed rectangle with a sentence in it is a wall, and
+   * the reader cannot tell what pressing it will ask of them.
+   */
+  emptyPlateHint: string;
   private: string;
   shared: string;
 }
@@ -609,6 +701,31 @@ export interface AuthButtonsProps {
   dict: Translations;
 }
 
+/**
+ * The one plate of the landing page: the reader's own contents page.
+ *
+ * The whole `preview` dictionary, rather than one part of it. While the page drew
+ * three states this took a single one of them, because choosing which a plate
+ * showed was the page's business - the hero owned the first and the pair below
+ * owned the rest. That split was the storyboard's shape, not the plate's, and it is
+ * gone; a component handed the dictionary renders all of it and needs to know
+ * nothing about how the page is laid out.
+ *
+ * `testId` is unnumbered: the numbers were only ever there because there was more
+ * than one plate. The plate prints no caption of its own, so there is nothing else
+ * here to address.
+ */
+export interface LandingPreviewProps {
+  preview: LandingPreviewTranslations;
+  /**
+   * The contents page's own section head, which the specimen prints as a label and
+   * not as a heading - this page has no section for a head to open.
+   */
+  yourLists: string;
+  giftCount: Translations['giftCount'];
+  testId: string;
+}
+
 export interface AuthResponse {
   success: boolean;
   message?: string;
@@ -645,6 +762,13 @@ export interface ConfirmDialogProps {
 
 export interface RootLayoutProps {
   children: ReactNode;
+  /*
+    The locale segment, because the root layout lives at `app/[lang]/layout.tsx`
+    rather than at `app/layout.tsx`. `<html lang>` is a property of the document
+    and the document is the one thing that has to know which of the three
+    locales it is carrying.
+  */
+  params: Promise<{ lang: string }>;
 }
 
 export interface HeaderProps {
@@ -665,15 +789,14 @@ export interface PageProps {
   params: Promise<{ lang: string }>;
 }
 
+/**
+ * One claim set as one line of an index. There is no register to choose: the
+ * claims are entries of equal weight, and a lead set above them would read as a
+ * headline of its own rather than as one of three.
+ */
 export interface FeatureCardProps {
   title: string;
   description: string;
-  /**
-   * `lead` is the product's own claim, set large on the landing page; `entry` is
-   * a mechanism, set as a line of a catalogue index beneath it. The default is
-   * `entry` so a caller that does not care gets the quiet one.
-   */
-  variant?: 'lead' | 'entry';
 }
 
 export interface FooterProps {
@@ -740,6 +863,19 @@ export interface LoginFormProps {
    */
   identifierError?: string | null;
   passwordError?: string | null;
+  /**
+   * Opens the registration sheet, offered next to a refused sign-in as the way out
+   * for somebody who has no account.
+   *
+   * Optional, and its *absence* is what hides the control: the caller hands over a
+   * handler only in the failures where "you may not have an account yet" is a
+   * useful thing to say, and hands over nothing in the ones where it would not be -
+   * a server that is broken or a request that never left is not improved by an offer
+   * to register. Comparing the rendered sentence against `passwordError` to work
+   * that out would be a comparison of two localized strings, which is a test of the
+   * translator rather than of the state.
+   */
+  onCreateAccount?: () => void;
 }
 
 export interface RegisterFormProps {

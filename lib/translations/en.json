@@ -1,74 +1,77 @@
 {
-  "tagline": "Everyone has a list of their own. It is shared only with the people you add.",
+  "tagline": "Out of gift ideas again?",
   "login": "Log in",
   "register": "Create account",
   "loading": "Loading...",
   "cancel": "Cancel",
   "close": "Close",
-
   "email": "Email address",
   "displayName": "Display name",
-    "nickname": "Nickname",
+  "nickname": "Nickname",
   "password": "Password",
   "confirmPassword": "Confirm password",
   "loginBtn": "Log in",
   "registerBtn": "Create account",
-    "loginIdentifier": "Nickname or email address",
-    "loginIdentifierHint": "Your nickname is unique — that is how you sign in.",
-    "registerNicknameHint": "Your nickname is unique. Other people see you under this name.",
-
-  "loginDescription": "Once you log in you see your own lists and the ones other people have shared with you.",
+  "loginIdentifier": "Nickname or email address",
+  "registerNicknameHint": "Your nickname is unique. Other people see you under this name.",
+  "loginDescription": "Your nickname is unique — that is how you sign in. Once you log in you see your own lists and the ones other people have shared with you.",
   "registerDescription": "Every list you create belongs to this account, and you alone decide who gets to see it.",
-
   "logout": "Log out",
   "changeLanguage": "Change language",
-
   "yourLists": "Your lists",
-  "sharedWithYou": "Shared with you",
+  "sharedWithYou": "Your loved ones' lists",
   "createList": "Create list",
   "createListDescription": "A list belongs to you. You alone see a private one, and a shared one only the people you add.",
   "deleteList": "Delete list",
   "removeListConfirm": "Delete this list?",
-  "noLists": "No lists yet. Create the first one.",
-  "noSharedLists": "Nobody has shared a list with you yet.",
-
+  "noLists": "Create your first wish list.",
+  "noSharedLists": "No wish lists have been shared with you yet.",
   "features": {
-    "simple": {
-      "title": "One idea in seconds",
-      "description": "A title is enough. A note and a link are optional, and that is all it takes."
+    "wish": {
+      "title": "Get what you asked for",
+      "description": "Everyone sees what's missing."
     },
-    "tracking": {
-      "title": "Nobody buys it twice",
-      "description": "The people you shared with mark off what they have bought themselves — visible to everyone, and without names."
+    "once": {
+      "title": "Never the same gift twice",
+      "description": "Bought it? Tick it off."
     },
-    "updates": {
-      "title": "The surprise stays a surprise",
-      "description": "A new list is seen by nobody but you. Not even by the person it is for."
+    "surprise": {
+      "title": "The surprise stays",
+      "description": "Nobody knows who bought it."
     }
   },
-
   "landing": {
-    "standfirst": "One list per person, one account per email address — what has been bought stays struck through, and the buyer is never named."
+    "standfirst": "The wishy app knows. Pick, tick, done."
   },
-
   "preview": {
-    "list": "Anna's lists",
-    "lead": "The contents page as Anna sees it. Every row is one of her lists, and the number on the right counts the ideas that are still open.",
     "items": [
-      { "name": "Grandma's birthday", "count": 3, "collected": 2 },
-      { "name": "Christmas", "count": 1, "collected": 2 },
-      { "name": "Mia's wedding", "count": 0, "collected": 4 }
+      {
+        "name": "Birthday wishes",
+        "count": 3,
+        "collected": 2
+      },
+      {
+        "name": "Christmas",
+        "count": 1,
+        "collected": 2
+      },
+      {
+        "name": "Valentine's Day",
+        "count": 0,
+        "collected": 4
+      }
     ]
   },
-
   "errors": {
     "loginRequired": "Log in required",
     "failedToLoad": "Lists not loaded",
     "failedToLoadGifts": "Gift ideas not loaded",
-    "loginFailed": "Log in failed",
+    "loginRejected": "That nickname or email address and that password do not go together.",
+    "loginOffline": "No connection. Please try again.",
+    "loginServerError": "That did not work. Please try again later.",
+    "createAccountInstead": "No account yet? Create one",
     "passwordMismatch": "Passwords do not match",
     "registrationFailed": "Account could not be created",
-
     "invalidEmail": "Enter a valid email address.",
     "invalidNickname": "Pick a nickname of letters, digits, dot, hyphen or underscore (2–32 characters).",
     "duplicateNickname": "That nickname is already taken.",
@@ -79,7 +82,6 @@
     "duplicateEmail": "There is already an account for this email address. A forgotten password cannot be reset.",
     "weakPassword": "At least 8 characters.",
     "invalidDisplayName": "Names may contain letters, numbers, spaces, dots, hyphens and apostrophes, up to 100 characters.",
-
     "noSuchAccount": "There is no account for this email address. Ask the person directly whether they have registered.",
     "alreadyShared": "That person can already see this list.",
     "cannotShareWithOwner": "This list is already yours.",
@@ -88,11 +90,9 @@
     "forbidden": "That is not allowed on this list.",
     "notFound": "This list does not exist."
   },
-
   "success": {
     "loggedOut": "Logged out"
   },
-
   "toasts": {
     "giftAdded": "Gift idea added",
     "giftAddFailed": "Gift idea not added",
@@ -116,12 +116,10 @@
     "loginSuccess": "Logged in successfully",
     "registrationSuccess": "Account created"
   },
-
   "confirmations": {
     "deleteGift": "This takes the idea off this list — including for everyone you share it with.",
-    "deleteList": "This also deletes every gift idea on this list, and it cannot be undone."
+    "deleteListNamed": "“{name}” will be deleted, along with every gift idea on it. This cannot be undone."
   },
-
   "visibility": {
     "private": "Private",
     "shared": "Shared",
@@ -131,7 +129,6 @@
     "sharedWith": "Shared with",
     "sharedWithNobody": "Not shared with anyone yet"
   },
-
   "listSheet": {
     "listHint": "Only you can add to this list.",
     "addGift": "Add gift idea",
@@ -153,7 +150,6 @@
     "markedBySomeoneElse": "Somebody else marked this — the mark stays.",
     "backToLists": "Back to your lists"
   },
-
   "shareList": {
     "shareTitle": "Share list",
     "shareLead": "Every address you enter here sees the whole list and may tick ideas off. Nothing else.",
@@ -166,7 +162,6 @@
     "privateFirst": "While the list is private you cannot add anybody. Share it first.",
     "makeShared": "Share it now"
   },
-
   "createListDialog": {
     "createListTitle": "New list",
     "enterListName": "List name",
@@ -178,10 +173,9 @@
     "shared": "Shared",
     "sharedHint": "Exactly the people you add later with an address."
   },
-
   "listBoard": {
     "yourLists": "Your lists",
-    "sharedWithYou": "Shared with you",
+    "sharedWithYou": "Your loved ones' lists",
     "createList": "Create list",
     "addGift": "Add gift idea",
     "rename": "Rename",
@@ -193,18 +187,17 @@
     "changeVisibility": "Change visibility",
     "share": "Share",
     "sharedWithCount": "Shared with: {count}",
-    "noLists": "No lists yet. Create the first one.",
-    "noSharedLists": "Nobody has shared a list with you yet.",
+    "noLists": "Create your first wish list.",
+    "noSharedLists": "No wish lists have been shared with you yet.",
+    "emptyPlateHint": "A name is enough. Who sees it, you decide.",
     "private": "Private",
     "shared": "Shared"
   },
-
   "footer": {
     "copyright": "© 2026 wishy",
     "privacyPolicy": "Privacy policy",
     "termsConditions": "Terms"
   },
-
   "privacy": {
     "title": "Privacy Policy",
     "sections": [
@@ -260,7 +253,6 @@
       }
     ]
   },
-
   "terms": {
     "title": "Terms and Conditions",
     "sections": [
@@ -290,7 +282,6 @@
       }
     ]
   },
-
   "giftCount": {
     "none": "no gift ideas yet",
     "zero": "nothing left to buy",
