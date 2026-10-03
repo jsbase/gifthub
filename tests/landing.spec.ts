@@ -349,11 +349,16 @@ for (const lang of locales) {
             number at all. `SheetProgress` treats "nothing left" as a conclusion
             rather than as a quantity, and a row showing a 0 beside its check would
             be two claims about one list where the app everywhere else makes one.
+
+            `toBeNull`, not `toEqual([])`: a global regex that matches nothing
+            returns `null` and not an empty array, so `toEqual([])` would fail on
+            a row that is exactly right. The first run of this suite is what found
+            it out, in all three locales at once.
           */
           expect(
             figure.match(/\d+/g),
             'the finished row prints no numeral at all'
-          ).toEqual([]);
+          ).toBeNull();
         }
       }
 
