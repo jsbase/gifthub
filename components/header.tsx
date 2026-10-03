@@ -12,14 +12,14 @@ import { cn } from '@/lib/utils';
 import type { AuthState, HeaderProps } from '@/types';
 
 const Header: React.FC<HeaderProps> = ({
-  groupName,
+  displayName,
   dict,
   onLogout,
   showAuth = false,
 }) => {
   const [authState, setAuthState] = useState<AuthState>({
     isAuthenticated: false,
-    groupName,
+    displayName,
   });
 
   const pathname = usePathname();
@@ -34,7 +34,18 @@ const Header: React.FC<HeaderProps> = ({
         if (isMounted) {
           setAuthState({
             isAuthenticated: auth?.success ?? false,
-            groupName: auth?.groupName || groupName,
+            /*
+              `auth.displayName` first, and the prop only as what to show until
+              the answer lands. The prop is what a server-rendered page was told;
+              the answer is what the session cookie actually says, and after a
+              sign-in or a sign-out on this tab the cookie is the newer truth.
+
+              It is also the only line of the identity that ever reaches the DOM.
+              `verifyAuth` also returns the address, which is a lookup key rather
+              than something a person is called, and `PRODUCT.md:72` asks for the
+              name.
+            */
+            displayName: auth?.displayName || displayName,
           });
         }
       } catch (error) {
@@ -55,7 +66,7 @@ const Header: React.FC<HeaderProps> = ({
     return () => {
       isMounted = false;
     };
-  }, [groupName, pathname]);
+  }, [displayName, pathname]);
 
   const isDashboardRoute = pathname.includes('/dashboard');
 
@@ -67,8 +78,8 @@ const Header: React.FC<HeaderProps> = ({
       : ''
   }`;
 
-  const currentGroupName = authState.isAuthenticated
-    ? authState.groupName
+  const currentDisplayName = authState.isAuthenticated
+    ? authState.displayName
     : undefined;
 
   return (
@@ -76,9 +87,9 @@ const Header: React.FC<HeaderProps> = ({
       {/*
         The running head of a page: the name on the left, the instruments on the
         right, one hairline underneath. `mr-auto` rather than `justify-between`
-        so the name takes the slack and the controls can never be pushed off the
-        row by a long group name - the name is the one thing here allowed to
-        shrink, and it is the only one with an ellipsis.
+so the name takes the slack and the controls can never be pushed off the
+          row by a long name - the name is the one thing here allowed to shrink, and
+          it is the only one with an ellipsis.
 
         `--header-height` is deliberately left at 56px. A 44px control inside it
         already clears by 6px top and bottom, which is on the unit, so the header
@@ -109,10 +120,14 @@ const Header: React.FC<HeaderProps> = ({
             'px-1.5'
           )}
           data-testid='logo'
-          aria-label={currentGroupName || 'wishy'}
-          title={currentGroupName || undefined}
+          aria-label={currentDisplayName || 'wishy'}
+          title={currentDisplayName || undefined}
         >
-          <Logo size='sm' groupName={currentGroupName} className='min-w-0' />
+          <Logo
+            size='sm'
+            displayName={currentDisplayName}
+            className='min-w-0'
+          />
         </Link>
 
         <div className={cn('flex', 'shrink-0', 'items-center', 'gap-2')}>

@@ -115,9 +115,9 @@ const Home: NextPage<PageProps> = async ({ params }) => {
                 />
 
                 {/*
-                  A standfirst, not a subtitle: what the group model actually is,
-                  in concrete terms. Deliberately narrower than the claim above it
-                  and narrower than the plate beside it, so the page carries three
+                  A standfirst, not a subtitle: what the product actually is, in
+                  concrete terms. Deliberately narrower than the claim above it and
+                  narrower than the plate beside it, so the page carries three
                   measures rather than one - the widest for the thing being said,
                   the middle for the thing being shown, the narrowest for the
                   sentence that ties them.
@@ -168,7 +168,7 @@ const Home: NextPage<PageProps> = async ({ params }) => {
                 <LandingPreview
                   preview={dict.preview}
                   giftCount={dict.giftCount}
-                  members={dict.members}
+                  yourLists={dict.yourLists}
                 />
               </div>
             </div>

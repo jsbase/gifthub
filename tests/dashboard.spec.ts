@@ -1,160 +1,253 @@
 import { test, expect } from '@playwright/test';
 import { PrismaClient } from '@prisma/client';
+import * as dict from '@/lib/translations/en.json';
 
-const lang = 'en';
-const testuserName = 'testuser';
+/*
+  The contents page, under the per-list model.
 
-// This spec deletes data, so it must never touch `testgroup`: that is the demo
-// group the deployed app shows to whoever is looking at it. Every write below is
-// scoped to a group of its own, created on demand, so the demo group survives
-// the suite even where CI is pointed at the same database.
-const GROUP_NAME = 'testgroup-e2e';
-const GROUP_PASSWORD = 'test123';
+  Two things are asserted here that the group version of this spec could not be.
+
+  The first is that the two sections are genuinely separate. `your lists` and
+  `shared with you` are not one list with a column on it, because the two rows carry
+  different affordances and a shared row is not the reader's to change. A shared row
+  that offered a rename control would be a control the server refuses, which is the
+  thing `sharing.spec.ts` asserts the other end of.
+
+  The second is that a control a reader may not use is *absent*. The previous model
+  showed owner-only toolbar buttons greyed out on every row; here a shared row has no
+  toolbar at all, and the assertion is on the count. That is a product rule rather
+  than a styling one - a buyer cannot tell an inert button from a broken one - so it
+  is asserted rather than left to a screenshot.
+*/
 
 const prisma = new PrismaClient();
 
-test.describe('Dashboard functionality', () => {
-  test.beforeAll(async ({ request }) => {
-    // Idempotent: the first run creates the group, every later run gets the 400
-    // the register route returns for a name that is taken.
-    const response = await request.post('/api/auth/register', {
-      data: { groupName: GROUP_NAME, password: GROUP_PASSWORD },
-    });
-    const body = await response.json().catch(() => null);
+const lang = 'en';
+const ANNA = 'anna@example.test';
+const BEN = 'ben@example.test';
+const MIA = 'mia@example.test';
+const PASSWORD = 'test1234';
 
-    expect(
-      response.ok() || body?.message === 'A group with this name already exists',
-      `registering ${GROUP_NAME} failed: ${response.status()} ${JSON.stringify(
-        body
-      )}`
-    ).toBe(true);
+// Cleanup is scoped to lists this spec created, by name. The seeded demo lists are
+// left alone for the same reason the group spec left `testgroup` alone: this suite
+// writes to whatever database DATABASE_URL names, and in CI that can be the same one
+// the deployed app reads.
+const OWNED_BY_THIS_SPEC = ['e2e-owned', 'e2e-doomed'];
+
+const signIn = async (
+  page: import('@playwright/test').Page,
+  email: string
+) => {
+  await page.getByTestId('OpenLogin').click();
+  await page.fill('#identifier', email);
+  await page.fill('#password', PASSWORD);
+  await Promise.all([
+    page.waitForNavigation({ timeout: 15000, waitUntil: 'load' }),
+    page.getByTestId('SubmitLogin').click(),
+  ]);
+};
+
+test.describe('Contents page', () => {
+  test.beforeAll(async () => {
+    // The old spec registered its own group here and accepted either a 200 or the
+    // duplicate-name refusal, so a re-run was idempotent. Accounts already exist in
+    // the seed, so this only has to clear anything an interrupted run left behind.
+    const accounts = await prisma.account.findMany({
+      where: { email: { in: [ANNA, BEN] } },
+      select: { id: true },
+    });
+    const ids = accounts.map((a) => a.id);
+    if (ids.length > 0) {
+      const lists = await prisma.list.findMany({
+        where: { name: { in: OWNED_BY_THIS_SPEC }, ownerId: { in: ids } },
+        select: { id: true },
+      });
+      const listIds = lists.map((l) => l.id);
+      // Cascade handles the rest; the order is only so the FK check never sees an
+      // access row whose list is already gone.
+      await prisma.gift.deleteMany({ where: { listId: { in: listIds } } });
+      await prisma.listAccess.deleteMany({ where: { listId: { in: listIds } } });
+      await prisma.list.deleteMany({ where: { id: { in: listIds } } });
+    }
+    await prisma.$disconnect();
   });
 
   test.beforeEach(async ({ page, context }) => {
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
 
-    // Own the fixture: wipe any members left in the group by an interrupted run,
-    // so the assertions below do not depend on initial DB state.
-    const group = await prisma.group.findUnique({
-      where: { name: GROUP_NAME },
-    });
-    if (group) {
-      const memberships = await prisma.userGroup.findMany({
-        where: { groupId: group.id },
-        select: { id: true, userId: true },
-      });
-      await prisma.gift.deleteMany({
-        where: { forMemberId: { in: memberships.map((m) => m.id) } },
-      });
-      await prisma.userGroup.deleteMany({ where: { groupId: group.id } });
-      // `userGroups: { none: {} }` is what keeps this safe. A User row is
-      // global - `@@unique([userId, groupId])` lets one user sit in several
-      // groups - and this filter runs after the memberships above are gone, so it
-      // can only match users left belonging to nothing at all. Without it, any
-      // user shared with another group would be deleted here and take that
-      // membership with it; nothing in the schema stops the app from creating
-      // such a user (app/api/members/route.ts:87 inserts a fresh one, but a test
-      // must not depend on that).
-      await prisma.user.deleteMany({
-        where: {
-          id: { in: memberships.map((m) => m.userId) },
-          userGroups: { none: {} },
-        },
-      });
-    }
-    await prisma.$disconnect();
-
     await context.setDefaultNavigationTimeout(10000);
     await context.setDefaultTimeout(10000);
 
-    try {
-      await page.goto(`${baseUrl}`, {
-        waitUntil: 'networkidle',
-        timeout: 10000,
-      });
-      await page.waitForSelector('body');
-      console.log(`Test "dashboard" started for page: ${page.url()}`);
-    } catch (error) {
-      console.error('Navigation Error:', error);
-      throw error;
-    }
+    await page.goto(`${baseUrl}`, { waitUntil: 'networkidle', timeout: 10000 });
+    await page.waitForSelector('body');
 
-    const loginButton = page.getByTestId('OpenLogin');
-    await loginButton.click();
-
-    await page.fill('#groupName', GROUP_NAME);
-    await page.fill('#password', GROUP_PASSWORD);
-
-    const submitButton = page.getByTestId('SubmitLogin');
-    await Promise.all([
-      page.waitForNavigation({ timeout: 15000, waitUntil: 'load' }),
-      submitButton.click(),
-    ]);
-
+    await signIn(page, ANNA);
     await expect(page).toHaveURL(`/${lang}/dashboard`);
   });
 
-  test('Add and remove members and gifts', async ({ page }) => {
-    test.slow();
+  test('Create a list as private and as shared, then delete one', async ({
+    page,
+  }) => {
+    // Private first: it is the default, and the default is the state that means
+    // "only me" rather than "nobody has decided yet".
+    await page.getByTestId('createListButton').click();
+    await page.fill('#listName', 'e2e-owned');
+    await page.getByTestId('createVisibility-private').click();
+    await page.getByTestId('createListSubmit').click();
 
-    const noMembersMessage = await page.getByTestId('noMembers');
-    await expect(noMembersMessage).toBeVisible();
+    /*
+      Creating lands on the new sheet, not back on the board. That is deliberate:
+      a list exists so that an idea can go on it, and an empty sheet behind the
+      dialog says what to do next in one line of copy instead of leaving the owner
+      to work out where the thing they just made went.
+    */
+    await expect(page).toHaveURL(new RegExp(`/${lang}/list/`), {
+      timeout: 10000,
+    });
+    await expect(page.getByTestId('listName')).toContainText('e2e-owned');
 
-    await page.getByTestId('addMemberButton').click();
-    await page.fill('#name', testuserName);
-    await page.getByTestId('memberNameSubmit').click();
+    // The add form is present because this account owns it.
+    await expect(page.getByTestId('addGiftButton')).toBeVisible();
 
-    await expect(noMembersMessage).not.toBeVisible();
-
-    // Open the members gifts dialog
-    await page.getByTestId('showGiftsDialog').click();
-    const dialogMember = page.locator('[role="dialog"]');
-    await expect(dialogMember).toBeVisible();
-
-    // Add a gift to a member
     await page.getByTestId('addGiftButton').click();
     await page.fill('#title', 'PlayStation 5');
-    await page.fill('#description', 'Latest gaming console');
+    await page.fill('#description', 'Latest console');
     await page.fill('#url', 'https://search.brave.com/');
     await page.getByTestId('addGiftSubmit').click();
 
-    const giftCard = page.getByTestId('giftCard');
-    await expect(giftCard).toBeVisible();
-    expect(await giftCard.getByTestId('giftTitle').textContent()).toBe(
+    const card = page.getByTestId('giftCard');
+    await expect(card).toBeVisible();
+    expect(await card.getByTestId('giftTitle').textContent()).toBe(
       'PlayStation 5'
     );
 
-    // Delete the Gift. The confirmation is the app's own dialog, not a native
-    // window.confirm, so the step has to drive it - and the assertions below are
-    // what prove the dialog actually destroyed the row.
-    await page.getByTestId('giftDelete').click();
+    // Add a second idea so the count on the row is something rather than nothing.
+    await page.getByTestId('addGiftButton').click();
+    await page.fill('#title', 'Lampe');
+    await page.getByTestId('addGiftSubmit').click();
+    await expect(page.getByTestId('giftCard')).toHaveCount(2);
+
+    // Delete one idea. The confirmation is the app's own dialog, not a native
+    // window.confirm, so the step has to drive it.
+    await page.getByTestId('giftCard').first().getByTestId('giftDelete').click();
     await page.getByTestId('confirmAction').click();
-    await expect(giftCard).not.toBeVisible();
+    await expect(page.getByTestId('giftCard')).toHaveCount(1);
 
-    // Close the Member Gifts Dialog
-    await page.getByTestId('dialogClose').click();
-    await expect(dialogMember).not.toBeVisible();
+    await page.getByTestId('backToLists').click();
+    await expect(page).toHaveURL(`/${lang}/dashboard`);
 
-    // Remove the member again
-    await page.getByTestId('showRemoveMemberButtons').click();
-    await page.waitForTimeout(1000);
-    await page.getByTestId('removeMemberButton').click();
+    const owned = page.getByTestId('listRow').filter({ hasText: 'e2e-owned' });
+    await expect(owned).toHaveCount(1);
+
+    // Now a shared one, to prove the choice is actually taken rather than offered on
+    // a control that does nothing.
+    await page.getByTestId('createListButton').click();
+    await page.fill('#listName', 'e2e-doomed');
+    await page.getByTestId('createVisibility-shared').click();
+    await page.getByTestId('createListSubmit').click();
+    await expect(page).toHaveURL(new RegExp(`/${lang}/list/`), {
+      timeout: 10000,
+    });
+
+    await page.getByTestId('backToLists').click();
+    const doomed = page.getByTestId('listRow').filter({ hasText: 'e2e-doomed' });
+    await expect(doomed).toHaveCount(1);
+
+    // The visibility is the visible difference between the two rows, and the
+    // audience count is the difference a shared list is actually carrying: this one
+    // is shared and nobody has been added to it, which is a state distinct from
+    // private and the row has to be able to say so.
+    await expect(doomed).toContainText(dict.visibility.shared);
+    await expect(owned).toContainText(dict.visibility.private);
+
+    // Deleting a list is the only irreversible control in the product, so the
+    // confirmation has to state the cascade.
+    await doomed.getByTestId('deleteList').click();
+    await expect(page.getByTestId('confirmAction')).toBeVisible();
     await page.getByTestId('confirmAction').click();
 
-    await expect(noMembersMessage).toBeVisible();
+    await expect(page.getByTestId('listRow').filter({
+      hasText: 'e2e-doomed',
+    })).toHaveCount(0);
+  });
+
+  /*
+    Anchored to a seeded list rather than to one an earlier test in this file
+    created. A test that depends on the test before it passes as a suite and fails
+    on its own, which is the kind of thing that only shows up when someone runs one
+    spec to reproduce a bug. "Für mich" is private and owned by Anna and is created
+    by the seed, so it is here whatever else this file does.
+  */
+  test('An owner row offers all four controls', async ({ page }) => {
+    const owned = page
+      .getByTestId('ownedLists')
+      .getByTestId('listRow')
+      .filter({ hasText: 'Für mich' });
+    await expect(owned).toHaveCount(1);
+
+    for (const control of ['openList', 'shareList', 'renameList', 'deleteList']) {
+      await expect(owned.getByTestId(control)).toHaveCount(1);
+    }
+  });
+
+  test('A shared row offers opening and nothing else', async ({ page }) => {
+    /*
+      As Mia, who has Ben's list shared with her. Not as Anna: the seed makes Anna
+      the owner of everything she can see, so her "shared with you" section is empty
+      and asserting anything about a shared row from her session tests the empty
+      state instead. That is the same reason the seed gives Mia a *disjoint* list -
+      a person who holds access to something is the only thing a shared row can be
+      observed from.
+    */
+    await page.context().clearCookies();
+    await page.goto(`${process.env.NEXT_PUBLIC_BASE_URL}`, {
+      waitUntil: 'networkidle',
+    });
+    await signIn(page, MIA);
+
+    await expect(page).toHaveURL(`/${lang}/dashboard`);
+
+    const shared = page
+      .getByTestId('sharedLists')
+      .getByTestId('listRow')
+      .first();
+    await expect(shared).toBeVisible({ timeout: 10000 });
+
+    // A shared row is identified by whose it is, which is the only way to tell two
+    // rows apart when the names could coincide. This also pins *which* list Mia was
+    // given, so a seed change that swaps the audience fails here with a readable
+    // message rather than four count assertions failing further down.
+    await expect(shared.getByTestId('listOwner')).toContainText('Ben');
+
+    /*
+      `toHaveCount(0)` rather than "is disabled", because the rule is that the
+      control does not exist: an inert button and a missing one are indistinguishable
+      to the person looking at it, and this product's audience is not going to work
+      out which is which. The server refuses all four of these - `sharing.spec.ts`
+      asserts that end - so a rendered-but-disabled toolbar would be four promises
+      the product cannot keep.
+    */
+    for (const control of [
+      'shareList',
+      'renameList',
+      'changeVisibility',
+      'deleteList',
+    ]) {
+      await expect(shared.getByTestId(control)).toHaveCount(0);
+    }
+    // Opening it is not owner-only.
+    await expect(shared.getByTestId('openList')).toHaveCount(1);
   });
 
   /*
     The header is the only chrome on every page, and it used to carry two
-    regressions that no other test could see: the language trigger overrode the
-    44px `icon` size with `h-9 w-9`, so the one control that changes the locale
-    sat at 36px, and the app-wide focus ring resolved to `box-shadow: none` on
-    every focusable element in the app. Both are invisible to a screenshot diff
-    and to a smoke test, so they are asserted here on geometry and on computed
-    style.
+    regressions no screenshot diff could see: the language trigger overrode the 44px
+    `icon` size with `h-9 w-9`, and the app-wide focus ring resolved to
+    `box-shadow: none` on every focusable element. Both are invisible to a
+    screenshot, so they are asserted here on geometry and on computed style.
 
-    This spec's `beforeEach` has already logged in, so the logout control - which
-    only renders for an authenticated group - is on the page.
+    The header also carries the product's substitution - a signed-in person's display
+    name in place of the wordmark - so the box measured here is that name.
   */
   test('Header controls meet the 44px floor and keep a visible focus ring', async ({
     page,
@@ -178,27 +271,14 @@ test.describe('Dashboard functionality', () => {
     const lBox = (await logout.boundingBox())!;
     expect(sBox.x + sBox.width).toBeLessThanOrEqual(lBox.x - 8);
 
-    // Logout is a bare glyph below 640px and carries the word above it, and it is
-    // never an unlabelled icon at either width. The narrow viewport has to be set
-    // before the first assertion, not just before the second: the Playwright
-    // default is wider than 640px, so the label is already on screen.
     await page.setViewportSize({ width: 375, height: 667 });
-
-    const logoutLabel = logout.locator('span');
     await expect(logout).toHaveAttribute('aria-label', /./);
-    await expect(logoutLabel).toBeHidden();
+    await expect(logout.locator('span')).toBeHidden();
 
     await page.setViewportSize({ width: 800, height: 800 });
-    await expect(logoutLabel).toBeVisible();
-    await expect(logoutLabel).toHaveText('Log out');
+    await expect(logout.locator('span')).toBeVisible();
+    await expect(logout.locator('span')).toHaveText('Log out');
 
-    // The switcher names its action and the language it is currently on, and
-    // states that language in letters as well as in a flag, so it does not depend
-    // on recognising the flag to be usable.
-    await expect(switcher).toHaveAttribute(
-      'aria-label',
-      'Change language: English'
-    );
     await expect(switcher).toContainText('EN');
     await expect(switcher.locator('svg')).toHaveCount(1); // the chevron
 

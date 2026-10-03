@@ -3,7 +3,7 @@ import { cn } from '@/lib/utils';
 import type { FeatureCardProps } from '@/types';
 
 /**
- * One claim about how the group works, in one of two registers.
+ * One claim about how a list works, in one of two registers.
  *
  * There are no boxes, borders, shadows or backgrounds: a claim is a sentence, and
  * putting three sentences in cards would claim they were three objects to

@@ -35,6 +35,22 @@ import type { GiftCardProps } from '@/types';
  * recurse into the tick's label, so the link would announce as "Mark as bought,
  * <title>, <url>". Tab also reached the tick from inside the link, and Enter
  * navigated away instead of ticking.
+ *
+ * Two of the three are conditional, and *how* they are conditional is the whole
+ * point of this component having been rewritten for individual accounts:
+ *
+ *   - The delete button is absent for a reader who may not delete, not disabled.
+ *     A greyed-out bin asks whether the app is broken or the rule is deliberate,
+ *     and those two need different words - which is why the sheet shows an
+ *     invited account none of the owner-only surface and then says so in a
+ *     sentence above it.
+ *   - The mark is a **stamp rather than a button** when this reader may not clear
+ *     this particular mark: the owner, on an idea somebody has already marked.
+ *     The column keeps its place, its 44px measure and its rule, and the cart
+ *     keeps the owner's ink - so the state still reads on all three channels
+ *     (inverted cell, inked mark, `aria-pressed` on the live marks) and the cell
+ *     does not reflow because of who is looking at it. Only the ability to press
+ *     it is gone.
  */
 const GiftCard: React.FC<GiftCardProps> = ({
   gift,
@@ -43,6 +59,7 @@ const GiftCard: React.FC<GiftCardProps> = ({
   onTogglePurchased,
   togglingId,
   changedId,
+  canDelete,
 }) => {
   const debouncedDelete = useDebounce(
     (id: string) => {
@@ -112,20 +129,28 @@ const GiftCard: React.FC<GiftCardProps> = ({
         row - so a mark that filled on it would fill while the pointer was
         anywhere in the cell, including on the body text a good 200px away from
         the mark itself.
+
+        The stamp branch below is the same column with the control taken off it.
+
+        `gift.canClear` rather than anything derived here, because this component
+        cannot derive it: the answer follows from `purchasedById`, which must never
+        reach the browser, so the server sends the permission instead of the fact it
+        came from. See `mayClearMark` in `lib/list-access.ts`.
       */}
-      <button
-        type='button'
-        onClick={handleTogglePurchased}
-        // `pointer-events-none` below only stops the mouse. Without `disabled`
-        // the button stays keyboard-activatable, so Enter or Space during an
-        // in-flight toggle fires a second request.
-        disabled={isPending}
-        aria-pressed={isCollected}
-        aria-label={isCollected ? dict.markAsAvailable : dict.markAsPurchased}
-        data-testid='giftStrikethrough'
-        className={cn(
-          'group/buy',
-          'grid',
+      {gift.canClear ? (
+        <button
+          type='button'
+          onClick={handleTogglePurchased}
+          // `pointer-events-none` below only stops the mouse. Without `disabled`
+          // the button stays keyboard-activatable, so Enter or Space during an
+          // in-flight toggle fires a second request.
+          disabled={isPending}
+          aria-pressed={isCollected}
+          aria-label={isCollected ? dict.markAsAvailable : dict.markAsPurchased}
+          data-testid='giftStrikethrough'
+          className={cn(
+            'group/buy',
+            'grid',
           // `min-h-11`, not `h-11`. An explicit height beats the row's
           // `items-stretch`, so a fixed height left this column 44px tall and
           // pinned to the top: on a two-line row its `border-r` stopped short of
@@ -208,7 +233,44 @@ const GiftCard: React.FC<GiftCardProps> = ({
             />
           )}
         </>
-      </button>
+        </button>
+      ) : (
+        /*
+          The same column with the control taken off it.
+
+          This is the owner's view of a mark somebody else set: the mark is a fact
+          about the sheet, not an invitation, and `lib/list-access.ts` refuses the
+          owner for clearing it. It is drawn rather than hidden because the ink is
+          one of the three channels the collected state is read on - inverted
+          cell, owner's ink, rule fill - and dropping the mark would take one of
+          them away while leaving the other two to do the work alone. `aria-hidden`
+          because a shape is not an announcement and there is no action to name;
+          the sentence that says why it cannot be pressed is printed once at the
+          head of the collected section.
+
+          Keeping the column identical in width, measure and rule is what stops the
+          cell from reflowing for a reader who happens to own it. Nothing about
+          the two cells would be different if the span were not here.
+        */
+        <span
+          aria-hidden='true'
+          data-testid='giftMark'
+          className={cn(
+            'grid',
+            'min-h-11',
+            'w-11',
+            'shrink-0',
+            'place-items-center',
+            'border-r',
+            'border-rule',
+            isCollected
+              ? 'text-[var(--member-ink-on-collected)]'
+              : 'text-caption'
+          )}
+        >
+          <IconShoppingCart className='h-5 w-5' />
+        </span>
+      )}
 
       {gift.url ? (
         <a
@@ -225,37 +287,39 @@ const GiftCard: React.FC<GiftCardProps> = ({
         </div>
       )}
 
-      <Button
-        variant='ghost'
-        size='icon'
-        onClick={handleDelete}
-        className={cn(
-          // Same correction as the tick column, for the same reason: `self-start`
-          // plus the primitive's `h-11` pinned this control to the top, so its
-          // hover wash filled 44px and stopped while the cell kept going. On a
-          // one-line row that left the gap the left column had just been fixed
-          // for, mirrored on the right.
-          //
-          // `h-auto` beats the primitive's `h-11` through twMerge, so the row's
-          // `items-stretch` takes effect; `min-h-11` holds the 44px floor on a
-          // one-line row. `my-0.5` and `mr-1` both had to go: a margin is a
-          // fixed offset, and the first defeated the stretch while the second
-          // left a 4px gap at the cell's right edge that read as unfinished once
-          // the wash began spanning the column. The control now fills the cell's
-          // content box on all three sides, square with the tick column opposite.
-          'h-auto',
-          'min-h-11',
-          'self-stretch',
-          'shrink-0',
-          isCollected
-            ? 'text-collected-foreground/70 hover:bg-collected-foreground/12 hover:text-collected-foreground'
-            : 'text-caption hover:bg-wash hover:text-destructive'
-        )}
-        data-testid='giftDelete'
-        aria-label={dict.deleteGift}
-      >
-        <IconTrash className='h-4 w-4' />
-      </Button>
+      {canDelete && (
+        <Button
+          variant='ghost'
+          size='icon'
+          onClick={handleDelete}
+          className={cn(
+            // Same correction as the tick column, for the same reason: `self-start`
+            // plus the primitive's `h-11` pinned this control to the top, so its
+            // hover wash filled 44px and stopped while the cell kept going. On a
+            // one-line row that left the gap the left column had just been fixed
+            // for, mirrored on the right.
+            //
+            // `h-auto` beats the primitive's `h-11` through twMerge, so the row's
+            // `items-stretch` takes effect; `min-h-11` holds the 44px floor on a
+            // one-line row. `my-0.5` and `mr-1` both had to go: a margin is a
+            // fixed offset, and the first defeated the stretch while the second
+            // left a 4px gap at the cell's right edge that read as unfinished once
+            // the wash began spanning the column. The control now fills the cell's
+            // content box on all three sides, square with the tick column opposite.
+            'h-auto',
+            'min-h-11',
+            'self-stretch',
+            'shrink-0',
+            isCollected
+              ? 'text-collected-foreground/70 hover:bg-collected-foreground/12 hover:text-collected-foreground'
+              : 'text-caption hover:bg-wash hover:text-destructive'
+          )}
+          data-testid='giftDelete'
+          aria-label={dict.deleteGift}
+        >
+          <IconTrash className='h-4 w-4' aria-hidden='true' />
+        </Button>
+      )}
     </li>
   );
 };

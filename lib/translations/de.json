@@ -1,101 +1,98 @@
 {
-  "addMember": "Mitglied hinzufügen",
-  "addMemberDialog": {
-    "addMemberTitle": "Ein Mitglied hinzufügen",
-    "addMember": "Mitglied hinzufügen",
-    "adding": "Wird hinzugefügt...",
-    "enterGroupName": "Bitte ausfüllen um jemanden hinzuzufügen",
-    "enterMemberName": "Name des Mitglieds"
-  },
-  "confirmations": {
-    "deleteGift": "Damit verschwindet die Idee aus der gemeinsamen Liste aller in der Gruppe.",
-    "deleteMember": "Damit werden auch alle Geschenkideen auf der Liste von {name} gelöscht. Das lässt sich nicht rückgängig machen."
-  },
-  "confirmPassword": "Passwort bestätigen",
-  "createGroup": "Gruppe erstellen",
-  "createGroupBtn": "Gruppe erstellen",
-  "createGroupDescription": "Benenne deine Gruppe und wähle ein Passwort. Alle in der Gruppe melden sich mit denselben zwei Angaben an.",
-  "deleteMember": "Mitglied entfernen",
-  "enterGroupName": "Gruppenname",
-  "enterPassword": "Passwort",
-  "errors": {
-    "duplicateName": "Ein Mitglied mit diesem Namen ist bereits in dieser Gruppe vorhanden.",
-    "failedToLoad": "Mitglieder nicht geladen",
-    "failedToLoadGifts": "Geschenkideen nicht geladen",
-    "invalidNameFormat": "Namen dürfen Buchstaben, Zahlen, Leerzeichen, Punkte, Bindestriche und Apostrophe enthalten, höchstens 100 Zeichen.",
-    "loginFailed": "Anmeldung fehlgeschlagen",
-    "loginRequired": "Anmeldung erforderlich",
-    "passwordMismatch": "Passwörter stimmen nicht überein",
-    "registrationFailed": "Gruppe konnte nicht erstellt werden"
-  },
-  "features": {
-    "simple": {
-      "description": "Eine Idee in ein paar Sekunden notieren, bevor sie wieder verschwindet.",
-      "title": "Ideen sofort festhalten"
-    },
-    "tracking": {
-      "description": "Als gekauft markieren, damit die ganze Gruppe es sieht.",
-      "title": "Niemand kauft es zweimal"
-    },
-    "updates": {
-      "description": "Nur die Gruppe sieht die Liste, damit die beschenkte Person erst am Tag davon erfährt.",
-      "title": "Die Überraschung bleibt"
-    }
-  },
-  "groupName": "Gruppe",
-  "landing": {
-    "standfirst": "Eine Gruppe, ein Name, ein Passwort. Für jede Person eine Seite — und was schon besorgt ist, bleibt durchgestrichen darauf stehen."
-  },
-  "loginDescription": "Der Gruppenname und das Passwort, mit denen sich alle in der Gruppe anmelden.",
-  "preview": {
-    "group": "Omas Geburtstag",
-    "lead": "Eine Seite aus dem Album. Jede Person in der Gruppe hat eine, und die Zahl rechts ist die Anzahl der Ideen, die noch offen sind.",
-    "members": [
-      { "name": "Anna", "count": 3, "collected": 2 },
-      { "name": "Ben", "count": 1, "collected": 2 },
-      { "name": "Mia", "count": 0, "collected": 4 }
-    ]
-  },
-  "giftCount": {
-    "none": "noch keine Geschenkidee",
-    "zero": "nichts mehr zu kaufen",
-    "one": "1 Geschenkidee noch offen",
-    "many": "{{count}} Geschenkideen noch offen"
-  },
-  "loading": "Wird geladen...",
+  "tagline": "Jede Person hat ihre eigene Liste. Geteilt wird sie nur mit den Menschen, die du selbst dazuholst.",
   "login": "Anmelden",
-  "loginToGroup": "Anmelden",
-  "logout": "Abmelden",
-  "changeLanguage": "Sprache ändern",
-  "memberGifts": {
-    "addGift": "Geschenkidee hinzufügen",
-    "adding": "Wird hinzugefügt...",
-    "cancel": "Abbrechen",
-    "deleteGift": "Geschenkidee löschen",
-    "deleteGiftConfirm": "Diese Geschenkidee löschen?",
-    "emptyCellHint": "Ein Name reicht. Notiz und Link sind optional.",
-    "enterDescription": "Notiz hinzufügen",
-    "enterGiftTitle": "Geschenkidee",
-    "enterUrl": "Link",
-    "listHint": "Alle in der Gruppe können Einträge zu dieser Liste hinzufügen.",
-    "noGifts": "Noch keine Geschenkideen. Füge die erste hinzu.",
-    "optional": "Optional",
-    "markAsPurchased": "Als gekauft markieren",
-      "markAsAvailable": "Zurück auf die Liste",
-      "openIdeas": "Noch offen",
-      "collectedIdeas": "Besorgt"
-    },
-  "members": "Mitglieder",
+  "register": "Konto erstellen",
+  "loading": "Wird geladen...",
   "cancel": "Abbrechen",
   "close": "Schließen",
-  "noMembers": "Noch keine Mitglieder. Füge das erste hinzu.",
+
+  "email": "E-Mail-Adresse",
+  "displayName": "Anzeigename",
+    "nickname": "Nickname",
   "password": "Passwort",
-  "register": "Gruppe erstellen",
-  "removeMemberConfirm": "Dieses Mitglied entfernen?",
+  "confirmPassword": "Passwort bestätigen",
+  "loginBtn": "Anmelden",
+  "registerBtn": "Konto erstellen",
+    "loginIdentifier": "Nickname oder E-Mail-Adresse",
+    "loginIdentifierHint": "Dein Nickname ist einmalig — damit meldest du dich an.",
+    "registerNicknameHint": "Dein Nickname ist einmalig. Andere sehen dich unter diesem Namen.",
+
+  "loginDescription": "Nach der Anmeldung siehst du deine Listen und die, die andere mit dir geteilt haben.",
+  "registerDescription": "Mit diesem Konto gehören dir alle Listen, die du anlegst — und du allein entscheidest, wer sie sieht.",
+
+  "logout": "Abmelden",
+  "changeLanguage": "Sprache ändern",
+
+  "yourLists": "Deine Listen",
+  "sharedWithYou": "Mit dir geteilt",
+  "createList": "Liste erstellen",
+  "createListDescription": "Eine Liste gehört dir. Private siehst nur du, geteilte nur die Menschen, die du einträgst.",
+  "deleteList": "Liste löschen",
+  "removeListConfirm": "Diese Liste löschen?",
+  "noLists": "Noch keine Listen. Lege die erste an.",
+  "noSharedLists": "Dir hat noch niemand eine Liste geteilt.",
+
+  "features": {
+    "simple": {
+      "title": "Eine Idee in Sekunden",
+      "description": "Ein Titel genügt. Notiz und Link sind optional, mehr braucht es nicht."
+    },
+    "tracking": {
+      "title": "Niemand kauft es zweimal",
+      "description": "Die anderen haken selbst ab, was sie besorgt haben — sichtbar für jeden, und ohne Namen."
+    },
+    "updates": {
+      "title": "Die Überraschung bleibt",
+      "description": "Eine neue Liste sieht außer dir niemand. Auch die Person nicht, für die sie ist."
+    }
+  },
+
+  "landing": {
+    "standfirst": "Eine Liste pro Person, ein Konto pro E-Mail-Adresse — was besorgt ist, bleibt durchgestrichen stehen, der Name des Kaufenden nie."
+  },
+
+  "preview": {
+    "list": "Annas Listen",
+    "lead": "Die Inhaltsseite, wie Anna sie sieht. Jede Zeile ist eine ihrer Listen, und die Zahl rechts zählt die Ideen, die noch offen sind.",
+    "items": [
+      { "name": "Omas Geburtstag", "count": 3, "collected": 2 },
+      { "name": "Weihnachten", "count": 1, "collected": 2 },
+      { "name": "Mias Hochzeit", "count": 0, "collected": 4 }
+    ]
+  },
+
+  "errors": {
+    "loginRequired": "Anmeldung erforderlich",
+    "failedToLoad": "Listen nicht geladen",
+    "failedToLoadGifts": "Geschenkideen nicht geladen",
+    "loginFailed": "Anmeldung fehlgeschlagen",
+    "passwordMismatch": "Passwörter stimmen nicht überein",
+    "registrationFailed": "Konto konnte nicht erstellt werden",
+
+    "invalidEmail": "Bitte eine gültige E-Mail-Adresse eingeben.",
+    "invalidNickname": "Bitte einen Nickname aus Buchstaben, Ziffern, Punkt, Strich oder Unterstrich eingeben (2–32 Zeichen).",
+    "duplicateNickname": "Dieser Nickname ist schon vergeben.",
+    "invalidIdentifier": "Bitte deinen Nickname oder deine E-Mail-Adresse eingeben.",
+    "nothingToChange": "Es wurde nichts geändert.",
+    "ambiguousChange": "Bitte entweder den Namen oder die Sichtbarkeit ändern, nicht beides.",
+    "invalidVisibility": "Diese Sichtbarkeit gibt es nicht.",
+    "duplicateEmail": "Zu dieser E-Mail-Adresse gibt es schon ein Konto. Ein vergessenes Passwort lässt sich nicht zurücksetzen.",
+    "weakPassword": "Mindestens 8 Zeichen.",
+    "invalidDisplayName": "Der Name darf Buchstaben, Zahlen, Leerzeichen, Punkte, Bindestriche und Apostrophe enthalten, höchstens 100 Zeichen.",
+
+    "noSuchAccount": "Zu dieser E-Mail-Adresse gibt es noch kein Konto. Bitte frag die Person direkt, ob sie sich registriert hat.",
+    "alreadyShared": "Diese Person kann die Liste schon sehen.",
+    "cannotShareWithOwner": "Die Liste gehört dir selbst.",
+    "notSharedYet": "Die Liste ist noch nicht geteilt.",
+    "cannotClearPurchase": "Diese Idee hat jemand anderes abgehakt. Das lässt sich nicht rückgängig machen.",
+    "forbidden": "Das ist auf dieser Liste nicht erlaubt.",
+    "notFound": "Diese Liste gibt es nicht."
+  },
+
   "success": {
     "loggedOut": "Abgemeldet"
   },
-  "tagline": "Eine Liste für alle in deiner Gruppe, damit niemand zweimal dasselbe Geschenk kauft.",
+
   "toasts": {
     "giftAdded": "Geschenkidee hinzugefügt",
     "giftAddFailed": "Geschenkidee nicht hinzugefügt",
@@ -104,90 +101,200 @@
     "giftStatusUpdateFailed": "Geschenkidee nicht aktualisiert",
     "giftDeleted": "Geschenkidee gelöscht",
     "giftDeleteFailed": "Geschenkidee nicht gelöscht",
-    "memberAdded": "{name} hinzugefügt",
-    "memberAddFailed": "Mitglied nicht hinzugefügt",
+    "listCreated": "Liste erstellt",
+    "listCreateFailed": "Liste nicht erstellt",
+    "listRenamed": "Liste umbenannt",
+    "listRenameFailed": "Liste nicht umbenannt",
+    "listDeleted": "Liste gelöscht",
+    "listDeleteFailed": "Liste nicht gelöscht",
+    "visibilityChanged": "Sichtbarkeit geändert",
+    "visibilityChangeFailed": "Sichtbarkeit nicht geändert",
+    "accessGranted": "{name} kann die Liste jetzt ansehen.",
+    "accessGrantFailed": "Person nicht hinzugefügt",
+    "accessRevoked": "{name} sieht die Liste nicht mehr.",
+    "accessRevokeFailed": "Person nicht entfernt",
     "loginSuccess": "Erfolgreich angemeldet",
-    "registrationSuccess": "Gruppe erstellt. Jetzt anmelden.",
-    "memberDeleted": "{name} und alle zugehörigen Geschenkideen gelöscht",
-    "memberDeleteFailed": "Mitglied nicht gelöscht"
+    "registrationSuccess": "Konto erstellt"
   },
+
+  "confirmations": {
+    "deleteGift": "Damit verschwindet die Idee von dieser Liste — auch für alle, mit denen du sie teilst.",
+    "deleteList": "Damit werden auch alle Ideen auf dieser Liste gelöscht. Das lässt sich nicht rückgängig machen."
+  },
+
+  "visibility": {
+    "private": "Privat",
+    "shared": "Geteilt",
+    "privateHint": "Nur du siehst diese Liste.",
+    "sharedHint": "Genau die von dir eingeladenen Personen sehen sie.",
+    "change": "Sichtbarkeit ändern",
+    "sharedWith": "Geteilt mit",
+    "sharedWithNobody": "Noch mit niemandem geteilt"
+  },
+
+  "listSheet": {
+    "listHint": "Auf dieser Liste schreibst nur du.",
+    "addGift": "Geschenkidee hinzufügen",
+    "enterGiftTitle": "Geschenkidee",
+    "optional": "Optional",
+    "enterDescription": "Notiz hinzufügen",
+    "enterUrl": "Link",
+    "cancel": "Abbrechen",
+    "adding": "Wird hinzugefügt...",
+    "noGifts": "Noch keine Geschenkideen. Füge die erste hinzu.",
+    "emptyCellHint": "Ein Name reicht. Notiz und Link sind optional.",
+    "markAsPurchased": "Als gekauft markieren",
+    "markAsAvailable": "Zurück auf die Liste",
+    "deleteGift": "Geschenkidee löschen",
+    "deleteGiftConfirm": "Diese Geschenkidee löschen?",
+    "openIdeas": "Noch offen",
+    "collectedIdeas": "Besorgt",
+    "youAreABuyer": "Diese Liste gehört jemand anderem. Abhaken, sobald du etwas besorgt hast, darfst du — mehr nicht.",
+    "markedBySomeoneElse": "Jemand anderes hat das abgehakt — die Markierung bleibt.",
+    "backToLists": "Zurück zu den Listen"
+  },
+
+  "shareList": {
+    "shareTitle": "Liste teilen",
+    "shareLead": "Jede eingetragene Adresse sieht die ganze Liste und darf Ideen abhaken. Sonst nichts.",
+    "enterEmail": "E-Mail-Adresse",
+    "add": "Hinzufügen",
+    "adding": "Wird hinzugefügt...",
+    "revoke": "Zugriff entziehen",
+    "revokeConfirmTitle": "Zugriff entziehen?",
+    "nobodyYet": "Noch niemand eingetragen.",
+    "privateFirst": "Solange die Liste privat ist, kannst du niemanden eintragen. Teile sie zuerst.",
+    "makeShared": "Jetzt teilen"
+  },
+
+  "createListDialog": {
+    "createListTitle": "Neue Liste",
+    "enterListName": "Name der Liste",
+    "create": "Erstellen",
+    "creating": "Wird erstellt...",
+    "visibilityLegend": "Wer soll diese Liste sehen?",
+    "private": "Privat",
+    "privateHint": "Nur du siehst sie.",
+    "shared": "Geteilt",
+    "sharedHint": "Genau die, die du später mit einer Adresse einträgst."
+  },
+
+  "listBoard": {
+    "yourLists": "Deine Listen",
+    "sharedWithYou": "Mit dir geteilt",
+    "createList": "Liste erstellen",
+    "addGift": "Geschenkidee hinzufügen",
+    "rename": "Umbenennen",
+    "renameTitle": "Liste umbenennen",
+    "renameLabel": "Neuer Name",
+    "save": "Speichern",
+    "saving": "Wird gespeichert...",
+    "deleteList": "Liste löschen",
+    "changeVisibility": "Sichtbarkeit ändern",
+    "share": "Teilen",
+    "sharedWithCount": "Geteilt mit: {count}",
+    "noLists": "Noch keine Listen. Lege die erste an.",
+    "noSharedLists": "Dir hat noch niemand eine Liste geteilt.",
+    "private": "Privat",
+    "shared": "Geteilt"
+  },
+
   "footer": {
     "copyright": "© 2026 wishy",
     "privacyPolicy": "Datenschutz",
     "termsConditions": "AGB"
   },
+
   "privacy": {
     "title": "Datenschutzrichtlinie",
-    "section1": {
-      "title": "1. Allgemeine Informationen und Pflichtangaben",
-      "content": "Der Schutz Ihrer persönlichen Daten ist uns wichtig. Wir behandeln Ihre personenbezogenen Daten vertraulich und entsprechend der gesetzlichen Datenschutzvorschriften sowie dieser Datenschutzerklärung. Diese Richtlinie erklärt, welche Daten wir erheben, wie wir sie verwenden und welche Rechte Sie in Bezug auf Ihre Daten haben."
-    },
-    "section2": {
-      "title": "2. Verantwortliche Stelle für die Datenverarbeitung",
-      "content": "Verantwortlich für die Datenverarbeitung in dieser Web-App ist: [Name des Betreibers] [Adresse] [E-Mail-Adresse] [Telefonnummer]"
-    },
-    "section3": {
-      "title": "3. Erhebung und Speicherung personenbezogener Daten",
-      "content": "",
-      "subtitle1": "a) Beim Besuch unserer Web-App",
-      "content1": "Beim Zugriff auf unsere Web-App werden automatisch bestimmte Daten durch unseren Server erfasst, wie: IP-Adresse, Datum und Uhrzeit des Zugriffs, verwendeter Browser und Betriebssystem, besuchte Seiten und Aktionen innerhalb der Web-App. Diese Daten werden ausschließlich zur Sicherstellung eines reibungslosen Betriebs und zur Verbesserung unserer Web-App verwendet und anschließend automatisch gelöscht.",
-      "subtitle2": "b) Registrierung und Anmeldung zur Nutzung der Web-App",
-      "content2": "Um die Web-App als Gruppe zu nutzen, ist eine Registrierung mit einem Gruppenkonto erforderlich. Während der Registrierung und Anmeldung speichern wir: Gruppenzugangsdaten (Benutzername und Passwort), Benutzerprofile innerhalb der Gruppe (Name, ggf. E-Mail-Adresse), Wunschlisten und zugewiesene Geschenk-Wünsche mit Links zu Produkten"
-    },
-    "section4": {
-      "title": "4. Verwendung der Daten zur Verwaltung der Wunschlisten",
-      "content": "Innerhalb der Gruppe können Produkte als Geschenk-Wünsche gespeichert und bestimmten Nutzern zugewiesen werden. Die Produktlinks und Zuweisungen werden in unserer Datenbank gespeichert und sind nur für Mitglieder der jeweiligen Gruppe zugänglich."
-    },
-    "section5": {
-      "title": "5. Premium-Modell und Zahlungsdaten",
-      "content": "Wenn Sie unser Premium-Modell wählen, werden zusätzliche Informationen gespeichert, die für die Zahlungsabwicklung erforderlich sind. Dazu gehören: Zahlungsmethoden, Transaktionsdaten, Zahlungsstatus. Zahlungsdaten werden ausschließlich zur Abwicklung der Premium-Mitgliedschaft verwendet und sicher in unserer Datenbank gespeichert."
-    },
-    "section6": {
-      "title": "6. Weitergabe und Übermittlung von Daten",
-      "content": "Wir geben Ihre persönlichen Daten nur weiter, wenn es zur Erfüllung unserer Dienstleistung notwendig ist oder wenn wir gesetzlich dazu verpflichtet sind. Eine Weitergabe an Dritte erfolgt ohne Ihre ausdrückliche Zustimmung nicht."
-    },
-    "section7": {
-      "title": "7. Aufbewahrung und Löschung von Daten",
-      "content": "Wir bewahren Ihre persönlichen Daten nur so lange auf, wie es zur Erfüllung der in dieser Richtlinie genannten Zwecke erforderlich ist oder gesetzlich vorgeschrieben ist. Daten werden in der Regel nach Beendigung der Vertragsbeziehung und nach Ablauf gesetzlicher Aufbewahrungsfristen gelöscht."
-    },
-    "section8": {
-      "title": "8. Ihre Rechte",
-      "content": "Sie haben das Recht, jederzeit: Auskunft über die Daten, die wir über Sie gespeichert haben, zu verlangen, Berichtigung unrichtiger Daten zu verlangen, Einschränkung der Verarbeitung zu verlangen, Löschung Ihrer Daten, soweit gesetzlich zulässig, zu verlangen, Widerspruch gegen die Verarbeitung Ihrer Daten einzulegen. Zur Ausübung Ihrer Rechte oder bei weiteren Fragen zur Verarbeitung Ihrer personenbezogenen Daten kontaktieren Sie uns bitte unter: jsbase.dev@gmail.com."
-    },
-    "section9": {
-      "title": "9. Datensicherheit",
-      "content": "Wir setzen geeignete technische und organisatorische Sicherheitsmaßnahmen ein, um Ihre Daten vor unbefugtem Zugriff, Verlust oder Manipulation zu schützen. Unsere Sicherheitsmaßnahmen werden entsprechend der technologischen Entwicklung kontinuierlich verbessert."
-    },
-    "section10": {
-      "title": "10. Änderungen dieser Datenschutzrichtlinie",
-      "content": "Wir behalten uns das Recht vor, diese Datenschutzrichtlinie zu ändern, um rechtlichen Anforderungen oder Änderungen in der Funktionalität unserer Web-App zu entsprechen. Die aktuelle Version der Datenschutzrichtlinie ist jederzeit in unserer Web-App verfügbar."
-    }
+    "sections": [
+      {
+        "title": "1. Allgemeine Informationen und Pflichtangaben",
+        "content": "Der Schutz Ihrer persönlichen Daten ist uns wichtig. Wir behandeln Ihre personenbezogenen Daten vertraulich und entsprechend der gesetzlichen Datenschutzvorschriften sowie dieser Datenschutzerklärung. Diese Richtlinie erklärt, welche Daten wir erheben, wie wir sie verwenden und welche Rechte Sie in Bezug auf Ihre Daten haben."
+      },
+      {
+        "title": "2. Verantwortliche Stelle für die Datenverarbeitung",
+        "content": "Verantwortlich für die Datenverarbeitung in dieser Web-App ist: [Name des Betreibers] [Adresse] [E-Mail-Adresse] [Telefonnummer]"
+      },
+      {
+        "title": "3. Erhebung und Speicherung personenbezogener Daten",
+        "content": ""
+      },
+      {
+        "title": "4. Verwendung der Daten zur Verwaltung der Wunschlisten",
+        "content": "Jede Wunschliste gehört genau einer Person. Sie ist zuerst privat und nur für die Person sichtbar, der sie gehört. Wird sie geteilt, sehen genau die Personen diese Liste und die darin enthaltenen Ideen, die dort ausdrücklich eingetragen wurden. Diese Personen können eine Idee als gekauft markieren; Einträge hinzufügen, ändern oder löschen können sie nicht. Produktlinks und Ideen werden in unserer Datenbank gespeichert."
+      },
+      {
+        "title": "5. Premium-Modell und Zahlungsdaten",
+        "content": "Wenn Sie unser Premium-Modell wählen, werden zusätzliche Informationen gespeichert, die für die Zahlungsabwicklung erforderlich sind. Dazu gehören: Zahlungsmethoden, Transaktionsdaten, Zahlungsstatus. Zahlungsdaten werden ausschließlich zur Abwicklung der Premium-Mitgliedschaft verwendet und sicher in unserer Datenbank gespeichert."
+      },
+      {
+        "title": "6. Weitergabe und Übermittlung von Daten",
+        "content": "Wir geben Ihre persönlichen Daten nur weiter, wenn es zur Erfüllung unserer Dienstleistung notwendig ist oder wenn wir gesetzlich dazu verpflichtet sind. Eine Weitergabe an Dritte erfolgt ohne Ihre ausdrückliche Zustimmung nicht."
+      },
+      {
+        "title": "7. Aufbewahrung und Löschung von Daten",
+        "content": "Wir bewahren Ihre persönlichen Daten nur so lange auf, wie es zur Erfüllung der in dieser Richtlinie genannten Zwecke erforderlich ist oder gesetzlich vorgeschrieben ist. Daten werden in der Regel nach Beendigung der Vertragsbeziehung und nach Ablauf gesetzlicher Aufbewahrungsfristen gelöscht."
+      },
+      {
+        "title": "8. Ihre Rechte",
+        "content": "Sie haben das Recht, jederzeit: Auskunft über die Daten, die wir über Sie gespeichert haben, zu verlangen, Berichtigung unrichtiger Daten zu verlangen, Einschränkung der Verarbeitung zu verlangen, Löschung Ihrer Daten, soweit gesetzlich zulässig, zu verlangen, Widerspruch gegen die Verarbeitung Ihrer Daten einzulegen. Zur Ausübung Ihrer Rechte oder bei weiteren Fragen zur Verarbeitung Ihrer personenbezogenen Daten kontaktieren Sie uns bitte unter: jsbase.dev@gmail.com."
+      },
+      {
+        "title": "9. Datensicherheit",
+        "content": "Wir setzen geeignete technische und organisatorische Sicherheitsmaßnahmen ein, um Ihre Daten vor unbefugtem Zugriff, Verlust oder Manipulation zu schützen. Unsere Sicherheitsmaßnahmen werden entsprechend der technologischen Entwicklung kontinuierlich verbessert."
+      },
+      {
+        "title": "10. Änderungen dieser Datenschutzrichtlinie",
+        "content": "Wir behalten uns das Recht vor, diese Datenschutzrichtlinie zu ändern, um rechtlichen Anforderungen oder Änderungen in der Funktionalität unserer Web-App zu entsprechen. Die aktuelle Version der Datenschutzrichtlinie ist jederzeit in unserer Web-App verfügbar."
+      }
+    ],
+    "subsections": [
+      {
+        "title": "a) Beim Besuch unserer Web-App",
+        "content": "Beim Zugriff auf unsere Web-App werden automatisch bestimmte Daten durch unseren Server erfasst, wie: IP-Adresse, Datum und Uhrzeit des Zugriffs, verwendeter Browser und Betriebssystem, besuchte Seiten und Aktionen innerhalb der Web-App. Diese Daten werden ausschließlich zur Sicherstellung eines reibungslosen Betriebs und zur Verbesserung unserer Web-App verwendet und anschließend automatisch gelöscht."
+      },
+      {
+        "title": "b) Registrierung und Anmeldung zur Nutzung der Web-App",
+        "content": "Um die Web-App zu nutzen, ist ein Konto mit E-Mail-Adresse, Passwort und Anzeigename erforderlich. Bei der Registrierung und Anmeldung speichern wir: Kontodaten (E-Mail-Adresse, Passwort und Anzeigename), die eigenen Wunschlisten mit ihren Geschenkideen und Links zu Produkten sowie bei geteilten Listen die E-Mail-Adresse und den Anzeigenamen der Personen, mit denen sie geteilt wurden. Das Passwort wird vor der Speicherung gehasht und ist im Klartext nicht wiederherstellbar. Zu jeder als gekauft markierten Idee speichern wir außerdem das Konto, das sie abgehakt hat. Die Markierung gehört allen, mit denen die Liste geteilt ist: Sie können sie untereinander korrigieren. Nur die Person, der die Liste gehört, kann eine von jemand anderem gesetzte Markierung nicht aufheben. Der Name wird in der Web-App nicht angezeigt."
+      }
+    ]
   },
+
   "terms": {
     "title": "Allgemeine Geschäftsbedingungen",
-    "section1": {
-      "title": "1. Geltungsbereich",
-      "content": "Diese Allgemeinen Geschäftsbedingungen gelten für die Nutzung der wishy Web-App, einer Plattform zur Organisation von Geschenken in Gruppen und Familien."
-    },
-    "section2": {
-      "title": "2. Leistungsbeschreibung",
-      "content": "wishy ermöglicht es Nutzern, Geschenkwünsche zu organisieren, Wunschlisten zu erstellen und den Überblick über geplante Geschenke zu behalten. Die App dient der Koordination von Geschenken innerhalb von Gruppen, wobei die Überraschung gewahrt bleibt."
-    },
-    "section3": {
-      "title": "3. Registrierung und Nutzerkonto",
-      "content": "Die Nutzung von wishy erfordert die Erstellung eines Gruppenkontos. Die Nutzer sind verpflichtet, ihre Zugangsdaten geheim zu halten und vor dem Zugriff Dritter zu schützen."
-    },
-    "section4": {
-      "title": "4. Nutzungsregeln",
-      "content": "Die Nutzer verpflichten sich, die App nur für den vorgesehenen Zweck zu verwenden und keine rechtswidrigen oder anstößigen Inhalte zu teilen."
-    },
-    "section5": {
-      "title": "5. Datenschutz",
-      "content": "Der Schutz personenbezogener Daten hat höchste Priorität. Details sind in unserer Datenschutzerklärung zu finden."
-    },
-    "section6": {
-      "title": "6. Haftungsausschluss",
-      "content": "wishy übernimmt keine Garantie für die ständige Verfügbarkeit der App und haftet nicht für leicht fahrlässig verursachte Schäden."
-    }
+    "sections": [
+      {
+        "title": "1. Geltungsbereich",
+        "content": "Diese Allgemeinen Geschäftsbedingungen gelten für die Nutzung der wishy Web-App, einer Plattform zur Organisation von Geschenken zwischen einzelnen Personen."
+      },
+      {
+        "title": "2. Leistungsbeschreibung",
+        "content": "wishy ermöglicht es Nutzern, Geschenkwünsche zu organisieren, Wunschlisten zu erstellen und den Überblick über geplante Geschenke zu behalten. Die App dient der Koordination von Geschenken zwischen den Personen, die eine Liste teilen, wobei die Überraschung gewahrt bleibt."
+      },
+      {
+        "title": "3. Registrierung und Nutzerkonto",
+        "content": "Die Nutzung von wishy erfordert die Erstellung eines eigenen Kontos mit E-Mail-Adresse und Passwort. Die Nutzer sind verpflichtet, ihre Zugangsdaten geheim zu halten und vor dem Zugriff Dritter zu schützen."
+      },
+      {
+        "title": "4. Nutzungsregeln",
+        "content": "Die Nutzer verpflichten sich, die App nur für den vorgesehenen Zweck zu verwenden und keine rechtswidrigen oder anstößigen Inhalte zu teilen."
+      },
+      {
+        "title": "5. Datenschutz",
+        "content": "Der Schutz personenbezogener Daten hat höchste Priorität. Details sind in unserer Datenschutzerklärung zu finden."
+      },
+      {
+        "title": "6. Haftungsausschluss",
+        "content": "wishy übernimmt keine Garantie für die ständige Verfügbarkeit der App und haftet nicht für leicht fahrlässig verursachte Schäden."
+      }
+    ]
+  },
+
+  "giftCount": {
+    "none": "noch keine Geschenkidee",
+    "zero": "nichts mehr zu kaufen",
+    "one": "1 Geschenkidee noch offen",
+    "many": "{{count}} Geschenkideen noch offen"
   }
 }
