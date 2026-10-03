@@ -14,8 +14,8 @@
   "loginBtn": "Log in",
   "registerBtn": "Create account",
     "loginIdentifier": "Nickname or email address",
-    "loginIdentifierHint": "Your nickname is unique — that is how you sign in. You can change your display name later.",
-    "registerNicknameHint": "Your nickname is unique. Other people see you under this name for now.",
+    "loginIdentifierHint": "Your nickname is unique — that is how you sign in.",
+    "registerNicknameHint": "Your nickname is unique. Other people see you under this name.",
 
   "loginDescription": "Once you log in you see your own lists and the ones other people have shared with you.",
   "registerDescription": "Every list you create belongs to this account, and you alone decide who gets to see it.",

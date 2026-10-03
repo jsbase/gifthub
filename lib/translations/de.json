@@ -14,8 +14,8 @@
   "loginBtn": "Anmelden",
   "registerBtn": "Konto erstellen",
     "loginIdentifier": "Nickname oder E-Mail-Adresse",
-    "loginIdentifierHint": "Dein Nickname ist einmalig — damit meldest du dich an. Dein Anzeigename darfst du später ändern.",
-    "registerNicknameHint": "Dein Nickname ist einmalig. Andere sehen dich zunächst unter diesem Namen.",
+    "loginIdentifierHint": "Dein Nickname ist einmalig — damit meldest du dich an.",
+    "registerNicknameHint": "Dein Nickname ist einmalig. Andere sehen dich unter diesem Namen.",
 
   "loginDescription": "Nach der Anmeldung siehst du deine Listen und die, die andere mit dir geteilt haben.",
   "registerDescription": "Mit diesem Konto gehören dir alle Listen, die du anlegst — und du allein entscheidest, wer sie sieht.",
