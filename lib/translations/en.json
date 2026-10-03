@@ -1,5 +1,5 @@
 {
-  "tagline": "Out of gift ideas again?\nwishy knows. Pick, tick, done.",
+  "tagline": "Out of gift ideas again?",
   "login": "Log in",
   "register": "Create account",
   "loading": "Loading...",
@@ -47,7 +47,7 @@
   },
 
   "landing": {
-    "standfirst": "Make a list, write down your ideas — and then? wishy takes care of the rest.",
+    "standfirst": "wishy knows. Pick, tick, done.",
     "roles": {
       "owner": {
         "title": "You want something for yourself",

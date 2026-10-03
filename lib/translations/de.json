@@ -1,5 +1,5 @@
 {
-  "tagline": "Schon wieder keine Geschenkidee?\nDie wishy weiß es. Aussuchen, abhaken, fertig.",
+  "tagline": "Schon wieder keine Geschenkidee?",
   "login": "Anmelden",
   "register": "Konto erstellen",
   "loading": "Wird geladen...",
@@ -47,7 +47,7 @@
   },
 
   "landing": {
-    "standfirst": "Leg eine Liste an, trag deine Ideen ein, und dann? Alles Weitere macht wishy für dich.",
+    "standfirst": "Die wishy weiß es. Aussuchen, abhaken, fertig.",
     "roles": {
       "owner": {
         "title": "Du hast etwas, das du dir wünschst",

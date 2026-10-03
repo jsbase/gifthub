@@ -57,26 +57,6 @@ const Home: NextPage<PageProps> = async ({ params }) => {
   const { lang } = await params;
   const dict: Translations = await getDictionary(lang);
 
-  /*
-    The claim is two beats - the question first, the answer under it - and the
-    copy says where the break between them belongs with a newline, which is
-    printed below as a hard `<br>`.
-
-    `text-balance` will not keep it. At 44px the claim sets three to four lines,
-    and what balance evens is the rag across those lines, which is how the
-    second beat's three verbs can come to sit on two of them and the couplet
-    stops being one. A break is neither a spacing value nor a type size: it is
-    the one line in this block that is decided rather than computed.
-
-    The two spaces either side of the `<br />` are not decoration and they are
-    not in the copy. `tests/landing.spec.ts` finds this claim with
-    `getByText(dict.tagline, { exact: true })`, and Playwright's text of an
-    element gives a `<br>` nothing of its own, so without them the paragraph
-    would read "...Geschenkidee?Die wishy..." and the assertion that pins the
-    claim would fail on a claim that is printed.
-  */
-  const [claimQuestion, claimAnswer] = dict.tagline.split('\n');
-
   return (
     <div className={cn('flex', 'flex-col', 'min-h-screen', 'bg-board')}>
       <Header dict={dict} />
@@ -122,7 +102,7 @@ const Home: NextPage<PageProps> = async ({ params }) => {
                     'leading-[1.08]'
                   )}
                 >
-                  {claimQuestion} <br /> {claimAnswer}
+                  {dict.tagline}
                 </p>
 
                 {/*
