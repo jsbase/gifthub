@@ -331,12 +331,18 @@ a block whose height is the claim's own line count, and the buttons cannot wrap 
 grow. A claim that grows back towards a sentence is what would break it, and at that
 point the argument has to be the measurement below rather than a count of characters.
 
-> **PENDING MEASUREMENT — replaced by the browser pass, not by an estimate.** At rest
-> against a realistic 85% fold (the viewport minus a phone's browser chrome and safe
-> area), the second button's bottom edge clears the fold by _to be measured_ at 320×568,
-> 360×640, 375×667 and 390×844, in de and ru. The figures recorded here before —
-> 54px, 115px, 168px and 318px — were measured against the 98-character claim and the
-> 129-character standfirst, and they are **not** a claim about this page.
+> **Measured in Chromium, not estimated.** The second button's bottom edge clears a
+> realistic 85% fold (the viewport minus a phone's browser chrome and safe area) by
+> **205px** at 320×568, **266px** at 360×640, **289px** at 375×667 and **439px** at
+> 390×844, in de, ru and en alike. At rest the buttons end at 278px in de and ru, and
+> at 248px in en from 360px up, where the claim fits on one line rather than two.
+>
+> The figures this block replaced — 54px, 115px, 168px and 318px — were measured
+> against a 98-character claim and a 129-character standfirst. The claim is now a
+> single question and the standfirst one sentence, and the clearance is four times
+> what it was at the tightest width. That margin is the point of the reorder, not
+> an accident of it: the block that has to clear the fold is the claim's line count
+> and nothing else, and a question is short by construction.
 
 **The 44px floor is not a preference.** This is used one-handed on a phone by
 someone in a hurry. Both a control's width and its height are floors; the tick and
@@ -679,10 +685,12 @@ regression.
   intentional. A storyboard and a roles block once filled the wide column beside it,
   and both are gone, so the debt is smaller than it was when this was written — which
   is a direction, not a figure, and the number still has to come from a browser.
-  > **PENDING MEASUREMENT — replaced by the browser pass, not by an estimate.** The
-  > exact extent of that empty column at 1440, in px. The figures previously recorded
-  > here — roughly 440 × 560 — were measured when the column beside it held nothing but
-  > the mechanisms index, and they are **not** a claim about this page.
+> **Measured in Chromium at 1440×900.** The narrow column is **443px** wide and the
+> plate fills it, starting 233px down and ending at 496px in de and en, 521px in ru
+> — the Russian standfirst is one line longer, which is the only thing on this page
+> that differs between locales at desktop. The empty column beneath it runs from
+> there to the footer. The figures previously recorded here — roughly 440 × 560 —
+> were measured when the column beside it held nothing but the mechanisms index.
 - **The dark cell frame is weak.** Cell on sheet measures 1.24:1 and the hairline on
   the cell 1.49:1, so the dark grid does rely on that hairline and the hairline is
   near-invisible. The lift is real but subtle. A per-theme separation would fix it
