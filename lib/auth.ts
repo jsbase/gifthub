@@ -88,10 +88,16 @@ export interface LoginResult {
  * where it is, because answering before the round trip is better than answering
  * after it - but it is now an optimisation rather than the only source of truth.
  *
- * The one thing this still throws on is a transport failure: no response arrived
- * at all, or it was not the JSON this reads. That stays an exception on purpose,
- * because it is the one case with nothing to narrow - there is no status and no
- * code, and "no connection" is the whole of what can honestly be said.
+ * The one thing this still throws on is a response it cannot read: a transport
+ * failure, where nothing arrived at all, or a body that is not the JSON below. Both
+ * give up the status on the way out, deliberately - the caller's table sends "never
+ * sent" and "not JSON" to the same sentence, and that sentence promises a retry,
+ * which is the one thing both of them can honestly offer.
+ *
+ * It does drop a 5xx whose body is an HTML error page onto that sentence too, which
+ * the table would rather have called a server fault. The route only ever answers in
+ * JSON, so that body can only have come from a gateway between here and there, and
+ * "please try again" - the whole of `loginOffline` - remains true of it.
  */
 export const login: (
   identifier: string,
@@ -114,17 +120,37 @@ export const login: (
     body: JSON.stringify({ identifier, password }),
   });
 
-  const body = (await response.json().catch(() => null)) as {
+  /*
+    A body that is not JSON is thrown, not swallowed.
+
+    It used to be `.catch(() => null)`, which turns an HTML page from a proxy or a
+    captive portal into a well-formed answer carrying no code - and the caller, which
+    classifies by status, then reads the 200 that arrived with it as a refusal. That
+    is the one sentence in this product which must never be printed without cause, so
+    a response this cannot read goes down the same path as a request that never left,
+    where the caller has an honest sentence waiting.
+
+    The cast claims no more than the code guarantees: a body that is the JSON literal
+    `null` parses and then throws on the first property read below, which lands in
+    the same place. There is no optional chaining here for that reason.
+
+    A 2xx is unaffected. The route's success response is `{ token, success: true }`,
+    and it is the only 2xx the route sends - there is no empty-but-successful answer
+    to break.
+  */
+  const body = (await response.json().catch(() => {
+    throw new Error('Login response was not JSON');
+  })) as {
     success?: boolean;
     message?: string;
     code?: unknown;
-  } | null;
+  };
 
   return {
-    success: response.ok && body?.success === true,
+    success: response.ok && body.success === true,
     status: response.status,
-    message: body?.message,
-    code: body?.code,
+    message: body.message,
+    code: body.code,
   };
 };
 

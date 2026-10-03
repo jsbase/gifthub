@@ -220,11 +220,13 @@ const AuthButtons: React.FC<AuthButtonsProps> = ({ dict }) => {
       goToDashboard();
     } catch {
       /*
-        The request never arrived, or the response was not JSON. No status and no
-        code, so there is nothing to narrow and nothing honest to say about which of
-        the two halves was wrong - "try again" is the whole of the advice, and the
-        exit stays down because `clearErrors()` at the top of this handler has
-        already put it away.
+        A response this client could not read: either the request never arrived, or
+        what arrived was not JSON. `result` is never bound in either case, so there
+        is no status and no code here to narrow and nothing honest to say about which
+        of the two halves was wrong - "try again" is the whole of the advice, and the
+        exit stays down because `clearErrors()` at the top of this handler has already
+        put it away. A 5xx whose body was an error page arrives here too; see the note
+        on `login()` in `lib/auth.ts` for why that sentence is still the right one.
       */
       setPasswordError(dict.errors.loginOffline);
     } finally {

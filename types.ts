@@ -135,12 +135,14 @@ export interface Translations {
    * screen three times in a row: as the sheet's description, as the printed label
    * over the field, and as the placeholder inside it.
    *
-   * The nickname sentence lives here rather than under the field because of *where*
-   * it is read, not when: a dialog description is announced with the title and is
-   * what a screen reader reaches on open, while a permanently printed hint sits in
-   * front of the field through the entire interaction and answers a question every
-   * person asks exactly once. `aria-describedby` went with it, because a field
-   * whose only description is a constant is describing nothing.
+   * The nickname sentence lives here rather than under the field because of *when*
+   * it is read rather than about the room it took: a dialog description is announced
+   * with the title when the sheet opens, and a person asks whether a nickname has to
+   * be their real name exactly once, on the way in - where a line printed for the
+   * whole interaction answers it again on every later glance. The
+   * `aria-describedby` on that field did not go with the sentence; it now names the
+   * error the reader earned, because a description that is a constant describes
+   * nothing about what was typed.
    */
   loginDescription: string;
   registerDescription: string;
@@ -260,9 +262,16 @@ export interface ErrorTranslations {
    * The quiet way out of the sign-in sheet for somebody who has no account.
    *
    * A question and its action in one control, which is why the sentence is short
-   * enough to read as a link rather than as a heading. It is offered on every
-   * refusal and on nothing else - see `auth-buttons.tsx`, where appearing in some
-   * refusals and not others would itself answer whether an account exists.
+   * enough to read as a link rather than as a heading.
+   *
+   * Which failures offer it is a security decision, and it is drawn on the status
+   * rather than on the refusal code: `invalid_identifier` is in the closed union too,
+   * so a rule phrased over the union would make every refusal added to it inherit
+   * this offer. What makes it safe to show is that it skips no refusal which could
+   * mean "you may not have an account": it is offered on a 401, both of its causes
+   * alike, and on a status this build cannot read, so its presence can say nothing at
+   * all about whether the reader is registered. `auth-buttons.tsx` is where the line
+   * is drawn.
    */
   createAccountInstead: string;
   passwordMismatch: string;
@@ -791,16 +800,6 @@ export interface LoginFormProps {
    * translator rather than of the state.
    */
   onCreateAccount?: () => void;
-  /**
-   * The exit's own text, when the caller has one.
-   *
-   * Falls back to `errors.createAccountInstead`, so the ordinary case needs no prop
-   * at all and the dictionaries carry the sentence exactly once. The override is
-   * here for a caller who needs different words - a shorter one in a narrow sheet,
-   * or a full sentence beside a question the sheet already asked - without having
-   * to put a second copy of this string into the dictionaries to get them.
-   */
-  createAccountLabel?: string;
 }
 
 export interface RegisterFormProps {

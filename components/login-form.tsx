@@ -44,9 +44,12 @@ import type { LoginFormProps } from '@/types';
   * took. Every person asks whether a nickname has to be their real name exactly
   * once, on the way in; a line printed for the whole interaction answers it again on
   * every later glance, standing between the reader and the one thing this sheet
-  * exists to do. And an `aria-describedby` that names a constant describes nothing
-  * about what was typed - on this field the only description worth giving is the
-  * error the reader earned, which is what `invalidIdentifier` does.
+  * exists to do.
+  *
+  * The attribute stayed, though, with a different target: `#identifier` is described
+  * by the error the reader earned and by nothing else, exactly as the password field
+  * is. The sentence about the product belongs to the description, which is read once
+  * with the title; a field's description belongs to what the reader just did.
   */
 const LoginForm: React.FC<LoginFormProps> = ({
   dict,
@@ -55,7 +58,6 @@ const LoginForm: React.FC<LoginFormProps> = ({
   identifierError,
   passwordError,
   onCreateAccount,
-  createAccountLabel,
 }) => {
   return (
     <form
@@ -76,6 +78,9 @@ const LoginForm: React.FC<LoginFormProps> = ({
           autoCapitalize='none'
           required
           aria-invalid={identifierError ? true : undefined}
+          aria-describedby={
+            identifierError ? 'loginIdentifierError' : undefined
+          }
         />
         {/*
           On the field, not in a toast. A refused identifier is still a form the
@@ -129,10 +134,10 @@ const LoginForm: React.FC<LoginFormProps> = ({
 
           Rendered only when the caller hands over a handler, which is how the caller
           says "this particular failure is one where you may not have an account
-          yet" - see `LoginFormProps`. A 5xx or a request that never left gets no
-          exit, because an offer to register does not help with either, and showing
-          it in some failures and not others would say more about the reader's
-          account than any of these sentences is allowed to say.
+          yet" - see `LoginFormProps`. A 5xx and a request that never left are both
+          failures on our side of the wire, and a field the server refused as
+          malformed is a fact about what was typed rather than about the reader; in
+          none of the three is an offer to register the next step.
 
           `self-start` because the column stretches its children: full width, this
           would read as a second primary action next to the 48px submit below it.
@@ -148,7 +153,7 @@ const LoginForm: React.FC<LoginFormProps> = ({
             data-testid='loginCreateAccount'
             className='self-start'
           >
-            {createAccountLabel ?? dict.errors.createAccountInstead}
+            {dict.errors.createAccountInstead}
           </Button>
         )}
       </div>
