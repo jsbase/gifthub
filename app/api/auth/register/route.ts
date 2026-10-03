@@ -219,6 +219,16 @@ export const POST: (request: NextRequest) => Promise<NextResponse> = async (
       through to the generic 500 rather than guessing. Guessing would be worse than
       the plain failure: a wrong sentence about a wrong field is the one error a
       person cannot work out on their own.
+
+      No test asserts this branch, deliberately. Every check it answers for is
+      asserted in `tests/auth-buttons.spec.ts`, because those checks are reachable -
+      one person registering an address twice does it. Reaching *this* branch needs
+      two registrations to lose the same race on the same address, which a test
+      would have to manufacture rather than perform: fire two requests and hope, or
+      insert a delay in the middle of a window the product is not slow enough to
+      have. Either way the test would be asserting on its own timing, and it would
+      fail on a slow machine for a reason that has nothing to do with this route.
+      A test that cannot fail for the right reason is worse than the absence.
     */
     if (
       error instanceof Prisma.PrismaClientKnownRequestError &&

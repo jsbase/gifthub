@@ -626,6 +626,20 @@ export const toggleGiftPurchased = async (
     anyway - and the owner's refusal is only reported when they were clearing, for
     the same asymmetry: losing the race to claim is not being forbidden from
     clearing.
+
+    The first of those two is tested and the second is not, and the distinction is
+    worth stating rather than letting the gap read as an oversight.
+
+    An owner clearing a mark somebody else set is refused by the predicate above,
+    so their write matches nothing - which is how `tests/sharing.spec.ts` gets its
+    `cannot_clear_purchase` on the ordinary path. No race is involved; the refusal
+    is the rule working, expressed as a condition on the row.
+
+    What has no test is the case the conditional write exists for: an owner who *was*
+    entitled to clear, whose write matched nothing because the state moved between
+    their read and their write. Producing it means interrupting two operations that
+    belong in one function from the outside, so a test would have to add a delay that
+    does not exist in production and then assert on its own timing.
   */
   const gift = await prisma.gift.findFirst({ where: { id: giftId, listId } });
   if (!gift) return refused('not_found');

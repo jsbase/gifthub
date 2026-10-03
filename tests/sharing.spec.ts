@@ -296,6 +296,20 @@ test.describe('Sharing permissions', () => {
     expect(refusedSheet.status()).toBe(404);
     expect(await refusedSheet.text()).not.toContain('Geheimgeschenk');
 
+    /*
+      The status is pinned above, and in many places, and it is the right thing to pin.
+      What was missing is the `code` standing beside it - and the client narrows on the
+      code rather than on the status, because `isRefusal` is what turns an unknown
+      string into a refusal that has a sentence. A 404 with no code would leave the
+      interface a status to read and nothing to say. Asserted here, in the case that is
+      already the canonical unrelated-account read, so the two are pinned together and
+      neither can move without the other.
+    */
+    expect(
+      (await refusedSheet.json()).code,
+      'the 404 must carry the code the client narrows on'
+    ).toBe('not_found');
+
     await anna.context.close();
     await mia.context.close();
   });
@@ -532,6 +546,153 @@ test.describe('Sharing permissions', () => {
     await anna.api.patch(`/api/lists/${listId}`, { data: { visibility: 'PRIVATE' } });
     await anna.api.patch(`/api/lists/${listId}`, { data: { visibility: 'SHARED' } });
     expect((await ben.api.get(`/api/lists/${listId}`)).status()).toBe(404);
+
+    await anna.context.close();
+    await ben.context.close();
+  });
+
+  /*
+    The three refusals in the `PATCH` handler, and the fourth case that is none of
+    them.
+
+    These three used to be `code` strings that were not in the closed `Refusal`
+    union, and `isRefusal` rejects anything outside it - so the vocabulary had no
+    sentence for them and no client could have shown one. They are in the union now,
+    and a code can sit in the vocabulary and still be produced with the wrong status,
+    or not produced at all. Neither is visible from a page.
+
+    `null` is the fourth case and it is not a refusal. A form that clears one control
+    and posts the whole body sends null for the control it did not touch, and reading
+    that as "set this to nothing" would empty a list by accident.
+  */
+  test('a list change names one field, and null is not a value', async ({ browser }) => {
+    const anna = await signIn(browser, ANNA);
+
+    const listId = await createList(anna, names.next(), 'SHARED');
+
+    // No field named at all: well-formed, and about nothing.
+    const nothing = await anna.api.patch(`/api/lists/${listId}`, { data: {} });
+    expect(nothing.status(), 'a change that names no field is not a change').toBe(400);
+    expect((await nothing.json()).code).toBe('nothing_to_change');
+
+    // Both fields named. The handler refuses rather than picking a winner, because
+    // which one wins is a question about the interface's state machine, asked of the
+    // layer that is supposed to know nothing about it.
+    const both = await anna.api.patch(`/api/lists/${listId}`, {
+      data: { name: 'Beides', visibility: 'PRIVATE' },
+    });
+    expect(both.status(), 'one request changes one thing').toBe(400);
+    expect((await both.json()).code).toBe('ambiguous_change');
+
+    // One field named, and not a visibility that exists.
+    const unknown = await anna.api.patch(`/api/lists/${listId}`, {
+      data: { visibility: 'NOPE' },
+    });
+    expect(unknown.status()).toBe(400);
+    expect((await unknown.json()).code).toBe('invalid_visibility');
+
+    /*
+      And the pair: one real change beside one null.
+
+      The 200 is the load-bearing assertion. Had `null` been read as a value it would
+      be neither `PRIVATE` nor `SHARED`, and this request would have been refused as
+      `invalid_visibility` - so the success is what proves `null` was read as absent,
+      and the two halves of the rule cannot be separated without breaking the other.
+
+      The re-read pins the rest. `PATCH` answers `{ success: true }` and not the changed
+      row, so the name moving and the visibility staying put are the only evidence of
+      what actually happened, and the visibility is the half a `null` could have emptied.
+    */
+    const renamed = await anna.api.patch(`/api/lists/${listId}`, {
+      data: { name: 'Umbenannt', visibility: null },
+    });
+    expect(
+      renamed.status(),
+      'null counts as absent, not as a value to refuse'
+    ).toBe(200);
+
+    const after = await (await anna.api.get(`/api/lists/${listId}`)).json();
+    expect(after.list.name).toBe('Umbenannt');
+    expect(
+      after.list.visibility,
+      'the field left out of the change must not have been touched'
+    ).toBe('SHARED');
+
+    await anna.context.close();
+  });
+
+  /*
+    `canClear` on the wire, which is the one permission the interface cannot work out
+    for itself.
+
+    `purchasedById` never leaves the server, so a client holding this shape genuinely
+    cannot tell whose mark it is looking at, and the only formula it could apply is
+    "an owner may not clear any mark". That is the safe direction, and it is also
+    wrong: it silently forbids the owner from undoing "I already bought this myself",
+    which the server does allow, and a table and an interface that disagree on one row
+    is how the two drift apart without either being wrong alone. So the server answers
+    the question the client actually has - may I - as one boolean per idea, carrying no
+    name and no id.
+
+    Asserted directly rather than inferred from which stamp each party is shown.
+  */
+  test('canClear says who may undo a mark, without ever saying whose it is', async ({
+    browser,
+  }) => {
+    const anna = await signIn(browser, ANNA);
+    const ben = await signIn(browser, BEN);
+
+    const listId = await createList(anna, names.next(), 'SHARED');
+    const giftId = await addGift(anna, listId, 'Lampe');
+    // Both setup calls assert their status, and the file's own reason applies: a
+    // silent failure here would leave the assertions below reading a state that was
+    // never reached, which is how a test passes for a reason that has nothing to do
+    // with the thing it names.
+    expect((await grant(anna, listId, BEN)).status()).toBe(200);
+
+    const canClearFor = async (actor: Actor): Promise<boolean> => {
+      const body = await (await actor.api.get(`/api/lists/${listId}`)).json();
+      const gift = body.gifts.find((g: { id: string }) => g.id === giftId);
+      expect(gift, 'the idea must be on the sheet to have a canClear').toBeTruthy();
+      return gift.canClear;
+    };
+
+    /*
+      Open first, for both parties: marking is the one thing an invited account is for,
+      so being able to take that mark back off is part of the same permission and not a
+      concession. The owner's case is the one a client could not get right, because
+      "the owner may never clear" would have thrown this away with it.
+    */
+    expect(
+      await canClearFor(anna),
+      'the owner may mark and unmark an open idea'
+    ).toBe(true);
+    expect(
+      await canClearFor(ben),
+      'a buyer may mark and unmark an open idea'
+    ).toBe(true);
+
+    const marked = await ben.api.post(
+      `/api/lists/${listId}/gifts/${giftId}/toggle`
+    );
+    expect(marked.status(), 'the buyer must have set the mark').toBe(200);
+
+    expect(
+      await canClearFor(ben),
+      'a buyer may take back the mark they set themselves'
+    ).toBe(true);
+
+    /*
+      The same row, read by the other account. This is the fourth row of the table and
+      the sharpest edge in the product: the owner is the one account whose reason for
+      wanting a mark gone is that they changed their mind about the gift, and a mark
+      that erases is a double-buy. So the two readers of one row disagree, which is
+      exactly what a single boolean computed per reader is for.
+    */
+    expect(
+      await canClearFor(anna),
+      'the owner may not take back a mark a buyer set'
+    ).toBe(false);
 
     await anna.context.close();
     await ben.context.close();

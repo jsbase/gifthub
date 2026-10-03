@@ -304,6 +304,98 @@ test.describe('Login and Registration', () => {
     );
   });
 
+  /*
+    The two password refusals, and the slot between them.
+
+    "Too short" is about the first field alone. "These two do not match" is about the
+    pair, and it has to be said under both of them - which is why `RegisterFormProps`
+    grew a second slot rather than one paragraph being split into two. A person fixing
+    a mismatch is looking at both boxes; a person told only under the first has no way
+    to know the sentence was about the pair.
+
+    So both halves are asserted, and the second pair is the one that matters: it is the
+    assertion that the split is real. A form with one slot that happened to render
+    `confirmPasswordError` into the password paragraph would pass a test checking that
+    a mismatch is reported somewhere.
+  */
+  test('A password under the minimum is said under the first field alone', async ({
+    page,
+  }) => {
+    await page.getByTestId('OpenRegister').click();
+
+    await page.fill('#newNickname', 'kurzpw');
+    await page.fill('#newEmail', 'someone@example.test');
+    // Both fields the same short string, so the only thing wrong here is the length.
+    // Two *different* short strings would fail on length first and never reach the
+    // mismatch branch, which is the next test's job and not this one's.
+    await page.fill('#newPassword', 'kurz');
+    await page.fill('#confirmPassword', 'kurz');
+
+    await page.getByTestId('SubmitRegister').click();
+
+    const passwordError = page.getByTestId('registerPasswordError');
+    await expect(passwordError).toBeVisible({ timeout: 10000 });
+    expect(await passwordError.textContent()).toContain(dict.errors.weakPassword);
+    await expect(
+      page.getByTestId('registerConfirmPasswordError'),
+      'a length verdict belongs to the first field, not to the pair'
+    ).toHaveCount(0);
+  });
+
+  test('Two different passwords are said under the second field alone', async ({
+    page,
+  }) => {
+    await page.getByTestId('OpenRegister').click();
+
+    await page.fill('#newNickname', 'mismatch');
+    await page.fill('#newEmail', 'someone@example.test');
+    // Both long enough to clear the length gate, because the gates run in the order
+    // the fields are printed and the length check is first - which is the point of the
+    // order: a reader who filled the sheet top to bottom is told about the topmost
+    // thing they still have to fix rather than one further down.
+    await page.fill('#newPassword', PASSWORD);
+    await page.fill('#confirmPassword', 'test5678');
+
+    await page.getByTestId('SubmitRegister').click();
+
+    const confirmError = page.getByTestId('registerConfirmPasswordError');
+    await expect(confirmError).toBeVisible({ timeout: 10000 });
+    expect(await confirmError.textContent()).toContain(
+      dict.errors.passwordMismatch
+    );
+    await expect(
+      page.getByTestId('registerPasswordError'),
+      'a mismatch is about the pair, so it must not be charged to the first field'
+    ).toHaveCount(0);
+  });
+
+  /*
+    `invalid_email` against `duplicate_email`. "That is not an address" and "that
+    address is already taken" are two different sentences about two different problems,
+    and a client that could not tell them apart answered the second with the first -
+    sending somebody off to retype something that was never wrong, which reads as
+    though the address itself were the problem.
+  */
+  test('An address that is not an address is refused before it reaches the server', async ({
+    page,
+  }) => {
+    await page.getByTestId('OpenRegister').click();
+
+    // The nickname gate runs first, so it has to be a usable one - otherwise the sheet
+    // would stop at `registerNicknameError` and the assertion below would pass for the
+    // wrong reason if it were written loosely enough to see any error on the page.
+    await page.fill('#newNickname', 'keineadresse');
+    await page.fill('#newEmail', 'not-an-address');
+    await page.fill('#newPassword', PASSWORD);
+    await page.fill('#confirmPassword', PASSWORD);
+
+    await page.getByTestId('SubmitRegister').click();
+
+    const emailError = page.getByTestId('registerEmailError');
+    await expect(emailError).toBeVisible({ timeout: 10000 });
+    expect(await emailError.textContent()).toContain(dict.errors.invalidEmail);
+  });
+
   test('Sign-in refuses a field that is neither a nickname nor an address', async ({
     page,
   }) => {

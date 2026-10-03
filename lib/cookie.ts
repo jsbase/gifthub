@@ -21,6 +21,15 @@ import type { NextRequest } from 'next/server';
  * consulted. Getting that wrong in the other direction - trusting a header that
  * says https when the client is not - would hand out a cookie the browser then
  * refuses to send, which is the same failure wearing a different hat.
+ *
+ * There is no test for this, and there cannot be one. The failure it exists to
+ * prevent is only visible to the engine that refuses to store the cookie: only
+ * WebKit and Safari drop a `Secure` cookie served over plain http, and only
+ * locally, so a suite could only see it by running real WebKit against a real
+ * non-https origin - which is the whole five-browser matrix on a laptop rather
+ * than a test. The regression check is the manual procedure, not an assertion:
+ * point the login specs at `npm run start` over `http://localhost` and see
+ * whether WebKit signs in. Chromium alone passing proves nothing about this.
  */
 export const cookieIsSecure = (request: NextRequest): boolean => {
   const forwarded = request.headers.get('x-forwarded-proto');
