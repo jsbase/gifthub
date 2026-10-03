@@ -446,9 +446,14 @@ test.describe('Login and Registration', () => {
     sentence that refusal carries is the existing `invalidIdentifier` test's job;
     this one runs the same refusal only to read the attribute, which is the half
     of it that test cannot see.
+
+    The third claim is the exit, and it is here for the same reason the absent
+    attribute is: `loginCreateAccount` is missing from a sheet in which nothing has
+    been refused, so the control cannot be mistaken for something the app offers
+    whoever opens it.
   */
   test(
-    'The nickname sentence is printed once, and the identifier field is described only by a refusal',
+    'The nickname sentence is printed once, the field described only by a refusal, and the exit waits for one',
     async ({ page }) => {
       await page.getByTestId('OpenLogin').click();
 
@@ -505,11 +510,15 @@ test.describe('Login and Registration', () => {
     'A wrong password is refused with the one sentence and a way into registration',
     async ({ page }) => {
       /*
-        Counted rather than watched in the DOM: a `<button>` with no type inside a
+        Counted rather than read off the render. A `<button>` with no type inside a
         form re-posts it, so an exit that had lost its `type` would send the very
         credentials that were just refused a second time, from a control whose label
-        says "create an account". The register sheet opening below would not catch
-        that on its own - a re-post answers with the same refusal and stays put.
+        says "create an account". What the assertions below see is the second answer
+        and not the second request: it fills the shared `passwordError` slot and the
+        register sheet prints `registerPasswordError` in a form the refusal has
+        nothing to do with - and if that answer never comes back at all, the sheet
+        prints nothing and the credentials have still gone out twice. This is the one
+        assertion here that measures the request instead of what it leaves behind.
       */
       let signInRequests = 0;
       page.on('request', (request) => {
