@@ -714,8 +714,8 @@ export interface PageProps {
 
 /**
  * One claim set as one line of an index. There is no register to choose: the
- * landing page's hero carries the product's own claim, so a lead setting here
- * would have read as a second hero underneath the first.
+ * claims are entries of equal weight, and a lead set above them would read as a
+ * headline of its own rather than as one of three.
  */
 export interface FeatureCardProps {
   title: string;

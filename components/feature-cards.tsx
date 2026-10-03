@@ -39,8 +39,8 @@ const FeatureCards: React.FC<Pick<Translations, 'features'>> = ({
       The index: claim in a fixed narrow column, description beside it, one rule
       of hairline between entries. At 390px the two columns do not fit two German
       or Russian claims side by side, so the pair stacks until `sm`. The `mt-12`
-      that used to stand between the lead claim and this list left with the lead;
-      the distance from the section above is the page's own `mt-16` / `lg:mt-28`.
+      that separated the lead claim from this list left with the lead; the
+      distance to the section above is the caller's to set.
     */
     <div className={cn('flex', 'flex-col', 'gap-y-8')}>
       {ordered.map((key) => {

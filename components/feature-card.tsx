@@ -13,8 +13,9 @@ import type { FeatureCardProps } from '@/types';
  *
  * This once had two registers, because the bought mark is the one claim a
  * neighbouring product cannot copy without changing what it is, and setting the
- * other two beneath it said so without a word. The hero now carries that claim
- * instead, so the large setting left with the lead it served.
+ * other two beneath it said so without a word. The three claims are entries of
+ * equal weight now, and a lead set above them would read as a headline of its own
+ * rather than as one of three.
  *
  * The version this replaced was a `sm:grid-cols-3` row: three equal columns, one
  * short rule at the same height above each, a title at the same size in each.
