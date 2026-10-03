@@ -223,8 +223,8 @@ grid that both of its rows share:
   identical to the column at 1440, 1024 and 390 and bound nothing;
 - the specimen plate is tipped into the narrow column and **dropped 6rem**, so its
   top rule lands inside the claim's block rather than above it;
-- below, the rest of that list's arc, the two roles and the three mechanisms run down
-  the wide column, and the narrow column is left as bare board.
+- below, the three mechanisms run down the wide column, and the narrow column is left
+  as bare board.
 
 The page carries **three measures** rather than one: the claim's column for the thing
 being said, the plate's own width for the thing being shown, and a `52ch` standfirst
@@ -236,45 +236,43 @@ what a 44px paragraph inherits with no `leading-*` of its own, and it read as bo
 copy rather than as a statement. `text-balance` does the real work of evening the rag
 across whatever the column turns out to be.
 
-The three things stacked under the hero are **a picture, a frame and an index** — the
-storyboard of one list in three states, the two roles, the three mechanisms — and
-**none of them carries a heading above it**. That is the point rather than an
-omission: a printed head over each would say the three are sections of one kind, and
-two of them are not.
+The specimen plate and the index are the two blocks this page is built around, and
+**neither carries a heading above it**. That is the point rather than an omission: a
+printed head over each would say the two are sections of one kind, and only one of them
+is. One is a specimen of the contents page; the other is this page's argument.
 
-The roles and the mechanisms do carry the heading each of their own entries already
-had — `FeatureCard` emits an `<h2>` per entry, so this page contributes five, and all
-five are deliberate. The storyboard contributes none, because its only title is the
-plate's `yourLists` label, which belongs to the illustration rather than to the
-document. A reader who navigates by heading therefore reaches the roles and the
-mechanisms and sees the storyboard as the evidence it is, which is the argument this
-page is making. The three are 3rem apart, carried by one `gap-y-*` on the column
-rather than by three `mt-*` values, so dropping or adding a section cannot leave one
-behind with a margin of its own.
+The index carries the heading each of its own entries already had — `FeatureCard`
+emits an `<h2>` per entry, so this page contributes three, and all three are
+deliberate. The plate contributes none, because its only title is the `yourLists`
+label, which belongs to the illustration rather than to the document. The page's
+`<h1>` is the wordmark in the header and the hero's sentence is a `<p>`: a question,
+answered by the standfirst rather than headed by anything of its own. A reader who
+navigates by heading therefore reaches the three mechanisms and sees the plate for
+the evidence it is, which is the argument this page is making.
 
-The eye travels claim → plate → arc → roles → mechanisms, a diagonal, instead of
-straight down a centre line. What this replaced was the category default: a hero
-rectangle, a three-up feature row, and a second rectangle of exactly the same size,
-all centred on one axis. **Two rules keep it that way.** No centred feature row, and
-no second full-width sheet: every plate on this page is either tipped into a column or
-stacked below the hero.
+The index is the only block in its row. The distance to the hero is that wrapper's
+own `mt-16 lg:mt-28`, while the column around the block still carries one `gap-y-12`.
+That is why the margin is a `gap-y-*` and not an `mt-*` on each block: a storyboard and
+a roles block have both been dropped out of this column, and neither left a margin
+behind it.
 
-Where the columns exist, that means neither plate is laid across the full measure —
-the hero's sits in the narrow one from `lg`, the pair side by side in the wide one
-from `xl`. **Below those widths the grid is a single column and a plate does span it.**
-That is a stacked phone layout rather than a second full-width sheet, and the rule is
-about the spread, not about every width: what it forbids is a plate that reaches the
-page's edges *beside* another mass, which is what turned two plates into a category
-default.
+The eye travels claim → plate → mechanisms, a diagonal, instead of straight down a
+centre line. What this replaced was the category default: a hero rectangle, a three-up
+feature row, and a second rectangle of exactly the same size, all centred on one axis.
+**Two rules keep it that way.** No centred feature row, and no second full-width sheet:
+there is one plate on this page and it is the only rectangle the hero draws.
 
-The pair in the wide column **is** two plates of the same size, and that is required:
-they are two states of *one* list in sequence rather than two alternatives to choose
-between, and two identical rectangles read as a sequence where a narrowing run would
-read as a ranking. A descending series was the rejected alternative precisely because
-the narrowest state is the one carrying the check, and shrinking it would claim it
-matters least. So the pair stays at that size, stays a continuation of the hero
-plate's story rather than becoming an alternative to it, and neither plate grows to
-the hero plate's width.
+Where the columns exist, that means no plate is laid across the full measure — the one
+plate on this page sits in the narrow one from `lg`. **Below `lg` the grid is a single
+column and the plate does span it.** That is a stacked phone layout rather than a
+second full-width sheet, and the rule is about the spread, not about every width: what
+it forbids is a plate that reaches the page's edges *beside* another mass, which is
+what turned two plates into a category default.
+
+There is **one** plate on this page and every row on it is one measure wide. The three
+states it carries are a sequence rather than a set of alternatives to choose between,
+and rows at three widths would rank them. The arc runs down the rows; the anatomy, and
+the two shapes this plate was rejected in, are under The specimen plate.
 
 The landing page also **drops the dashboard's `max-w-5xl` and its own horizontal
 padding**, because the `container` utility already supplies the page's padding and
@@ -302,7 +300,7 @@ width** — that padding is what put the two sheets 32px apart.
 ### Below `sm`, the standfirst moves under the two buttons
 
 On a phone the reading order is **claim → rule → the two ways in → the sentence that
-explains them**. From `sm` up it is claim → rule → standfirst → buttons, which is
+answers the claim**. From `sm` up it is claim → rule → standfirst → buttons, which is
 where a standfirst belongs.
 
 This is a structural adaptation, not a squeeze. The actions used to sit under that
@@ -322,13 +320,16 @@ How much room that leaves against the fold is a measurement rather than a deriva
 and it is taken below rather than argued here.
 
 **The block is shorter than the last time this was checked, and that follows from the
-copy rather than from a browser.** The claim is 58 characters of German where it was
-98, and the standfirst is 148 where it was 129. A shorter claim cannot break into more
-lines, so the block standing above the standfirst can only have lost height. Note the
-direction of the other number: the sentence that must not push the buttons down is now
-*longer* than the one it replaced, so the reorder survives only because the claim got
-much shorter — a future claim that grows back towards a sentence is what breaks this,
-and the reorder cannot then be argued from the copy at all.
+copy rather than from a browser.** The claim is 32 characters of German where it was
+98, and the standfirst is 50 where it was 129. A shorter claim cannot break into more
+lines and a shorter standfirst cannot take more of them, so the column is shorter at
+both ends of it. **The character counts no longer argue the reorder, in either
+direction.** They used to: the claim fell while the standfirst rose, which left the
+property resting on the claim alone. Both have since fallen, and the property stands on
+the structure instead — the claim, the entry rule and the two fixed-height ways in form
+a block whose height is the claim's own line count, and the buttons cannot wrap or
+grow. A claim that grows back towards a sentence is what would break it, and at that
+point the argument has to be the measurement below rather than a count of characters.
 
 > **PENDING MEASUREMENT — replaced by the browser pass, not by an estimate.** At rest
 > against a realistic 85% fold (the viewport minus a phone's browser chrome and safe
@@ -485,14 +486,31 @@ at each row, which is announced at the row and not at the control that caused it
 
 ### The specimen plate — the landing page's quotation of the contents page
 
-The plates on the landing page are the contents page **reproduced at a different
-size**: once tipped into the narrow column of the spread, and twice as the pair below
-it. What makes them the same product is material and anatomy, not width — the same
-stock, the same printed rule, the same crop marks, the same ruled head, the same list
-name in Source Serif 4, the same member ink on the progress rule, the same printed
-numeral. The anatomy is imported rather than described, so it cannot drift from what
-the app shows, and `SheetProgress` is the authority for the figure itself. Each plate
-carries the same count words behind the number for anyone who cannot see it.
+The plate on the landing page is the contents page **reproduced at a different
+size**: tipped into the narrow column of the spread. What makes it the same product
+is material and anatomy, not width — the same stock, the same printed rule, the same
+crop marks, the same ruled head, the same list name in Source Serif 4, the same
+member ink on the progress rule, the same printed numeral. The anatomy is imported
+rather than described, so it cannot drift from what the app shows, and `SheetProgress`
+is the authority for the figure itself. Every row carries the same count words behind
+the number for anyone who cannot see it.
+
+**One plate, three rows, and the arc runs down the rows rather than across three of
+them.** Both of those shapes were rendered, looked at and rejected, and both rejections
+are why this plate has this shape. It was three plates once — the same list three times
+over, its open count falling until the figure gave way to a check — and three plates
+carrying the same head, the same list name and the same single row read as repetition
+rather than as a story; the plate in the hero's narrow column plus the pair below it
+broke one asymmetric spread into three scattered rectangles, and the plate holding the
+check read as a different list rather than as a later state of this one. It was then
+one plate carrying one row, and one row is a fragment: a name, a rule and a numeral say
+nothing about a product whose argument is the state of a list over time. **Three rows
+carry that argument in one glance** — a list nobody has bought from yet, one nearly
+done, one finished — and because they are rows on one sheet they are one measure, so a
+finished list can never be the smallest thing on the plate. That is also why the rows
+are **named for occasions** rather than for people: names like "Ben and Mia" were
+tried on this page and asserted a cast it had never set up, and an occasion needs no
+introduction.
 
 Three things were taken away from it, and each of them is a rule rather than a
 preference:
@@ -502,32 +520,31 @@ preference:
   The plate has no header, so it prints the contents page's own section head instead,
   `yourLists`: the same statement about whose lists these are, made about the reader
   and naming nobody. A title is not restored by moving it above the rows.
-- **That head is a label, not a heading.** The plate is drawn three times on one page,
-  and three identical `<h2>`s in a row would claim three document sections where
-  there is one thing illustrated three times — an outline defect on a page whose whole
-  argument is hierarchy. The real contents page keeps its `<h2>`, where it heads a
-  real section of a real page; the specimen prints the label it is, in the same
-  `label-print` classes, so the two are optically identical and a sighted reader
-  cannot tell the difference.
-- **One row per state, and one ink for all three plates.** The ink is seeded from a
-  module constant in `landing-preview.tsx` rather than from a dictionary key, because
-  a key would be translatable and the same page would print a different ink in German
-  than in Russian for what is one and the same person. The three plates are three
-  states of one list, so they are one ink: hashing them apart would read as three
-  people, which is the confusion this page exists to end.
+- **That head is a label, not a heading.** What the plate prints there is a quotation
+  of the contents page's own section line, and this page has no section for it to
+  open, so an `<h2>` would claim a document section where there is a specimen — an
+  outline defect on a page whose whole argument is hierarchy. The real contents page
+  keeps its `<h2>`, where it heads a real section of a real page; the specimen prints
+  the label it is, in the same `label-print` classes, so the two are optically
+  identical and a sighted reader cannot tell the difference.
+- **One ink for the plate, not one per row.** The ink is seeded from a module constant
+  in `landing-preview.tsx` rather than from a dictionary key, because a key would be
+  translatable and the same page would print a different ink in German than in Russian
+  for what is one and the same person. The rows are the reader's own lists and they sit
+  on the owner's sheet, so they take the owner's ink: a second colour here would say
+  two people, which is the confusion this page exists to end.
 
-The caption sits **under** the plate, on the board, in caption ink, and it is the
-action line: what has happened to this list, in the reader's own person. It used to
-sit above the plate and used to claim the plate was "the whole screen", which stopped
-being true the moment the plate stopped being the same size as the dashboard's sheet.
-A caption belongs below the thing it captions. It is capped at `44ch`, which binds in
-the hero's narrow column and does not bind on the narrower plates of the pair — and
-that is what the cap is for: the sentence under the plate must not run as wide as the
-claim beside it.
+**There is no caption under the plate**, and there was one for most of this page's
+life. A caption has to earn its place, and the last one did not: it named two people
+the reader had never heard of, in order to say who may see the list — a rule the
+standfirst and the index already carry. A caption that repeats what the page says
+elsewhere is the plate's caption explaining the plate, which is the habit this page was
+rewritten to break. The rows speak for themselves.
 
-Do not restore the "whole screen" claim, do not give the plate a title again, and do
-not let the pair below grow into full-width plates: two plates the width of the
-hero's is the layout this page exists to stop doing.
+Do not restore the "whole screen" claim, do not give the plate a title or a heading
+again, and do not add a second plate: two plates the width of this one is the layout
+this page exists to stop doing, and the arc belongs in the rows of the one plate rather
+than across three of them.
 
 ### The mechanisms — an index of three, all at the same weight
 
@@ -541,12 +558,19 @@ neighbouring product cannot copy without changing what it is. The typography was
 carrying an argument the page now makes in copy, and it carried it badly: a lead set
 above the other two reads as a headline of its own rather than as one of three.
 
-**The claim is therefore repeated on purpose.** The hero says nobody buys the same
-thing twice in the reader's own person, and this index says it again as a mechanism.
-An alternative was to drop the hero's version and let the index carry the product's
-central claim alone; it was refused because the index would then lose its duplication
-and the page's hierarchy would be sharper than the argument needs. A reader who
-notices the echo is reading it correctly.
+**This index once followed a frame of two role headings**, statements of situation
+rather than claims, naming which side of the page the reader was standing on. Both are
+gone, and the three claims carry what the frame carried: they say what the reader gets,
+what stops two people buying the same thing, and what stays secret, which is the whole
+of "what do I get out of this" to somebody who has not signed up. A frame around an
+index makes five headings under one hero, and an index inside a frame is not an index.
+
+**The claim that nobody buys the same thing twice is now said once, and it is said
+here.** It was in the hero as well, and the echo is gone: the hero asks the reader a
+question and answers it in the sentence underneath, and a question cannot also be a
+claim. The product's central claim is the deepest thing on the page rather than the
+first, which is the price of the question and the right trade — a question brings a
+visitor in, a product mechanic inside the opening sentence does not.
 
 The reading order is a constant — `ORDER` in `components/feature-cards.tsx` — and not
 the order the claims happen to be written in the dictionaries, so the order is a
@@ -622,16 +646,19 @@ regression.
   duplicates one that already performs the action. Both have caused real
   accessibility bugs in this codebase.
 - **Don't gate hover on Tailwind's `hover:`** where a touch device can reach it.
-- **Don't centre the landing page, and don't give it a second full-width plate.** It
-  is the one asymmetric layout in this product; see Layout. The pair of plates under
-  the hero is not that second plate — it continues the hero plate's story at a
-  smaller size, and it stays that size.
-- **Don't put a heading over the landing page's three blocks under the hero.** A
-  picture, a frame and an index are not three sections of one kind, and the printed
-  chrome a head would bring back is what the hero abolished.
+- **Don't centre the landing page, and don't give it a second plate.** It is the one
+  asymmetric layout in this product; see Layout. One plate, tipped into the narrow
+  column, is the only rectangle the landing page draws, and a second full-width plate
+  is the layout this page exists to stop doing.
+- **Don't put a heading over the plate or over the index.** A specimen and an argument
+  are not two sections of one kind, and the printed chrome a head would bring back is
+  what the hero abolished. The page's `<h1>` is the wordmark in the header and its three
+  `<h2>`s are the mechanisms; the hero's sentence is a `<p>`.
+- **Don't reintroduce the two role headings** above the index. The three claims now
+  carry what the frame carried, and two headings above an index of three makes five
+  headings under one hero rather than one index; see The mechanisms.
 - **Don't restore the large lead claim** in the mechanisms index. All three entries
-  weigh the same, and the repetition of the hero's claim here is deliberate; see The
-  mechanisms.
+  weigh the same; see The mechanisms.
 - **Don't print a field's own name where a dialog should be saying what it is for.**
   The login sheet's description once repeated the identifier field's own label, which
   put "Gruppenname" on screen three times in a row — description, printed label,
@@ -644,13 +671,14 @@ regression.
 
 ## Known debts
 
-- **The landing page's bare board is a decision, and it is load-bearing — but it has
-  grown.** The narrow column is empty from below the tipped plate all the way past the
-  storyboard, the roles and the mechanisms, so the area beside them is now much larger
-  than the one this decision was made for. It still reads as a desk because the plate
-  is clearly tipped in and the claim beside it is clearly set; anything that grows into
-  that space, or anything that re-centres the page, removes the reason it reads as
-  intentional.
+- **The landing page's bare board is a decision, and it is load-bearing — but how much
+  of it there is has never been measured.** The narrow column is empty from below the
+  tipped plate all the way past the mechanisms index. It reads as a desk because the
+  plate is clearly tipped in and the claim beside it is clearly set; anything that grows
+  into that space, or anything that re-centres the page, removes the reason it reads as
+  intentional. A storyboard and a roles block once filled the wide column beside it,
+  and both are gone, so the debt is smaller than it was when this was written — which
+  is a direction, not a figure, and the number still has to come from a browser.
   > **PENDING MEASUREMENT — replaced by the browser pass, not by an estimate.** The
   > exact extent of that empty column at 1440, in px. The figures previously recorded
   > here — roughly 440 × 560 — were measured when the column beside it held nothing but
