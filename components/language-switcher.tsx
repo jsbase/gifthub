@@ -102,6 +102,16 @@ const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({ label }) => {
               than a margin or a transform so the flag keeps its 15px box and the
               trigger keeps its 44px touch target - the nudge moves the pixels,
               not the hit area.
+
+              Both axes are spelled in pixels because the two numbers handed to
+              `next/image` are pixels, and it compares the rendered box against
+              those attributes on load. `w-5` is the idiomatic Tailwind spelling
+              of a 20px width and it is the wrong one here: 1.25rem follows the
+              reader's default font size, which is not 16px on every machine, so
+              the width drifts away from the declared 20 while the px height
+              stays put. That is precisely the "either width or height
+              modified, but not the other" warning, and behind it a real 25x15
+              flag squashed into a 20px box.
             */}
             <LanguageFlag
               src={selectedLanguage.flag}
@@ -112,7 +122,7 @@ const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({ label }) => {
                 'relative',
                 '-top-px',
                 'h-[15px]',
-                'w-5',
+                'w-[20px]',
                 'shrink-0',
                 'rounded-[2px]'
               )}
@@ -143,7 +153,12 @@ const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({ label }) => {
                 alt=''
                 width={20}
                 height={15}
-                className={cn('w-5', 'h-[15px]', 'shrink-0', 'rounded-[2px]')}
+                className={cn(
+                  'w-[20px]',
+                  'h-[15px]',
+                  'shrink-0',
+                  'rounded-[2px]'
+                )}
               />
               <span>{lang.name}</span>
             </DropdownMenuItem>
