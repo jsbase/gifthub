@@ -712,15 +712,14 @@ export interface PageProps {
   params: Promise<{ lang: string }>;
 }
 
+/**
+ * One claim set as one line of an index. There is no register to choose: the
+ * landing page's hero carries the product's own claim, so a lead setting here
+ * would have read as a second hero underneath the first.
+ */
 export interface FeatureCardProps {
   title: string;
   description: string;
-  /**
-   * `lead` is the product's own claim, set large on the landing page; `entry` is
-   * a mechanism, set as a line of a catalogue index beneath it. The default is
-   * `entry` so a caller that does not care gets the quiet one.
-   */
-  variant?: 'lead' | 'entry';
 }
 
 export interface FooterProps {
