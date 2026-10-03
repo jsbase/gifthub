@@ -16,7 +16,7 @@ A person added to somebody else's list is a **buyer**: they may read it and mark
 
 The German-first default locale, Cyrillic-capable type, and the deliberately large touch targets all point to a real multilingual family audience (de/en/ru), not an English-only demo. Users are not technical. There is no email verification, no password reset and no profile editing, because each of those is a flow this audience would hit and the product would then have to support.
 
-**Intended future direction:** the premium model the privacy policy describes. The account model itself is now per-person and durable; the shared group password it replaced was provisional and is gone. Future work should build on accounts and lists, not on any assumption that a list is reachable by anyone who knows a name and a password.
+**Intended future direction:** none that the product has decided on. The account model is per-person and durable, and the shared group password it replaced is gone. Future work should build on accounts and lists, not on any assumption that a list is reachable by anyone who knows a name and a password.
 
 ## Product Purpose
 
@@ -69,7 +69,7 @@ The mark is shared, but it is not unfalsifiable. An owner may put the mark on an
 - **Typeface loading requires Latin *and* Cyrillic subsets** for both families. A new font without a Cyrillic subset is a bug.
 
 **Unfulfilled claims — treat as off-limits until implemented (confirmed):**
-- **Premium / payment model.** The privacy policy describes storing payment methods, transaction data and payment status for a premium membership. Nothing in the codebase does this. Do not surface, imply, or design toward a paid tier.
+- **Premium / payment model.** None exists and none is promised. The privacy policy used to describe storing payment methods, transaction data and payment status for a premium membership; that section has been removed rather than left standing as a claim. Do not surface, imply, or design toward a paid tier.
 - **Occasions and deadlines.** The README claims "track special occasions and deadlines". There is no date, occasion or deadline anywhere in the schema. Do not build on this claim as though the data model supports it.
 - **Operator details are placeholders.** Privacy policy section 2 contains unfilled `[Operator's Name] [Address] [Email Address] [Phone Number]`. The app is deployed publicly, so this is a known legal gap, not a design detail.
 
@@ -89,7 +89,7 @@ The mark is shared, but it is not unfalsifiable. An owner may put the mark on an
 - **End-to-end tests** (`tests/`) exercise the real app shell, account auth, the contents page, the language switcher, and the sharing permissions — including that a buyer cannot add, delete, rename, re-share or delete, and that an owner cannot clear somebody else's mark.
 - **Assets:** favicon set, maskable icon, apple-touch icon, three SVG flags (de/en/ru), a loading spinner SVG.
 
-**Absences future work must not fabricate:** no testimonials, no customer logos, no usage metrics, no pricing, no download or install counts, no press. There is no published legal entity. The privacy policy's "premium model" and the README's "occasions and deadlines" are not evidence of shipped capability.
+**Absences future work must not fabricate:** no testimonials, no customer logos, no usage metrics, no pricing, no download or install counts, no press. There is no published legal entity. The README's "occasions and deadlines" are not evidence of shipped capability.
 
 ## Product Principles
 
