@@ -33,16 +33,16 @@
 
   "features": {
     "wish": {
-      "title": "You always get what you asked for",
-      "description": "You share it with whoever you like. Everyone sees what is missing."
+      "title": "Get what you asked for",
+      "description": "Share your list. Everyone sees what's missing."
     },
     "once": {
       "title": "Never the same gift twice",
-      "description": "Whoever bought something ticks it off. Everyone sees it at once."
+      "description": "Bought it? Tick it off. Everyone sees it at once."
     },
     "surprise": {
       "title": "The surprise stays",
-      "description": "Nobody finds out who bought what."
+      "description": "Nobody knows who bought it."
     }
   },
 

@@ -33,16 +33,16 @@
 
   "features": {
     "wish": {
-      "title": "Bekomme immer das, was du dir wünschst",
-      "description": "Du teilst sie mit wem du willst. Alle sehen dann, was noch fehlt."
+      "title": "Bekomme, was du dir wünschst",
+      "description": "Teile deine Liste. Alle sehen, was fehlt."
     },
     "once": {
       "title": "Keine doppelten Geschenke",
-      "description": "Wer etwas besorgt, hakt es ab. Alle sehen es sofort."
+      "description": "Gekauft? Einfach abhaken. Alle sehen es sofort."
     },
     "surprise": {
       "title": "Die Überraschung bleibt",
-      "description": "Niemand erfährt, wer etwas abgehakt hat."
+      "description": "Niemand weiß, wer gekauft hat."
     }
   },
 
