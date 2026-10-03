@@ -5,6 +5,18 @@ import acceptLanguage from 'accept-language';
 import { locales, defaultLocale, hasLocaleInPath } from '@/lib/i18n-config';
 import type { LanguageCode } from '@/types';
 
+/**
+ * The localized sections a session is required for.
+ *
+ * Both of them render private data: the contents page names the lists you own and
+ * the lists other people have shared with you, and a sheet is the whole of one
+ * person's gift ideas. Neither can be rendered without a session, so neither is
+ * worth rendering at all for somebody who has not got one - and the check is here
+ * rather than in the page so that it runs before the request reaches the server
+ * component that would query the database and then decide.
+ */
+const GATED_SECTIONS = ['dashboard', 'list'] as const;
+
 const getLocale: (request: NextRequest) => LanguageCode = (request) => {
   // First priority: Check cookie
   const localeCookie = request.cookies.get('NEXT_LOCALE');
@@ -39,8 +51,9 @@ export const proxy: (
   const hasLocale = hasLocaleInPath(pathname);
 
   /*
-    The dashboard is `app/[lang]/dashboard/page.tsx`, so the only path that
-    exists is `/{locale}/dashboard`. This used to test
+    The gated sections are `app/[lang]/dashboard/page.tsx` and
+    `app/[lang]/list/[id]/page.tsx`, so the only paths that exist are
+    `/{locale}/dashboard` and `/{locale}/list/...`. This used to test
     `pathname.startsWith('/dashboard')`, which no real request can ever
     satisfy: `proxy.ts` below redirects `/dashboard` to `/de/dashboard`
     before it could ever be served, so the token check here never ran and the
@@ -48,21 +61,31 @@ export const proxy: (
     `locales` list keeps the three languages in one place instead of
     duplicating them in a regex.
 
+    The exact match and the `startsWith` are both needed. `/de/list` does not
+    exist as a page today - the sheet is always `/{locale}/list/{id}` - and it is
+    matched anyway so that a new page under that segment cannot be added without
+    the gate noticing that it needs the gate. The unprefixed forms are matched
+    too, for the same reason the localized ones are: they are the paths this
+    handler itself redirects, so they are the ones that must be checked before
+    the redirect rather than after it.
+
     The client is not a backstop either: `verifyAuth()` in `lib/auth.ts`
     resolves to an object on every path, including `{ success: false }`, so
     the `if (!auth)` check in the dashboard's `init()` is never true. An
     unauthenticated visitor used to get the loading spinner for as long as
     they cared to wait, rather than being sent back to the landing page.
   */
-  const isDashboard =
-    pathname === '/dashboard' ||
-    locales.some(
-      (locale) =>
-        pathname === `/${locale}/dashboard` ||
-        pathname.startsWith(`/${locale}/dashboard/`)
-    );
+  const needsSession = GATED_SECTIONS.some(
+    (section) =>
+      pathname === `/${section}` ||
+      locales.some(
+        (locale) =>
+          pathname === `/${locale}/${section}` ||
+          pathname.startsWith(`/${locale}/${section}/`)
+      )
+  );
 
-  if (isDashboard) {
+  if (needsSession) {
     const token = request.cookies.get('auth-token');
 
     if (!token) {
@@ -115,10 +138,19 @@ export const proxy: (
 };
 
 export const config = {
+  /*
+    The two gated sections are named here as they always were for the dashboard, so
+    that the set of paths the gate covers can be read without following the logic
+    above. Both are already covered by the catch-alls below and would run the gate
+    with or without these two lines - they are there so the file states the same
+    thing twice on purpose rather than by accident.
+  */
   matcher: [
     '/',
     '/dashboard',
     '/dashboard/:path*',
+    '/list',
+    '/list/:path*',
     '/:locale',
     '/:locale/:path*',
     '/:path*',

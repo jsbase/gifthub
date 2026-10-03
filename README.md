@@ -1,6 +1,6 @@
 # wishy
 
-wishy gives one group a single shared list of gift ideas, so nobody in it buys the same present twice. A `Group` is a name plus a shared password; there is no per-person account, and a `User` row is a member name recorded inside the group. Marking an idea bought is one shared, permanent, group-wide mark rather than a personal tick, which is what makes double-buying impossible instead of merely discouraged; bought ideas stay on the list, struck through. Three locales ship: de (default), en, ru.
+wishy gives one person a list of gift ideas and lets them share it with the specific people who will buy from it, so nobody buys the same present twice. Every person has a real account — a unique nickname they sign in with, an email address, a password, and a display name other people see — and every list belongs to one account. Sign-in takes either the nickname or the address, in one field. A list starts private, visible only to its owner, and becomes shared when its owner adds specific people by email address. A person added to somebody else's list can read it and mark an idea as bought; they cannot add ideas to it, rename it, share it again, or delete it. There is no link, no public page and no directory: a shared list is reachable only by an account its owner named. Bought ideas stay on the list, struck through, and the person who bought them is never shown. Three locales ship: de (default), en, ru.
 
 ## Live URL
 
@@ -45,7 +45,7 @@ npx prisma migrate deploy
 SEED_ALLOW_WIPE=1 npx prisma db seed
 ```
 
-The seed is `prisma/seed.mjs`. It deletes every row in `gift`, `userGroup`, `user` and `group` with no filter, so it refuses to run unless `SEED_ALLOW_WIPE=1` is set. If `SEED_EXPECT_HOST` is also set, it refuses to run unless the host in `DATABASE_URL` matches it exactly; CI always sets it, locally it is optional. It creates group `testgroup` with password `test123` and three members.
+The seed is `prisma/seed.mjs`. It deletes every row in `gift`, `listAccess`, `list` and `account` with no filter, so it refuses to run unless `SEED_ALLOW_WIPE=1` is set. If `SEED_EXPECT_HOST` is also set, it refuses to run unless the host in `DATABASE_URL` matches it exactly; CI always sets it, locally it is optional. It creates three accounts — `anna@example.test`, `ben@example.test` and `mia@example.test`, each with the password `test1234` — and three lists spanning the permission model: one private, one shared with a bought idea, and one shared with a *disjoint* audience so the suite can assert that an account gets 404 for a list it was never added to.
 
 Run the app:
 
@@ -53,7 +53,7 @@ Run the app:
 npm run dev   # http://localhost:3000, the port is explicit in the dev script
 ```
 
-Tests: `npm run test:e2e`, plus `:ui`, `:headed` and `:debug` variants. There are no unit tests; `tests/` holds four Playwright specs covering the app shell, auth buttons, dashboard and language switcher.
+Tests: `npm run test:e2e`, plus `:ui`, `:headed` and `:debug` variants. There are no unit tests; `tests/` holds five Playwright specs covering the app shell, account auth, the contents page, the language switcher, and the sharing permissions. The sharing spec is the one that matters most: it asserts that an account added to somebody else's list can read it and set the bought mark, and *cannot* add an idea, delete one, rename the list, change its visibility, grant or revoke access, or delete it.
 
 ## Deploy notes
 

@@ -1,101 +1,98 @@
 {
-  "addMember": "Add member",
-  "addMemberDialog": {
-    "addMemberTitle": "Add a member",
-    "addMember": "Add member",
-    "adding": "Adding...",
-    "enterGroupName": "Please fill out to add someone",
-    "enterMemberName": "Member's name"
-  },
-  "confirmations": {
-    "deleteGift": "This takes the idea off the shared list for everyone in the group.",
-    "deleteMember": "This also deletes every gift idea on {name}'s list, and it cannot be undone."
-  },
-  "confirmPassword": "Confirm password",
-  "createGroup": "Create a group",
-  "createGroupBtn": "Create group",
-  "createGroupDescription": "Name your group and pick a password. Everyone in the group signs in with the same two.",
-  "deleteMember": "Remove member",
-  "enterGroupName": "Group name",
-  "enterPassword": "Password",
-  "errors": {
-    "duplicateName": "A member with this name already exists in this group.",
-    "failedToLoad": "Members not loaded",
-    "failedToLoadGifts": "Gift ideas not loaded",
-    "invalidNameFormat": "Names may contain letters, numbers, spaces, dots, hyphens and apostrophes, up to 100 characters.",
-    "loginFailed": "Log in failed",
-    "loginRequired": "Log in required",
-    "passwordMismatch": "Passwords do not match",
-    "registrationFailed": "Creating the group failed"
-  },
-  "features": {
-    "simple": {
-      "description": "Write down an idea in a few seconds, before it is forgotten.",
-      "title": "Add ideas as they come up"
-    },
-    "tracking": {
-      "description": "Mark an idea as bought and the whole group can see it.",
-      "title": "Nobody buys it twice"
-    },
-    "updates": {
-      "description": "Only the group can see the list, so the person being celebrated finds out on the day.",
-      "title": "The surprise stays a surprise"
-    }
-  },
-  "groupName": "Group",
-  "landing": {
-    "standfirst": "One group, one name, one password. Everyone gets a page — and what has already been bought stays on it, struck through."
-  },
-  "loginDescription": "The group name and the password that everyone in the group signs in with.",
-  "preview": {
-    "group": "Grandma's birthday",
-    "lead": "One page from the album. Everyone in the group has one, and the number on the right is how many gift ideas are still open.",
-    "members": [
-      { "name": "Anna", "count": 3, "collected": 2 },
-      { "name": "Ben", "count": 1, "collected": 2 },
-      { "name": "Mia", "count": 0, "collected": 4 }
-    ]
-  },
-  "giftCount": {
-    "none": "no gift ideas yet",
-    "zero": "nothing left to buy",
-    "one": "1 gift idea left to buy",
-    "many": "{{count}} gift ideas left to buy"
-  },
-  "loading": "Loading...",
+  "tagline": "Everyone has a list of their own. It is shared only with the people you add.",
   "login": "Log in",
-  "loginToGroup": "Log in",
-  "logout": "Log out",
-  "changeLanguage": "Change language",
-  "memberGifts": {
-    "addGift": "Add gift idea",
-    "adding": "Adding...",
-    "cancel": "Cancel",
-    "deleteGift": "Delete gift idea",
-    "deleteGiftConfirm": "Delete this gift idea?",
-    "emptyCellHint": "A name is enough. A note and a link are optional.",
-    "enterDescription": "Add a note",
-    "enterGiftTitle": "Gift idea",
-    "enterUrl": "Link",
-    "listHint": "Everyone in the group can add to this list.",
-    "noGifts": "No gift ideas yet. Add the first one.",
-      "optional": "Optional",
-      "markAsPurchased": "Mark as bought",
-      "markAsAvailable": "Move back to the list",
-      "openIdeas": "Still to buy",
-      "collectedIdeas": "Collected"
-    },
-  "members": "Members",
+  "register": "Create account",
+  "loading": "Loading...",
   "cancel": "Cancel",
   "close": "Close",
-  "noMembers": "No members yet. Add the first one.",
+
+  "email": "Email address",
+  "displayName": "Display name",
+    "nickname": "Nickname",
   "password": "Password",
-  "register": "Create a group",
-  "removeMemberConfirm": "Remove this member?",
+  "confirmPassword": "Confirm password",
+  "loginBtn": "Log in",
+  "registerBtn": "Create account",
+    "loginIdentifier": "Nickname or email address",
+    "loginIdentifierHint": "Your nickname is unique — that is how you sign in.",
+    "registerNicknameHint": "Your nickname is unique. Other people see you under this name.",
+
+  "loginDescription": "Once you log in you see your own lists and the ones other people have shared with you.",
+  "registerDescription": "Every list you create belongs to this account, and you alone decide who gets to see it.",
+
+  "logout": "Log out",
+  "changeLanguage": "Change language",
+
+  "yourLists": "Your lists",
+  "sharedWithYou": "Shared with you",
+  "createList": "Create list",
+  "createListDescription": "A list belongs to you. You alone see a private one, and a shared one only the people you add.",
+  "deleteList": "Delete list",
+  "removeListConfirm": "Delete this list?",
+  "noLists": "No lists yet. Create the first one.",
+  "noSharedLists": "Nobody has shared a list with you yet.",
+
+  "features": {
+    "simple": {
+      "title": "One idea in seconds",
+      "description": "A title is enough. A note and a link are optional, and that is all it takes."
+    },
+    "tracking": {
+      "title": "Nobody buys it twice",
+      "description": "The people you shared with mark off what they have bought themselves — visible to everyone, and without names."
+    },
+    "updates": {
+      "title": "The surprise stays a surprise",
+      "description": "A new list is seen by nobody but you. Not even by the person it is for."
+    }
+  },
+
+  "landing": {
+    "standfirst": "One list per person, one account per email address — what has been bought stays struck through, and the buyer is never named."
+  },
+
+  "preview": {
+    "list": "Anna's lists",
+    "lead": "The contents page as Anna sees it. Every row is one of her lists, and the number on the right counts the ideas that are still open.",
+    "items": [
+      { "name": "Grandma's birthday", "count": 3, "collected": 2 },
+      { "name": "Christmas", "count": 1, "collected": 2 },
+      { "name": "Mia's wedding", "count": 0, "collected": 4 }
+    ]
+  },
+
+  "errors": {
+    "loginRequired": "Log in required",
+    "failedToLoad": "Lists not loaded",
+    "failedToLoadGifts": "Gift ideas not loaded",
+    "loginFailed": "Log in failed",
+    "passwordMismatch": "Passwords do not match",
+    "registrationFailed": "Account could not be created",
+
+    "invalidEmail": "Enter a valid email address.",
+    "invalidNickname": "Pick a nickname of letters, digits, dot, hyphen or underscore (2–32 characters).",
+    "duplicateNickname": "That nickname is already taken.",
+    "invalidIdentifier": "Enter your nickname or your email address.",
+    "nothingToChange": "Nothing was changed.",
+    "ambiguousChange": "Change either the name or the visibility, not both at once.",
+    "invalidVisibility": "That visibility does not exist.",
+    "duplicateEmail": "There is already an account for this email address. A forgotten password cannot be reset.",
+    "weakPassword": "At least 8 characters.",
+    "invalidDisplayName": "Names may contain letters, numbers, spaces, dots, hyphens and apostrophes, up to 100 characters.",
+
+    "noSuchAccount": "There is no account for this email address. Ask the person directly whether they have registered.",
+    "alreadyShared": "That person can already see this list.",
+    "cannotShareWithOwner": "This list is already yours.",
+    "notSharedYet": "This list is still private.",
+    "cannotClearPurchase": "Somebody else marked this idea as bought. That cannot be undone.",
+    "forbidden": "That is not allowed on this list.",
+    "notFound": "This list does not exist."
+  },
+
   "success": {
     "loggedOut": "Logged out"
   },
-  "tagline": "One list for everyone in your group, so nobody buys the same gift twice.",
+
   "toasts": {
     "giftAdded": "Gift idea added",
     "giftAddFailed": "Gift idea not added",
@@ -104,90 +101,200 @@
     "giftStatusUpdateFailed": "Gift idea not updated",
     "giftDeleted": "Gift idea deleted",
     "giftDeleteFailed": "Gift idea not deleted",
-    "memberAdded": "{name} added",
-    "memberAddFailed": "Member not added",
+    "listCreated": "List created",
+    "listCreateFailed": "List not created",
+    "listRenamed": "List renamed",
+    "listRenameFailed": "List not renamed",
+    "listDeleted": "List deleted",
+    "listDeleteFailed": "List not deleted",
+    "visibilityChanged": "Visibility changed",
+    "visibilityChangeFailed": "Visibility not changed",
+    "accessGranted": "{name} can see the list now.",
+    "accessGrantFailed": "Person not added",
+    "accessRevoked": "{name} can no longer see the list.",
+    "accessRevokeFailed": "Person not removed",
     "loginSuccess": "Logged in successfully",
-    "registrationSuccess": "Group created. Log in to continue.",
-    "memberDeleted": "{name} and their gift ideas deleted",
-    "memberDeleteFailed": "Member not deleted"
+    "registrationSuccess": "Account created"
   },
+
+  "confirmations": {
+    "deleteGift": "This takes the idea off this list — including for everyone you share it with.",
+    "deleteList": "This also deletes every gift idea on this list, and it cannot be undone."
+  },
+
+  "visibility": {
+    "private": "Private",
+    "shared": "Shared",
+    "privateHint": "Only you can see this list.",
+    "sharedHint": "Exactly the people you have invited can see it.",
+    "change": "Change visibility",
+    "sharedWith": "Shared with",
+    "sharedWithNobody": "Not shared with anyone yet"
+  },
+
+  "listSheet": {
+    "listHint": "Only you can add to this list.",
+    "addGift": "Add gift idea",
+    "enterGiftTitle": "Gift idea",
+    "optional": "Optional",
+    "enterDescription": "Add a note",
+    "enterUrl": "Link",
+    "cancel": "Cancel",
+    "adding": "Adding...",
+    "noGifts": "No gift ideas yet. Add the first one.",
+    "emptyCellHint": "A name is enough. A note and a link are optional.",
+    "markAsPurchased": "Mark as bought",
+    "markAsAvailable": "Move back to the list",
+    "deleteGift": "Delete gift idea",
+    "deleteGiftConfirm": "Delete this gift idea?",
+    "openIdeas": "Still to buy",
+    "collectedIdeas": "Collected",
+    "youAreABuyer": "This list belongs to someone else. You may tick an idea off once you have bought it — nothing else.",
+    "markedBySomeoneElse": "Somebody else marked this — the mark stays.",
+    "backToLists": "Back to your lists"
+  },
+
+  "shareList": {
+    "shareTitle": "Share list",
+    "shareLead": "Every address you enter here sees the whole list and may tick ideas off. Nothing else.",
+    "enterEmail": "Email address",
+    "add": "Add",
+    "adding": "Adding...",
+    "revoke": "Remove access",
+    "revokeConfirmTitle": "Remove access?",
+    "nobodyYet": "Nobody added yet.",
+    "privateFirst": "While the list is private you cannot add anybody. Share it first.",
+    "makeShared": "Share it now"
+  },
+
+  "createListDialog": {
+    "createListTitle": "New list",
+    "enterListName": "List name",
+    "create": "Create",
+    "creating": "Creating...",
+    "visibilityLegend": "Who should see this list?",
+    "private": "Private",
+    "privateHint": "Only you see it.",
+    "shared": "Shared",
+    "sharedHint": "Exactly the people you add later with an address."
+  },
+
+  "listBoard": {
+    "yourLists": "Your lists",
+    "sharedWithYou": "Shared with you",
+    "createList": "Create list",
+    "addGift": "Add gift idea",
+    "rename": "Rename",
+    "renameTitle": "Rename list",
+    "renameLabel": "New name",
+    "save": "Save",
+    "saving": "Saving...",
+    "deleteList": "Delete list",
+    "changeVisibility": "Change visibility",
+    "share": "Share",
+    "sharedWithCount": "Shared with: {count}",
+    "noLists": "No lists yet. Create the first one.",
+    "noSharedLists": "Nobody has shared a list with you yet.",
+    "private": "Private",
+    "shared": "Shared"
+  },
+
   "footer": {
     "copyright": "© 2026 wishy",
     "privacyPolicy": "Privacy policy",
     "termsConditions": "Terms"
   },
+
   "privacy": {
     "title": "Privacy Policy",
-    "section1": {
-      "title": "1. General Information and Mandatory Notices",
-      "content": "Protecting your personal data is important to us. We treat your personal information confidentially and in accordance with legal data protection regulations as well as this privacy policy. This policy explains what data we collect, how we use it, and what rights you have regarding your data."
-    },
-    "section2": {
-      "title": "2. Responsible Party for Data Processing",
-      "content": "The responsible party for data processing within this web app is: [Operator's Name] [Address] [Email Address] [Phone Number]"
-    },
-    "section3": {
-      "title": "3. Collection and Storage of Personal Data",
-      "content": "",
-      "subtitle1": "a) When Visiting Our Web App",
-      "content1": "When you access our web app, certain data is automatically collected by our server, such as: IP address, Date and time of access, Browser and operating system used, Pages visited and actions within the web app. This data is used exclusively to ensure smooth operation and improve our web app, and is automatically deleted afterward.",
-      "subtitle2": "b) Registration and Login for Using the Web App",
-      "content2": "To use the web app as a group, registration with a group account is required. During registration and login, we store: Group login data (username and password), User profiles within the group (name, possibly email address), Wishlists and assigned gift wishes with links to products"
-    },
-    "section4": {
-      "title": "4. Use of Data for Wishlist Management",
-      "content": "Within the group, products can be saved as gift wishes and assigned to specific users. The product links and assignments are stored in our database and are only accessible to members of the respective group."
-    },
-    "section5": {
-      "title": "5. Premium Model and Payment Data",
-      "content": "If you choose our premium model, additional information necessary for payment processing will be stored. This includes: Payment methods, Transaction data, Payment status. Payment data is used exclusively for processing the premium membership and is securely stored in our database."
-    },
-    "section6": {
-      "title": "6. Data Sharing and Transfer",
-      "content": "We only share your personal data if it is necessary for fulfilling our service or if we are legally required to do so. No data is transferred to third parties without your explicit consent."
-    },
-    "section7": {
-      "title": "7. Data Retention and Deletion",
-      "content": "We retain your personal data only as long as necessary to fulfill the purposes outlined in this policy or as legally required. Data is typically deleted after the end of the contractual relationship and upon completion of statutory retention periods."
-    },
-    "section8": {
-      "title": "8. Your Rights",
-      "content": "You have the right at any time to: Request information about the data we have stored about you, Request correction of incorrect data, Request restriction of processing, Request deletion of your data, as permitted by law, Object to the processing of your data. To exercise your rights or if you have any further questions regarding the processing of your personal data, please contact us at: jsbase.dev@gmail.com."
-    },
-    "section9": {
-      "title": "9. Data Security",
-      "content": "We employ appropriate technical and organizational security measures to protect your data against unauthorized access, loss, or manipulation. Our security measures are continuously improved in line with technological advancements."
-    },
-    "section10": {
-      "title": "10. Changes to This Privacy Policy",
-      "content": "We reserve the right to amend this privacy policy to comply with changes in legal requirements or in the functionality of our web app. The current version of the privacy policy is available on our web app at any time."
-    }
+    "sections": [
+      {
+        "title": "1. General Information and Mandatory Notices",
+        "content": "Protecting your personal data is important to us. We treat your personal information confidentially and in accordance with legal data protection regulations as well as this privacy policy. This policy explains what data we collect, how we use it, and what rights you have regarding your data."
+      },
+      {
+        "title": "2. Responsible Party for Data Processing",
+        "content": "The responsible party for data processing within this web app is: [Operator's Name] [Address] [Email Address] [Phone Number]"
+      },
+      {
+        "title": "3. Collection and Storage of Personal Data",
+        "content": ""
+      },
+      {
+        "title": "4. Use of Data for Wishlist Management",
+        "content": "Each wishlist belongs to exactly one person. It is private at first and visible only to the person it belongs to. Once it is shared, exactly the people who have been entered on it can see that list and the ideas on it. Those people may mark an idea as bought; they cannot add, change or delete entries. Product links and ideas are stored in our database."
+      },
+      {
+        "title": "5. Premium Model and Payment Data",
+        "content": "If you choose our premium model, additional information necessary for payment processing will be stored. This includes: Payment methods, Transaction data, Payment status. Payment data is used exclusively for processing the premium membership and is securely stored in our database."
+      },
+      {
+        "title": "6. Data Sharing and Transfer",
+        "content": "We only share your personal data if it is necessary for fulfilling our service or if we are legally required to do so. No data is transferred to third parties without your explicit consent."
+      },
+      {
+        "title": "7. Data Retention and Deletion",
+        "content": "We retain your personal data only as long as necessary to fulfill the purposes outlined in this policy or as legally required. Data is typically deleted after the end of the contractual relationship and upon completion of statutory retention periods."
+      },
+      {
+        "title": "8. Your Rights",
+        "content": "You have the right at any time to: Request information about the data we have stored about you, Request correction of incorrect data, Request restriction of processing, Request deletion of your data, as permitted by law, Object to the processing of your data. To exercise your rights or if you have any further questions regarding the processing of your personal data, please contact us at: jsbase.dev@gmail.com."
+      },
+      {
+        "title": "9. Data Security",
+        "content": "We employ appropriate technical and organizational security measures to protect your data against unauthorized access, loss, or manipulation. Our security measures are continuously improved in line with technological advancements."
+      },
+      {
+        "title": "10. Changes to This Privacy Policy",
+        "content": "We reserve the right to amend this privacy policy to comply with changes in legal requirements or in the functionality of our web app. The current version of the privacy policy is available on our web app at any time."
+      }
+    ],
+    "subsections": [
+      {
+        "title": "a) When Visiting Our Web App",
+        "content": "When you access our web app, certain data is automatically collected by our server, such as: IP address, Date and time of access, Browser and operating system used, Pages visited and actions within the web app. This data is used exclusively to ensure smooth operation and improve our web app, and is automatically deleted afterward."
+      },
+      {
+        "title": "b) Registration and Login for Using the Web App",
+        "content": "To use the web app, an account with an email address, a password and a display name is required. During registration and login, we store: account data (email address, password and display name), your own wishlists with their gift ideas and links to products, and on shared lists the email address and display name of the people it is shared with. The password is hashed before it is stored and cannot be recovered in plain text. For every idea marked as bought we also store the account that marked it. The mark belongs to everyone the list is shared with: they can correct each other's marks. Only the person who owns the list is unable to remove a mark somebody else set; the name is never shown in the web app."
+      }
+    ]
   },
+
   "terms": {
     "title": "Terms and Conditions",
-    "section1": {
-      "title": "1. Scope",
-      "content": "These Terms and Conditions apply to the use of the wishy web app, a platform for organizing gifts within groups and families."
-    },
-    "section2": {
-      "title": "2. Service Description",
-      "content": "wishy enables users to organize gift wishes, create wishlists, and keep track of planned gifts. The app serves to coordinate gifts within groups while maintaining the element of surprise."
-    },
-    "section3": {
-      "title": "3. Registration and User Account",
-      "content": "Using wishy requires creating a group account. Users are obligated to keep their access credentials confidential and protect them from third-party access."
-    },
-    "section4": {
-      "title": "4. Usage Rules",
-      "content": "Users agree to use the app only for its intended purpose and not to share any illegal or offensive content."
-    },
-    "section5": {
-      "title": "5. Privacy",
-      "content": "The protection of personal data is our highest priority. Details can be found in our Privacy Policy."
-    },
-    "section6": {
-      "title": "6. Disclaimer",
-      "content": "wishy does not guarantee constant availability of the app and is not liable for damages caused by slight negligence."
-    }
+    "sections": [
+      {
+        "title": "1. Scope",
+        "content": "These Terms and Conditions apply to the use of the wishy web app, a platform for organizing gifts between individual people."
+      },
+      {
+        "title": "2. Service Description",
+        "content": "wishy enables users to organize gift wishes, create wishlists, and keep track of planned gifts. The app serves to coordinate gifts between the people who share a list, while maintaining the element of surprise."
+      },
+      {
+        "title": "3. Registration and User Account",
+        "content": "Using wishy requires creating an account of your own with an email address and a password. Users are obligated to keep their access credentials confidential and protect them from third-party access."
+      },
+      {
+        "title": "4. Usage Rules",
+        "content": "Users agree to use the app only for its intended purpose and not to share any illegal or offensive content."
+      },
+      {
+        "title": "5. Privacy",
+        "content": "The protection of personal data is our highest priority. Details can be found in our Privacy Policy."
+      },
+      {
+        "title": "6. Disclaimer",
+        "content": "wishy does not guarantee constant availability of the app and is not liable for damages caused by slight negligence."
+      }
+    ]
+  },
+
+  "giftCount": {
+    "none": "no gift ideas yet",
+    "zero": "nothing left to buy",
+    "one": "1 gift idea left to buy",
+    "many": "{{count}} gift ideas left to buy"
   }
 }

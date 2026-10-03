@@ -10,45 +10,163 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
-model User {
-  id         String      @id @default(cuid())
+/**
+ * How far a list reaches.
+ *
+ * A single field rather than the absence of one. Two lists both with no access rows
+ * look identical from outside, but they are not the same thing: a list the owner
+ * has not decided about is private by default, and a list the owner has decided
+ * to share and has not yet added anybody to is shared with nobody - a state the
+ * owner can see the difference between and an outsider cannot. Deriving visibility
+ * from an access-row count would make the second state indistinguishable from the
+ * first, which is exactly the distinction the share dialog is built to express.
+ */
+enum ListVisibility {
+  PRIVATE
+  SHARED
+}
+
+/**
+ * A person, rather than a name recorded inside a group.
+ *
+ * The product used to have no identity: a `Group` was a name plus one password
+ * everyone in it shared, and a `User` row was a member name that could not sign in.
+ * Both models are gone. An account is the thing the session JWT names and the thing
+ * every list belongs to.
+ */
+model Account {
+  id          String @id @default(cuid())
+
+  /**
+   * Stored trimmed and lowercased, never as typed.
+   *
+   * A bare `@unique` is case-sensitive in Postgres, so without this `Anna@x.de` and
+   * `anna@x.de` become two accounts that each believe they are the only one, and
+   * the person typing the second address sees "taken" for an address they do not
+   * own. Normalisation happens on the way in and on the way to the comparison, not
+   * only in the form, because a form can be bypassed.
+   */
+  email       String @unique
+  password    String
+
+  /**
+   * The unique handle this person signs in with. Lowercased on the way in, and
+   * unique in the database rather than in application code - a validator that
+   * checks "is this taken" and a unique index that enforces it will disagree under
+   * concurrency, and the constraint is the one that cannot be raced.
+   *
+   * Separate from `displayName` because the two answer different questions. This
+   * one answers "who is signing in", which needs uniqueness, and display names
+   * cannot provide it - two accounts are both called Anna. The display name answers
+   * "what do I call this person in the header", which does not, and is theirs to
+   * change without touching the handle they sign in with.
+   */
+  nickname    String @unique
+
+  /**
+   * Shown in the header in place of the wordmark, which `PRODUCT.md:72` makes a
+   * brand commitment. Not unique, and not the login handle - see `nickname`.
+   *
+   * Defaults to the nickname on registration so that signing up asks for three
+   * fields rather than four; this one can be set afterwards without touching the
+   * handle. The registration route capitalises it on the way through, so a person
+   * who typed `anna` is greeted as "Anna" without having been asked to type it
+   * twice.
+   */
+  displayName String
+
+  createdAt   DateTime     @default(now())
+  lists       List[]
+  access      ListAccess[]
+
+  /**
+   * The marks this account set. Never read by any read path - see `Gift.purchasedById`,
+   * which is the other half of that contract. It exists only so that an owner can
+   * tell their own mark from somebody else's.
+   */
+  purchases   Gift[]       @relation("GiftPurchase")
+}
+
+/**
+ * One person's list, and the only thing in this product that is shared.
+ */
+model List {
+  id         String         @id @default(cuid())
   name       String
-  password   String
-  createdAt  DateTime    @default(now())
-  userGroups UserGroup[] @relation("UserGroups")
-}
-
-model Group {
-  id         String      @id @default(cuid())
-  name       String      @unique
-  password   String
-  createdAt  DateTime    @default(now())
-  userGroups UserGroup[]
+  visibility ListVisibility @default(PRIVATE)
+  ownerId    String
+  owner      Account        @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
   gifts      Gift[]
+  access     ListAccess[]
+
+  @@index([ownerId])
 }
 
-model UserGroup {
-  id       String   @id @default(cuid())
-  user     User     @relation("UserGroups", fields: [userId], references: [id], onDelete: Cascade)
-  userId   String
-  group    Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  groupId  String
-  joinedAt DateTime @default(now())
-  gifts    Gift[]   @relation("UserGroupToGift")
+/**
+ * One person who may read one list, and mark its ideas bought.
+ *
+ * An owner has no row here: ownership is `List.ownerId`, not a grant, so there is
+ * no second way to be in the set and no way for a revoked row to disagree with the
+ * owner. `SHARED` without a row means "shared with nobody yet"; see `ListVisibility`
+ * for why that is a state worth having.
+ */
+model ListAccess {
+  id        String   @id @default(cuid())
+  listId    String
+  list      List     @relation(fields: [listId], references: [id], onDelete: Cascade)
+  accountId String
+  account   Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  grantedAt DateTime @default(now())
 
-  @@unique([userId, groupId])
+  @@unique([listId, accountId])
+  @@index([accountId])
 }
 
+/**
+ * One idea, on one list.
+ *
+ * The bought mark is shared: it belongs to everyone the list is shared with at the
+ * moment it is set, and it is what makes double-buying structurally impossible
+ * rather than a matter of good manners.
+ */
 model Gift {
-  id          String    @id @default(cuid())
+  id          String   @id @default(cuid())
   title       String
   description String?
   url         String?
-  isPurchased Boolean   @default(false)
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  group       Group     @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  groupId     String
-  forMember   UserGroup @relation("UserGroupToGift", fields: [forMemberId], references: [id], onDelete: Cascade)
-  forMemberId String
+
+  isPurchased Boolean  @default(false)
+
+  /**
+   * Who set the mark, and never who it is for.
+   *
+   * Two contracts, both load-bearing and both tested:
+   *
+   *  1. Set when the mark is set, nulled when the mark is cleared. It is what lets
+   *     an owner clear a mark they set while being refused one somebody else set -
+   *     without it, either the owner can clear anyone's mark and double-buying
+   *     becomes possible again, or the owner can never clear their own and "I got
+   *     this myself" becomes permanent.
+   *  2. Never selected into a response. No endpoint, no list shape and no
+   *     serialization path includes it, so the buyer's identity is not a product
+   *     output. The Prisma payload and the client's `Gift` are different types and
+   *     the client's is a strict subset.
+   *
+   * `SetNull` on delete is deliberate and is the safe failure direction: a mark
+   * that vanishes because the buyer deleted their account would leave an idea
+   * looking unclaimed, which is a double-buy. A mark that survives with nobody
+   * able to clear it is merely stuck.
+   */
+  purchasedById String?
+  purchasedBy   Account? @relation("GiftPurchase", fields: [purchasedById], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  listId String
+  list   List   @relation(fields: [listId], references: [id], onDelete: Cascade)
+
+  @@index([listId])
 }

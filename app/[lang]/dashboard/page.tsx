@@ -1,93 +1,110 @@
 'use client';
 
-import { useEffect, useState, use, useCallback, lazy, Suspense } from 'react';
+import { useEffect, useState, use, useCallback } from 'react';
 import { NextPage } from 'next';
 import { useRouter, usePathname } from 'next/navigation';
 import getDictionary from '@/app/[lang]/dictionaries';
 import { toast } from 'sonner';
-import Header from '@/components/header';
 import LoadingSpinner from '@/components/loading-spinner';
-import MemberList from '@/components/member-list';
-import Footer from '@/components/footer';
-import { CropMarks } from '@/components/ui/dialog';
+import { SheetFrame } from '@/components/list-sheet';
+import ListBoard from '@/components/list-board';
+import CreateListDialog from '@/components/create-list-dialog';
+import ShareListDialog from '@/components/share-list-dialog';
+import ConfirmDialog from '@/components/confirm-dialog';
 import { verifyAuth, logout } from '@/lib/auth';
-import { cn } from '@/lib/utils';
-import { countsByMember, sheetCounts } from '@/lib/gift-count';
-import type { Member, MemberGiftCounts, Gift, Translations, PageProps } from '@/types';
+import type {
+  ListAccess,
+  ListSummary,
+  PageProps,
+  Translations,
+} from '@/types';
 
-const MemberGiftsDialog = lazy(
-  () => import('@/components/member-gifts-dialog')
-);
-
+/**
+ * The contents page: the lists this account owns, and the lists other people have
+ * shared with it.
+ *
+ * **One request, where the old page made two.** It fetched `/api/members` and
+ * then `/api/gifts` and counted the gifts per member in the browser, which put a
+ * second hand-rolled copy of the counting rule on the client next to the one in
+ * `lib/gift-count.ts` - the class of thing that module's own header comment was
+ * rewritten to prevent. `GET /api/lists` returns both halves with their counts
+ * already on each row, counted once on the server by `toSummary`, so a row reads
+ * `giftCounts` and nothing counts anything here.
+ *
+ * The page owns the three overlays - create, share, delete - and the refetch after
+ * each of them, because `ListBoardProps` reports the intent of every action rather
+ * than performing it: a list deletion cascades to every idea on the sheet it
+ * destroys, and that request belongs next to whatever is said afterwards.
+ */
 const DashboardPage: NextPage<PageProps> = ({ params }) => {
   const { lang } = use(params);
-  const [mounted, setMounted] = useState(false);
   const router = useRouter();
+  const path = usePathname();
+
   const [dict, setDict] = useState<Translations | null>(null);
-  const [groupName, setGroupName] = useState('');
-  const [members, setMembers] = useState<Member[]>([]);
-  const [memberGiftCounts, setMemberGiftCounts] = useState<
-    Record<string, MemberGiftCounts>
-  >({});
+  const [displayName, setDisplayName] = useState('');
+  const [lists, setLists] = useState<ListSummary[]>([]);
+  const [shared, setShared] = useState<ListSummary[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
-  const [memberGifts, setMemberGifts] = useState<Gift[]>([]);
-  const [isRouteChanging, setIsRouteChanging] = useState(false);
+  /*
+    Where this page is navigating to, if anywhere, rather than a boolean that an
+    effect has to clear afterwards. The sheet of a list is a full page with its own
+    frame, so the contents page must hand over immediately rather than stay on
+    screen underneath it - and a boolean could only be reset by watching the path
+    and setting state when it changed, which is a second source of truth about
+    something `usePathname` already knows. Comparing the two is the whole gate,
+    and it needs no effect at all.
+  */
+  const [pendingPath, setPendingPath] = useState<string | null>(null);
+  const isRouteChanging = pendingPath !== null && pendingPath !== path;
+
+  /* The three overlays, each one a list the page is acting on - or, for the create
+     sheet, the absence of one. */
+  const [isCreating, setIsCreating] = useState(false);
+  const [shareTarget, setShareTarget] = useState<ListSummary | null>(null);
+  const [shareAccess, setShareAccess] = useState<ListAccess[]>([]);
+  const [pendingDeletion, setPendingDeletion] = useState<ListSummary | null>(null);
 
   const fetchData = useCallback(async () => {
     try {
-      // Get all members
-      const membersRes = await fetch('/api/members');
-      if (!membersRes.ok) throw new Error('Failed to fetch members');
-      const membersData = await membersRes.json();
-      setMembers(membersData.members);
+      const response = await fetch('/api/lists');
+      if (!response.ok) throw new Error('Failed to fetch lists');
 
-      // Get all gifts
-      const giftsRes = await fetch('/api/gifts');
-      if (!giftsRes.ok) throw new Error('Failed to fetch gifts');
-      const { gifts } = await giftsRes.json();
-      const allGifts: Gift[] = gifts;
-
-      /*
-        Both numbers, not one. "Nothing left to buy" and "no gift ideas yet" are
-        different situations and the row has to be able to say which: a member
-        with an empty list is the one who most needs a present. `countsByMember`
-        is the same module that words those counts on the row and in the sheet,
-        so the figure and the sentence under it cannot come from two ideas about
-        what a count is.
-      */
-      const giftCountsByMember = countsByMember(
-        membersData.members.map((member: Member) => member.id),
-        allGifts
-      );
-
-      setMemberGiftCounts(giftCountsByMember);
+      const data = (await response.json()) as {
+        owned: ListSummary[];
+        shared: ListSummary[];
+      };
+      setLists(data.owned);
+      setShared(data.shared);
     } catch (error) {
       console.error('Error fetching data:', error);
-      toast.error(dict?.errors.failedToLoad);
+      /*
+        `getDictionary` for the failure sentence rather than closing over `dict`,
+        and the reason is the identity of this callback: the sheet and the board
+        both hand it on as "something changed", so it must not move when the
+        dictionary lands or the boot below would fetch everything twice. The module
+        caches its per-locale promise, so this is a cache hit and not a load.
+      */
+      const { errors } = await getDictionary(lang);
+      toast.error(errors.failedToLoad);
     } finally {
       setLoading(false);
     }
-  }, [dict]);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  }, [lang]);
 
   useEffect(() => {
     const init = async () => {
-      const translations = (await getDictionary(lang)) as Translations;
+      const translations = await getDictionary(lang);
       setDict(translations);
 
       const auth = await verifyAuth();
       /*
-        `!auth.success`, not `!auth`: `verifyAuth` resolves to an object on
-        every path, including `{ success: false }` when the request fails or
-        the cookie is gone. Testing the object itself was therefore never
-        true, the redirect never ran, and an unauthenticated visitor sat on
-        `loading` with an empty `groupName` - a spinner that never resolves
-        into anything, because the `fetchData` effect is gated on `groupName`
-        and nothing ever sets it.
+        `!auth.success`, not `!auth`: `verifyAuth` resolves to an object on every
+        path, including `{ success: false }` when the request fails or the cookie
+        is gone. Testing the object itself was therefore never true, the redirect
+        never ran, and an unauthenticated visitor sat on `loading` forever behind a
+        spinner that could not resolve into anything, because the only thing that
+        set the display name was the code that never ran.
       */
       if (!auth.success) {
         router.replace(`/${lang}`);
@@ -95,233 +112,195 @@ const DashboardPage: NextPage<PageProps> = ({ params }) => {
         return;
       }
 
-      setGroupName(auth.groupName ?? '');
+      setDisplayName(auth.displayName ?? '');
+
+      /*
+        The contents are fetched here rather than from a second effect waiting for
+        the name to arrive. It is one boot with one failure path - dictionary, then
+        session, then both halves of the contents page - and two effects keyed on
+        state that arrives independently are two places for the boot to get stuck.
+      */
+      await fetchData();
     };
 
     init();
-  }, [lang, router]);
+  }, [lang, router, fetchData]);
 
-  useEffect(() => {
-    if (dict && groupName) {
-      fetchData();
-    }
-  }, [dict, groupName, fetchData]);
+  /*
+    Opening the audience of one list is a second request, and the contents page
+    could not avoid it: `GET /api/lists` returns two arrays of summaries and no
+    access rows, and the rows are owner-only in the API as well as in the
+    interface. So asking for one list's audience is a fetch - done here rather
+    than inside the dialog, because the dialog is handed its `access` as a prop
+    and should not also be the thing that goes looking for it.
+  */
+  const openShareSheet = useCallback(
+    async (listId: string) => {
+      try {
+        const response = await fetch(`/api/lists/${listId}`);
+        if (!response.ok) throw new Error('Failed to fetch list');
 
-  const path = usePathname();
+        const data = (await response.json()) as {
+          list: ListSummary;
+          access?: ListAccess[];
+        };
+        setShareTarget(data.list);
+        setShareAccess(data.access ?? []);
+      } catch (error) {
+        console.error('Error opening the share sheet:', error);
+        toast.error(dict?.errors.failedToLoad);
+      }
+    },
+    [dict]
+  );
 
-  useEffect(() => {
-    setIsRouteChanging(false);
-  }, [path]);
-
-  const handleMemberClick = async (memberId: string) => {
-    try {
-      const response = await fetch(`/api/gifts?memberId=${memberId}`);
-      if (!response.ok) throw new Error('Failed to fetch member gifts');
-
-      const data = await response.json();
-      setSelectedMemberId(memberId);
-      setMemberGifts(data.gifts);
-    } catch (error) {
-      toast.error(dict?.errors.failedToLoadGifts);
-    }
-  };
-
-  const handleLogout = async () => {
+  const handleLogout = useCallback(async () => {
     await logout();
     router.replace(`/${lang}`);
     toast.success(dict?.success.loggedOut);
-  };
+  }, [dict, lang, router]);
 
-  const getSelectedMember = () =>
-    members.find((m) => m.id === selectedMemberId);
+  /*
+    The route change is announced by naming the destination, not by flipping a
+    flag: see `pendingPath` above for why that is the same amount of state and
+    one fewer effect.
+  */
+  const handleOpenList = useCallback(
+    (listId: string) => {
+      const destination = `/${lang}/list/${listId}`;
+      setPendingPath(destination);
+      router.push(destination);
+    },
+    [lang, router]
+  );
 
-  const updateMemberGiftCount = useCallback(async (memberId: string) => {
-    const response = await fetch(`/api/gifts?memberId=${memberId}`);
-    if (response.ok) {
-      const data = await response.json();
-      setMemberGiftCounts((prev) => ({
-        ...prev,
-        [memberId]: sheetCounts(data.gifts),
-      }));
+  const handleDeleteList = useCallback(async () => {
+    if (!pendingDeletion) return;
+
+    try {
+      const response = await fetch(`/api/lists/${pendingDeletion.id}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) throw new Error('Failed to delete list');
+
+      toast.success(dict?.toasts.listDeleted);
+      setPendingDeletion(null);
+      fetchData();
+    } catch (error) {
+      console.error('Error deleting list:', error);
+      toast.error(dict?.toasts.listDeleteFailed);
     }
-  }, []);
+  }, [dict, fetchData, pendingDeletion]);
 
-  if (loading || !groupName || !dict || isRouteChanging) {
+  if (loading || !displayName || !dict || isRouteChanging) {
     return <LoadingSpinner />;
   }
 
-  if (!mounted) return null;
-
   return (
-    <div className={cn('min-h-screen', 'bg-board', 'flex flex-col')}>
-      <Header
-        groupName={groupName}
+    <SheetFrame
+      header={{
+        displayName,
+        dict,
+        onLogout: handleLogout,
+        showAuth: true,
+      }}
+      dict={dict}
+    >
+      <ListBoard
+        lists={lists}
+        shared={shared}
         dict={dict}
-        onLogout={handleLogout}
-        showAuth={true}
+        onOpenList={handleOpenList}
+        onCreateList={() => setIsCreating(true)}
+        onShareList={openShareSheet}
+        onDeleteList={(listId) =>
+          setPendingDeletion(
+            lists.find((list) => list.id === listId) ??
+              shared.find((list) => list.id === listId) ??
+              null
+          )
+        }
+        onListChanged={fetchData}
       />
 
-      <main className={cn('flex', 'flex-1', 'flex-col')}>
-        {/*
-          THE DESK AND THE SHEET. The board is the album lying open, and the
-          contents are a sheet of label stock mounted on it: the sheet is bounded
-          by a printed rule and sits inset from every edge, so the board shows
-          around it on all four sides. That figure/ground pair is what this route
-          was missing. Bare rows printed straight onto the board left the empty
-          board below them reading as a page whose contents had run out; the same
-          rows on a sheet read as what they are - a short contents list on a piece
-          of paper lying on a desk, with the desk visible around the paper.
+      <CreateListDialog
+        isOpen={isCreating}
+        onClose={() => setIsCreating(false)}
+        dict={dict}
+        onCreated={(listId) => {
+          setIsCreating(false);
+          /*
+            Straight to the sheet the new list is on: it is the thing the owner
+            has just written down, and the empty sheet behind it says what to do
+            with it. The id is used only if the create response carried one - a
+            list that exists without an id we can read is still a list, so the
+            board is re-read and the reader picks it up from there.
+          */
+          if (listId) {
+            handleOpenList(listId);
+            return;
+          }
+          fetchData();
+        }}
+      />
 
-          The sheet is not stretched. It hugs its contents, because a sheet sized
-          to the window would be a panel, and a panel with three rows in it is the
-          same unfinished screen with a border drawn round it. The board between
-          the sheet and the footer is the rest of the desk, and the footer sits at
-          the foot of it.
+      {shareTarget && (
+        <ShareListDialog
+          isOpen
+          onClose={() => setShareTarget(null)}
+          listId={shareTarget.id}
+          listName={shareTarget.name}
+          visibility={shareTarget.visibility}
+          access={shareAccess}
+          dict={dict}
+          onChanged={async () => {
+            /*
+              Both halves, in that order, and the second one is the reason this is
+              not just `fetchData`.
 
-          On a phone this figure/ground inverts, and it inverts because the
-          dialog already said it would: below `sm` a sheet "becomes the whole page
-          below the header, squared at the top: a sheet pulled out of an album, not
-          a card floating on one" (`ui/dialog.tsx:106`). The gift sheet that opens
-          on top of this one is edge to edge; this sheet was inset 32px, so the two
-          surfaces the user sees at the same moment were 32px apart. Below `sm`
-          there is no desk around the paper - the paper is the page. The rule
-          disappears on that edge for the same reason its corners do: a border
-          marks a cut edge, and this edge is not cut, it runs off the screen.
-        */}
-        <section className={cn('flex-1', 'bg-board')}>
-          <div className={cn('container', 'mx-auto')}>
-            <div
-              className={cn(
-                'mx-auto',
-                'max-w-5xl',
-                // No `px-4` here. It sat on top of the `container`'s own 1rem,
-                // so the sheet's left edge landed 32px from the screen while the
-                // header wordmark sat at 16px - the same "padding the padding"
-                // the landing page had already removed. From `sm` up the inset
-                // returns: a mounted sheet belongs on the desk, not under the
-                // phone's bezel. Below `sm` there is no board above the sheet
-                // either: `py-0` puts its top edge on the header's bottom rule
-                // and `pb-0` puts the desk back immediately under its foot. A
-                // 32px margin on a 375px screen is 8% of the width, and on a
-                // sheet that is now the page, it is a margin to nowhere.
-                'py-0',
-                'sm:px-6',
-                'sm:py-12'
-              )}
-            >
-              <div
-                className={cn(
-                  'relative',
-                  'border',
-                  'border-rule',
-                  'bg-sheet',
-                  // Below `sm` this sheet is the whole page, exactly like the
-                  // gift sheet that opens on top of it. The dialog primitive
-                  // already says so - "a sheet pulled out of an album, not a
-                  // card floating on one" - and it means it below `sm` only
-                  // (`ui/dialog.tsx:106-127`). This sheet was the one surface
-                  // not obeying that: inset 32px on a phone while the sheet
-                  // the user is actually inside was edge to edge, 32px apart,
-                  // both on screen at once.
-                  //
-                  // `-mx-4` pulls it back over the container's 1rem, so the
-                  // border lands on the viewport edge and the crop marks come
-                  // to rest 12px from it - registration marks near the paper
-                  // edge, which is what they are for. `px-4` matches the
-                  // dialog's `xs:p-4`, so both sheets indent their content by
-                  // the same 16px.
-                  '-mx-4',
-// No rule at all below `sm`, on any of the four edges. With
-                  // no gap above, the top border would land on the header's
-                  // `border-b` and two 1px rules would read as one thick one;
-                  // the foot is the same collision, because on a 375x667 screen
-                  // a three-member sheet ends exactly on the footer's
-                  // `border-t`. Left and right are simply at the viewport edge,
-                  // where a rule has nothing to enclose. A border marks a cut
-                  // edge of the paper, and on a phone none of these four is
-                  // cut - they all run off the screen or into the furniture
-                  // around it. `bg-sheet` against `bg-board` carries the extent
-                  // instead, in both themes.
-                  'rounded-none',
-                  'border-0',
-                  'px-4',
-                  'py-6',
-                  'sm:mx-0',
-                  'sm:rounded-lg',
-                  'sm:border',
-                  // `rounded-lg`, not `rounded-sheet`. globals.css:146 exposes
-                  // `--radius-lg: var(--radius-sheet)`, and Tailwind only emits a
-                  // utility for a token declared in `@theme`. `--radius-sheet`
-                  // lives in `:root` (:320), so `rounded-sheet` is not a class
-                  // that exists - `sm:rounded-sheet` compiles to nothing and the
-                  // sheet stayed square at every width, while the dialog beside
-                  // it (ui/dialog.tsx:146) got its documented 6px. One sheet,
-                  // one radius.
-                  'sm:rounded-lg',
-                  // The same floor the dialog primitive gives every sheet on a
-                  // phone, for the same reason. The gift sheet that opens on top
-                  // of this one is the whole page below the header, so this
-                  // sheet - which is a page, not a card, below `sm` - ends at
-                  // the foot of the screen rather than wherever its last member
-                  // happens to stop. It used to hug its contents, and at 375x667
-                  // with three members that put the third row's rule under the
-                  // fold: the sheet looked truncated rather than scrollable,
-                  // and there was no way to tell those two apart except by
-                  // scrolling and finding out.
-                  //
-                  // `100dvh`, not `100vh`: on a phone the two differ by the
-                  // browser's own chrome, and `100vh` is the taller of them, so
-                  // a sheet measured in `vh` is taller than the page it is the
-                  // page of - which reintroduces the same clipped foot, one
-                  // browser bar lower.
-                  'min-h-[calc(100dvh-var(--header-height)-1px)]',
-                  'sm:min-h-0',
-                  'sm:px-8',
-                  'sm:py-7'
-                )}
-              >
-                {/* The same corner furniture the floating sheets carry: four
-                    printers' crop marks, and the only thing on this page that
-                    says "printed" rather than "styled". */}
-                <CropMarks />
-                <MemberList
-                  members={members}
-                  giftCounts={memberGiftCounts}
-                  dict={dict}
-                  onMemberClick={handleMemberClick}
-                  onMemberDeleted={fetchData}
-                />
-              </div>
-            </div>
-          </div>
-        </section>
-      </main>
-
-      <Suspense fallback={<LoadingSpinner />}>
-        <MemberGiftsDialog
-          isOpen={!!selectedMemberId}
-          onClose={() => setSelectedMemberId(null)}
-          memberName={getSelectedMember()?.name ?? ''}
-          memberId={selectedMemberId ?? ''}
-          gifts={memberGifts}
-          onGiftAdded={() => {
-            if (selectedMemberId) {
-              handleMemberClick(selectedMemberId);
-              updateMemberGiftCount(selectedMemberId);
-            }
+              A grant or a revoke changes two things: the board's copy of the list,
+              and the audience this dialog is showing. Re-reading only the board left
+              the dialog holding the audience it was opened with, so adding a person
+              appeared to do nothing until the dialog was closed and reopened - on
+              the one screen whose entire purpose is showing you who can see the
+              list. `openShareSheet` after the re-read is the same two lines the
+              visibility handler below runs, and for the same reason.
+            */
+            await fetchData();
+            if (shareTarget) openShareSheet(shareTarget.id);
           }}
-          dict={{
-            ...dict.memberGifts,
-            toasts: dict.toasts,
-            confirmations: dict.confirmations,
-            close: dict.close,
-            giftCount: dict.giftCount,
+          onVisibilityChanged={async () => {
+            /*
+              Re-read rather than patch the dialog's copy. The share sheet asked
+              for the visibility change on the owner's behalf and closed; the
+              audience that came with it is now different, and a list whose
+              visibility is stale in one place is a list whose dialog offers to
+              share a list the API considers private.
+            */
+            await fetchData();
+            openShareSheet(shareTarget.id);
           }}
         />
-      </Suspense>
+      )}
 
-      <Footer dict={dict} />
-    </div>
+      {/*
+        The one irreversible action in the product, and the only one that
+        confirms. It cascades: every idea on the sheet goes with the sheet, there
+        is no second copy and no undo, and the confirmation says both - it is not
+        asking whether the reader is sure, it is stating what will be destroyed
+        and that it cannot be brought back.
+      */}
+      <ConfirmDialog
+        isOpen={pendingDeletion !== null}
+        onClose={() => setPendingDeletion(null)}
+        onConfirm={handleDeleteList}
+        title={dict.removeListConfirm}
+        description={dict.confirmations.deleteList}
+        confirmLabel={dict.deleteList}
+        cancelLabel={dict.cancel}
+      />
+    </SheetFrame>
   );
 };
 
