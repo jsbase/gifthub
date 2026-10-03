@@ -568,39 +568,51 @@ test.describe('Login and Registration', () => {
     }
   );
 
-  test(
-    'A sign-in that never reached the server is answered as a lost connection',
-    async ({ page }) => {
-      /*
+  /*
+    The next two tests are the only ones here that touch the network, and they
+    need the service worker out of the way. `public/sw.js` declines `/api/`, so
+    Chromium and Firefox let `page.route` reach the request anyway - but WebKit
+    hands the fetch to the registered worker first, the request never reaches the
+    network stack Playwright is intercepting, and both tests fail on a page that
+    is behaving correctly. Blocking the worker for these two tests costs nothing:
+    neither of them is about the worker.
+   */
+  test.describe('the two branches that need the network', () => {
+    test.use({ serviceWorkers: 'block' });
+
+    test(
+      'A sign-in that never reached the server is answered as a lost connection',
+      async ({ page }) => {
+        /*
         The network is the only way into this branch, and it is a deliberate one:
         nothing in the app fails on demand, and the two branches above are about
         what the server *said*, which is the one thing a dead connection cannot
         say. Aborted rather than answered with a status, because a status would
         make this test about the sentence for a status - which the next test owns.
       */
-      await page.route('**/api/auth/login', (route) => route.abort());
+        await page.route('**/api/auth/login', (route) => route.abort());
 
-      await page.getByTestId('OpenLogin').click();
-      await page.fill('#identifier', ANNA);
-      await page.fill('#password', PASSWORD);
-      await page.getByTestId('SubmitLogin').click();
+        await page.getByTestId('OpenLogin').click();
+        await page.fill('#identifier', ANNA);
+        await page.fill('#password', PASSWORD);
+        await page.getByTestId('SubmitLogin').click();
 
-      const passwordError = page.getByTestId('loginPasswordError');
-      await expect(passwordError).toBeVisible({ timeout: 10000 });
-      expect(await passwordError.textContent()).toContain(
-        dict.errors.loginOffline
-      );
+        const passwordError = page.getByTestId('loginPasswordError');
+        await expect(passwordError).toBeVisible({ timeout: 10000 });
+        expect(await passwordError.textContent()).toContain(
+          dict.errors.loginOffline
+        );
 
-      // And no way out of it: this failure is on this side of the wire, and an
-      // offer to register does not answer "try again".
-      await expect(page.getByTestId('loginCreateAccount')).toHaveCount(0);
-    }
-  );
+        // And no way out of it: this failure is on this side of the wire, and an
+        // offer to register does not answer "try again".
+        await expect(page.getByTestId('loginCreateAccount')).toHaveCount(0);
+      }
+    );
 
-  test(
-    'A sign-in the server failed is answered differently from a refusal',
-    async ({ page }) => {
-      /*
+    test(
+      'A sign-in the server failed is answered differently from a refusal',
+      async ({ page }) => {
+        /*
         Fulfilled with a JSON body, and that is load-bearing: `login()` throws on a
         body it cannot parse, and the `catch` answers `loginOffline`. A bare
         `status: 500` would therefore land in the sentence the previous test owns -
@@ -635,4 +647,5 @@ test.describe('Login and Registration', () => {
       await expect(page.getByTestId('loginCreateAccount')).toHaveCount(0);
     }
   );
+  });
 });
