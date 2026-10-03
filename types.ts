@@ -319,27 +319,27 @@ export interface SuccessTranslations {
 }
 
 /**
- * The one plate the landing page draws: one real list, in one state.
+ * The one plate the landing page draws: three of the reader's own lists, at three
+ * states.
  *
- * It is a flat object again, and that is a decision rather than a leftover. It has
- * been a list twice. First three sample lists under one plate title, which made
- * the plate a specimen of the software rather than a page of somebody's. Then one
- * list drawn three times, its open count falling 3 -> 1 -> 0 and its figure
- * becoming a check in the last one. That version was built, rendered, looked at
- * and rejected: three plates carrying the same head, the same list name and the
- * same single row read as repetition rather than as a story, the plate in the
- * hero's right column and the pair below broke one asymmetric spread into three
- * scattered rectangles, and the plate with the check read as a *different* list
- * rather than as a later state of this one. Nothing about the plate was wrong.
- * Three of them were.
+ * It is a flat object, and that is a decision rather than a leftover. It has been a
+ * list twice. First three sample lists under one plate title, which made the plate a
+ * specimen of the software rather than a page of somebody's. Then one list drawn
+ * three times, its open count falling 3 -> 1 -> 0 and its figure becoming a check
+ * in the last one. That version was built, rendered, looked at and rejected: three
+ * plates carrying the same head, the same list name and the same single row read as
+ * repetition rather than as a story, the plate in the hero's right column and the
+ * pair below broke one asymmetric spread into three scattered rectangles, and the
+ * plate with the check read as a *different* list rather than as a later state of
+ * this one. Nothing about the plate was wrong. Three of them were.
  *
- * So `items` is a list of rows rather than one row, and that is not a relapse: the
- * plate went back to being too thin, which is the other half of the same rejection.
- * One row is a fragment - a name, a rule and a numeral - and it said nothing about
- * a product whose whole argument is what happens to a list over time. Three rows
- * say it at a glance, and they say it in the app's own vocabulary rather than in a
- * caption: one list nobody has bought from yet, one nearly done, one finished, the
- * count words behind every figure.
+ * So the plate went back to a single list — and then to a single row, which was
+ * rejected too, and that is why there are three again. One row is a fragment: a
+ * name, a rule and a numeral, saying nothing about a product whose whole argument
+ * is what happens to a list over time. Three rows say it at a glance, in the app's
+ * own vocabulary rather than in a caption, and the arc arrives as three *rows in one
+ * plate* instead of as three plates: nobody has bought from the first yet, one is
+ * nearly done, and one is finished.
  *
  * What is flat, and must stay flat, is the plate: one of them. The array below is
  * rows *inside* the one plate, not plates beside it. `tests/landing.spec.ts` counts
@@ -354,11 +354,13 @@ export interface LandingPreviewTranslations {
    * rather than as progress.
    *
    * An array because the plate is a specimen of a contents page, and a contents
-   * page is a list of things. It holds one row today, at 3 open and 2 bought,
-   * because a list somebody can still be surprised by is the honest opening and a
-   * list with nothing left to buy is not. `SheetProgress` replaces the figure with
-   * a check at `count: 0`; the page does not stand there, which is the choice and
-   * not an oversight.
+   * page is a list of things. It holds three rows today, at 3 open, 1 open and none,
+   * because that sequence is the plate's whole argument: it shows a list somebody
+   * can still be surprised by, one that is nearly done, and one that is finished,
+   * where `SheetProgress` replaces the figure with a check. A plate showing only an
+   * untouched list, or only a finished one, would be a third rejected shape - the
+   * first argued that nobody can be surprised any more, which is not what a
+   * wishlist is for.
    *
    * Numbers, not strings, so this costs no copy in any locale.
    */

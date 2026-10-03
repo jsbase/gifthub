@@ -333,16 +333,19 @@ point the argument has to be the measurement below rather than a count of charac
 
 > **Measured in Chromium, not estimated.** The second button's bottom edge clears a
 > realistic 85% fold (the viewport minus a phone's browser chrome and safe area) by
-> **205px** at 320×568, **266px** at 360×640, **289px** at 375×667 and **439px** at
-> 390×844, in de, ru and en alike. At rest the buttons end at 278px in de and ru, and
-> at 248px in en from 360px up, where the claim fits on one line rather than two.
+> **205px** at 320×568, and then by **266px** at 360×640, **289px** at 375×667 and
+> **439px** at 390×844 in de and ru. Those two locales share a claim height and the
+> buttons end at 278px at every width. English fits the claim on one line from 360px
+> up, its buttons end at 248px instead, and its clearances are correspondingly 20px
+> larger at each of those three widths; at 320×568 all three locales wrap the claim
+> and the clearance is the same 205px.
 >
 > The figures this block replaced — 54px, 115px, 168px and 318px — were measured
 > against a 98-character claim and a 129-character standfirst. The claim is now a
-> single question and the standfirst one sentence, and the clearance is four times
-> what it was at the tightest width. That margin is the point of the reorder, not
-> an accident of it: the block that has to clear the fold is the claim's line count
-> and nothing else, and a question is short by construction.
+> single question and the standfirst one sentence, and the clearance is nearly four
+> times what it was at the tightest width. That margin is the point of the reorder,
+> not an accident of it: the block that has to clear the fold is the claim's line
+> count and nothing else, and a question is short by construction.
 
 **The 44px floor is not a preference.** This is used one-handed on a phone by
 someone in a hurry. Both a control's width and its height are floors; the tick and
