@@ -260,10 +260,15 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
       {/* No `aria-label`: the button is named by its own text, which is the
           dictionary's. The English `aria-label="SubmitRegister"` this replaces did
           not contain the words on the button, which is the WCAG 2.5.3 failure the
-          header's own comment describes. `data-testid` is unchanged. */}
+          header's own comment describes. `data-testid` is unchanged.
+
+          `size='cta'` for the 48px phone floor on a sheet's primary action; see
+          `buttonVariants` for why that floor is the variant rather than a class
+          written on each of the eight sheets that has one. */}
       <Button
         type='submit'
-        className={cn('w-full', 'xs:text-base', 'xs:h-12')}
+        size='cta'
+        className='w-full'
         disabled={isLoading}
         data-testid='SubmitRegister'
       >

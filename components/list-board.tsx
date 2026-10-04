@@ -547,6 +547,7 @@ const RenameListDialog: React.FC<{
             <Button
               type='button'
               variant='outline'
+              size='cta'
               onClick={onClose}
               className='w-full sm:w-auto'
             >
@@ -554,8 +555,9 @@ const RenameListDialog: React.FC<{
             </Button>
             <Button
               type='submit'
+              size='cta'
               disabled={busy}
-              className={cn('w-full', 'xs:h-12', 'xs:text-base', 'sm:ml-2')}
+              className='w-full sm:ml-2'
               data-testid='renameListSubmit'
             >
               {busy ? dict.listBoard.saving : dict.listBoard.save}

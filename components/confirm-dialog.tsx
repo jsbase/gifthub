@@ -10,7 +10,6 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
 import type { ConfirmDialogProps } from '@/types';
 
 /**
@@ -80,9 +79,17 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
         <DialogDescription>{description}</DialogDescription>
       </DialogHeader>
       <DialogFooter className='mt-4 xs:mt-auto'>
+        {/*
+          Both carry `cta`, so the two choices are the same height on a phone.
+          The confirm is the 48px action and the cancel is not, and a footer that
+          lets that difference through draws a 48px button against a 44px one -
+          measured at 390px on the groups sheet before this was a variant rather
+          than a restated class.
+        */}
         <Button
           type='button'
           variant='outline'
+          size='cta'
           onClick={onClose}
           data-testid='confirmCancel'
           autoFocus
@@ -92,11 +99,12 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
         <Button
           type='button'
           variant='destructive'
+          size='cta'
           onClick={() => {
             onConfirm();
             onClose();
           }}
-          className={cn('xs:h-12', 'sm:ml-2')}
+          className='sm:ml-2'
           data-testid='confirmAction'
         >
           {confirmLabel}
