@@ -421,6 +421,18 @@ export interface ErrorTranslations {
    * which is the exact failure the closed vocabulary exists to make impossible.
    */
   cannotJoinOwnGroup: string;
+  /**
+   * The lookup is closed to an account with no list of its own.
+   *
+   * Its own sentence rather than a reuse of `not_found`. `not_found` is "there is
+   * nothing here for you" - true of the endpoint, and true of the *list* the caller
+   * was looking for, which is what the string was written for. Reached from the
+   * lookup it would say the same words about something else: an account with no
+   * lists is not being refused a list, it is being told there is nowhere to share
+   * from yet. Those need different advice, because one of them is a dead end and
+   * the other is a first step.
+   */
+  searchNeedsList: string;
   cannotClearPurchase: string;
   forbidden: string;
   notFound: string;
@@ -747,6 +759,13 @@ export interface ListBoardDictionary {
    * mechanism would have to cover to be fixed properly. The abbreviation is correct for
    * every number today and costs no new machinery; the alternative was shipping the
    * wrong word for most groups.
+   *
+   * German and English take the other number-neutral route, a label before the
+   * figure ("Personen: 3", "People: 3"). Both languages inflect too — German
+   * "1 Personen" and English "1 people" are both wrong — and a label reads correctly
+   * at every number without the abbreviation looking like a typo. That is the whole
+   * trade: Russian cannot put the noun *after* the number and stay grammatical
+   * without its cases, so it abbreviates; the two that can, label.
    */
   sharedWithGroupCount: string;
   /**

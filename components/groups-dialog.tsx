@@ -442,7 +442,16 @@ const GroupsDialog: React.FC<GroupsDialogProps> = ({
         )
       );
 
+      /*
+        Both reads, not just this group's members. Removing somebody moves
+        `memberCount` on the row *above* - the group list this dialog opened with -
+        and leaving it stale would mean the dialog says a group holds four people
+        while the row under it enumerates three. The same argument as
+        `onMemberPicked` makes, and it is why the add and the remove are not
+        symmetric-looking in one direction only.
+      */
       await loadMembers(groupId);
+      await loadGroups();
       onChanged();
     } catch (error) {
       console.error('Error removing group member:', error);
@@ -454,6 +463,7 @@ const GroupsDialog: React.FC<GroupsDialogProps> = ({
     claim,
     dict.toasts.groupMemberRemoved,
     dict.toasts.groupMemberRemoveFailed,
+    loadGroups,
     loadMembers,
     onChanged,
     openGroupId,

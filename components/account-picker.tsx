@@ -102,11 +102,14 @@ const lookupFailureText = (
     /*
       The one that means "this account owns no list, so there is nobody to look
       up" rather than "that query was not enough"
-      (`lib/account-search.ts:174`). `dict.errors.notFound` is a sentence about a
-      list and reads wrong in a field on a page that may not have a list open at
-      all; a dedicated string is wanted here and does not exist.
+      (`lib/account-search.ts:174`). Its own sentence, because `dict.errors.notFound`
+      is "this list does not exist" - true of the endpoint, and written for the
+      *list* the caller was asking for. Reached from the lookup it would refuse an
+      account that has done nothing wrong with words about a list it never asked
+      about, and would send somebody who has simply not made a list yet down a
+      dead end instead of telling them what to do first.
     */
-    not_found: dict.errors.notFound,
+    not_found: dict.errors.searchNeedsList,
     invalid_email: undefined,
     duplicate_email: undefined,
     invalid_nickname: undefined,

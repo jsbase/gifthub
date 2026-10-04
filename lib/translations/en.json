@@ -86,6 +86,7 @@
     "alreadyShared": "That person can already see this list.",
     "cannotShareWithOwner": "This list is already yours.",
     "notSharedYet": "This list is still private.",
+    "searchNeedsList": "Make a wish list of your own first, then you can look people up.",
     "invalidSearchQuery": "Type a few more characters to find someone.",
     "noSuchGroup": "You have no group with that name.",
     "duplicateGroupName": "You already have a group with that name.",
@@ -186,7 +187,7 @@
     "makeShared": "Share it now",
     "groupPickerHeading": "Or share it with a group",
     "noGroupsToShare": "You have no groups yet. Create one in the bar above.",
-    "groupReaches": "{count} people",
+    "groupReaches": "People: {count}",
     "revokeGroupConfirmTitle": "Remove group?"
   },
   "groups": {
@@ -208,7 +209,7 @@
     "addMemberLabel": "Add person",
     "removeMember": "Remove from group",
     "removeMemberConfirmTitle": "Remove from group?",
-    "memberCount": "{count} people"
+    "memberCount": "People: {count}"
   },
   "createListDialog": {
     "createListTitle": "New list",
@@ -235,7 +236,7 @@
     "changeVisibility": "Change visibility",
     "share": "Share",
     "sharedWithCount": "Shared with: {count}",
-    "sharedWithGroupCount": "Shared with: {count} people · {groups} groups",
+    "sharedWithGroupCount": "Shared with: {count} people · groups: {groups}",
     "noLists": "Create your first wish list.",
     "noSharedLists": "No wish lists have been shared with you yet.",
     "emptyPlateHint": "A name is enough. Who sees it, you decide.",

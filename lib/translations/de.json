@@ -86,6 +86,7 @@
     "alreadyShared": "Diese Person kann die Liste schon sehen.",
     "cannotShareWithOwner": "Die Liste gehört dir selbst.",
     "notSharedYet": "Die Liste ist noch nicht geteilt.",
+    "searchNeedsList": "Um jemanden zu suchen, brauchst du zuerst eine eigene Wunschliste.",
     "invalidSearchQuery": "Tippe noch ein paar Zeichen, um jemanden zu finden.",
     "noSuchGroup": "Eine Gruppe von dir mit diesem Namen gibt es nicht.",
     "duplicateGroupName": "Du hast schon eine Gruppe mit diesem Namen.",
@@ -186,7 +187,7 @@
     "makeShared": "Jetzt teilen",
     "groupPickerHeading": "Oder mit einer Gruppe teilen",
     "noGroupsToShare": "Du hast noch keine Gruppe. Leg sie oben in der Leiste an.",
-    "groupReaches": "{count} Personen",
+    "groupReaches": "Personen: {count}",
     "revokeGroupConfirmTitle": "Gruppe entfernen?"
   },
   "groups": {
@@ -208,7 +209,7 @@
     "addMemberLabel": "Person hinzufügen",
     "removeMember": "Aus der Gruppe entfernen",
     "removeMemberConfirmTitle": "Aus der Gruppe entfernen?",
-    "memberCount": "{count} Personen"
+    "memberCount": "Personen: {count}"
   },
   "createListDialog": {
     "createListTitle": "Neue Liste",
@@ -235,7 +236,7 @@
     "changeVisibility": "Sichtbarkeit ändern",
     "share": "Teilen",
     "sharedWithCount": "Geteilt mit: {count}",
-    "sharedWithGroupCount": "Geteilt mit: {count} Personen · {groups} Gruppen",
+    "sharedWithGroupCount": "Geteilt mit: {count} Personen · Gruppen: {groups}",
     "noLists": "Lege deine erste Wunschliste an.",
     "noSharedLists": "Es wurden noch keine Wunschlisten mit dir geteilt.",
     "emptyPlateHint": "Ein Name reicht. Wer sie sieht, entscheidest du.",
@@ -294,7 +295,7 @@
       },
       {
         "title": "b) Registrierung und Anmeldung zur Nutzung der Web-App",
-        "content": "Um die Web-App zu nutzen, ist ein Konto mit einem Nickname, einer E-Mail-Adresse und einem Passwort erforderlich; den Anzeigamen leiten wir aus dem Nickname ab. Bei der Registrierung speichern wir die Kontodaten (Nickname, E-Mail-Adresse, Passwort und Anzeigename), die eigenen Wunschlisten mit ihren Geschenkideen und Links zu Produkten sowie bei geteilten Listen die E-Mail-Adresse und den Anzeigenamen der Personen, mit denen sie geteilt wurden. Das Passwort wird vor der Speicherung gehasht und lässt sich nicht im Klartext wiederherstellen. Zu jeder als gekauft markierten Idee speichern wir außerdem das Konto, das sie abgehakt hat. Alle, mit denen die Liste geteilt ist, sehen dieselbe Markierung und können sie untereinander korrigieren. Die Person, der die Liste gehört, kann eine von jemand anderem gesetzte Markierung nicht aufheben. Der Name wird in der Web-App nicht angezeigt. Gruppen, die Sie anlegen, speichern wir mit ihrem Namen und den Konten, die darin enthalten sind. Wird eine Person aus einer Gruppe entfernt, verliert sie den Zugriff auf die Listen, die nur über diese Gruppe geteilt wurden; eine eigene Freigabe dieser Liste bleibt davon unberührt. Wer im Teilen-Dialog nach einer Person sucht, um sie einzutragen, sieht deren Nickname, Anzeigenamen und E-Mail-Adresse. Das kann nur jemand, der angemeldet ist und mindestens eine eigene Wunschliste hat; die Ergebnisse werden nicht gespeichert."
+        "content": "Um die Web-App zu nutzen, ist ein Konto mit einem Nickname, einer E-Mail-Adresse und einem Passwort erforderlich; den Anzeigenamen leiten wir aus dem Nickname ab. Bei der Registrierung speichern wir die Kontodaten (Nickname, E-Mail-Adresse, Passwort und Anzeigenamen), die eigenen Wunschlisten mit ihren Geschenkideen und Links zu Produkten sowie bei geteilten Listen die E-Mail-Adresse und den Anzeigenamen der Personen, mit denen sie geteilt wurden. Das Passwort wird vor der Speicherung gehasht und lässt sich nicht im Klartext wiederherstellen. Zu jeder als gekauft markierten Idee speichern wir außerdem das Konto, das sie abgehakt hat. Alle, mit denen die Liste geteilt ist, sehen dieselbe Markierung und können sie untereinander korrigieren. Die Person, der die Liste gehört, kann eine von jemand anderem gesetzte Markierung nicht aufheben. Der Name wird in der Web-App nicht angezeigt. Gruppen, die Sie anlegen, speichern wir mit ihrem Namen und den Konten, die darin enthalten sind. Wird eine Person aus einer Gruppe entfernt, verliert sie den Zugriff auf die Listen, die nur über diese Gruppe geteilt wurden; eine eigene Freigabe dieser Liste bleibt davon unberührt. Wer im Teilen-Dialog nach einer Person sucht, um sie einzutragen, sieht deren Nickname, Anzeigenamen und E-Mail-Adresse. Das kann nur jemand, der angemeldet ist und mindestens eine eigene Wunschliste hat; die Ergebnisse werden nicht gespeichert."
       }
     ]
   },
