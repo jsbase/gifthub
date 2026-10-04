@@ -58,5 +58,6 @@ Tests: `npm run test:e2e`, plus `:ui`, `:headed` and `:debug` variants. There ar
 ## Deploy notes
 
 - Vercel builds the Next.js app. The database is hosted Postgres (Neon) reached through `DATABASE_URL` and `DIRECT_URL`.
+- The Neon project has exactly three long-lived branches — `production`, `preview` and `dev` — mapped onto Vercel's Production, Preview and Development environments, with local development and CI both on `dev`. Nothing creates a fourth: the Vercel Neon integration used to provision one database per git branch, which exhausted the free plan's ten-branch limit within days. `DATABASE_URL` and `DIRECT_URL` are therefore set as plain project variables rather than by an integration, and a git-branch-scoped variable must never be reintroduced — it is what made every branch its own database. Because CI seeds `dev` and `prisma/seed.mjs` deletes every row, a CI run resets local development data to the seed fixture.
 - `preview` is the integration branch, `main` is production.
 - CI is a single workflow, `.github/workflows/playwright.yml`, triggered on `pull_request`. It typechecks, lints, runs the ratchet and builds, then, when the database secrets are configured, applies `prisma migrate deploy`, seeds and runs the Playwright suite. Pull requests from forks cannot read repository secrets, so the database half is skipped for them.
