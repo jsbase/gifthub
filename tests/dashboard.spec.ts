@@ -63,10 +63,18 @@ test.describe('Contents page', () => {
         select: { id: true },
       });
       const listIds = lists.map((l) => l.id);
-      // Cascade handles the rest; the order is only so the FK check never sees an
-      // access row whose list is already gone.
+      /*
+        Cascade handles the rest; the order is only so the FK check never sees an
+        audience row whose list is already gone. Both audience tables are in that set
+        now, and `listGroupAccess` is the one a reader would not think of here: this
+        spec creates no groups, but a list left behind by an interrupted run can carry
+        a group grant pointing at it, and it names a group rather than an account -
+        which is precisely why the ordering has to be written down per table instead of
+        being inferred from "the tables this spec uses".
+      */
       await prisma.gift.deleteMany({ where: { listId: { in: listIds } } });
       await prisma.listAccess.deleteMany({ where: { listId: { in: listIds } } });
+      await prisma.listGroupAccess.deleteMany({ where: { listId: { in: listIds } } });
       await prisma.list.deleteMany({ where: { id: { in: listIds } } });
     }
     await prisma.$disconnect();

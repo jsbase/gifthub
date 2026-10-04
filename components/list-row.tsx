@@ -241,25 +241,36 @@ const ListRow: React.FC<ListRowProps> = ({
             )}
 
             {/*
-              How many people can also read it - and, when that is nobody, the
-              sentence the list sheet already uses for the same fact about the
-              same object. It used to print `sharedWithCount` unconditionally, so a
-              `SHARED` list nobody had been added to carried "shared with: 0",
-              which is not a fact about a private list either - it is a fact about
-              a counter. `visibility.sharedWithNobody` says the true thing, and it
-              is read from the visibility section rather than duplicated here
-              because it is one fact about one list and it already has one
-              sentence. The count itself comes from the same `sharedWithCount` the
-              server counted rather than from a list length the client kept in step
-              by hand.
+              How many people can also read it, and how many groups - and, when
+              that is nobody at all, the sentence the list sheet already uses for
+              the same fact about the same object. It used to print
+              `sharedWithCount` unconditionally, so a `SHARED` list nobody had
+              been added to carried "shared with: 0", which is not a fact about a
+              private list either - it is a fact about a counter.
+              `visibility.sharedWithNobody` says the true thing, and it is read
+              from the visibility section rather than duplicated here because it is
+              one fact about one list and it already has one sentence.
+
+              Two counts and not one sum, and the reason is in
+              `ListSummary.sharedWithGroupCount`: individuals and group members
+              overlap, so a sum would count somebody in two granted groups twice
+              and the row would then disagree with the number of people who can
+              actually open the list. `sharedWithGroupCount > 0` also covers the
+              case that motivated the split - a list whose *only* readers are
+              reachable through a group has no people to count and is emphatically
+              not nobody.
             */}
             {isShared && (
               <span className='text-[0.8125rem] leading-snug text-caption'>
-                {list.sharedWithCount > 0
-                  ? dict.listBoard.sharedWithCount.replace(
-                      '{count}',
-                      String(list.sharedWithCount)
-                    )
+                {list.sharedWithCount > 0 || list.sharedWithGroupCount > 0
+                  ? list.sharedWithGroupCount > 0
+                    ? dict.listBoard.sharedWithGroupCount
+                        .replace('{count}', String(list.sharedWithCount))
+                        .replace('{groups}', String(list.sharedWithGroupCount))
+                    : dict.listBoard.sharedWithCount.replace(
+                        '{count}',
+                        String(list.sharedWithCount)
+                      )
                   : dict.visibility.sharedWithNobody}
               </span>
             )}

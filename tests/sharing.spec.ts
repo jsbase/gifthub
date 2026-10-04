@@ -12,20 +12,30 @@ import { PrismaClient } from '@prisma/client';
   never touches the interface is exactly the case the permission table exists for,
   and only an HTTP-level assertion covers it.
 
-  The matrix asserted here, from `lib/list-access.ts` and the design spec:
+  The matrix asserted here, copied from the capability table at the top of
+  `lib/list-access.ts`, which is the source of truth for it:
 
-                     owner   invited buyer   unrelated
-    read the list      200        200           404
-    mark an open idea  200        200           404
-    clear own mark     200        200           404
-    clear other's mark 403        200           404
-    add an idea        200        403           404
-    delete an idea     200        403           404
-    rename             200        403           404
-    change visibility  200        403           404
-    grant access       200        403           404
-    revoke access      200        403           404
-    delete the list    200        403           404
+                     owner   invited buyer   in a group   anyone else
+    read the list      200        200             200          404
+    mark an open idea  200        200             200          404
+    clear own mark     200        200             200          404
+    clear other's mark 403        200             200          404
+    add an idea        200        403             403          404
+    delete an idea     200        403             403          404
+    rename             200        403             403          404
+    change visibility  200        403             403          404
+    grant access       200        403             403          404
+    revoke access      200        403             403          404
+    revoke group grant 200        403             403          404
+    delete the list    200        403             403          404
+
+  "In a group" is a third column rather than a fourth kind of person, and it is carried
+  the same in both directions: a member reaches a list through a `ListGroupAccess` row
+  instead of a `ListAccess` one and gets exactly the row an invited buyer gets, because
+  the reach is derived on every read rather than stored. So the `invited buyer` column is
+  asserted here, against a named grant, and the `in a group` column of this same table is
+  asserted in `tests/groups.spec.ts`, where the audience arrives by putting somebody in a
+  group rather than by naming them.
 
   404 and 403 are the load-bearing distinction and each is asserted separately.
   `404` to an account with no relationship to the list is what keeps another

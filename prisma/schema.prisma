@@ -85,6 +85,22 @@ model Account {
    * tell their own mark from somebody else's.
    */
   purchases   Gift[]       @relation("GiftPurchase")
+
+  /**
+   * The groups this account owns, deliberately kept apart from `groupMemberships`:
+   * owning a group and being in one are different things with different consequences,
+   * and one relation would put the owner's own id into the audience of every group
+   * they create. See `Group` on why an owner is never in their own group.
+   */
+  ownedGroups      Group[]
+
+  /**
+   * The groups other people have put this account in. Read only to answer "which
+   * groups reach this list", and never shown to the member: whose group somebody is
+   * in is the owner's business, and a member learns that they have access by opening
+   * the list rather than by reading a membership page.
+   */
+  groupMemberships GroupMember[]
 }
 
 /**
@@ -100,6 +116,13 @@ model List {
   updatedAt  DateTime       @updatedAt
   gifts      Gift[]
   access     ListAccess[]
+
+  /**
+   * Group grants on this list. Read beside `access` by the shared-read predicate,
+   * which is the only place a group's reach is ever decided: a row here says the list
+   * is shared with that group, and says nothing at all about who may read it.
+   */
+  groupAccess ListGroupAccess[]
 
   @@index([ownerId])
 }
@@ -122,6 +145,104 @@ model ListAccess {
 
   @@unique([listId, accountId])
   @@index([accountId])
+}
+
+/**
+ * A named set of accounts, so that one share can reach several people at once.
+ *
+ * Not the `Group` this table borrows its name from. That one was a name plus a single
+ * shared password and a list of member *names* that could not sign in - a secret to
+ * hand around rather than a set of people - and it was removed in bae252d. A member
+ * here is an `Account`, which brings its own password and can be revoked on its own,
+ * so this table carries no credential of any kind and never will. That is what lets a
+ * group's reach be a condition on a row rather than a thing somebody holds.
+ *
+ * `@@unique([ownerId, name])` rather than a bare `@unique` on `name`. The old
+ * constraint was `Group_name_key`: one name for the entire database. That is not a
+ * stricter version of what is wanted here, it is a different and wrong claim - "Family"
+ * is a name inside one household, so a global constraint says two families cannot both
+ * be called "Family", and the second of them has to invent "Family 2" for a word nobody
+ * meant. The composite says what the owner actually promises, which is that *they*
+ * cannot have two groups under one name.
+ *
+ * Ownership is not membership, and this model refuses to conflate them: an owner is
+ * never implicitly in their own group, `cannot_share_with_owner` keeps holding, and an
+ * owner reads a group-shared list by owning the list - the same shape as `ListAccess`
+ * having no row for the owner of a list.
+ */
+model Group {
+  id        String   @id @default(cuid())
+  name      String
+  ownerId   String
+  owner     Account          @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  createdAt DateTime         @default(now())
+  members   GroupMember[]
+  grants    ListGroupAccess[]
+
+  @@unique([ownerId, name])
+}
+
+/**
+ * One account in one group. The membership, and nothing derived from it.
+ *
+ * Whether that membership reaches any given list is worked out on every read by
+ * walking `ListGroupAccess` to here; `ListGroupAccess` records why no audience is
+ * written down anywhere.
+ *
+ * `@@unique([groupId, accountId])` so that a second attempt to add the same person is
+ * a constraint violation rather than a duplicate row for whoever reads it next to
+ * deduplicate. The argument is the one made for `nickname`: a handler that checks "is
+ * this already a member" and an index that enforces it will disagree under
+ * concurrency, and the index is the one that cannot be raced.
+ *
+ * `Cascade` from the account as well as from the group. A membership outliving the
+ * account it names is a row that reaches nobody, and it shows up in a group's member
+ * count as a person who is there and is not.
+ */
+model GroupMember {
+  id        String   @id @default(cuid())
+  groupId   String
+  group     Group       @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  accountId String
+  account   Account     @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  addedAt   DateTime    @default(now())
+
+  @@unique([groupId, accountId])
+  @@index([accountId])
+}
+
+/**
+ * One list shared with one group: the group counterpart of a `ListAccess` row, which
+ * stays the only individual grant.
+ *
+ * What is stored is the grant. What is not stored is the audience that grant produces -
+ * a member's reach is derived at read time by joining this row to `GroupMember`, so
+ * there is deliberately no per-member row here, and the absence is the design.
+ *
+ * Snapshotting that audience instead - writing a `ListAccess` row per current member
+ * when the list is shared - is the alternative this rejects. Removal then has to
+ * *delete* rows, which means recording on every row which grant created it, and it
+ * still cannot reach members added to the group afterwards without a backfill; the
+ * stored audience drifts from the group either way. Derived, a removal changes the
+ * answer on the next read because there is no stored row left to go stale, and
+ * adding a member afterwards needs no backfill at all.
+ *
+ * It also answers the case that would be most annoying to get right by hand, for free:
+ * an account holding both an individual grant and a group grant, who is then removed
+ * from the group, keeps its access - the individual row is still there and the read
+ * predicate is an `OR`. A snapshot design has to be told to preserve that, and an
+ * instruction is a thing a later change can forget.
+ */
+model ListGroupAccess {
+  id        String   @id @default(cuid())
+  listId    String
+  list      List          @relation(fields: [listId], references: [id], onDelete: Cascade)
+  groupId   String
+  group     Group         @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  grantedAt DateTime      @default(now())
+
+  @@unique([listId, groupId])
+  @@index([groupId])
 }
 
 /**

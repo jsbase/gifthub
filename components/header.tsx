@@ -3,10 +3,11 @@
 import React, { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { IconLogout } from '@tabler/icons-react';
+import { IconLogout, IconUsers } from '@tabler/icons-react';
 import { Button } from '@/components/ui/button';
 import Logo from '@/components/logo';
 import LanguageSwitcher from '@/components/language-switcher';
+import GroupsDialog from '@/components/groups-dialog';
 import { verifyAuth } from '@/lib/auth';
 import { cn } from '@/lib/utils';
 import type { AuthState, HeaderProps } from '@/types';
@@ -21,6 +22,17 @@ const Header: React.FC<HeaderProps> = ({
     isAuthenticated: false,
     displayName,
   });
+
+  /*
+    Whether the group manager is open. It lives here rather than on the contents page
+    because a group is *account*-scoped: it has to be reachable from every screen an
+    account owns a list from, and the contents page is the only one of them that
+    always exists. `PRODUCT.md` describes exactly one contents page and a tight
+    chrome, so this is one more control in the bar rather than a card or a section
+    somewhere - and it sits next to the display name because both are things the
+    account *has* rather than things it can do to a list.
+  */
+  const [isGroupsOpen, setIsGroupsOpen] = useState(false);
 
   const pathname = usePathname();
   const currentLang = pathname.split('/')[1];
@@ -132,6 +144,32 @@ so the name takes the slack and the controls can never be pushed off the
 
         <div className={cn('flex', 'shrink-0', 'items-center', 'gap-2')}>
           <LanguageSwitcher label={dict?.changeLanguage} />
+          {showAuth && authState.isAuthenticated && dict && (
+            /*
+              Groups, before the logout control and shaped like it: a bare glyph at
+              narrow widths, its word back at 640px. Same treatment and the same two
+              reasons - there is no room for a second label on a phone, and these are
+              both secondary controls for a thing that is not the current screen.
+
+              The word is `groups.title` rather than a header-specific string, and it
+              is not `groups.openGroups`: the visible label is the thing the control
+              *is*, and `aria-label` below carries the same word, so the accessible
+              name still contains the visible text as WCAG 2.5.3 asks.
+            */
+            <Button
+              variant='ghost'
+              size='icon'
+              onClick={() => setIsGroupsOpen(true)}
+              data-testid='openGroups'
+              aria-label={dict.groups.openGroups}
+              className={cn('sm:w-auto', 'sm:px-3')}
+            >
+              <IconUsers className={cn('h-5', 'w-5', 'shrink-0')} />
+              <span className={cn('hidden', 'text-[0.8125rem]', 'sm:inline')}>
+                {dict.groups.title}
+              </span>
+            </Button>
+          )}
           {showAuth && authState.isAuthenticated && dict && onLogout && (
             /*
               Secondary, so it is a bare glyph with no edge: at most widths
@@ -167,6 +205,25 @@ so the name takes the slack and the controls can never be pushed off the
           )}
         </div>
       </div>
+
+      {/*
+        Mounted only while it is open, like every other dialog in this product: both
+        callers unmount rather than hide, so a closed sheet holds no state and re-reads
+        the account's groups when it is next opened rather than showing what was true
+        the last time somebody looked.
+
+        Gated on the same condition as the control that opens it, so there is no path
+        to a group manager for a person with no session - the dialog could only
+        answer 401, and `PRODUCT.md:65` says a control that cannot work is absent.
+      */}
+      {showAuth && authState.isAuthenticated && dict && (
+        <GroupsDialog
+          isOpen={isGroupsOpen}
+          onClose={() => setIsGroupsOpen(false)}
+          dict={dict}
+          onChanged={() => {}}
+        />
+      )}
     </header>
   );
 };
