@@ -24,8 +24,14 @@ const menuSurface =
 // Radix moves focus with the arrow keys onto items carrying `tabindex="-1"`, so
 // `:focus-visible` never matches them. `data-[highlighted]` is what actually
 // shows a keyboard user where they are in this menu.
+//
+// `[&_svg]:shrink-0` is the same rule the button primitive carries and for the
+// same reason: an item is `whitespace`-free flex, so its glyph is what gives way
+// when a German or Russian label is longer than the menu. The rename and delete
+// items in the groups sheet carry a 16px pencil and bin, and those are the two
+// labels most likely to be the long ones.
 const menuItem =
-  'relative flex cursor-default select-none items-center rounded-md px-3 py-2.5 text-[0.9375rem] outline-none transition-colors data-[highlighted]:bg-wash data-[disabled]:pointer-events-none data-[disabled]:opacity-50';
+  'relative flex cursor-default select-none items-center rounded-md px-3 py-2.5 text-[0.9375rem] outline-none transition-colors data-[highlighted]:bg-wash data-[disabled]:pointer-events-none data-[disabled]:opacity-50 [&_svg]:shrink-0';
 
 const DropdownMenuSubTrigger = React.forwardRef<
   React.ElementRef<typeof DropdownMenuPrimitive.SubTrigger>,
