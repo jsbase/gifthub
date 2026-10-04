@@ -5,20 +5,26 @@
 # the GitHub Models REST API, which decides how this has to be set up:
 #   1. `copilot` is not pre-installed on a GitHub-hosted runner, so the CLI has
 #      to be installed and on PATH before the action runs.
-#   2. Authentication goes through `copilot-requests: write` plus the built-in
-#      `github.token` - no secret to create. That path only works because the
-#      `jsbase` organization has the "Allow use of Copilot CLI billed to the
-#      organization" policy enabled; without it the inference step is rejected
-#      even though the token carries the permission. The fallback, if that policy
-#      is ever turned off, is a *fine-grained* PAT owned by a personal account
-#      with the "Copilot Requests" account permission, stored as `COPILOT_PAT`
-#      and passed as `COPILOT_GITHUB_TOKEN` instead. A classic PAT is not
-#      supported by the CLI at all, and a fine-grained PAT owned by the
-#      organization cannot hold the permission.
+#   2. Authentication uses the automatic `github.token`. No secret and no personal
+#      access token is involved, and none has to be created: the token is minted
+#      per run by GitHub Actions, already carries the permission below, and is
+#      billed to the account that owns this repository.
+#
+# On that last point: this repository is owned by a *user* account, not an
+# organisation (`GET /repos/jsbase/gifthub` reports `owner.type: User`). That is
+# what makes the automatic token usable here. For a repository owned by an
+# organisation the same step needs the "Allow use of Copilot CLI billed to the
+# organization" policy enabled by an organisation owner, which a user-owned
+# repository does not have and does not need. Do not add a PAT here - it would
+# trade a setup-free workflow for a long-lived credential.
 #
 # Unlike an `issues` trigger, a `pull_request` workflow is read from the pull
 # request's own merge ref rather than from the default branch, so this file
-# takes effect on the pull request that adds it - no merge into `main` first.
+# takes effect on the pull request that adds it - no merge into `main` first. It
+# still needs one `pull_request` event *after* the file exists: a workflow added
+# to an already-open pull request is not picked up retroactively, which is why
+# `synchronize` is in the list below. If no run appears at all, close and reopen
+# the pull request - a `push` alone does not force rediscovery.
 name: Summarize pull requests
 
 on:
@@ -27,16 +33,16 @@ on:
     # `opened` alone would never have fired for the pull request introducing this
     # file: the event had already happened before the workflow existed. Adding
     # `synchronize` means any later push to the branch re-runs the summary, which
-    # is what lets an already-open pull request be exercised without reopening
-    # it. Drop it to comment once per open instead of once per push.
+    # is what lets an already-open pull request be exercised. Drop it to comment
+    # once per open instead of once per push.
     types: [opened, reopened, synchronize]
 
 jobs:
   summary:
-    # A pull request from a fork gets a read-only `github.token` and no ability to
-    # comment, so both the inference call and the comment would fail there. This
-    # repository is public, so skip instead of reporting red on external
-    # contributions - the same reasoning as the database steps in playwright.yml.
+    # A pull request from a fork gets a read-only `github.token`, so the CLI
+    # request and the comment would both fail there. This repository is public, so
+    # skip instead of reporting red on external contributions - the same reasoning
+    # as the database steps in playwright.yml.
     if: github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     permissions:
@@ -44,6 +50,13 @@ jobs:
       # Grants the Copilot request itself. `pull-requests: write` is separate and
       # only covers the comment below, which posts through the issue-comments
       # endpoint. No `models: read`: the CLI path never touches the Models API.
+      #
+      # `copilot-requests` is what GitHub's Copilot CLI documentation and the
+      # `github/copilot-cli` action both prescribe, but it is missing from the
+      # permission keys listed for a `permissions:` block in the workflow-syntax
+      # reference. That reference is demonstrably incomplete - `models` is absent
+      # from it as well - so an undocumented key is not by itself a reason to
+      # expect rejection.
       copilot-requests: write
       pull-requests: write
 
