@@ -98,7 +98,7 @@ const GiftCard: React.FC<GiftCardProps> = ({
     'flex-1',
     'transition-colors',
     'duration-150',
-    !isCollected && 'hover:bg-wash'
+    !isCollected && '[@media(hover:hover)_and_(pointer:fine)]:hover:bg-wash'
   );
 
   return (
@@ -109,7 +109,25 @@ const GiftCard: React.FC<GiftCardProps> = ({
         'flex',
         'items-stretch',
         'gap-0',
-        'border',
+        /*
+          Three sides, not four.
+
+          The cell used to draw `border` - a box - *and* sit in a `<ul>` with
+          `divide-y`. Three mechanisms drawing the same 1px line in the same
+          place: adjacent cells put cell 1's bottom stroke directly on top of cell
+          2's top stroke and the divider between them, and the run's first cell put
+          its own top stroke 16px under the section head's rule. A sheet with two
+          sections and three ideas ended up with seven horizontal lines in 350px,
+          all the same weight, and a reader could not assign any of them to
+          anything - which is the whole complaint, expressed as a picture.
+
+          So the cell draws what only it can draw: the two verticals that close its
+          sides, and the bottom rule that separates it from the idea below. Its top
+          edge belongs to the block, and the block's boundary is drawn once, above
+          the section label. One line, one job, one owner.
+        */
+        'border-x',
+        'border-b',
         'border-rule',
         'transition-colors',
         'duration-200',
@@ -172,7 +190,7 @@ const GiftCard: React.FC<GiftCardProps> = ({
           'duration-150',
           isCollected
             ? 'text-[var(--member-ink-on-collected)]'
-            : 'text-caption hover:bg-wash hover:text-ink',
+            : 'text-caption [@media(hover:hover)_and_(pointer:fine)]:hover:bg-wash [@media(hover:hover)_and_(pointer:fine)]:hover:text-ink',
           isPending && 'pointer-events-none opacity-60'
         )}
       >
@@ -311,8 +329,8 @@ const GiftCard: React.FC<GiftCardProps> = ({
             'self-stretch',
             'shrink-0',
             isCollected
-              ? 'text-collected-foreground/70 hover:bg-collected-foreground/12 hover:text-collected-foreground'
-              : 'text-caption hover:bg-wash hover:text-destructive'
+              ? 'text-collected-foreground/70 [@media(hover:hover)_and_(pointer:fine)]:hover:bg-collected-foreground/12 [@media(hover:hover)_and_(pointer:fine)]:hover:text-collected-foreground'
+              : 'text-caption [@media(hover:hover)_and_(pointer:fine)]:hover:bg-wash [@media(hover:hover)_and_(pointer:fine)]:hover:text-destructive'
           )}
           data-testid='giftDelete'
           aria-label={dict.deleteGift}
@@ -372,6 +390,20 @@ const GiftCardBody: React.FC<{
       data-testid='giftTitle'
       className={cn(
         'break-words',
+        /*
+          Two lines, then an ellipsis. The wish title is the largest object in the
+          cell and the thing a buyer reads from across the room, so it is never
+          truncated to one line - but it is clamped, because a wish written before the
+          field had a limit is still in the database and will otherwise fill the
+          viewport and push the rest of the sheet off the page.
+
+          `line-clamp` rather than `truncate` because `truncate` is one line and a
+          two-word German compound does not fit in one line at 390px. Both leave a
+          horizontal scrollbar out of the cell: the clamp adds an ellipsis inside the
+          box and keeps the content width inside the cell's own border, which is the
+          property that matters on a phone.
+        */
+        'line-clamp-2',
         'font-label',
         'text-[0.9375rem]',
         'font-bold',

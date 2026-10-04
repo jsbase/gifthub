@@ -12,11 +12,13 @@ import ConfirmDialog from '@/components/confirm-dialog';
 import GiftCard from '@/components/gift-card';
 import Footer from '@/components/footer';
 import Header from '@/components/header';
+import { StatusBadge } from '@/components/status-badge';
 import { ListVisibilityDialog } from '@/components/share-list-dialog';
 import { isRefusal } from '@/lib/refusals';
 import { cn } from '@/lib/utils';
 import { memberInkStyle } from '@/lib/member-ink';
 import { giftCountLabel, sheetCounts, splitSheet } from '@/lib/gift-count';
+import { GIFT_FIELD_LIMITS } from '@/lib/gift-text';
 import type {
   Gift,
   ListSheetProps,
@@ -169,32 +171,82 @@ export const SheetFrame: React.FC<SheetFrameProps> = ({
 );
 
 /**
- * The section head: a printed label, a rule, and the count. This is the furniture
- * that turns a list of rows into a page of an album.
+ * The section head, and the one piece of furniture this product has.
  *
- * At module scope, not inside the sheet, for the reason it used to be moved
- * there: as a nested component it was remounted on every render of the sheet,
- * which React flagged, and it is fixed furniture anyway - no state, and it reads
- * only its props.
+ * **The rule under it is the point.** This head used to carry `pt-2` and no rule,
+ * while the identically named head on the contents page carried `border-b
+ * border-rule` - same face, same size, same colour, same numeral, one with a line
+ * under it and one without. So nothing on this page said a block had started: the
+ * gaps ran 8, 12 and 20px, and the largest of them was between blocks and 2.5x the
+ * smallest, which is not a difference anybody can see. "Where does a block begin"
+ * had no answer on the sheet.
+ *
+ * It does now, and the answer is one mark with one meaning. A hairline is a
+ * boundary: between blocks, and between content and the controls that act on it.
+ * Rows inside a block are separated by nothing but their own padding, because a
+ * line between two rows of one section claims they are two sections - which is
+ * exactly what `divide-y` was doing to every pair of gift cells, and exactly what
+ * it used to do on the contents page between two lists in one section.
+ *
+ * **This is the same declaration as `list-board.tsx`'s, not a similar one.** Two
+ * components with the same name, the same face and the same numeral, one with a
+ * rule and one without, taught a reader who had learnt one of them nothing about
+ * the other. They now share their class list exactly - including the `gap-4` that
+ * carries the rhythm of a stacked section and the `sm:` row that puts an action
+ * beside the label rather than under it. One head, two pages, one set of
+ * measurements.
+ *
+ * **The rule is above the label, not under it.** It was underneath, and the cells
+ * under the head drew their own top border 16px below that - so every block opened
+ * with two parallel lines a breath apart and a reader could not tell which of them
+ * began the block. Above the label, one line, and `pt-3` puts the label 12px under
+ * its own rule against 16px to the first row: the rule belongs to the heading it
+ * introduces, which is the only relationship it can have. `DESIGN.md` prints the
+ * same shape - `top-plate-and-rule`, a 1px line, then `DEINE LISTEN` 12px under it.
+ *
+ * `h2`, not `h3`: with the header's display name demoted from an `h1` to a
+ * paragraph, this page's outline is `h1` (the list's own name) then `h2` per
+ * section. It used to skip a level entirely, because the two `h1` and the `h3`
+ * were on the same route and nothing sat between them.
  */
-const SectionHead: React.FC<{ label: string; count: number }> = ({
+const SectionHead: React.FC<{ label: string; count?: number }> = ({
   label,
   count,
 }) => (
-  <div className='flex items-baseline justify-between gap-3 pt-2'>
-    <h3 className='label-print text-caption'>{label}</h3>
-    <span
-      className={cn(
-        'font-label',
-        'text-[0.6875rem]',
-        'font-bold',
-        'tabular-nums',
-        'tracking-[0.1em]',
-        'text-caption'
-      )}
-    >
-      {String(count).padStart(2, '0')}
-    </span>
+  <div
+    className={cn(
+      'flex',
+      'flex-col',
+      'gap-4',
+      'border-t',
+      'border-rule',
+      'pt-3',
+      'sm:flex-row',
+      'sm:items-end',
+      'sm:justify-between',
+      'sm:gap-6'
+    )}
+  >
+    <h2 className='label-print pt-1 text-caption'>{label}</h2>
+
+    {/* The count, or nothing. A section with rows has one; the audience section
+        has one; and where there is none the head is bare rather than carrying a
+        `00`, because a numeral standing for an empty set is a fact about a
+        counter. */}
+    {count !== undefined && (
+      <span
+        className={cn(
+          'font-label',
+          'text-[0.6875rem]',
+          'font-bold',
+          'tabular-nums',
+          'tracking-[0.1em]',
+          'text-caption'
+        )}
+      >
+        {String(count).padStart(2, '0')}
+      </span>
+    )}
   </div>
 );
 
@@ -281,13 +333,13 @@ const ListSheet: React.FC<ListSheetProps> = ({
   );
   const sheetTotals = useMemo(() => sheetCounts(gifts), [gifts]);
 
-  /* The count in the sheet's head. It moves whenever a cell is collected, and the
-     numeral flashes - the only place the app reports a change outside the cell
-     itself, because on a phone the head is the one thing that stays on screen
-     while you scroll the cells. */
-  const countLabel = giftCountLabel(sheetTotals, {
-    giftCount: dict.giftCount,
-  });
+  /* The count, in words, for anyone who cannot see the figure. It is printed in
+     the sheet's head rather than as a line of its own, because the number was on
+     the page three times - as that line, as the numeral beside "Noch offen", and
+     in the contents page row - and the line was the only one of the three that
+     said what the number meant. It used to flash the number on every change; the
+     numeral in the section head still moves, and the cell itself inverts, so the
+     change is reported twice rather than once. */
 
   const handleAddGift = useCallback(
     async (e: React.FormEvent<HTMLFormElement>) => {
@@ -442,7 +494,7 @@ const ListSheet: React.FC<ListSheetProps> = ({
       `list.ownerId`, so every sheet a person owns carries the same pen and the
       colour does not move when the sheet is renamed or republished.
     */
-    <div className='flex flex-col gap-5' style={memberInkStyle(list.ownerId)}>
+    <div className='flex flex-col gap-4' style={memberInkStyle(list.ownerId)}>
       <div className='flex flex-col gap-4'>
         {/*
           The way back, printed above the sheet rather than inside its head: it
@@ -481,25 +533,42 @@ const ListSheet: React.FC<ListSheetProps> = ({
             </h1>
 
             {/*
-              One sentence under the name, and which sentence depends on who is
-              reading. The owner gets what the sheet is for; an invited account
-              gets the one thing it can do that the owner cannot do for them,
-              because otherwise a buyer has to guess whether the missing controls
-              are missing on purpose - and `PRODUCT.md` treats a control a reader
-              cannot use as a question the product has to answer in words.
+              One sentence under the name, and only for an invited account.
+
+              The owner used to get one here too - "Auf dieser Liste schreibst nur
+              du." - stacked directly above the `PRIVAT` chip and its own hint, so
+              the head carried the same fact about privacy three times in a row in
+              three slightly different sentences: who can write on it, that it is
+              private, and who can see it. Two of the three were saying one thing,
+              and the sentence that survived was neither the shortest nor the
+              clearest of them.
+
+              So the owner gets nothing. The chip below already names the state and
+              the sentence beside the chip already says what it means, and a third
+              line between them adds no information a reader did not have. The chip
+              is where the owner's attention should be anyway - it is the object
+              that tells them whether the control beside it is open or closed.
+
+              A buyer keeps a sentence, because theirs answers a question the chip
+              cannot: they cannot see or press any of the owner's controls, and
+              `PRODUCT.md` treats a control a reader cannot use as a question the
+              product has to answer in words. Theirs is about what they *can* do,
+              not about who else can read the list.
             */}
-            <p
-              data-testid={isOwner ? 'listHint' : 'youAreABuyer'}
-              className={cn(
-                'max-w-[44ch]',
-                'text-[0.9375rem]',
-                'leading-relaxed',
-                'text-pretty',
-                'text-caption'
-              )}
-            >
-              {isOwner ? dict.listSheet.listHint : dict.listSheet.youAreABuyer}
-            </p>
+            {!isOwner && (
+              <p
+                data-testid='youAreABuyer'
+                className={cn(
+                  'max-w-[44ch]',
+                  'text-[0.9375rem]',
+                  'leading-relaxed',
+                  'text-pretty',
+                  'text-caption'
+                )}
+              >
+                {dict.listSheet.youAreABuyer}
+              </p>
+            )}
 
             {/*
               How far this list reaches, for everybody, in words: the state the
@@ -508,11 +577,34 @@ const ListSheet: React.FC<ListSheetProps> = ({
               rather than only on the contents page because a buyer who arrived
               here needs to know that this is a list somebody deliberately opened
               to them - and an owner needs it beside the control that closes it.
+
+              Two objects, and they are not the same fact. The chip names the state
+              in one word, which is what a reader scanning the page reads; the
+              sentence says what the state *means for them*, which is what a reader
+              who has never seen the word "private" in this app needs. Merge them
+              and one of the two jobs is lost.
+
+              The state is the chip the contents page row carries, so the same two
+              words are drawn the same way in both places. It used to be a bare
+              `label-print` span here and a chip there, which meant the two places
+              that answer the same question about the same object disagreed about
+              how to answer it - and here, where it sits directly under the list's
+              own name, a plain grey uppercase word was the quietest thing in the
+              head.
+
+              The hint is the owner's wording on a buyer's sheet, which is wrong -
+              "die von dir eingeladenen Personen" addresses the owner - and it was
+              wrong before the chip too. `visibility.sharedHint` wants a second
+              sentence for the reader who is only a recipient, and that is the next
+              copy pass rather than this one.
             */}
-            <p className='flex flex-wrap items-center gap-x-3 gap-y-1'>
-              <span className='label-print text-caption'>
-                {isShared ? dict.visibility.shared : dict.visibility.private}
-              </span>
+            <p className='flex flex-wrap items-center gap-x-3 gap-y-2'>
+              <StatusBadge
+                variant={isShared ? 'shared' : 'private'}
+                label={
+                  isShared ? dict.listBoard.shared : dict.listBoard.private
+                }
+              />
               <span
                 className='max-w-[44ch] text-[0.8125rem] leading-relaxed text-caption'
                 data-testid='visibilityHint'
@@ -522,6 +614,19 @@ const ListSheet: React.FC<ListSheetProps> = ({
                   : dict.visibility.privateHint}
               </span>
             </p>
+
+            {/*
+              The count in words, for anyone who cannot see the figure - and
+              nothing else. It was a visible line of its own in the 11px label
+              face, forty pixels above the section head that prints the same
+              number as `03`, so the sheet said "3 GESCHENKIDEEN NOCH OFFEN" and
+              "NOCH OFFEN 03" in the same typeface and weight about two inches
+              apart. The number was the thing worth reporting; the sentence around
+              it was the thing being reported twice.
+            */}
+            <span className='sr-only'>
+              {giftCountLabel(sheetTotals, dict)}
+            </span>
           </div>
 
           {/*
@@ -583,34 +688,6 @@ const ListSheet: React.FC<ListSheetProps> = ({
 
       {!showAddGiftForm && (
         <>
-          {/*
-            The count is the sheet's own line of state, in the same words the
-            contents page uses. It is a flash rather than a change of wording
-            because the wording does not change: the number inside it does. With
-            no gifts there is nothing to count, so the line is omitted entirely -
-            the empty state below carries the message.
-          */}
-          {gifts.length > 0 && (
-            <div
-              key={countLabel}
-              className={cn(
-                'animate-count-flash',
-                '-mx-1',
-                'w-fit',
-                'rounded-sm',
-                'px-1',
-                'font-label',
-                'text-[0.6875rem]',
-                'font-bold',
-                'uppercase',
-                'tracking-[0.14em]',
-                'text-caption'
-              )}
-            >
-              {countLabel}
-            </div>
-          )}
-
           {gifts.length === 0 ? (
             canAdd ? (
               /*
@@ -641,8 +718,8 @@ const ListSheet: React.FC<ListSheetProps> = ({
                 nobody can write on would be an invitation with no action behind
                 it, which is the same defect as a disabled control.
               */
-              <div className='flex flex-col gap-1'>
-                <section className='flex flex-col gap-3'>
+              <div className='flex flex-col gap-4'>
+                <section className='flex flex-col gap-4'>
                   <SectionHead label={dict.listSheet.openIdeas} count={0} />
                   <button
                     type='button'
@@ -668,17 +745,21 @@ const ListSheet: React.FC<ListSheetProps> = ({
                       'rounded-md'
                     )}
                   >
-                    {/* The field's own name, in the face the section heads use,
-                        so the blank cell reads as one cell of this sheet rather
-                        than as a message about the sheet. */}
-                    <span className={cn('label-print', 'text-caption')}>
-                      {dict.listSheet.enterGiftTitle}
-                    </span>
+                    {/* The invitation, and it is the first thing in the cell.
 
-                    {/* The invitation, in ink rather than in caption. On a sheet
-                        with nothing on it this sentence is the entire content,
-                        and it was set at the same weight as the section head
-                        above it. */}
+                        It used to be preceded by the field's own name in the face
+                        the section heads use - "GESCHENKIDEE" - which made the
+                        blank cell announce what kind of thing it was about to
+                        hold before it had invited anybody to put one there. That is
+                        a headline for a form that has not been opened yet, and the
+                        form labels itself field by field when it does open. It also
+                        said "Geschenkidee" on a page whose own subject is a
+                        *Wunsch*.
+
+                        The invitation is set in ink rather than in caption, because
+                        on a sheet with nothing on it this sentence is the entire
+                        content and it was the quietest thing in the cell.
+                    */}
                     <span
                       data-testid='noGifts'
                       className={cn(
@@ -724,8 +805,8 @@ const ListSheet: React.FC<ListSheetProps> = ({
                 the owner's empty sheet is dashed *and* is the button; a buyer gets
                 the sentence alone.
               */
-              <div className='flex flex-col gap-1'>
-                <section className='flex flex-col gap-3'>
+              <div className='flex flex-col gap-4'>
+                <section className='flex flex-col gap-4'>
                   <SectionHead label={dict.listSheet.openIdeas} count={0} />
                   <p
                     data-testid='noGifts'
@@ -743,14 +824,14 @@ const ListSheet: React.FC<ListSheetProps> = ({
               </div>
             )
           ) : (
-            <div className='flex flex-col gap-1'>
+            <div className='flex flex-col gap-4'>
               {openGifts.length > 0 && (
-                <section className='flex flex-col gap-3'>
+                <section className='flex flex-col gap-4'>
                   <SectionHead
                     label={dict.listSheet.openIdeas}
                     count={openGifts.length}
                   />
-                  <ul className='flex flex-col gap-2'>
+                  <ul>
                     {openGifts.map((gift) => (
                       <GiftCard
                         key={gift.id}
@@ -777,7 +858,7 @@ const ListSheet: React.FC<ListSheetProps> = ({
               )}
 
               {collectedGifts.length > 0 && (
-                <section className='flex flex-col gap-3'>
+                <section className='flex flex-col gap-4'>
                   {/*
                     The section head says what the section is, not what it means:
                     the line above already says "nothing left to buy" in the
@@ -825,7 +906,7 @@ It cannot be rendered inside the cell: `GiftCardProps.dict` is
                     </p>
                   )}
 
-                  <ul className='flex flex-col gap-2'>
+                  <ul>
                     {collectedGifts.map((gift) => (
                       <GiftCard
                         key={gift.id}
@@ -879,7 +960,7 @@ It cannot be rendered inside the cell: `GiftCardProps.dict` is
                     stroke width. 1.75 on a 16px icon, carried over from the
                     member sheet so the icon is the same object it was. */}
                 <IconCirclePlus className='h-4 w-4' stroke={1.75} aria-hidden='true' />
-                <span className='label-print'>{dict.listSheet.addGift}</span>
+                <span className='label-print'>{dict.listSheet.addGiftRow}</span>
               </Button>
             </div>
           )}
@@ -903,6 +984,7 @@ It cannot be rendered inside the cell: `GiftCardProps.dict` is
               id='title'
               name='title'
               placeholder={dict.listSheet.enterGiftTitle}
+              maxLength={GIFT_FIELD_LIMITS.title.max}
               required
               autoFocus
             />
@@ -916,6 +998,7 @@ It cannot be rendered inside the cell: `GiftCardProps.dict` is
               id='description'
               name='description'
               placeholder={`${dict.listSheet.enterDescription} (${dict.listSheet.optional})`}
+              maxLength={GIFT_FIELD_LIMITS.description.max}
               rows={3}
             />
           </div>
@@ -929,6 +1012,7 @@ It cannot be rendered inside the cell: `GiftCardProps.dict` is
               name='url'
               type='url'
               placeholder={`${dict.listSheet.enterUrl} (${dict.listSheet.optional})`}
+              maxLength={GIFT_FIELD_LIMITS.url.max}
             />
           </div>
 
@@ -960,22 +1044,29 @@ It cannot be rendered inside the cell: `GiftCardProps.dict` is
         the names of the other people buying from this list is a different product
         from the one this is.
 
-        The rows are names and addresses with no control on them. Withdrawing is
-        in the share sheet, which is where the owner's own three controls are and
-        where a confirmation can state what is being withdrawn.
-      */}
-      {isOwner && (
-        <section className='mt-2 flex flex-col gap-2'>
-          <SectionHead
-            label={
-              access.length > 0
-                ? dict.visibility.sharedWith
-                : dict.visibility.sharedWithNobody
-            }
-            count={access.length}
-          />
+        **Two conditions, and the first one is new.** A `PRIVATE` list cannot be
+        given anybody, so on every private list ever opened this block printed two
+        lines and an empty count - "Noch mit niemandem geteilt / Noch niemand
+        eingetragen. / 00" - to say that nobody is on it. The chip in the head has
+        already said it, in one word, higher up, and the control that would change
+        it sits next to that chip. So the block is absent unless the owner has
+        either reached somebody or chosen to.
 
+        The second condition is unchanged: the rows are names and addresses with no
+        control on them. Withdrawing is in the share sheet, which is where the
+        owner's own three controls are and where a confirmation can state what is
+        being withdrawn.
+      */}
+      {isOwner && (isShared || access.length > 0) && (
+        <section className='flex flex-col gap-2'>
           {access.length === 0 ? (
+            /*
+              One sentence, and no head above it. The head used to read "Noch mit
+              niemandem geteilt" and the sentence under it read "Noch niemand
+              eingetragen." - the same fact twice, in the same face, thirty pixels
+              apart, with a numeral `00` beside the first. A block with nothing in
+              it needs to say so once.
+            */
             <p
               className='max-w-[44ch] text-[0.8125rem] leading-relaxed text-caption'
               data-testid='nobodyYet'
@@ -983,24 +1074,28 @@ It cannot be rendered inside the cell: `GiftCardProps.dict` is
               {dict.shareList.nobodyYet}
             </p>
           ) : (
-            <ul
-              data-testid='accessList'
-              className='divide-y divide-rule border-y border-rule'
-            >
-              {access.map((row) => (
-                <li
-                  key={row.id}
-                  className='flex min-w-0 flex-col gap-0.5 py-2'
-                >
-                  <span className='break-words text-[0.9375rem] text-ink'>
-                    {row.displayName}
-                  </span>
-                  <span className='min-w-0 truncate text-[0.8125rem] text-caption'>
-                    {row.email}
-                  </span>
-                </li>
-              ))}
-            </ul>
+            <>
+              <SectionHead
+                label={dict.visibility.sharedWith}
+                count={access.length}
+              />
+
+              <ul data-testid='accessList' className='divide-y divide-rule'>
+                {access.map((row) => (
+                  <li
+                    key={row.id}
+                    className='flex min-w-0 flex-col gap-0.5 py-2'
+                  >
+                    <span className='break-words text-[0.9375rem] text-ink'>
+                      {row.displayName}
+                    </span>
+                    <span className='min-w-0 truncate text-[0.8125rem] text-caption'>
+                      {row.email}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </>
           )}
         </section>
       )}

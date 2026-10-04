@@ -408,6 +408,22 @@ const ShareListDialog: React.FC<ShareListDialogProps> = ({
     if (pendingRevocation) revoke(pendingRevocation);
   }, [pendingRevocation, revoke]);
 
+  /*
+    The groups this list is *not* on yet, and nothing else.
+
+    `myGroups` is every group the account owns; the audience above already prints
+    the ones that have a grant on this list. Rendering `myGroups` in full meant a
+    granted group appeared twice in one sheet - once under the audience saying
+    "you can reach this", once under the offer saying the same name with no
+    control at all - and the two rows looked identical because they were, down to
+    the name and the person count. Subtracting the granted ids here is the whole
+    fix, and it is a subtraction rather than a second lookup because
+    `groupAccess` is already on the sheet.
+  */
+  const offerableGroups = (myGroups ?? []).filter(
+    (group) => !groupAccess.some((row) => row.groupId === group.id)
+  );
+
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogContent closeLabel={dict.close} className='sm:max-w-md'>
@@ -478,6 +494,30 @@ const ShareListDialog: React.FC<ShareListDialogProps> = ({
         ) : (
           <div className='flex flex-col gap-6'>
             {/*
+              **The audience comes first, because it is the state and the rest of
+              this sheet is the two ways to change it.** It used to come last, under
+              a search field and a list of groups to offer, which meant the answer to
+              "who can already open this list" was below two invitations to add
+              somebody - and on a phone, below the fold.
+
+              And it used to answer that question twice. `AudienceList` printed the
+              groups already reaching this list under a head reading "Gruppen", and
+              the offer above it printed the *same* groups again, from `myGroups`,
+              each labelled "Geteilt" and each carrying no control. One group, one
+              sheet, two rows, two opposite affordances - and the only difference
+              between them was which list the renderer had walked. The offer is now
+              filtered to the groups that are not here yet, so every group appears
+              exactly once and the two sections cannot contradict each other.
+            */}
+            <AudienceList
+              access={access}
+              groupAccess={groupAccess}
+              dict={dict}
+              onRevoke={(row) => setPendingRevocation(row)}
+              onRevokeGroup={(row) => setPendingGroupRevocation(row)}
+            />
+
+            {/*
               The lookup and the grant, in one component, because they are one
               interaction: picking a row *is* adding the person. Splitting them would
               have meant a result list with a separate confirm button, and a confirm
@@ -500,107 +540,80 @@ const ShareListDialog: React.FC<ShareListDialogProps> = ({
             />
 
             {/*
-              Groups, as an offer rather than as part of the audience: the rows below
-              are the groups already reaching this list, and this is the list of ones
-              that are not. Absent entirely rather than disabled or collapsed when the
-              owner has no groups, and when the list is private the whole thing is
-              already replaced by the sentence above - a group grant is refused on a
-              private list exactly as a person one is, and a control for it here would
-              be a rule the owner cannot read.
+              Groups that are not on this list yet. Absent entirely - not disabled,
+              not collapsed - when every group the owner has is already here, and
+              replaced by one sentence when they have no groups at all, and the
+              whole block is already replaced by the sentence above on a private
+              list, where a group grant is refused exactly as a person one is.
             */}
-            {myGroups !== null && (
-              <section className='flex flex-col gap-2'>
-                <h3 className='label-print text-caption'>
-                  {dict.shareList.groupPickerHeading}
-                </h3>
-
-                {myGroups.length === 0 ? (
+            {myGroups !== null &&
+              (myGroups.length === 0 ? (
+                <section className='flex flex-col gap-2'>
+                  <h3 className='label-print text-caption'>
+                    {dict.shareList.groupPickerHeading}
+                  </h3>
                   <p
                     className='text-[0.8125rem] leading-relaxed text-caption'
                     data-testid='noGroupsToShare'
                   >
                     {dict.shareList.noGroupsToShare}
                   </p>
-                ) : (
+                </section>
+              ) : offerableGroups.length > 0 && (
+                <section className='flex flex-col gap-2'>
+                  <h3 className='label-print text-caption'>
+                    {dict.shareList.groupPickerHeading}
+                  </h3>
+
                   <ul
                     data-testid='groupPicker'
                     className='divide-y divide-rule border-y border-rule'
                   >
-                    {myGroups.map((group) => {
-                      /*
-                        A group already reaching this list is shown as granted, with no
-                        control. Pressing one would be answered `already_shared` - so a
-                        button that cannot do anything is not a button, and
-                        `PRODUCT.md:65` is the rule that says so.
-                      */
-                      const isShared = groupAccess.some(
-                        (row) => row.groupId === group.id
-                      );
-
-                      return (
-                        <li
-                          key={group.id}
-                          className='flex min-h-11 items-center justify-between gap-3 py-2'
-                          data-testid='groupPickerRow'
-                        >
-                          <span className='flex min-w-0 flex-col'>
-                            {/*
-                              A group name is a name, so it takes the one serif this
-                              product allows. At this row's size rather than the
-                              contents page's, because this is a line in a list and not
-                              the largest object in a sheet.
-                            */}
-                            <span className='font-serif break-words text-[0.9375rem] font-semibold leading-snug text-ink'>
-                              {group.name}
-                            </span>
-                            <span className='min-w-0 truncate text-[0.8125rem] text-caption'>
-                              {dict.shareList.groupReaches.replace(
-                                '{count}',
-                                String(group.memberCount)
-                              )}
-                            </span>
+                    {offerableGroups.map((group) => (
+                      <li
+                        key={group.id}
+                        className='flex min-h-11 items-center justify-between gap-3 py-2'
+                        data-testid='groupPickerRow'
+                      >
+                        <span className='flex min-w-0 flex-col'>
+                          {/*
+                            A group name is a name, so it takes the one serif this
+                            product allows. At this row's size rather than the
+                            contents page's, because this is a line in a list and not
+                            the largest object in a sheet.
+                          */}
+                          <span className='font-serif break-words text-[0.9375rem] font-semibold leading-snug text-ink'>
+                            {group.name}
                           </span>
+                          <span className='min-w-0 truncate text-[0.8125rem] text-caption'>
+                            {dict.shareList.groupReaches.replace(
+                              '{count}',
+                              String(group.memberCount)
+                            )}
+                          </span>
+                        </span>
 
-                          {isShared ? (
-                            <span
-                              className='shrink-0 text-[0.8125rem] text-caption'
-                              data-testid='groupAlreadyShared'
-                            >
-                              {dict.visibility.shared}
-                            </span>
-                          ) : (
-                            <Button
-                              type='button'
-                              variant='outline'
-                              size='sm'
-                              disabled={isSharingGroup === group.id}
-                              onClick={() => shareWithGroup(group)}
-                              data-testid='shareWithGroup'
-                              className={cn(
-                                'shrink-0',
-                                '[@media(hover:hover)_and_(pointer:fine)]:hover:bg-wash'
-                              )}
-                            >
-                              {isSharingGroup === group.id
-                                ? dict.shareList.adding
-                                : dict.shareList.add}
-                            </Button>
+                        <Button
+                          type='button'
+                          variant='outline'
+                          size='sm'
+                          disabled={isSharingGroup === group.id}
+                          onClick={() => shareWithGroup(group)}
+                          data-testid='shareWithGroup'
+                          className={cn(
+                            'shrink-0',
+                            '[@media(hover:hover)_and_(pointer:fine)]:hover:bg-wash'
                           )}
-                        </li>
-                      );
-                    })}
+                        >
+                          {isSharingGroup === group.id
+                            ? dict.shareList.adding
+                            : dict.shareList.add}
+                        </Button>
+                      </li>
+                    ))}
                   </ul>
-                )}
-              </section>
-            )}
-
-            <AudienceList
-              access={access}
-              groupAccess={groupAccess}
-              dict={dict}
-              onRevoke={(row) => setPendingRevocation(row)}
-              onRevokeGroup={(row) => setPendingGroupRevocation(row)}
-            />
+                </section>
+              ))}
           </div>
         )}
 

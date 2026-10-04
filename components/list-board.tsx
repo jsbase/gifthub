@@ -125,86 +125,166 @@ const ListBoard: React.FC<ListBoardProps> = ({
 
   const visibilityList = lists.find((list) => list.id === visibilityId) ?? null;
 
-  return (
-    <div className='flex flex-col'>
-      <section className='flex flex-col'>
-        <SectionHead
-          label={dict.listBoard.yourLists}
-          action={
-            <Button
-              variant='outline'
-              onClick={onCreateList}
-              className='justify-center text-[0.875rem]'
-              data-testid='createListButton'
-            >
-              <IconPlus className='h-4 w-4' aria-hidden='true' />
-              {dict.listBoard.createList}
-            </Button>
-          }
-        />
+  /*
+    **Which section comes first, and why it is not fixed.**
 
-        {lists.length > 0 ? (
-          <ul data-testid='ownedLists' className='divide-y divide-rule'>
-            {lists.map((list) => (
-              <ListRow
-                key={list.id}
-                list={list}
-                dict={dict}
-                busyId={busyId}
-                onOpen={onOpenList}
-                onShare={onShareList}
-                onRename={setRenamingId}
-                onChangeVisibility={setVisibilityId}
-                onDelete={onDeleteList}
-              />
-            ))}
-          </ul>
-        ) : (
-          /*
-            Two distinct ids rather than one: the two empty states are different
-            sentences about two different relationships, and an end-to-end assertion
-            that pinned a single name would pass on whichever section happened to
-            render first.
-          */
-          <CreatePlate dict={dict} onCreate={onCreateList} />
-        )}
-      </section>
+    For a reader who owns nothing, the order that puts "your lists" first prints a
+    113px blank plate and a create button above the one row they came for. Measured
+    on a phone at 390x844 with the seed's Mia - who owns nothing and was given
+    Ben's birthday list - her row began 350.5px down, 41.5% of the viewport, with
+    350.5px of it visible. The persona this state is built for is the likeliest one
+    in the product: a person who was *given* a list. Putting their list second
+    behind an invitation to go and write their own is a priority inversion, not a
+    layout preference.
+
+    So the order is a product judgement and it is stated in one line rather than
+    spread through the markup: when there is nothing of your own and something
+    somebody gave you, the thing somebody gave you comes first. With anything of
+    your own present the sections keep the order they have always had, because then
+    "your lists" is a real list and putting an invitation above five rows would be
+    the same mistake pointed the other way.
+  */
+  const sharedFirst = lists.length === 0 && shared.length > 0;
+
+  const ownSection = (
+    <section className='flex flex-col gap-6' data-testid='ownSection'>
+      <SectionHead
+        label={dict.listBoard.yourLists}
+        count={lists.length}
+      />
+
+      {lists.length > 0 ? (
+        <ul data-testid='ownedLists'>{/* No `divide-y`, and that is the load-bearing
+            absence on this page. Two lists in one section are two rows of one
+            block; a hairline between them claimed they were two blocks, and it
+            was the same hairline the section head uses to say a block starts here,
+            so the page had one mark doing two opposite jobs and a reader could
+            not tell where a group ended. The rule now means one thing - a
+            boundary - and rows inside a block are separated by space. */}
+          {lists.map((list) => (
+            <ListRow
+              key={list.id}
+              list={list}
+              dict={dict}
+              busyId={busyId}
+              onOpen={onOpenList}
+              onShare={onShareList}
+              onRename={setRenamingId}
+              onChangeVisibility={setVisibilityId}
+              onDelete={onDeleteList}
+            />
+          ))}
+        </ul>
+      ) : (
+        /*
+          Two distinct ids rather than one: the two empty states are different
+          sentences about two different relationships, and an end-to-end assertion
+          that pinned a single name would pass on whichever section happened to
+          render first.
+        */
+        <CreatePlate dict={dict} onCreate={onCreateList} />
+      )}
 
       {/*
-        The second section is not conditional on having rows: an owner with five
-        lists and no invitations needs to be told the section is empty rather than
-        left to wonder whether it exists at all. It does not carry the create
-        control - there is nothing to create here.
-      */}
-      <section className='mt-8 flex flex-col'>
-        <SectionHead label={dict.listBoard.sharedWithYou} />
+        Where the create button went.
 
-        {shared.length > 0 ? (
-          <ul data-testid='sharedLists' className='divide-y divide-rule'>
-            {shared.map((list) => (
-              <ListRow
-                key={list.id}
-                list={list}
-                dict={dict}
-                busyId={busyId}
-                onOpen={onOpenList}
-                /*
-                  No `onShare`, no `onRename`, no `onChangeVisibility`, no
-                  `onDelete` - and that absence is the whole design of this row.
-                  An invited account cannot do any of the four, so it is offered
-                  none of them, and no handler means no control rather than an
-                  inert one.
-                */
-              />
-            ))}
-          </ul>
-        ) : (
-          <EmptyNote
-            message={dict.listBoard.noSharedLists}
-            testId='noSharedLists'
-          />
-        )}
-      </section>
+        A row under the last list rather than a control inside the head, for the
+        reason the head's rule moved: a boundary line that runs above a 44px button
+        is a line about the button, and the button is not a block. Here the rule
+        below the last row separates the rows from the action, which is a statement
+        about both, and the action sits under the thing it acts on.
+
+        Shown only when there are lists. On an empty board the plate above already
+        *is* the control - it is the cell waiting to be written in - and a second
+        button saying the same thing one line below would be the same defect as an
+        inert control: two controls, one action.
+      */}
+      {lists.length > 0 && (
+        <div className='border-t border-rule pt-3'>
+          <Button
+            variant='ghost'
+            onClick={onCreateList}
+            className={cn(
+              'w-full',
+              'justify-start',
+              'gap-2.5',
+              'px-3',
+              'text-caption'
+            )}
+            data-testid='createListButton'
+          >
+            <IconPlus className='h-4 w-4' aria-hidden='true' />
+            <span className='label-print'>{dict.listBoard.createList}</span>
+          </Button>
+        </div>
+      )}
+    </section>
+  );
+
+  const sharedSection = (
+    /*
+      The second section is not conditional on having rows: a reader with five
+      lists and no invitations needs to be told the section is empty rather than
+      left to wonder whether it exists at all. It does not carry the create
+      control - there is nothing to create here.
+    */
+    <section className='flex flex-col gap-6' data-testid='sharedSection'>
+      <SectionHead
+        label={dict.listBoard.sharedWithYou}
+        count={shared.length}
+      />
+
+      {shared.length > 0 ? (
+        <ul data-testid='sharedLists'>
+          {shared.map((list) => (
+            <ListRow
+              key={list.id}
+              list={list}
+              dict={dict}
+              busyId={busyId}
+              onOpen={onOpenList}
+              /*
+                No `onShare`, no `onRename`, no `onChangeVisibility`, no
+                `onDelete` - and that absence is the whole design of this row.
+                An invited account cannot do any of the four, so it is offered
+                none of them, and no handler means no control rather than an
+                inert one.
+              */
+            />
+          ))}
+        </ul>
+      ) : (
+        <EmptyNote
+          message={dict.listBoard.sharedEmptyNote}
+          testId='noSharedLists'
+        />
+      )}
+    </section>
+  );
+
+  return (
+    /*
+      The one `h1` on this route. The header used to carry it - the signed-in
+      person's display name - and that made it the document title of every signed-in
+      page, which is a person's name rather than a page's, and left the list sheet
+      with two `h1` and no `h2` between them. The header now prints that name as a
+      paragraph, so each route owns its own heading and this one can say what the
+      page is for rather than who is looking at it.
+    */
+    <div className='flex flex-col gap-6'>
+      <h1 className='sr-only'>{dict.listBoard.yourLists}</h1>
+
+      {sharedFirst ? (
+        <>
+          {sharedSection}
+          {ownSection}
+        </>
+      ) : (
+        <>
+          {ownSection}
+          {sharedSection}
+        </>
+      )}
 
       <RenameListDialog
         isOpen={renamingId !== null}
@@ -237,18 +317,18 @@ const ListBoard: React.FC<ListBoardProps> = ({
  * title. The action sits beside it from `sm` up and under it below, because at
  * 390px a German and a Russian label do not fit on one line each.
  */
-const SectionHead: React.FC<{ label: string; action?: React.ReactNode }> = ({
+const SectionHead: React.FC<{ label: string; count: number }> = ({
   label,
-  action,
+  count,
 }) => (
   <div
     className={cn(
       'flex',
       'flex-col',
       'gap-4',
-      'border-b',
+      'border-t',
       'border-rule',
-      'pb-4',
+      'pt-3',
       'sm:flex-row',
       'sm:items-end',
       'sm:justify-between',
@@ -256,7 +336,24 @@ const SectionHead: React.FC<{ label: string; action?: React.ReactNode }> = ({
     )}
   >
     <h2 className='label-print pt-1 text-caption'>{label}</h2>
-    {action}
+
+    {/*
+      How many rows are under this label, as the sheet prints it. It was absent here
+      because the create button was standing where the figure goes, and two objects
+      cannot share the right-hand end of one line.
+    */}
+    <span
+      className={cn(
+        'font-label',
+        'text-[0.6875rem]',
+        'font-bold',
+        'tabular-nums',
+        'tracking-[0.1em]',
+        'text-caption'
+      )}
+    >
+      {String(count).padStart(2, '0')}
+    </span>
   </div>
 );
 
@@ -318,14 +415,13 @@ const CreatePlate: React.FC<{ dict: Translations; onCreate: () => void }> = ({
       {dict.listBoard.noLists}
     </span>
 
-    {/* What actually goes in. `aria-hidden` rather than repeated, for the reason
-        the sheet's own blank cell gives: it restates what the dialog it opens
-        will label field by field, and a second sentence in the control's
-        accessible name is more than the control needs to announce. */}
-    <span
-      aria-hidden='true'
-      className={cn('text-[0.8125rem]', 'leading-relaxed', 'text-caption')}
-    >
+    {/* What actually goes in, and who decides who sees it. Not `aria-hidden`
+        any more: it used to be, on the grounds that it restated what the dialog
+        it opens labels field by field - which was true of the old wording and is
+        not true of this one. It is the product's promise, in one sentence, and the
+        sentence somebody using a screen reader most needs is the one about not
+        having to decide about privacy before they have written anything down. */}
+    <span className='text-[0.8125rem] leading-relaxed text-caption'>
       {dict.listBoard.emptyPlateHint}
     </span>
   </button>
@@ -345,13 +441,22 @@ const CreatePlate: React.FC<{ dict: Translations; onCreate: () => void }> = ({
  * It is set at `meta` rather than at the size the sentence above it used to be,
  * because it is now the only thing in its section rather than the largest object
  * on the sheet, and there is no longer an action for it to compete with.
+ *
+ * **No measure, and that is the fix.** This carried `max-w-[44ch]`, which is the
+ * app's reading measure for prose - and a one-sentence note is not prose. At 13px
+ * the measure capped the note at roughly 380px on a sheet whose content column is
+ * 910px, so a sentence of sixty-odd characters broke onto two lines with more than
+ * half the sheet empty to its right, and read as a layout failure rather than as
+ * anything anybody had written. Widening the box is the whole fix: the sentence now
+ * takes the sheet's own measure and wraps only where it has to. On a phone the
+ * column is 358px and it wraps there, which is correct - a phone is narrow.
  */
 const EmptyNote: React.FC<{ message: string; testId: string }> = ({
   message,
   testId,
 }) => (
   <p
-    className={cn('max-w-[44ch]', 'text-[0.8125rem]', 'leading-relaxed', 'text-caption')}
+    className={cn('text-[0.8125rem]', 'leading-relaxed', 'text-pretty', 'text-caption')}
     data-testid={testId}
   >
     {message}

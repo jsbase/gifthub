@@ -161,7 +161,7 @@ const Home: NextPage<PageProps> = async ({ params }) => {
                     'order-4',
                     'mt-8',
                     'max-w-[52ch]',
-                    'text-[1.0625rem]',
+                    'text-[1.125rem]',
                     'leading-[1.6]',
                     'text-pretty',
                     'text-caption',

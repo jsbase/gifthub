@@ -117,15 +117,49 @@ const LandingPreview: React.FC<LandingPreviewProps> = ({
               key={item.name}
               className={cn(
                 'grid',
-                'grid-cols-[1fr_auto]',
-                'items-center',
+                /*
+                  Two columns at `sm` and one below it, and that is the fix for a
+                  reported break rather than a preference.
+
+                  Measured in Chromium: "Geburtstagswünsche" is 213px of Source
+                  Serif 4 at 20px, and the name column on this row had 213px at
+                  390px - it just fitted - but 186px at 360px and 146px at 320px.
+                  `overflow-wrap: break-word` on the name made it break inside the
+                  token at both of those, which is the "Geburtstagswünsc-he" that
+                  was reported. A 390px screenshot hides it, which is why it
+                  survived review.
+
+                  Stacking below `sm` gives the name the row's whole content
+                  measure - 254px at 320px, 294px at 360px - so the longest German
+                  compound the seed can produce fits without breaking at all. The
+                  figure keeps its place on the name's own baseline from `sm` up,
+                  which is the whole point of the plate: it is the contents page
+                  reproduced at a smaller size, and a smaller reproduction is
+                  entitled to wrap.
+                */
+                'grid-cols-1',
                 'gap-x-5',
                 'gap-y-2',
-                'py-4'
+                'py-4',
+                'sm:grid-cols-[1fr_auto]',
+                'sm:items-center'
               )}
             >
               <div className='flex w-full min-w-0 flex-col items-start gap-2'>
-                <span className='max-w-full break-words'>
+                <span
+                  className={cn(
+                    'max-w-full',
+                    /*
+                      `hyphens-auto`, not `break-words`. The name is a proper noun
+                      and German does not put hyphens in them, but a language that
+                      does - and this app ships German, English and Russian from
+                      one string table - should break at a morpheme boundary rather
+                      than mid-syllable if a name ever does not fit. `<html lang>`
+                      is already correct, which is the other half of it.
+                    */
+                    'hyphens-auto'
+                  )}
+                >
                   <span
                     className={cn(
                       'font-serif',
@@ -154,7 +188,15 @@ const LandingPreview: React.FC<LandingPreviewProps> = ({
                 </span>
               </div>
 
-              <SheetProgress unbought={sheet.unbought} total={sheet.total} />
+              {/* Right-aligned under the name below `sm`, where the row is one
+                  column and the figure is a line of its own; on the name's own
+                  baseline from `sm` up, which is the arrangement the contents
+                  page itself uses. */}
+              <SheetProgress
+                unbought={sheet.unbought}
+                total={sheet.total}
+                className='justify-self-end sm:justify-self-auto'
+              />
             </li>
           );
         })}

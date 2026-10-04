@@ -65,7 +65,7 @@
   "errors": {
     "loginRequired": "Требуется вход",
     "failedToLoad": "Списки не загружены",
-    "failedToLoadGifts": "Идеи подарков не загружены",
+    "failedToLoadGifts": "Желания не загружены",
     "loginRejected": "Ник или адрес почты и пароль не совпадают.",
     "loginOffline": "Нет соединения. Попробуйте ещё раз.",
     "loginServerError": "Что-то пошло не так. Попробуйте позже.",
@@ -93,19 +93,23 @@
     "cannotJoinOwnGroup": "Нельзя добавить себя в собственную группу.",
     "cannotClearPurchase": "Эту идею отметил кто-то другой. Отменить это нельзя.",
     "forbidden": "На этом списке это нельзя.",
-    "notFound": "Такого списка не существует."
+    "notFound": "Такого списка не существует.",
+    "titleTooLong": "Не более {max} символов в желании.",
+    "titleTooShort": "Не менее {min} символов.",
+    "noteTooLong": "Не более {max} символов в заметке.",
+    "urlTooLong": "Не более {max} символов в ссылке."
   },
   "success": {
     "loggedOut": "Вы вышли из системы"
   },
   "toasts": {
-    "giftAdded": "Идея подарка добавлена",
-    "giftAddFailed": "Идея подарка не добавлена",
+    "giftAdded": "Желание добавлено",
+    "giftAddFailed": "Желание не добавлено",
     "giftStatusPurchased": "Отмечено как купленная",
     "giftStatusBackToList": "Вернулось в список",
-    "giftStatusUpdateFailed": "Идея подарка не обновлена",
-    "giftDeleted": "Идея подарка удалена",
-    "giftDeleteFailed": "Идея подарка не удалена",
+    "giftStatusUpdateFailed": "Желание не обновлено",
+    "giftDeleted": "Желание удалено",
+    "giftDeleteFailed": "Желание не удалено",
     "listCreated": "Список создан",
     "listCreateFailed": "Список не создан",
     "listRenamed": "Список переименован",
@@ -143,32 +147,32 @@
   "visibility": {
     "private": "Приватный",
     "shared": "Общий",
-    "privateHint": "Этот список видите только вы.",
-    "sharedHint": "Его видят ровно те, кого вы пригласили.",
+    "privateHint": "Только вы можете её просматривать и добавлять идеи.",
+    "sharedHint": "Другие могут её просматривать и отмечать идеи.",
     "change": "Изменить видимость",
     "sharedWith": "С кем поделились",
     "sharedWithNobody": "Пока не поделились ни с кем"
   },
   "listSheet": {
-    "listHint": "Записи в этот список добавляете только вы.",
-    "addGift": "Добавить идею подарка",
-    "enterGiftTitle": "Идея подарка",
+    "addGift": "Добавить желание",
+    "enterGiftTitle": "Ваше желание",
     "optional": "Необязательно",
     "enterDescription": "Добавить заметку",
     "enterUrl": "Ссылка",
     "cancel": "Отмена",
     "adding": "Добавление...",
-    "noGifts": "Идей подарков пока нет. Добавьте первую.",
+    "noGifts": "Желаний пока нет? Добавьте первое!",
     "emptyCellHint": "Достаточно названия. Заметка и ссылка — по желанию.",
     "markAsPurchased": "Отметить как купленную",
     "markAsAvailable": "Вернуть в список",
-    "deleteGift": "Удалить идею подарка",
-    "deleteGiftConfirm": "Удалить эту идею подарка?",
+    "deleteGift": "Удалить желание",
+    "deleteGiftConfirm": "Удалить это желание?",
     "openIdeas": "Ещё не куплено",
     "collectedIdeas": "Куплено",
     "youAreABuyer": "Этот список принадлежит другому человеку. Отметить идею, когда вы её купите, вы можете — и больше ничего.",
     "markedBySomeoneElse": "Отметил кто-то другой — отметка остаётся.",
-    "backToLists": "К вашим спискам"
+    "backToLists": "К вашим спискам",
+    "addGiftRow": "Просто запишите желание, поделитесь, готово!"
   },
   "shareList": {
     "shareTitle": "Поделиться списком",
@@ -182,18 +186,19 @@
     "adding": "Добавление...",
     "revoke": "Отозвать доступ",
     "revokeConfirmTitle": "Отозвать доступ?",
-    "nobodyYet": "Пока никого не добавили.",
+    "nobodyYet": "Вы пока ни с кем не поделились своими желаниями",
     "privateFirst": "Пока список приватный, добавить никого нельзя. Сначала откройте его.",
     "makeShared": "Сделать общим",
-    "groupPickerHeading": "Или поделиться с группой",
-    "noGroupsToShare": "У вас пока нет групп. Создайте группу в верхней панели.",
+    "groupPickerHeading": "Добавить группы",
+    "noGroupsToShare": "У вас пока нет групп. Создайте группу через «Группы» в верхней панели.",
     "groupReaches": "{count} чел.",
-    "revokeGroupConfirmTitle": "Исключить группу?"
+    "revokeGroupConfirmTitle": "Исключить группу?",
+    "audienceHeading": "Кто видит этот список"
   },
   "groups": {
     "openGroups": "Группы",
     "title": "Группы",
-    "lead": "Группа — это список людей. Если вы поделитесь списком желаний с группой, его увидят все, кто в ней состоит.",
+    "lead": "Группа — это список людей. Всякий, кто в ней состоит, видит каждый список желаний, которым вы с ней поделились.",
     "noGroups": "У вас пока нет групп.",
     "create": "Создать группу",
     "creating": "Создание...",
@@ -204,16 +209,17 @@
     "save": "Сохранить",
     "saving": "Сохранение...",
     "deleteGroup": "Удалить группу",
-    "membersHeading": "Люди в группе",
-    "noMembers": "Пока никого нет.",
+    "noMembers": "В этой группе пока никого нет.",
     "addMemberLabel": "Добавить человека",
     "removeMember": "Убрать из группы",
     "removeMemberConfirmTitle": "Убрать из группы?",
-    "memberCount": "{count} чел."
+    "memberCount": "{count} чел.",
+    "newGroup": "Новая группа",
+    "backToGroups": "Все группы"
   },
   "createListDialog": {
-    "createListTitle": "Новый список",
-    "enterListName": "Название списка",
+    "createListTitle": "Новый список желаний",
+    "enterListName": "Название списка желаний",
     "create": "Создать",
     "creating": "Создание...",
     "visibilityLegend": "Кто увидит этот список?",
@@ -223,10 +229,9 @@
     "sharedHint": "Ровно те, кого вы потом добавите по адресу."
   },
   "listBoard": {
-    "yourLists": "Ваши списки",
-    "sharedWithYou": "Списки близких",
-    "createList": "Создать список",
-    "addGift": "Добавить идею подарка",
+    "yourLists": "Все Ваши желания",
+    "sharedWithYou": "Желания близких",
+    "createList": "Создать список желаний",
     "rename": "Переименовать",
     "renameTitle": "Переименовать список",
     "renameLabel": "Новое название",
@@ -235,13 +240,12 @@
     "deleteList": "Удалить список",
     "changeVisibility": "Изменить видимость",
     "share": "Поделиться",
-    "sharedWithCount": "Общий доступ: {count}",
-    "sharedWithGroupCount": "Общий доступ: {count} чел. · {groups} гр.",
-    "noLists": "Создайте свой первый список желаний.",
-    "noSharedLists": "С вами пока не поделились списками желаний.",
-    "emptyPlateHint": "Достаточно названия. Кто его увидит, решаете вы.",
+    "sharedWithGroupCount": "с: {count} чел. · групп: {groups}",
+    "noLists": "Просто создайте список желаний!",
+    "emptyPlateHint": "Вы решаете, кто его видит.",
     "private": "Приватный",
-    "shared": "Общий"
+    "shared": "Общий",
+    "sharedEmptyNote": "Как только с вами поделятся списком желаний, вы увидите его здесь."
   },
   "footer": {
     "copyright": "© 2026 wishy",
@@ -329,9 +333,9 @@
     ]
   },
   "giftCount": {
-    "none": "идей подарков пока нет",
+    "none": "желаний пока нет",
     "zero": "покупать больше нечего",
-    "one": "1 идея подарка ещё не куплена",
-    "many": "{{count}} идей подарков ещё не куплены"
+    "one": "Открыто: 1",
+    "many": "Открыто: {count}"
   }
 }

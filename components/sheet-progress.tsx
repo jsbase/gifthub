@@ -38,15 +38,35 @@ export interface SheetProgressProps {
   unbought: number;
   /** How many ideas exist in total, open and collected. */
   total: number;
+  /**
+   * Lets a caller place the pair inside a declared grid track.
+   *
+   * Two callers need it and they need opposite things. A contents-page row
+   * declares a 5rem column for the figure so the number lands in the same place on
+   * an owned row and on a shared one, which means justifying it to the end of that
+   * column. The landing plate's row is one column below `sm` and two above it, so
+   * there the pair is right-aligned on its own line on a phone and left on the
+   * name's baseline from `sm` up. The rule-plus-figure pair is 80px wide whichever
+   * way it is aligned; what changes is which edge it is pinned to, and that is the
+   * caller's decision rather than this component's.
+   */
+  className?: string;
 }
 
-const SheetProgress: React.FC<SheetProgressProps> = ({ unbought, total }) => {
+const SheetProgress: React.FC<SheetProgressProps> = ({
+  unbought,
+  total,
+  className,
+}) => {
   const collected = total - unbought;
   const pct = total === 0 ? 0 : Math.round((collected / total) * 100);
   const nothingLeft = total > 0 && collected === total;
 
   return (
-    <span aria-hidden='true' className='flex shrink-0 items-center gap-3'>
+    <span
+      aria-hidden='true'
+      className={cn('flex shrink-0 items-center gap-3', className)}
+    >
       <span className='relative block h-[3px] w-14 bg-wash-strong'>
         {total === 0 ? (
           <span className='absolute inset-0 border-t border-dashed border-rule' />

@@ -160,7 +160,6 @@
      collection; the rest are state feedback and the list arriving once. */
   --animate-collect-settle: collect-settle 260ms cubic-bezier(0.16, 1, 0.3, 1) both;
   --animate-reveal-in: reveal-in 340ms cubic-bezier(0.16, 1, 0.3, 1) both;
-  --animate-count-flash: count-flash 520ms ease-out both;
   --animate-row-reveal: row-reveal 180ms ease-out both;
 }
 
@@ -447,20 +446,13 @@
 }
 
 /*
-  Count feedback. When a gift is bought the number in the sheet's header
-  changes, and this is the only way the app says so outside the row itself.
+  Row feedback, kept for the row's own arrival. The count flash that used to sit
+  here is gone with its only consumer: the sheet's header printed the open-idea
+  count as a line of its own *and* the section head printed it as `03`, so the
+  flash was animating one of two copies of a number that did not need either. The
+  numeral in the section head still moves when a cell is collected, and the cell
+  itself inverts, so the change is reported twice on purpose.
 */
-@keyframes count-flash {
-  0% {
-    background-color: transparent;
-  }
-  25% {
-    background-color: color-mix(in srgb, hsl(var(--ink)) 14%, transparent);
-  }
-  100% {
-    background-color: transparent;
-  }
-}
 
 @keyframes row-reveal {
   0% {
