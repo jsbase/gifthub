@@ -95,7 +95,7 @@ const Header: React.FC<HeaderProps> = ({
     : undefined;
 
   return (
-    <header className='border-b border-rule'>
+    <header className='border-b border-rule' data-testid='header'>
       {/*
         The running head of a page: the name on the left, the instruments on the
         right, one hairline underneath. `mr-auto` rather than `justify-between`
@@ -198,7 +198,10 @@ so the name takes the slack and the controls can never be pushed off the
                 it puts the header on a clean 20 / 13 / 11 descending scale against
                 the name and the switcher's code.
               */}
-              <span className={cn('hidden', 'text-[0.8125rem]', 'sm:inline')}>
+              <span
+                data-testid='logoutLabel'
+                className={cn('hidden', 'text-[0.8125rem]', 'sm:inline')}
+              >
                 {dict.logout}
               </span>
             </Button>

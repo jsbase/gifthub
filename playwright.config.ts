@@ -18,6 +18,18 @@ const appURL = (
 
 export default defineConfig({
   testDir: './tests',
+  /*
+    `tests/unit/` belongs to `node --test`, and Playwright's default testMatch
+    (`**\/*.@(spec|test).?(c|m)[jt]s?(x)`) would otherwise collect those files and
+    report "no tests found in file" for each one - a red run that says nothing
+    about the product.
+
+    The path is a directory rather than a file list so that a unit test added
+    later is excluded by default instead of by remembering to update this line.
+    Nothing under `tests/unit/` drives a browser, so there is nothing here for
+    Playwright to run; `npm run test:unit` is the runner for those files.
+  */
+  testIgnore: '**/unit/**',
   fullyParallel: false,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,

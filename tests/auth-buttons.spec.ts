@@ -120,7 +120,7 @@ test.describe('Login and Registration', () => {
     const loginButton = page.getByTestId('OpenLogin');
     await loginButton.click();
 
-    const dialog = page.locator('[role="dialog"]');
+    const dialog = page.getByTestId('dialogContent');
     await expect(dialog).toBeVisible();
 
     const closeIcon = dialog.getByTestId('dialogClose');
@@ -135,8 +135,8 @@ test.describe('Login and Registration', () => {
     const loginButton = page.getByTestId('OpenLogin');
     await loginButton.click();
 
-    await page.fill('#identifier', ANNA);
-    await page.fill('#password', PASSWORD);
+    await page.getByTestId('loginIdentifier').fill(ANNA);
+    await page.getByTestId('loginPassword').fill(PASSWORD);
 
     const submitButton = page.getByTestId('SubmitLogin');
 
@@ -173,8 +173,8 @@ test.describe('Login and Registration', () => {
         waitUntil: 'networkidle',
       });
       await page.getByTestId('OpenLogin').click();
-      await page.fill('#identifier', identifier);
-      await page.fill('#password', PASSWORD);
+      await page.getByTestId('loginIdentifier').fill(identifier);
+      await page.getByTestId('loginPassword').fill(PASSWORD);
 
       await Promise.all([
         page.waitForNavigation({ timeout: 15000, waitUntil: 'load' }),
@@ -190,8 +190,8 @@ test.describe('Login and Registration', () => {
   }) => {
     // Wrong password on an account that exists.
     await page.getByTestId('OpenLogin').click();
-    await page.fill('#identifier', ANNA);
-    await page.fill('#password', 'definitely-not-the-password');
+    await page.getByTestId('loginIdentifier').fill(ANNA);
+    await page.getByTestId('loginPassword').fill('definitely-not-the-password');
     await page.getByTestId('SubmitLogin').click();
 
     const wrongPassword = page.getByTestId('loginPasswordError');
@@ -207,8 +207,8 @@ test.describe('Login and Registration', () => {
     // Address nobody has. Same status, same sentence.
     await page.reload({ waitUntil: 'networkidle' });
     await page.getByTestId('OpenLogin').click();
-    await page.fill('#identifier', 'nobody@example.test');
-    await page.fill('#password', PASSWORD);
+    await page.getByTestId('loginIdentifier').fill('nobody@example.test');
+    await page.getByTestId('loginPassword').fill(PASSWORD);
     await page.getByTestId('SubmitLogin').click();
 
     const unknownAddress = page.getByTestId('loginPasswordError');
@@ -220,13 +220,13 @@ test.describe('Login and Registration', () => {
   test('Register with valid credentials', async ({ page }) => {
     await page.getByTestId('OpenRegister').click();
 
-    const dialog = page.locator('[role="dialog"]');
+    const dialog = page.getByTestId('dialogContent');
     await expect(dialog).toBeVisible();
 
-    await page.fill('#newNickname', 'erika');
-    await page.fill('#newEmail', NEW_ACCOUNT);
-    await page.fill('#newPassword', PASSWORD);
-    await page.fill('#confirmPassword', PASSWORD);
+    await page.getByTestId('registerNickname').fill('erika');
+    await page.getByTestId('registerEmail').fill(NEW_ACCOUNT);
+    await page.getByTestId('registerPassword').fill(PASSWORD);
+    await page.getByTestId('registerConfirmPassword').fill(PASSWORD);
 
     const submitButton = page.getByTestId('SubmitRegister');
 
@@ -263,8 +263,8 @@ test.describe('Login and Registration', () => {
       waitUntil: 'networkidle',
     });
     await page.getByTestId('OpenLogin').click();
-    await page.fill('#identifier', 'erika');
-    await page.fill('#password', PASSWORD);
+    await page.getByTestId('loginIdentifier').fill('erika');
+    await page.getByTestId('loginPassword').fill(PASSWORD);
     await Promise.all([
       page.waitForNavigation({ timeout: 15000, waitUntil: 'load' }),
       page.getByTestId('SubmitLogin').click(),
@@ -277,10 +277,10 @@ test.describe('Login and Registration', () => {
   }) => {
     await page.getByTestId('OpenRegister').click();
 
-    await page.fill('#newNickname', 'annaagain');
-    await page.fill('#newEmail', ANNA);
-    await page.fill('#newPassword', PASSWORD);
-    await page.fill('#confirmPassword', PASSWORD);
+    await page.getByTestId('registerNickname').fill('annaagain');
+    await page.getByTestId('registerEmail').fill(ANNA);
+    await page.getByTestId('registerPassword').fill(PASSWORD);
+    await page.getByTestId('registerConfirmPassword').fill(PASSWORD);
 
     await page.getByTestId('SubmitRegister').click();
 
@@ -310,10 +310,10 @@ test.describe('Login and Registration', () => {
   }) => {
     await page.getByTestId('OpenRegister').click();
 
-    await page.fill('#newNickname', 'anna');
-    await page.fill('#newEmail', 'someone-else@example.test');
-    await page.fill('#newPassword', PASSWORD);
-    await page.fill('#confirmPassword', PASSWORD);
+    await page.getByTestId('registerNickname').fill('anna');
+    await page.getByTestId('registerEmail').fill('someone-else@example.test');
+    await page.getByTestId('registerPassword').fill(PASSWORD);
+    await page.getByTestId('registerConfirmPassword').fill(PASSWORD);
     await page.getByTestId('SubmitRegister').click();
 
     const nicknameError = page.getByTestId('registerNicknameError');
@@ -326,10 +326,10 @@ test.describe('Login and Registration', () => {
   test('A nickname is refused before it reaches the server', async ({ page }) => {
     await page.getByTestId('OpenRegister').click();
 
-    await page.fill('#newNickname', '!!!');
-    await page.fill('#newEmail', 'someone@example.test');
-    await page.fill('#newPassword', PASSWORD);
-    await page.fill('#confirmPassword', PASSWORD);
+    await page.getByTestId('registerNickname').fill('!!!');
+    await page.getByTestId('registerEmail').fill('someone@example.test');
+    await page.getByTestId('registerPassword').fill(PASSWORD);
+    await page.getByTestId('registerConfirmPassword').fill(PASSWORD);
 
     await page.getByTestId('SubmitRegister').click();
 
@@ -362,13 +362,13 @@ test.describe('Login and Registration', () => {
   }) => {
     await page.getByTestId('OpenRegister').click();
 
-    await page.fill('#newNickname', 'kurzpw');
-    await page.fill('#newEmail', 'someone@example.test');
+    await page.getByTestId('registerNickname').fill('kurzpw');
+    await page.getByTestId('registerEmail').fill('someone@example.test');
     // Both fields the same short string, so the only thing wrong here is the length.
     // Two *different* short strings would fail on length first and never reach the
     // mismatch branch, which is the next test's job and not this one's.
-    await page.fill('#newPassword', 'kurz');
-    await page.fill('#confirmPassword', 'kurz');
+    await page.getByTestId('registerPassword').fill('kurz');
+    await page.getByTestId('registerConfirmPassword').fill('kurz');
 
     await page.getByTestId('SubmitRegister').click();
 
@@ -386,14 +386,14 @@ test.describe('Login and Registration', () => {
   }) => {
     await page.getByTestId('OpenRegister').click();
 
-    await page.fill('#newNickname', 'mismatch');
-    await page.fill('#newEmail', 'someone@example.test');
+    await page.getByTestId('registerNickname').fill('mismatch');
+    await page.getByTestId('registerEmail').fill('someone@example.test');
     // Both long enough to clear the length gate, because the gates run in the order
     // the fields are printed and the length check is first - which is the point of the
     // order: a reader who filled the sheet top to bottom is told about the topmost
     // thing they still have to fix rather than one further down.
-    await page.fill('#newPassword', PASSWORD);
-    await page.fill('#confirmPassword', 'test5678');
+    await page.getByTestId('registerPassword').fill(PASSWORD);
+    await page.getByTestId('registerConfirmPassword').fill('test5678');
 
     await page.getByTestId('SubmitRegister').click();
 
@@ -423,10 +423,10 @@ test.describe('Login and Registration', () => {
     // The nickname gate runs first, so it has to be a usable one - otherwise the sheet
     // would stop at `registerNicknameError` and the assertion below would pass for the
     // wrong reason if it were written loosely enough to see any error on the page.
-    await page.fill('#newNickname', 'keineadresse');
-    await page.fill('#newEmail', 'not-an-address');
-    await page.fill('#newPassword', PASSWORD);
-    await page.fill('#confirmPassword', PASSWORD);
+    await page.getByTestId('registerNickname').fill('keineadresse');
+    await page.getByTestId('registerEmail').fill('not-an-address');
+    await page.getByTestId('registerPassword').fill(PASSWORD);
+    await page.getByTestId('registerConfirmPassword').fill(PASSWORD);
 
     await page.getByTestId('SubmitRegister').click();
 
@@ -439,8 +439,8 @@ test.describe('Login and Registration', () => {
     page,
   }) => {
     await page.getByTestId('OpenLogin').click();
-    await page.fill('#identifier', '!!!');
-    await page.fill('#password', PASSWORD);
+    await page.getByTestId('loginIdentifier').fill('!!!');
+    await page.getByTestId('loginPassword').fill(PASSWORD);
     await page.getByTestId('SubmitLogin').click();
 
     // The identifier sentence, not the password one: the reader typed something
@@ -485,7 +485,7 @@ test.describe('Login and Registration', () => {
     async ({ page }) => {
       await page.getByTestId('OpenLogin').click();
 
-      const dialog = page.locator('[role="dialog"]');
+      const dialog = page.getByTestId('dialogContent');
       await expect(dialog).toBeVisible();
 
       /*
@@ -494,7 +494,7 @@ test.describe('Login and Registration', () => {
         two assertions about `aria-describedby` below would pass against a sheet
         with no field on it.
       */
-      const identifier = page.locator('#identifier');
+      const identifier = page.getByTestId('loginIdentifier');
       await expect(identifier).toBeVisible();
 
       // The DOM's text rather than the rendered text, so a soft line break inside
@@ -520,8 +520,8 @@ test.describe('Login and Registration', () => {
       // suggestion about whether they have an account.
       await expect(page.getByTestId('loginCreateAccount')).toHaveCount(0);
 
-      await page.fill('#identifier', '!!!');
-      await page.fill('#password', PASSWORD);
+      await page.getByTestId('loginIdentifier').fill('!!!');
+      await page.getByTestId('loginPassword').fill(PASSWORD);
       await page.getByTestId('SubmitLogin').click();
 
       await expect(page.getByTestId('loginIdentifierError')).toBeVisible({
@@ -554,8 +554,8 @@ test.describe('Login and Registration', () => {
       });
 
       await page.getByTestId('OpenLogin').click();
-      await page.fill('#identifier', ANNA);
-      await page.fill('#password', 'definitely-not-the-password');
+      await page.getByTestId('loginIdentifier').fill(ANNA);
+      await page.getByTestId('loginPassword').fill('definitely-not-the-password');
       await page.getByTestId('SubmitLogin').click();
 
       /*
@@ -621,8 +621,8 @@ test.describe('Login and Registration', () => {
         await page.route('**/api/auth/login', (route) => route.abort());
 
         await page.getByTestId('OpenLogin').click();
-        await page.fill('#identifier', ANNA);
-        await page.fill('#password', PASSWORD);
+        await page.getByTestId('loginIdentifier').fill(ANNA);
+        await page.getByTestId('loginPassword').fill(PASSWORD);
         await page.getByTestId('SubmitLogin').click();
 
         const passwordError = page.getByTestId('loginPasswordError');
@@ -655,8 +655,8 @@ test.describe('Login and Registration', () => {
       );
 
       await page.getByTestId('OpenLogin').click();
-      await page.fill('#identifier', ANNA);
-      await page.fill('#password', PASSWORD);
+      await page.getByTestId('loginIdentifier').fill(ANNA);
+      await page.getByTestId('loginPassword').fill(PASSWORD);
       await page.getByTestId('SubmitLogin').click();
 
       const passwordError = page.getByTestId('loginPasswordError');

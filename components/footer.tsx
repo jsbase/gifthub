@@ -7,7 +7,10 @@ const Footer: React.FC<FooterProps> = ({ dict }) => {
   if (!dict) return null;
 
   return (
-    <footer className={cn('mt-auto', 'w-full', 'border-t', 'border-rule')}>
+    <footer
+      data-testid='footer'
+      className={cn('mt-auto', 'w-full', 'border-t', 'border-rule')}
+    >
       <div className={cn('container', 'mx-auto', 'py-6')}>
         <div
           className={cn(

@@ -71,6 +71,7 @@ const LoginForm: React.FC<LoginFormProps> = ({
         <Input
           name='identifier'
           id='identifier'
+          data-testid='loginIdentifier'
           type='text'
           inputMode='email'
           autoComplete='username'
@@ -106,6 +107,7 @@ const LoginForm: React.FC<LoginFormProps> = ({
         <Input
           name='password'
           id='password'
+          data-testid='loginPassword'
           type='password'
           autoComplete='current-password'
           required
@@ -158,12 +160,14 @@ const LoginForm: React.FC<LoginFormProps> = ({
         )}
       </div>
       {/*
-        `xs:h-12` is the 48px floor for a dialog's primary action (`PRODUCT.md:
-        102`), and `xs:` because below `sm` the sheet IS the page under the header
-        and this is the control a thumb is reaching for; above it the sheet is a
-        centred card on a desk and the whole app is 44px. `xs:text-base` goes with
-        it: at 390px the sheet is the whole screen, so the one action it exists to
-        perform is set at body size rather than at label size.
+        `size='cta'` is the 48px floor for a dialog's primary action
+        (`PRODUCT.md: 102`), and `xs:` because below `sm` the sheet IS the page
+        under the header and this is the control a thumb is reaching for; above
+        it the sheet is a centred card on a desk and the whole app is 44px. The
+        phone size step is part of the variant rather than a class written here,
+        for the reason `buttonVariants` gives: the footer of every sheet puts
+        this button beside a cancel, and only one declaration can keep the two
+        from disagreeing about their height.
 
         No `aria-label`: the button is named by its own text, which is the
         dictionary's and is in the reader's language. The English
@@ -173,7 +177,8 @@ const LoginForm: React.FC<LoginFormProps> = ({
       */}
       <Button
         type='submit'
-        className={cn('w-full', 'xs:text-base', 'xs:h-12')}
+        size='cta'
+        className='w-full'
         disabled={isLoading}
         data-testid='SubmitLogin'
       >

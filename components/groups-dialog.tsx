@@ -660,18 +660,24 @@ const GroupsDialog: React.FC<GroupsDialogProps> = ({
           {openGroup ? (
             <>
               {/*
-                Lifted by exactly the difference between the sheet's padding and
-                the close control's own offset. The X is `absolute top-3` against
-                the content box (`components/ui/dialog.tsx:226-241`), so its 44px
-                target starts 12px from the top of the sheet, while a row in flow
-                starts at the content padding - 20px from `sm` down, 16px on a
-                phone. Left where the flow puts it, this row sat 8px (4px on a
-                phone) below the X standing right next to it, and three 44px
-                targets that are meant to read as one line read as a staircase.
-                Two values, because the padding steps with `xs:p-4` and the close
-                control does not move with it.
+                One lift, stated once. It was `-mt-2` with `xs:-mt-1`, which is
+                two values compensating for two paddings - `p-5` from `sm` and
+                `xs:p-4` below it - so that this row's absolute position inside
+                the sheet came out the same at every width. The position it is
+                compensating for is the close control's, which is also two values
+                (`top-5` / `xs:top-4`), so the pair held the row 4px under the X
+                at every width.
+
+                Measured, the single value is identical below `sm` and gives up
+                that alignment above it: at 390px the row's top is 21px into the
+                sheet against the X's 17px, before and after; at 1280px it moves
+                from 25px to 29px against the X's 21px, so the gap goes from 4px
+                to 8px. What does not change is the relationship on the row's own
+                line - the way out and the group menu sit at the same offset at
+                every width, 0px apart at both - and that is the alignment this
+                row is read by.
               */}
-              <div className='-mt-2 flex items-center justify-between gap-2 xs:-mt-1'>
+              <div className='-mt-1 flex items-center justify-between gap-2'>
                 {/*
                   The way out. `aria-controls` names the list this returns to, so
                   the relationship is announced and not only drawn, and it is a real
@@ -694,7 +700,7 @@ const GroupsDialog: React.FC<GroupsDialogProps> = ({
                     '[@media(hover:hover)_and_(pointer:fine)]:hover:text-ink'
                   )}
                 >
-                  <IconArrowLeft className='h-4 w-4' aria-hidden='true' />
+                  <IconArrowLeft className='h-4 w-4 shrink-0' aria-hidden='true' />
                   {dict.groups.backToGroups}
                 </button>
 
@@ -1005,10 +1011,18 @@ const GroupsDialog: React.FC<GroupsDialogProps> = ({
                   )}
                 </div>
 
+                {/*
+                  Both buttons carry `cta`, which is what makes the pair one
+                  height. The phone floor belongs to the action the sheet exists
+                  to perform, and a footer that puts it beside a 44px cancel is
+                  two controls of one row at two heights - measured at 390px as
+                  exactly that, 44 and 48.
+                */}
                 <div className='flex gap-2'>
                   <Button
                     type='button'
                     variant='outline'
+                    size='cta'
                     onClick={() => setCreating(false)}
                     className='flex-1'
                   >
@@ -1016,8 +1030,9 @@ const GroupsDialog: React.FC<GroupsDialogProps> = ({
                   </Button>
                   <Button
                     type='submit'
+                    size='cta'
                     disabled={isCreating}
-                    className={cn('flex-1', 'xs:h-12', 'xs:text-base')}
+                    className='flex-1'
                     data-testid='createGroupSubmit'
                   >
                     {isCreating ? dict.groups.creating : dict.groups.create}
@@ -1113,6 +1128,7 @@ const GroupsDialog: React.FC<GroupsDialogProps> = ({
                 <Button
                   type='button'
                   variant='outline'
+                  size='cta'
                   onClick={() => setRenamingId(null)}
                   className='w-full sm:w-auto'
                 >
@@ -1120,8 +1136,9 @@ const GroupsDialog: React.FC<GroupsDialogProps> = ({
                 </Button>
                 <Button
                   type='submit'
+                  size='cta'
                   disabled={isRenaming}
-                  className={cn('w-full', 'xs:h-12', 'xs:text-base', 'sm:ml-2')}
+                  className='w-full sm:ml-2'
                   data-testid='saveGroupRename'
                 >
                   {isRenaming ? dict.groups.saving : dict.groups.save}

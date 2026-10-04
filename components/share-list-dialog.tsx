@@ -563,8 +563,9 @@ const ShareListDialog: React.FC<ShareListDialogProps> = ({
 
             <Button
               type='button'
+              size='cta'
               onClick={makeShared}
-              className={cn('w-full', 'xs:h-12', 'xs:text-base')}
+              className='w-full'
               data-testid='makeShared'
             >
               {dict.shareList.makeShared}

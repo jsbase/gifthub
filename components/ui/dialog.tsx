@@ -189,6 +189,7 @@ const DialogContent = React.forwardRef<
         'data-[state=open]:zoom-in-95',
         className
       )}
+      data-testid='dialogContent'
       {...props}
     >
       <CropMarks />

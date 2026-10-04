@@ -175,8 +175,8 @@ export const SheetFrame: React.FC<SheetFrameProps> = ({
  *
  * **The rule under it is the point.** This head used to carry `pt-2` and no rule,
  * while the identically named head on the contents page carried `border-b
- * border-rule` - same face, same size, same colour, same numeral, one with a line
- * under it and one without. So nothing on this page said a block had started: the
+ * border-rule` - same face, same size, same colour, one with a line under it and
+ * one without. So nothing on this page said a block had started: the
  * gaps ran 8, 12 and 20px, and the largest of them was between blocks and 2.5x the
  * smallest, which is not a difference anybody can see. "Where does a block begin"
  * had no answer on the sheet.
@@ -188,13 +188,16 @@ export const SheetFrame: React.FC<SheetFrameProps> = ({
  * exactly what `divide-y` was doing to every pair of gift cells, and exactly what
  * it used to do on the contents page between two lists in one section.
  *
- * **This is the same declaration as `list-board.tsx`'s, not a similar one.** Two
- * components with the same name, the same face and the same numeral, one with a
+ * **The same declaration as `list-board.tsx`'s, in the two things they share.**
+ * Two components with the same name, the same face and the same size, one with a
  * rule and one without, taught a reader who had learnt one of them nothing about
- * the other. They now share their class list exactly - including the `gap-4` that
- * carries the rhythm of a stacked section and the `sm:` row that puts an action
- * beside the label rather than under it. One head, two pages, one set of
- * measurements.
+ * the other. They agree now on the label - `label-print pt-1 text-caption`, in
+ * both - and on the row the label sits in. They differ in where the rule falls,
+ * and that difference is a question about their position rather than an
+ * inconsistency: a head with a block above it separates itself from that block
+ * with a rule above the label, while the contents page's first label has nothing
+ * over it and its section head rules itself off from its rows below instead.
+ * `list-board.tsx` carries the reasoning on its own side of that.
  *
  * **The rule is above the label, not under it.** It was underneath, and the cells
  * under the head drew their own top border 16px below that - so every block opened
@@ -208,45 +211,37 @@ export const SheetFrame: React.FC<SheetFrameProps> = ({
  * paragraph, this page's outline is `h1` (the list's own name) then `h2` per
  * section. It used to skip a level entirely, because the two `h1` and the `h3`
  * were on the same route and nothing sat between them.
+ *
+ * **One line at every width, and the numeral is gone.**
+ *
+ * The head used to be `flex-col` with `sm:flex-row`, so on a phone its two
+ * children stacked: the label on one line and the open-count on the next, in the
+ * same 11px printed face, eleven pixels apart vertically - two lines saying one
+ * thing, with the second line the part a reader actually wanted. It also carried
+ * a `count`, padded to `03`, which is a counter's answer rather than a fact about
+ * a list, and which put a third copy of the open figure on the page next to the
+ * contents row and the count sentence in the head's own screen-reader text. The
+ * head is now a row at every width, so anything that belongs beside the label
+ * sits beside it rather than under it, and the numeral does not come back.
+ *
+ * `justify-between` with one child is deliberate and is the point: it is what
+ * makes the row a row, so the next thing that belongs beside this label lands
+ * beside it rather than under it. `list-board.tsx`'s head already carries a
+ * second child - the create button - and lays it out this way from `sm` up.
  */
-const SectionHead: React.FC<{ label: string; count?: number }> = ({
-  label,
-  count,
-}) => (
+const SectionHead: React.FC<{ label: string }> = ({ label }) => (
   <div
     className={cn(
       'flex',
-      'flex-col',
-      'gap-4',
+      'items-end',
+      'justify-between',
+      'gap-6',
       'border-t',
       'border-rule',
-      'pt-3',
-      'sm:flex-row',
-      'sm:items-end',
-      'sm:justify-between',
-      'sm:gap-6'
+      'pt-3'
     )}
   >
     <h2 className='label-print pt-1 text-caption'>{label}</h2>
-
-    {/* The count, or nothing. A section with rows has one; the audience section
-        has one; and where there is none the head is bare rather than carrying a
-        `00`, because a numeral standing for an empty set is a fact about a
-        counter. */}
-    {count !== undefined && (
-      <span
-        className={cn(
-          'font-label',
-          'text-[0.6875rem]',
-          'font-bold',
-          'tabular-nums',
-          'tracking-[0.1em]',
-          'text-caption'
-        )}
-      >
-        {String(count).padStart(2, '0')}
-      </span>
-    )}
   </div>
 );
 
@@ -720,7 +715,19 @@ const ListSheet: React.FC<ListSheetProps> = ({
               */
               <div className='flex flex-col gap-4'>
                 <section className='flex flex-col gap-4'>
-                  <SectionHead label={dict.listSheet.openIdeas} count={0} />
+                  {/*
+                    No head at all on an empty sheet, and that is the state the
+                    old one was worst in. It read `NOCH OFFEN` with a `00` beside
+                    it - a label naming a section that has no content, above a
+                    count of nothing, above the dashed plate whose own sentence
+                    already says there is nothing here and invites the first one.
+                    Three statements of one fact, the smallest two of them in the
+                    printed chrome face.
+
+                    The plate is the whole block now: a dashed rule means there is
+                    room for a cell, and the only thing anybody can do with room
+                    for a cell is write in it.
+                  */}
                   <button
                     type='button'
                     onClick={() => setShowAddGiftForm(true)}
@@ -807,7 +814,6 @@ const ListSheet: React.FC<ListSheetProps> = ({
               */
               <div className='flex flex-col gap-4'>
                 <section className='flex flex-col gap-4'>
-                  <SectionHead label={dict.listSheet.openIdeas} count={0} />
                   <p
                     data-testid='noGifts'
                     className={cn(
@@ -827,10 +833,7 @@ const ListSheet: React.FC<ListSheetProps> = ({
             <div className='flex flex-col gap-4'>
               {openGifts.length > 0 && (
                 <section className='flex flex-col gap-4'>
-                  <SectionHead
-                    label={dict.listSheet.openIdeas}
-                    count={openGifts.length}
-                  />
+                  <SectionHead label={dict.listSheet.openIdeas} />
                   <ul className='flex flex-col gap-2'>
                     {openGifts.map((gift) => (
                       <GiftCard
@@ -865,10 +868,7 @@ const ListSheet: React.FC<ListSheetProps> = ({
                     product's own words, so saying it twice here would be two
                     sentences competing for the same fact.
                   */}
-                  <SectionHead
-                    label={dict.listSheet.collectedIdeas}
-                    count={collectedGifts.length}
-                  />
+                  <SectionHead label={dict.listSheet.collectedIdeas} />
 
                   {/*
                     `markedBySomeoneElse` is one sentence and it is put here, once,
@@ -982,6 +982,7 @@ It cannot be rendered inside the cell: `GiftCardProps.dict` is
             </Label>
             <Input
               id='title'
+              data-testid='giftTitleInput'
               name='title'
               placeholder={dict.listSheet.enterGiftTitle}
               maxLength={GIFT_FIELD_LIMITS.title.max}
@@ -996,6 +997,7 @@ It cannot be rendered inside the cell: `GiftCardProps.dict` is
             </Label>
             <Textarea
               id='description'
+              data-testid='giftDescriptionInput'
               name='description'
               placeholder={`${dict.listSheet.enterDescription} (${dict.listSheet.optional})`}
               maxLength={GIFT_FIELD_LIMITS.description.max}
@@ -1009,6 +1011,7 @@ It cannot be rendered inside the cell: `GiftCardProps.dict` is
             </Label>
             <Input
               id='url'
+              data-testid='giftUrlInput'
               name='url'
               type='url'
               placeholder={`${dict.listSheet.enterUrl} (${dict.listSheet.optional})`}
@@ -1075,10 +1078,7 @@ It cannot be rendered inside the cell: `GiftCardProps.dict` is
             </p>
           ) : (
             <>
-              <SectionHead
-                label={dict.visibility.sharedWith}
-                count={access.length}
-              />
+              <SectionHead label={dict.visibility.sharedWith} />
 
               <ul data-testid='accessList' className='divide-y divide-rule'>
                 {access.map((row) => (

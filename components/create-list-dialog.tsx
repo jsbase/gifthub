@@ -175,6 +175,7 @@ const CreateListDialog: React.FC<CreateListDialogProps> = ({
             </Label>
             <Input
               id='listName'
+              data-testid='createListName'
               name='name'
               type='text'
               placeholder={dict.createListDialog.enterListName}
@@ -256,13 +257,17 @@ const CreateListDialog: React.FC<CreateListDialogProps> = ({
 
           {/*
             The 48px floor on the one primary action of a sheet, applied only
-            below `sm` where the phone is - the same rule `login-form.tsx` applies
-            follows, and `PRODUCT.md` calls a floor rather than a preference.
+            below `sm` where the phone is - the same rule `login-form.tsx`
+            applies follows, and `PRODUCT.md` calls a floor rather than a
+            preference. It is `size='cta'` rather than `xs:h-12` written here so
+            that this button and the cancel in the footer beside it are the same
+            height by construction; see `buttonVariants`.
           */}
           <Button
             type='submit'
+            size='cta'
             disabled={isSubmitting}
-            className={cn('w-full', 'xs:h-12', 'xs:text-base')}
+            className='w-full'
             data-testid='createListSubmit'
           >
             {isSubmitting

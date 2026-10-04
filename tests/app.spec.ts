@@ -24,8 +24,8 @@ test.describe('Start page Functionality', () => {
   });
 
   test('Header and Footer are visible on the Start Page', async ({ page }) => {
-    const header = page.locator('header');
-    const footer = page.locator('footer');
+    const header = page.getByTestId('header');
+    const footer = page.getByTestId('footer');
 
     expect(await header.isVisible()).toBeTruthy();
     expect(await footer.isVisible()).toBeTruthy();
@@ -35,8 +35,8 @@ test.describe('Start page Functionality', () => {
   });
 
   test('Header and Footer are visible on Privacy page', async ({ page }) => {
-    const header = page.locator('header');
-    const footer = page.locator('footer');
+    const header = page.getByTestId('header');
+    const footer = page.getByTestId('footer');
 
     expect(await header.isVisible()).toBeTruthy();
     expect(await footer.isVisible()).toBeTruthy();
@@ -54,8 +54,8 @@ test.describe('Start page Functionality', () => {
   test('Header and Footer are visible on Terms & Conditions page', async ({
     page,
   }) => {
-    const header = page.locator('header');
-    const footer = page.locator('footer');
+    const header = page.getByTestId('header');
+    const footer = page.getByTestId('footer');
 
     await page.getByTestId('linkTerms').click();
     await expect(page).toHaveURL(`/${lang}/terms`, { timeout: 4000 });
