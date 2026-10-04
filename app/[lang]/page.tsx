@@ -62,12 +62,34 @@ const Home: NextPage<PageProps> = async ({ params }) => {
       <main className={cn('flex', 'flex-1', 'flex-col')}>
         <div className={cn('container', 'mx-auto')}>
           <div className={cn('py-10', 'sm:py-14', 'lg:py-20')}>
+            {/*
+              `6.5fr / 5.5fr`, and it was `7fr / 5fr`.
+
+              The narrow column carries the specimen plate, and the plate's rows are
+              a name and a figure sharing one line. Measured in Chromium: the plate
+              is 443px at 1280 and up, which leaves 285px for the name - enough for
+              `Geburtstagswünsche` at 213px. At 1024 and 1152 the same grid gave the
+              plate 357px and the name 199px, which is 14px short, so the longest
+              German name in the dictionary broke as `Geburtstagswün-sche` across
+              exactly the two widths where the spread first appears and while the
+              page is still one column wide of hero. 5.5fr of 856px is 392px, a name
+              column of 234px, and the break is gone.
+
+              5.5 and not 6, because 6fr/6fr is not a spread: the hero would read as
+              two equal halves with a plate in one of them, and the claim is supposed
+              to be the widest thing on the page. 54/46 keeps the asymmetry while
+              moving 36px across at 1024 and 44px at 1280.
+
+              The index below keeps its own `7fr / 5fr`: its second column is a
+              clause of body copy rather than a name competing with a figure, and it
+              is measured in the other direction.
+            */}
             <div
               className={cn(
                 'grid',
                 'gap-x-14',
                 'gap-y-16',
-                'lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)]'
+                'lg:grid-cols-[minmax(0,6.5fr)_minmax(0,5.5fr)]'
               )}
             >
               {/*
@@ -161,7 +183,7 @@ const Home: NextPage<PageProps> = async ({ params }) => {
                     'order-4',
                     'mt-8',
                     'max-w-[52ch]',
-                    'text-[1.0625rem]',
+                    'text-[1.125rem]',
                     'leading-[1.6]',
                     'text-pretty',
                     'text-caption',

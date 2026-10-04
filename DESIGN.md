@@ -650,16 +650,21 @@ regression.
   squared at the top. Destructive confirmations have **no** close control: a
   two-choice prompt with an X is a third, ambiguous exit from a dialog about
   deleting something.
-- **Toasts:** positioned bottom-right from 640px and top-centre below it, so a toast
-  never covers the primary control on a phone. Two numbers make that true below
-  640px, and both are load-bearing rather than decorative. **One toast at a
+- **Toasts:** positioned bottom-right from 640px and **bottom-centre below it**, so a
+  toast never covers the control that leaves the page. **One toast at a
   time**: a phone is 664px tall and a toast is 54px, so three of them stacked
   reach a quarter of the screen — past the two controls at the head of the
   contents sheet, which made them unreachable for four seconds after any two
-  quick mutations. **An offset of 57px**, the running head and its own rule:
-  at the default the toast lands on the wordmark and the header controls, and
-  under the rule it lands on the sheet's top margin, which is the one band of
-  the page holding nothing you can press.
+  quick mutations. **An offset of 16px** above the footer's rule.
+
+  This was top-centre with a 57px offset — under the running head — on the
+  reasoning that the sheet's top margin is the one band holding nothing you can
+  press. Measured on both signed-in routes at 390×844, that band holds the
+  contents page's own section label and, on the list sheet, `backToLists`: a toast
+  about an idea you had just added landed on the only control that leaves the
+  page. The primary control on the list sheet is the blank cell at the top of the
+  content, and the foot row is a ghost the reader has to aim at; covering a
+  control somebody must aim at, briefly, costs less than covering the exit.
 
 ## Do's and Don'ts
 

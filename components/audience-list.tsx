@@ -54,10 +54,19 @@ const RevokeButton: React.FC<{
  * Who may reach one list: the people, then the groups.
  *
  * The people half is the `AccessList` that lived inside `share-list-dialog.tsx`,
- * moved here unchanged - same markup, same `py-2` rows, the same
+ * moved here unchanged - same markup, same rows, the same
  * `divide-y divide-rule` between them, the same quiet ghost revoke. It left that
  * file because a second kind of row arrived and the two had to be one list rather
  * than two components a caller had to remember to order.
+ *
+ * **The rows are `py-3` and `gap-4`, and both were smaller.** `py-2`/`gap-3` made
+ * a two-line row - a name and an address - 60px tall with 16px of it padding, and
+ * this list is the state the share sheet exists to show, so it is the block most
+ * hurt by reading as a dense table: on a 390px phone the audience head sat under
+ * the standing instruction with the first row 40px away and the last row 40px from
+ * the field below. Nothing here overflowed; it was all simply too close, which is
+ * a spacing fault and not a width one. `gap-4` additionally stops a long address
+ * from touching the 44px revoke control, which cannot give way itself.
  *
  * **A group is a row, not a name in the people list, and the difference is what
  * the revoke control does.** A group row is one grant that reaches several people
@@ -88,16 +97,52 @@ const AudienceList: React.FC<AudienceListProps> = ({
   onRevoke,
   onRevokeGroup,
 }) => {
-  const isEmpty = access.length === 0 && groupAccess.length === 0;
+const isEmpty = access.length === 0 && groupAccess.length === 0;
 
+  /*
+    **One head for the whole audience, and one sentence for its empty state.**
+
+    It used to print two heads - "Geteilt mit:" over the people and "Gruppen" over
+    the groups - plus, when both were empty, a third that read "Noch mit niemandem
+    geteilt" above a sentence reading "Noch niemand eingetragen." That last pair is
+    the same fact twice in the same face thirty pixels apart, and the other two
+    meant this component was claiming a *taxonomy* where the share sheet needs a
+    list: a person and a group are both answers to "who can open this list", and
+    the rows are already distinguishable without a head each - a person row prints
+    the address they were added by, a group row prints how many people one grant
+    reaches.
+
+    One head that is a question ("Wer sieht diese Liste") also puts the state
+    before the two controls that change it, which is the order the share sheet
+    renders them in.
+  */
   return (
-    <div className='flex flex-col gap-4'>
-      {access.length > 0 && (
-        <section className='flex flex-col gap-2'>
+    <div className='flex flex-col gap-2'>
+      {/*
+        Nobody and nothing: the one state in which both sections are absent. It
+        prints the sentence and no heading, because a heading and a sentence saying
+        the same thing is the redundancy this sheet was opened to fix. With a group
+        reaching the list and nobody added individually, `nobodyYet` would be false
+        and the list is printed instead - so an empty section is not printed at all.
+      */}
+      {isEmpty ? (
+        <p
+          className='text-[0.8125rem] leading-relaxed text-caption'
+          data-testid='nobodyYet'
+        >
+          {dict.shareList.nobodyYet}
+        </p>
+      ) : (
+        <>
           <h3 className='label-print text-caption'>
-            {dict.visibility.sharedWith}
+            {dict.shareList.audienceHeading}
           </h3>
 
+          {/*
+            One list, both kinds, and a single pair of rules around it - so the
+            audience reads as one block of rows rather than as two lists of
+            different lengths stacked under two headings.
+          */}
           <ul
             data-testid='accessList'
             className='divide-y divide-rule border-y border-rule'
@@ -105,7 +150,7 @@ const AudienceList: React.FC<AudienceListProps> = ({
             {access.map((row) => (
               <li
                 key={row.id}
-                className='flex items-center justify-between gap-3 py-2'
+                className='flex items-center justify-between gap-4 py-3'
               >
                 {/*
                   The address is printed under the name and not instead of it. A
@@ -126,42 +171,18 @@ const AudienceList: React.FC<AudienceListProps> = ({
                 </span>
 
                 <RevokeButton
-                  label={`${dict.shareList.revoke} \u00b7 ${row.displayName}`}
+                  label={`${dict.shareList.revoke} · ${row.displayName}`}
                   onClick={() => onRevoke(row)}
                   testId='revokeAccess'
                   icon={<IconUserMinus className='h-4 w-4' aria-hidden='true' />}
                 />
               </li>
             ))}
-          </ul>
-        </section>
-      )}
 
-      {groupAccess.length > 0 && (
-        <section className='flex flex-col gap-2'>
-          {/*
-            The group's own name as the heading, and it wants to be a sentence of
-            its own - "shared with a group", which is what the section above says
-            about the other half of the audience. `groupPickerHeading` is the
-            *offer* on the share side of the sheet ("or share it with a group") and
-            printing it above groups that already reach the list would describe a
-            control in the past tense. It wants a new key.
-          */}
-          <h3
-            className='label-print text-caption'
-            data-testid='groupAudienceHeading'
-          >
-            {dict.groups.title}
-          </h3>
-
-          <ul
-            data-testid='groupAccessList'
-            className='divide-y divide-rule border-y border-rule'
-          >
             {groupAccess.map((row) => (
               <li
                 key={row.id}
-                className='flex items-center justify-between gap-3 py-2'
+                className='flex items-center justify-between gap-4 py-3'
               >
                 <span className='flex min-w-0 flex-col'>
                   {/*
@@ -185,7 +206,7 @@ const AudienceList: React.FC<AudienceListProps> = ({
                 </span>
 
                 <RevokeButton
-                  label={`${dict.shareList.revoke} \u00b7 ${row.groupName}`}
+                  label={`${dict.shareList.revoke} · ${row.groupName}`}
                   onClick={() => onRevokeGroup(row)}
                   testId='revokeGroupAccess'
                   icon={<IconUsersMinus className='h-4 w-4' aria-hidden='true' />}
@@ -193,29 +214,7 @@ const AudienceList: React.FC<AudienceListProps> = ({
               </li>
             ))}
           </ul>
-        </section>
-      )}
-
-      {/*
-        Nobody and nothing: the one state in which both sections are absent. It
-        prints the sentence and the heading the old list printed, and only when
-        the sentence is true. With a group reaching the list and nobody added
-        individually, `nobodyYet` would be false and `visibility.sharedWithNobody`
-        above an empty people list would be false too - so a section with no rows
-        is not printed at all.
-      */}
-      {isEmpty && (
-        <section className='flex flex-col gap-2'>
-          <h3 className='label-print text-caption'>
-            {dict.visibility.sharedWithNobody}
-          </h3>
-          <p
-            className='text-[0.8125rem] leading-relaxed text-caption'
-            data-testid='nobodyYet'
-          >
-            {dict.shareList.nobodyYet}
-          </p>
-        </section>
+        </>
       )}
     </div>
   );

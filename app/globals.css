@@ -160,7 +160,6 @@
      collection; the rest are state feedback and the list arriving once. */
   --animate-collect-settle: collect-settle 260ms cubic-bezier(0.16, 1, 0.3, 1) both;
   --animate-reveal-in: reveal-in 340ms cubic-bezier(0.16, 1, 0.3, 1) both;
-  --animate-count-flash: count-flash 520ms ease-out both;
   --animate-row-reveal: row-reveal 180ms ease-out both;
 }
 
@@ -447,20 +446,13 @@
 }
 
 /*
-  Count feedback. When a gift is bought the number in the sheet's header
-  changes, and this is the only way the app says so outside the row itself.
+  Row feedback, kept for the row's own arrival. The count flash that used to sit
+  here is gone with its only consumer: the sheet's header printed the open-idea
+  count as a line of its own *and* the section head printed it as `03`, so the
+  flash was animating one of two copies of a number that did not need either. The
+  numeral in the section head still moves when a cell is collected, and the cell
+  itself inverts, so the change is reported twice on purpose.
 */
-@keyframes count-flash {
-  0% {
-    background-color: transparent;
-  }
-  25% {
-    background-color: color-mix(in srgb, hsl(var(--ink)) 14%, transparent);
-  }
-  100% {
-    background-color: transparent;
-  }
-}
 
 @keyframes row-reveal {
   0% {
@@ -560,6 +552,81 @@
   letter-spacing: 0.14em;
   text-transform: uppercase;
   line-height: 1;
+}
+
+/*
+  The sheet's rhythm, and where it lives now.
+
+  `DialogContent` used to carry its spacing as four utility classes on the
+  scrolling box (`gap-5`, `p-5`, `xs:gap-4`, `xs:p-4`), so the air in a sheet was
+  written in one place and nothing else could state a step. These rules are
+  unlayered on purpose: Tailwind's utilities live in `@layer utilities`, so a
+  rule here beats a caller's `gap-*` without `!important` and without a
+  specificity fight.
+
+  24px between the blocks of a sheet, and 32px between the head and the form.
+  Both are off the gap the sheet used to give every band (20px at `sm`, 16px on a
+  phone), which is the actual defect: uniform air between every band reads as
+  uniform weight, and this sheet has three things in it - what this is, what it
+  is called, who may see it - that nothing in the spacing was saying so. The head
+  stands one step further off than the blocks below it because the sentence under
+  a title belongs to the title rather than to the first question.
+
+  It is a sheet on a phone being used one-handed, in a hurry, so the step is one
+  band-padding rather than two: enough to separate three things, not enough to
+  push the submit off a 667px screen.
+
+  The gutter is 32px at `sm` and up and 24px on a phone, and it is the gutter
+  that gives the crop marks their margin. A printer's mark is 12px in from the
+  edge of the sheet with an 8px arm, so at 32px it keeps 12px of paper between
+  itself and the first element - which it did not have at the 20px this replaced,
+  where the arm landed exactly on the content edge and the bracket read as part
+  of whatever was printed nearest it. 24px on a phone is the same relationship at
+  a width that cannot afford 32, and the marks step back to 8px there to leave
+  the margin intact.
+*/
+.sheet-body {
+  gap: 24px;
+  padding: 24px;
+}
+
+@media (min-width: 640px) {
+  .sheet-body {
+    padding: 32px;
+  }
+}
+
+.sheet-body > form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.sheet-body > form:first-of-type {
+  margin-top: 8px;
+}
+
+/*
+  The two visibility options are the same object whichever one is set, so they
+  are drawn the same way whichever one is set. The selected one used to lose its
+  border to the ink fill and become a different shape from the option above it,
+  which read as two kinds of thing being offered rather than as one question with
+  two answers. It keeps the fill - the fill is what says which one is set - and
+  takes the border back, so the ink is the only difference between them.
+
+  Both containers are named, not one. The create sheet groups its pair in a
+  `fieldset` and this one groups it in `role="group"`; they are the only two
+  places the product asks the question and they print the same pair, so a rule
+  that reached only the first would leave the two answering it differently.
+  `fieldset` first because that is the element that carries the legend.
+
+  Everything else about these two belongs to the caller: their labels, the
+  consequences printed under them, their glyphs, their padding, their hover. What
+  is under each option is the reason the option is worth reading rather than
+  tapping, and the glyph beside it is the reason it is recognisable at a glance.
+*/
+.sheet-body :is(fieldset, [role='group']) > button[aria-pressed='true'] {
+  border: 1px solid var(--color-rule);
 }
 
 /*

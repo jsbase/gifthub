@@ -9,6 +9,7 @@ import {
 } from '@tabler/icons-react';
 import { Button } from '@/components/ui/button';
 import SheetProgress from '@/components/sheet-progress';
+import { StatusBadge } from '@/components/status-badge';
 import { cn } from '@/lib/utils';
 import { giftCountLabel } from '@/lib/gift-count';
 import { memberInkStyle } from '@/lib/member-ink';
@@ -109,29 +110,42 @@ const ListRow: React.FC<ListRowProps> = ({
       style={memberInkStyle(list.ownerId)}
       className={cn(
         'relative',
+        /*
+          The hover group. `group-hover/row:` on the name below needs this to exist:
+          the underline is driven by the row because the hit area is the whole row,
+          and a named group is the only way to say "this control's hover" to a
+          descendant that is not itself the control. Without it the variant compiles
+          to a selector that matches nothing and the affordance is silently dead -
+          which is why it is here and not folded into the utility.
+        */
+        'group/row',
         'grid',
         'items-center',
         'gap-x-6',
         'gap-y-2',
         'py-5',
         /*
-          Both axes declared up front, and the third column only when there is
-          something to put in it.
+          Both axes declared up front, and all three tracks at every width.
 
-          Two columns and two rows is the truth of every row: the name and its
-          figures on the first line, the owner's four controls on the second one
-          below `sm`. Adding the third column only where it has content matters
-          because an empty track still contributes its `gap-x-6` - a grid with
-          three tracks and two children ends 24px short of its own right edge,
-          which reads as a row whose contents do not reach the rule.
+          The third track used to be added only where it had content, and the
+          consequence was the defect the owner's row was measured showing: the
+          open-ideas figure sat in whatever space the four controls left over, so
+          on a board holding both owned and shared lists the same numeral was 230px
+          apart on two consecutive rows - one at x=941, one at x=1168. Two rows of
+          a contents index that mean the same number have to put that number in
+          the same column, so the column is declared and reserved rather than
+          discovered. `5rem` is the measured width of the rule-plus-figure pair and
+          `13rem` is the measured width of the four controls plus its hairline.
 
-          From `sm` the controls join the row on the right and it is one line
-          again, which is where the row was designed to be read: a name, a rule
-          and a figure on a single centre line, with nothing on a line of its
+          Two columns and two rows is the truth below `sm`: the name and its
+          figures on the first line, the owner's controls on the second one, under
+          a hairline. From `sm` the controls join the row on the right and it is
+          one line again, which is where the row was designed to be read: a name, a
+          rule and a figure on a single centre line, with nothing on a line of its
           own. The old removal-mode bug was the same fault in reverse - an
           implicit third child in a two-column grid wrapped onto a second,
-          CSS-sized row and every row grew from 112px to about 190px - so the
-          row declares its shape rather than letting its children discover it.
+          CSS-sized row and every row grew from 112px to about 190px - so the row
+          declares its shape rather than letting its children discover it.
 
           And the reason the controls below `sm` sit right rather than left, which
           is not visible in this declaration and is in the cluster's. Measured at
@@ -140,13 +154,13 @@ const ListRow: React.FC<ListRowProps> = ({
           content, and the page was majority furniture. Right-aligned, the four
           controls form one scannable column down the edge the eye already goes
           to for them and directly under the figure. Above `sm` it costs nothing:
-          the third track is `auto`, so the cluster is exactly as wide as its
-          contents.
+          the third track is fixed, so the cluster is exactly as wide as its
+          contents and the column of figures still lines up.
         */
         'grid-cols-[1fr_auto]',
         'grid-rows-[auto_auto]',
+        'sm:grid-cols-[1fr_5rem_13rem]',
         'sm:grid-rows-1',
-        ownerActions.length > 0 && 'sm:grid-cols-[1fr_auto_auto]',
         // The contents page arriving, once, in order.
         'animate-reveal-in',
         isBusy && 'pointer-events-none opacity-60'
@@ -180,7 +194,7 @@ const ListRow: React.FC<ListRowProps> = ({
           'text-ink',
           'transition-colors',
           'duration-150',
-          'hover:bg-transparent'
+          '[@media(hover:hover)_and_(pointer:fine)]:hover:bg-transparent'
         )}
       >
         {/*
@@ -189,89 +203,134 @@ const ListRow: React.FC<ListRowProps> = ({
           person's own name, and nothing else on the page is set in it.
         */}
         <div className='flex w-full min-w-0 flex-col items-start gap-1.5'>
-          <span className='max-w-full break-words'>
+          {/*
+            `group-hover/row`, not `hover:`, because the thing under the pointer is
+            the whole row - the name is eight characters wide inside a control that
+            is 910px wide, and an underline that appeared only when the pointer
+            happened to be over the glyphs would report the hit area wrongly. On a
+            pointer that cannot hover it is never drawn at all, which is
+            `DESIGN.md`'s rule and the reason it is gated rather than written as
+            `hover:underline`.
+
+            It is the one hover affordance on this row, deliberately. The four owner
+            controls tint on hover, the row tints on hover, and now the thing you
+            would click has a rule under it - three signals for one press, and only
+            one of them is on the words themselves.
+          */}
+          <span className='max-w-full break-words underline-offset-2 [@media(hover:hover)_and_(pointer:fine)]:group-hover/row:underline'>
             <span className='font-serif text-xl font-semibold leading-tight'>
               {list.name}
             </span>
           </span>
 
           {/*
-            Two facts about how far this list reaches, printed under the name
-            rather than in a menu. Neither is an inference: "private" and "shared"
-            are the two values the owner chose, and the count is how many people
-            that choice reached. Both are words - a visibility dot in a colour
-            would be a state only colour carries, which is the one kind of state
-            this product refuses.
+            One line of facts under the name, and it is not the same line for both
+            kinds of row.
+
+            **A row you do not own says one thing: whose it is.** The chip and the
+            audience count are owner facts - what a list reaches is a decision the
+            owner made and the only person who can change it - and printed on a row
+            somebody else owns they were two ways of saying the section head. The
+            row already sits under "Wünsche deiner Liebsten", so a `Geteilt` chip
+            on it restated the heading in a chip, and "mit: 0 Personen · Gruppen:
+            1" described an audience the reader has no standing over and no way to
+            act on. Both belonged to the owner's row, and only there, because they
+            are the two questions an owner arrives at: is this list private, and
+            who else can open it.
+
+            The owner's name is what remains, and it is not one label among several -
+            it is the fact a reader in this section shops by, since two people can
+            own lists with the same name.
           */}
-          <span className='flex flex-wrap items-center gap-x-3 gap-y-1'>
-            <span className='label-print text-caption'>
-              {isShared ? dict.listBoard.shared : dict.listBoard.private}
-            </span>
+          <span className='flex flex-wrap items-center gap-x-3 gap-y-1.5'>
+            {list.isOwner ? (
+              <>
+                {/*
+                  How far this list reaches, printed under the name rather than in a
+                  menu. The state is on a chip and the reach is a figure beside it,
+                  and they used to be one string: `Geteilt` in the label face, then
+                  `Geteilt mit: 1` in the meta face, forty pixels apart, saying the
+                  same word twice in two voices. That was the redundancy the owner
+                  named on this page, and it was structural rather than a wording
+                  problem - so it is fixed by giving each fact one carrier, not by
+                  rewording either.
 
-            {/*
-              Whose list it is, but only when it is not yours. On your own row
-              the owner is the reader, so printing it would be a word on every
-              row saying nothing; on a row somebody else shared with you it is the
-              only thing that tells the two lists apart, because two people can
-              own lists with the same name.
+                  Both are still words. A dot in a colour would be a state only colour
+                  carries, which is the one kind of state this product refuses, and
+                  the chip answers that by weight and enclosure instead of by hue.
+                */}
+                <StatusBadge
+                  variant={isShared ? 'shared' : 'private'}
+                  label={
+                    isShared ? dict.listBoard.shared : dict.listBoard.private
+                  }
+                />
 
-              This comment is load-bearing in a way that is worth one note. It was
-              once closed with two closing braces and no terminator, and because a
-              JSX comment runs until it finds a terminator it did not stop here: it
-              ran on to the end of the comment below it and took the owner's name
-              with it. Nothing failed. The row compiled, the row rendered, the API
-              sent `isOwner: false`, and the name was simply never asked for - so
-              the owner of a shared list was never named anywhere in the product,
-              and every test asserting on it failed for a reason that read like a
-              selector problem.
+                {/*
+                  How many people can also read it, and how many groups. The figure
+                  is bare - "Personen: 3" - because the chip beside it already says
+                  `Geteilt`, and the old string said it a second time.
 
-              A missing terminator inside a comment is the cheapest bug in this
-              codebase to write and the most expensive to find, because it does not
-              look like a syntax error at all. If a block of JSX stops being
-              rendered and nothing complains, count the comment terminators before
-              counting anything else.
-            */}
-            {!list.isOwner && (
+                  It is printed conditionally, so a `SHARED` list nobody has been
+                  added to does not carry a count of zero. A counter is not a fact
+                  about a list: the true sentence about that list is the same one
+                  the sheet prints, that nobody has been reached yet, and it is read
+                  from the visibility section rather than duplicated here because it
+                  is one fact about one list and it already has one sentence.
+
+                  Two counts and not one sum, and the reason is in
+                  `ListSummary.sharedWithGroupCount`: individuals and group members
+                  overlap, so a sum would count somebody in two granted groups
+                  twice and the row would then disagree with the number of people
+                  who can actually open the list. `sharedWithGroupCount > 0` also
+                  covers the case that motivated the split - a list whose *only*
+                  readers are reachable through a group has no people to count and
+                  is emphatically not nobody - and it is the case that has to keep
+                  the longer sentence, because a bare "Personen: 0" beside a group
+                  of nine is a wrong number rather than a thin one.
+                */}
+                {isShared && (
+                  <span className='text-[0.8125rem] leading-snug text-caption'>
+                    {list.sharedWithCount > 0 || list.sharedWithGroupCount > 0
+                      ? list.sharedWithGroupCount > 0
+                        ? dict.listBoard.sharedWithGroupCount
+                            .replace('{count}', String(list.sharedWithCount))
+                            .replace('{groups}', String(list.sharedWithGroupCount))
+                        : dict.shareList.groupReaches.replace(
+                            '{count}',
+                            String(list.sharedWithCount)
+                          )
+                      : dict.visibility.sharedWithNobody}
+                  </span>
+                )}
+              </>
+            ) : (
+              /*
+                Whose list it is, and the reason it is printed on this row alone.
+                On your own row the owner is the reader, so the name would be a word
+                on every row saying nothing.
+
+                This comment is load-bearing in a way that is worth one note. It was
+                once closed with two closing braces and no terminator, and because a
+                JSX comment runs until it finds a terminator it did not stop here: it
+                ran on to the end of the comment below it and took the owner's name
+                with it. Nothing failed. The row compiled, the row rendered, the API
+                sent `isOwner: false`, and the name was simply never asked for - so
+                the owner of a shared list was never named anywhere in the product,
+                and every test asserting on it failed for a reason that read like a
+                selector problem.
+
+                A missing terminator inside a comment is the cheapest bug in this
+                codebase to write and the most expensive to find, because it does
+                not look like a syntax error at all. If a block of JSX stops being
+                rendered and nothing complains, count the comment terminators before
+                counting anything else.
+              */
               <span
                 className='text-[0.8125rem] leading-snug text-caption'
                 data-testid='listOwner'
               >
                 {list.ownerDisplayName}
-              </span>
-            )}
-
-            {/*
-              How many people can also read it, and how many groups - and, when
-              that is nobody at all, the sentence the list sheet already uses for
-              the same fact about the same object. It used to print
-              `sharedWithCount` unconditionally, so a `SHARED` list nobody had
-              been added to carried "shared with: 0", which is not a fact about a
-              private list either - it is a fact about a counter.
-              `visibility.sharedWithNobody` says the true thing, and it is read
-              from the visibility section rather than duplicated here because it is
-              one fact about one list and it already has one sentence.
-
-              Two counts and not one sum, and the reason is in
-              `ListSummary.sharedWithGroupCount`: individuals and group members
-              overlap, so a sum would count somebody in two granted groups twice
-              and the row would then disagree with the number of people who can
-              actually open the list. `sharedWithGroupCount > 0` also covers the
-              case that motivated the split - a list whose *only* readers are
-              reachable through a group has no people to count and is emphatically
-              not nobody.
-            */}
-            {isShared && (
-              <span className='text-[0.8125rem] leading-snug text-caption'>
-                {list.sharedWithCount > 0 || list.sharedWithGroupCount > 0
-                  ? list.sharedWithGroupCount > 0
-                    ? dict.listBoard.sharedWithGroupCount
-                        .replace('{count}', String(list.sharedWithCount))
-                        .replace('{groups}', String(list.sharedWithGroupCount))
-                    : dict.listBoard.sharedWithCount.replace(
-                        '{count}',
-                        String(list.sharedWithCount)
-                      )
-                  : dict.visibility.sharedWithNobody}
               </span>
             )}
           </span>
@@ -289,9 +348,17 @@ const ListRow: React.FC<ListRowProps> = ({
         </div>
       </Button>
 
+      {/*
+        `justify-self-end` inside a track the row now declares. The track is 5rem
+        on every row whatever its permissions, so the numeral lands in the same
+        column on an owned row and on a shared one; without this the pair would sit
+        at the left of its own column and the right edge of the figures would still
+        wander by whatever the controls happened to measure.
+      */}
       <SheetProgress
         unbought={counts.unbought}
         total={counts.total}
+        className='justify-self-end'
       />
 
       {ownerActions.length > 0 && (
@@ -304,9 +371,29 @@ const ListRow: React.FC<ListRowProps> = ({
             'items-center',
             'justify-end',
             'gap-1',
+            /*
+              A hairline above the controls below `sm`, and none above `sm`. On a
+              phone these four glyphs used to arrive as a bare 44px strip with 8px
+              of air above it, which put them on exactly the same footing as the
+              list's name: three owned lists were three identical icon stripes and
+              roughly a third of the scroll carried no information at all. A rule
+              says "this is a boundary" - between what a row is and what can be
+              done to it - and it is the mark this product already uses wherever a
+              relationship has to be legible rather than inferred, as the dialogs'
+              own lists do with `border-y`.
+
+              Above `sm` the strip is the third column of the row, on the name's own
+              centre line, and a rule across the whole row there would cut the row
+              in half.
+            */
+            'border-t',
+            'border-rule',
+            'pt-1',
             'sm:col-span-1',
             'sm:col-start-3',
-            'sm:row-start-1'
+            'sm:row-start-1',
+            'sm:border-t-0',
+            'sm:pt-0'
           )}
         >
           {ownerActions.map((action) => {

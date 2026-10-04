@@ -894,11 +894,20 @@ test.describe('What a group does for a list', () => {
     await addMember(anna, miaOnThisList.id, await findAccountId(anna, 'mia'));
     expect((await grantGroup(anna, listId, miaOnThisList.id)).status()).toBe(200);
 
+    /*
+      Every body in this loop is one the server accepts, and that is load-bearing rather
+      than incidental. `POST /api/lists/{id}/gifts` checks the shape of a wish before it
+      asks who is adding it - a title under `MIN_TITLE_LENGTH` is answered 400 before the
+      gate in `lib/list-access.ts` ever runs - so a body chosen for being short would be
+      refused for its shape and this loop would stop being about permission at all. It
+      would keep passing with the gate deleted, which is the failure this test exists to
+      catch: each request below is one that only the gate can refuse.
+    */
     for (const [what, response] of [
       ['read it', ben.api.get(`/api/lists/${listId}`)],
       [
         'add an idea',
-        ben.api.post(`/api/lists/${listId}/gifts`, { data: { title: 'x' } }),
+        ben.api.post(`/api/lists/${listId}/gifts`, { data: { title: 'Lampe' } }),
       ],
       ['delete an idea', ben.api.delete(`/api/lists/${listId}/gifts/whatever`)],
       [

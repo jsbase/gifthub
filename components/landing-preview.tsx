@@ -100,7 +100,10 @@ const LandingPreview: React.FC<LandingPreviewProps> = ({
         <p className='label-print pt-1 text-caption'>{yourLists}</p>
       </div>
 
-      <ul style={memberInkStyle(OWNER_INK_SEED)} className='divide-y divide-rule'>
+      <ul
+        style={memberInkStyle(OWNER_INK_SEED)}
+        className='divide-y divide-rule @container'
+      >
         {preview.items.map((item) => {
           /*
             Derived once, then read twice - by the words behind the name and by
@@ -117,15 +120,63 @@ const LandingPreview: React.FC<LandingPreviewProps> = ({
               key={item.name}
               className={cn(
                 'grid',
-                'grid-cols-[1fr_auto]',
-                'items-center',
+                /*
+                  **A container query, and not `sm:` - because the row's arrangement
+                  is a fact about the plate, not about the window.**
+
+                  The plate is 288px on a 320px phone, 704px at 768, 392px at 1024
+                  and 488px from 1280 up. That measure is not monotonic in the
+                  viewport - it peaks where the hero is one column and falls by 300px
+                  the moment the hero splits - so a viewport breakpoint cannot say
+                  when this row has room. `sm:` said "stack below 640", which was
+                  right for the widths the plate had when it was written and has no
+                  relationship to it at any width since.
+
+                  `@min-[330px]` is the plate's own content measure: the figure takes
+                  80px and the gap 20px, so the arrangement buys a name column of
+                  230px, and `Geburtstagswünsche` - the longest name the German
+                  dictionary puts on this plate - is 213px of Source Serif 4 at 20px.
+                  Every name the three dictionaries ship fits on one line at every
+                  width at or above that.
+
+                  Below it the figure drops under the name and takes the whole
+                  measure instead, which is what the phone has always done.
+
+                  The one name that outruns this is Russian:
+                  `Пожелания ко дню рождения` is 309px and needs a 409px plate to sit
+                  beside a figure, so it wraps wherever the plate is narrower than
+                  that - at 1024 and 1152, and on a 320 or 360 phone, where the plate
+                  is 288 and 328 and the word does not fit the paper at all. It is
+                  not fixable by arranging the row differently: the plate would have
+                  to be wider than the text column beside it, and the claim is
+                  supposed to be the widest thing on this page. Stacking is the
+                  graceful answer and it is what happens below the threshold; at 430
+                  to 639, where the plate is briefly wide enough for the word, it
+                  fits beside the figure.
+                */
+                'grid-cols-1',
                 'gap-x-5',
                 'gap-y-2',
-                'py-4'
+                'py-4',
+                '@min-[330px]:grid-cols-[1fr_auto]',
+                '@min-[330px]:items-center'
               )}
             >
               <div className='flex w-full min-w-0 flex-col items-start gap-2'>
-                <span className='max-w-full break-words'>
+                <span
+                  className={cn(
+                    'max-w-full',
+                    /*
+                      `hyphens-auto`, not `break-words`. The name is a proper noun
+                      and German does not put hyphens in them, but a language that
+                      does - and this app ships German, English and Russian from
+                      one string table - should break at a morpheme boundary rather
+                      than mid-syllable if a name ever does not fit. `<html lang>`
+                      is already correct, which is the other half of it.
+                    */
+                    'hyphens-auto'
+                  )}
+                >
                   <span
                     className={cn(
                       'font-serif',
@@ -154,7 +205,15 @@ const LandingPreview: React.FC<LandingPreviewProps> = ({
                 </span>
               </div>
 
-              <SheetProgress unbought={sheet.unbought} total={sheet.total} />
+              {/* Right-aligned under the name while the plate is too narrow to carry the
+                  figure beside it, where the figure is a line of its own; on the
+                  name's own baseline from 330px of plate up, which is the
+                  arrangement the contents page itself uses. */}
+              <SheetProgress
+                unbought={sheet.unbought}
+                total={sheet.total}
+                className='justify-self-end @min-[330px]:justify-self-auto'
+              />
             </li>
           );
         })}

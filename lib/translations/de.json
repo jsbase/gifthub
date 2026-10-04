@@ -65,7 +65,7 @@
   "errors": {
     "loginRequired": "Anmeldung erforderlich",
     "failedToLoad": "Listen nicht geladen",
-    "failedToLoadGifts": "Geschenkideen nicht geladen",
+    "failedToLoadGifts": "Wünsche nicht geladen",
     "loginRejected": "Nickname oder E-Mail-Adresse und Passwort passen nicht zusammen.",
     "loginOffline": "Keine Verbindung. Bitte versuch es noch einmal.",
     "loginServerError": "Das hat nicht geklappt. Bitte versuch es später noch einmal.",
@@ -93,19 +93,23 @@
     "cannotJoinOwnGroup": "Du kannst dich nicht in deine eigene Gruppe aufnehmen.",
     "cannotClearPurchase": "Diese Idee hat jemand anderes abgehakt. Das lässt sich nicht rückgängig machen.",
     "forbidden": "Das ist auf dieser Liste nicht erlaubt.",
-    "notFound": "Diese Liste gibt es nicht."
+    "notFound": "Diese Liste gibt es nicht.",
+    "titleTooLong": "Höchstens {max} Zeichen für den Wunsch.",
+    "titleTooShort": "Mindestens {min} Zeichen.",
+    "noteTooLong": "Höchstens {max} Zeichen für die Notiz.",
+    "urlTooLong": "Höchstens {max} Zeichen für den Link."
   },
   "success": {
     "loggedOut": "Abgemeldet"
   },
   "toasts": {
-    "giftAdded": "Geschenkidee hinzugefügt",
-    "giftAddFailed": "Geschenkidee nicht hinzugefügt",
+    "giftAdded": "Wunsch hinzugefügt",
+    "giftAddFailed": "Wunsch nicht hinzugefügt",
     "giftStatusPurchased": "Als gekauft markiert",
     "giftStatusBackToList": "Zurück auf der Liste",
-    "giftStatusUpdateFailed": "Geschenkidee nicht aktualisiert",
-    "giftDeleted": "Geschenkidee gelöscht",
-    "giftDeleteFailed": "Geschenkidee nicht gelöscht",
+    "giftStatusUpdateFailed": "Wunsch nicht aktualisiert",
+    "giftDeleted": "Wunsch gelöscht",
+    "giftDeleteFailed": "Wunsch nicht gelöscht",
     "listCreated": "Liste erstellt",
     "listCreateFailed": "Liste nicht erstellt",
     "listRenamed": "Liste umbenannt",
@@ -143,32 +147,32 @@
   "visibility": {
     "private": "Privat",
     "shared": "Geteilt",
-    "privateHint": "Nur du siehst diese Liste.",
-    "sharedHint": "Genau die von dir eingeladenen Personen sehen sie.",
+    "privateHint": "Nur du kannst sie ansehen und Ideen hinzufügen.",
+    "sharedHint": "Andere können sie ansehen und Ideen abhaken.",
     "change": "Sichtbarkeit ändern",
     "sharedWith": "Geteilt mit",
     "sharedWithNobody": "Noch mit niemandem geteilt"
   },
   "listSheet": {
-    "listHint": "Auf dieser Liste schreibst nur du.",
-    "addGift": "Geschenkidee hinzufügen",
-    "enterGiftTitle": "Geschenkidee",
+    "addGift": "Wunsch eintragen",
+    "enterGiftTitle": "Dein Wunsch",
     "optional": "Optional",
     "enterDescription": "Notiz hinzufügen",
     "enterUrl": "Link",
     "cancel": "Abbrechen",
     "adding": "Wird hinzugefügt...",
-    "noGifts": "Noch keine Geschenkideen. Füge die erste hinzu.",
+    "noGifts": "Keine Wünsche offen? Füge deinen ersten Wunsch hinzu!",
     "emptyCellHint": "Ein Name reicht. Notiz und Link sind optional.",
     "markAsPurchased": "Als gekauft markieren",
     "markAsAvailable": "Zurück auf die Liste",
-    "deleteGift": "Geschenkidee löschen",
-    "deleteGiftConfirm": "Diese Geschenkidee löschen?",
+    "deleteGift": "Wunsch löschen",
+    "deleteGiftConfirm": "Diesen Wunsch löschen?",
     "openIdeas": "Noch offen",
     "collectedIdeas": "Besorgt",
     "youAreABuyer": "Diese Liste gehört jemand anderem. Abhaken, sobald du etwas besorgt hast, darfst du — mehr nicht.",
     "markedBySomeoneElse": "Jemand anderes hat das abgehakt — die Markierung bleibt.",
-    "backToLists": "Zurück zu den Listen"
+    "backToLists": "Zurück zu den Listen",
+    "addGiftRow": "Einfach deinen Wunsch eintragen, teilen, fertig!"
   },
   "shareList": {
     "shareTitle": "Liste teilen",
@@ -182,18 +186,19 @@
     "adding": "Wird hinzugefügt...",
     "revoke": "Zugriff entziehen",
     "revokeConfirmTitle": "Zugriff entziehen?",
-    "nobodyYet": "Noch niemand eingetragen.",
+    "nobodyYet": "Du hast deine Wünsche noch mit niemandem geteilt",
     "privateFirst": "Solange die Liste privat ist, kannst du niemanden eintragen. Teile sie zuerst.",
     "makeShared": "Jetzt teilen",
-    "groupPickerHeading": "Oder mit einer Gruppe teilen",
-    "noGroupsToShare": "Du hast noch keine Gruppe. Leg sie oben in der Leiste an.",
+    "groupPickerHeading": "Gruppen hinzufügen",
+    "noGroupsToShare": "Du hast noch keine Gruppe. Die legst du über „Gruppen“ in der Leiste oben an.",
     "groupReaches": "Personen: {count}",
-    "revokeGroupConfirmTitle": "Gruppe entfernen?"
+    "revokeGroupConfirmTitle": "Gruppe entfernen?",
+    "audienceHeading": "Wer sieht diese Liste"
   },
   "groups": {
     "openGroups": "Gruppen",
     "title": "Gruppen",
-    "lead": "Eine Gruppe ist eine Liste von Personen. Teilst du eine Wunschliste mit einer Gruppe, sehen alle darin die Liste.",
+    "lead": "Eine Gruppe ist eine Liste von Personen. Wer in ihr ist, sieht jede Wunschliste, mit der du sie teilst.",
     "noGroups": "Du hast noch keine Gruppe.",
     "create": "Gruppe anlegen",
     "creating": "Wird angelegt...",
@@ -204,29 +209,29 @@
     "save": "Speichern",
     "saving": "Wird gespeichert...",
     "deleteGroup": "Gruppe löschen",
-    "membersHeading": "Personen in der Gruppe",
-    "noMembers": "Noch niemand drin.",
+    "noMembers": "In dieser Gruppe ist noch niemand.",
     "addMemberLabel": "Person hinzufügen",
     "removeMember": "Aus der Gruppe entfernen",
     "removeMemberConfirmTitle": "Aus der Gruppe entfernen?",
-    "memberCount": "Personen: {count}"
+    "memberCount": "Personen: {count}",
+    "newGroup": "Neue Gruppe",
+    "backToGroups": "Alle Gruppen"
   },
   "createListDialog": {
-    "createListTitle": "Neue Liste",
-    "enterListName": "Name der Liste",
+    "createListTitle": "Neue Wunschliste",
+    "enterListName": "Name der Wunschliste",
     "create": "Erstellen",
     "creating": "Wird erstellt...",
     "visibilityLegend": "Wer soll diese Liste sehen?",
     "private": "Privat",
     "privateHint": "Nur du siehst sie.",
     "shared": "Geteilt",
-    "sharedHint": "Genau die, die du später mit einer Adresse einträgst."
+    "sharedHint": "Kann von anderen angesehen werden"
   },
   "listBoard": {
-    "yourLists": "Deine Listen",
-    "sharedWithYou": "Liste deiner Liebsten",
-    "createList": "Liste erstellen",
-    "addGift": "Geschenkidee hinzufügen",
+    "yourLists": "Alle Deine Wünsche",
+    "sharedWithYou": "Wünsche deiner Liebsten",
+    "createList": "Wunschliste erstellen",
     "rename": "Umbenennen",
     "renameTitle": "Liste umbenennen",
     "renameLabel": "Neuer Name",
@@ -235,13 +240,12 @@
     "deleteList": "Liste löschen",
     "changeVisibility": "Sichtbarkeit ändern",
     "share": "Teilen",
-    "sharedWithCount": "Geteilt mit: {count}",
-    "sharedWithGroupCount": "Geteilt mit: {count} Personen · Gruppen: {groups}",
-    "noLists": "Lege deine erste Wunschliste an.",
-    "noSharedLists": "Es wurden noch keine Wunschlisten mit dir geteilt.",
-    "emptyPlateHint": "Ein Name reicht. Wer sie sieht, entscheidest du.",
+    "sharedWithGroupCount": "mit: {count} Personen · Gruppen: {groups}",
+    "noLists": "Einfach Wunschliste erstellen!",
+    "emptyPlateHint": "Du entscheidest wer sie sieht.",
     "private": "Privat",
-    "shared": "Geteilt"
+    "shared": "Geteilt",
+    "sharedEmptyNote": "Sobald jemand eine Wunschliste mit dir teilt, siehst du sie hier."
   },
   "footer": {
     "copyright": "© 2026 wishy",
@@ -329,9 +333,9 @@
     ]
   },
   "giftCount": {
-    "none": "noch keine Geschenkidee",
+    "none": "noch kein Wunsch",
     "zero": "nichts mehr zu kaufen",
-    "one": "1 Geschenkidee noch offen",
-    "many": "{{count}} Geschenkideen noch offen"
+    "one": "1 Wunsch noch offen",
+    "many": "{count} Wünsche noch offen"
   }
 }

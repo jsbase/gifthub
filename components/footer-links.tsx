@@ -12,8 +12,18 @@ const linkClasses = cn(
   'text-caption',
   'underline-offset-4',
   'transition-colors',
-  'hover:text-ink',
-  'hover:underline'
+  /*
+    A 44px target around 20px of text, by padding out and pulling back by the same
+    amount. These are the only two controls in the app that measured under the
+    floor - 82x19.5px and 27x19.5px at every width, because a footer link is a
+    line of text and the line is what got sized. The footer's own height does not
+    move: `-my-3` takes back exactly what `py-3` adds, so the band the footer
+    occupies is unchanged and only the touch target grows.
+  */
+  'inline-flex min-h-11 items-center',
+  '-my-3',
+  '[@media(hover:hover)_and_(pointer:fine)]:hover:text-ink',
+  '[@media(hover:hover)_and_(pointer:fine)]:hover:underline'
 );
 
 const FooterLinks = ({ dict }: Pick<FooterProps, 'dict'>) => {
