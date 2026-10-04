@@ -81,6 +81,12 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       pull-requests: write
+    env:
+      # TEMPORARY. `actions/ai-inference` hides the Copilot CLI's stderr behind
+      # "exited with code 1" unless this is set, and that message alone does not
+      # say whether the token lacks a Copilot seat, the CLI wants interactive
+      # setup, or the model name is unknown. Remove once the run is green.
+      ACTIONS_STEP_DEBUG: "true"
 
     steps:
       - uses: actions/setup-node@v6
