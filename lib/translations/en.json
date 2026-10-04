@@ -179,7 +179,7 @@
     "shareLead": "Every person you add here sees the whole list and may tick ideas off. Nothing else.",
     "enterNameOrEmail": "Nickname or email address",
     "searching": "Searching...",
-    "noSearchResults": "No one found for that.",
+    "noSearchResults": "Nobody found for that.",
     "searchHint": "At least three characters.",
     "searchPickPrompt": "Tap a name to add that person.",
     "add": "Add",
@@ -198,7 +198,7 @@
   "groups": {
     "openGroups": "Groups",
     "title": "Groups",
-    "lead": "A group is a list of people. Everybody in it sees every wish list you share it with.",
+    "lead": "A group is a list of people. Everybody in it sees every wish list you share with the group.",
     "noGroups": "You have no groups yet.",
     "create": "Create group",
     "creating": "Creating...",
@@ -245,7 +245,7 @@
     "emptyPlateHint": "You decide who sees it.",
     "private": "Private",
     "shared": "Shared",
-    "sharedEmptyNote": "As soon as somebody shares a wish list with you, you will see it here."
+    "sharedEmptyNote": "When somebody shares a wish list with you, it shows up here."
   },
   "footer": {
     "copyright": "© 2026 wishy",

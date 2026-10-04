@@ -174,7 +174,10 @@ const LocaleLayout: React.FC<RootLayoutProps> = async ({ children, params }) => 
           <Analytics />
           <SpeedInsights />
         </ThemeProvider>
-      </body>
+      {/* impeccable-live-start */}
+<script src="http://localhost:8400/live.js?token=8a8669f1-7a9e-4194-a13c-ad321feedec9"></script>
+{/* impeccable-live-end */}
+</body>
     </html>
   );
 };
