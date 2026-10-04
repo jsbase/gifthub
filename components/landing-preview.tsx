@@ -100,7 +100,10 @@ const LandingPreview: React.FC<LandingPreviewProps> = ({
         <p className='label-print pt-1 text-caption'>{yourLists}</p>
       </div>
 
-      <ul style={memberInkStyle(OWNER_INK_SEED)} className='divide-y divide-rule'>
+      <ul
+        style={memberInkStyle(OWNER_INK_SEED)}
+        className='divide-y divide-rule @container'
+      >
         {preview.items.map((item) => {
           /*
             Derived once, then read twice - by the words behind the name and by
@@ -118,31 +121,45 @@ const LandingPreview: React.FC<LandingPreviewProps> = ({
               className={cn(
                 'grid',
                 /*
-                  Two columns at `sm` and one below it, and that is the fix for a
-                  reported break rather than a preference.
+                  **A container query, and not `sm:` - because the row's arrangement
+                  is a fact about the plate, not about the window.**
 
-                  Measured in Chromium: "Geburtstagswünsche" is 213px of Source
-                  Serif 4 at 20px, and the name column on this row had 213px at
-                  390px - it just fitted - but 186px at 360px and 146px at 320px.
-                  `overflow-wrap: break-word` on the name made it break inside the
-                  token at both of those, which is the "Geburtstagswünsc-he" that
-                  was reported. A 390px screenshot hides it, which is why it
-                  survived review.
+                  The plate is 288px on a 320px phone, 704px at 768, 392px at 1024
+                  and 488px from 1280 up. That measure is not monotonic in the
+                  viewport - it peaks where the hero is one column and falls by 300px
+                  the moment the hero splits - so a viewport breakpoint cannot say
+                  when this row has room. `sm:` said "stack below 640", which was
+                  right for the widths the plate had when it was written and has no
+                  relationship to it at any width since.
 
-                  Stacking below `sm` gives the name the row's whole content
-                  measure - 254px at 320px, 294px at 360px - so the longest German
-                  compound the seed can produce fits without breaking at all. The
-                  figure keeps its place on the name's own baseline from `sm` up,
-                  which is the whole point of the plate: it is the contents page
-                  reproduced at a smaller size, and a smaller reproduction is
-                  entitled to wrap.
+                  `@min-[330px]` is the plate's own content measure: the figure takes
+                  80px and the gap 20px, so the arrangement buys a name column of
+                  230px, and `Geburtstagswünsche` - the longest name the German
+                  dictionary puts on this plate - is 213px of Source Serif 4 at 20px.
+                  Every name the three dictionaries ship fits on one line at every
+                  width at or above that.
+
+                  Below it the figure drops under the name and takes the whole
+                  measure instead, which is what the phone has always done.
+
+                  The one name that outruns this is Russian:
+                  `Пожелания ко дню рождения` is 309px and needs a 409px plate to sit
+                  beside a figure, so it wraps wherever the plate is narrower than
+                  that - at 1024 and 1152, and on a 320 or 360 phone, where the plate
+                  is 288 and 328 and the word does not fit the paper at all. It is
+                  not fixable by arranging the row differently: the plate would have
+                  to be wider than the text column beside it, and the claim is
+                  supposed to be the widest thing on this page. Stacking is the
+                  graceful answer and it is what happens below the threshold; at 430
+                  to 639, where the plate is briefly wide enough for the word, it
+                  fits beside the figure.
                 */
                 'grid-cols-1',
                 'gap-x-5',
                 'gap-y-2',
                 'py-4',
-                'sm:grid-cols-[1fr_auto]',
-                'sm:items-center'
+                '@min-[330px]:grid-cols-[1fr_auto]',
+                '@min-[330px]:items-center'
               )}
             >
               <div className='flex w-full min-w-0 flex-col items-start gap-2'>
@@ -188,14 +205,14 @@ const LandingPreview: React.FC<LandingPreviewProps> = ({
                 </span>
               </div>
 
-              {/* Right-aligned under the name below `sm`, where the row is one
-                  column and the figure is a line of its own; on the name's own
-                  baseline from `sm` up, which is the arrangement the contents
-                  page itself uses. */}
+              {/* Right-aligned under the name while the plate is too narrow to carry the
+                  figure beside it, where the figure is a line of its own; on the
+                  name's own baseline from 330px of plate up, which is the
+                  arrangement the contents page itself uses. */}
               <SheetProgress
                 unbought={sheet.unbought}
                 total={sheet.total}
-                className='justify-self-end sm:justify-self-auto'
+                className='justify-self-end @min-[330px]:justify-self-auto'
               />
             </li>
           );

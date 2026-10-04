@@ -659,7 +659,19 @@ const GroupsDialog: React.FC<GroupsDialogProps> = ({
           */}
           {openGroup ? (
             <>
-              <div className='flex items-center justify-between gap-2'>
+              {/*
+                Lifted by exactly the difference between the sheet's padding and
+                the close control's own offset. The X is `absolute top-3` against
+                the content box (`components/ui/dialog.tsx:226-241`), so its 44px
+                target starts 12px from the top of the sheet, while a row in flow
+                starts at the content padding - 20px from `sm` down, 16px on a
+                phone. Left where the flow puts it, this row sat 8px (4px on a
+                phone) below the X standing right next to it, and three 44px
+                targets that are meant to read as one line read as a staircase.
+                Two values, because the padding steps with `xs:p-4` and the close
+                control does not move with it.
+              */}
+              <div className='-mt-2 flex items-center justify-between gap-2 xs:-mt-1'>
                 {/*
                   The way out. `aria-controls` names the list this returns to, so
                   the relationship is announced and not only drawn, and it is a real

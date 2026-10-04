@@ -44,11 +44,13 @@ export interface SheetProgressProps {
    * Two callers need it and they need opposite things. A contents-page row
    * declares a 5rem column for the figure so the number lands in the same place on
    * an owned row and on a shared one, which means justifying it to the end of that
-   * column. The landing plate's row is one column below `sm` and two above it, so
-   * there the pair is right-aligned on its own line on a phone and left on the
-   * name's baseline from `sm` up. The rule-plus-figure pair is 80px wide whichever
-   * way it is aligned; what changes is which edge it is pinned to, and that is the
-   * caller's decision rather than this component's.
+   * column. The landing plate's row is one column while the plate is narrower than
+   * 330px and two above that, so there the pair is right-aligned on its own line on
+   * a phone and left on the name's baseline once the plate is wide enough - which is
+   * a container query on the plate's own measure rather than a viewport one, since
+   * the plate is 704px wide at 768 and 392px at 1024. The rule-plus-figure pair is
+   * 80px wide whichever way it is aligned; what changes is which edge it is pinned
+   * to, and that is the caller's decision rather than this component's.
    */
   className?: string;
 }

@@ -426,8 +426,48 @@ const ShareListDialog: React.FC<ShareListDialogProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
-      <DialogContent closeLabel={dict.close} className='sm:max-w-md'>
-        <DialogHeader>
+      {/*
+        `sm:max-w-lg`, which is 512px, against the primitive's `sm:max-w-[32rem]`
+        that this file was overriding down to `sm:max-w-md` - 448px.
+
+        Measured, at 448: the widest row this sheet carries is a group in the offer,
+        which is a name, a person count and a 44px "Hinzufügen" in a
+        `whitespace-nowrap` button. The name got 236px of the card's 408px content
+        measure, and a German group name is longer than that. The audience row is the
+        same shape with a narrower control and fares a little better, and three
+        stacked regions make this the tallest thing per pixel of width on the page.
+
+        It is the one dialog in the app that has to carry a two-column row with an
+        action *and* three regions, so it is the one dialog that needs the wider
+        sheet - and it is set here rather than in `dialog.tsx` because every other
+        sheet in this app is a single-column form, and widening the primitive would
+        widen all of them for the sake of one. `ListVisibilityDialog` above keeps
+        the 448 it had.
+
+        A phone is untouched by this, and that is why it is written at `sm`: below
+        640 the sheet is the page under the header and takes the whole viewport
+        width, so a max-width cannot buy a phone anything. Everything that helps a
+        phone is in the spacing below.
+      */}
+      <DialogContent closeLabel={dict.close} className='sm:max-w-lg'>
+        {/*
+          `gap-2 xs:gap-2`, and both halves written out.
+
+          The primitive's header is `gap-1.5` with `xs:gap-1`, and this header
+          carries three things: the title, the list name, and the standing
+          instruction under them. Six pixels under a title, and four on a phone, is
+          the cramping this sheet was reported for - and passing `gap-2` alone would
+          not have fixed it, because `xs:gap-1` is a different modifier group and
+          `twMerge` keeps both, so the phone would have kept its four pixels. The
+          same trap `dialog.tsx` documents for `sm:max-w-*`; the second class is
+          worth it to be certain which value each width gets.
+
+          Eight pixels and not more, because the name is an 11px tracked label and
+          the instruction below it is a 13px sentence: these are three lines of one
+          head, not three sections, and what they want is the separation inside a
+          paragraph rather than the separation between parts of a page.
+        */}
+        <DialogHeader className='gap-2 xs:gap-2'>
           {/*
             `font-sans text-xl` against the primitive's serif default, and the
             reason is written down twice in this file already: the title is a
@@ -451,7 +491,27 @@ const ShareListDialog: React.FC<ShareListDialogProps> = ({
           >
             {listName}
           </p>
-          <DialogDescription>{shareLead}</DialogDescription>
+          {/*
+            `shareLead`, one rank down from the primitive's 15px.
+
+            It is a standing instruction, not content: it says what adding somebody
+            to this list *permits*, which is the same fact every time anybody opens
+            this sheet and is never the thing they came to do. At 15px it was the
+            second-loudest thing in the dialog after the title, it ran to two lines,
+            and it pushed the audience - the actual state, the reason the sheet was
+            opened - below 100px of its own. At 13px, in the caption weight it was
+            already in, with the leading opened up rather than tightened, it reads as
+            a printed note under the title and costs one line less.
+
+            13px rather than the 11px of `label-print`, because it is a sentence and
+            not a label: the registry puts 11px on tracked uppercase chrome and
+            nothing else. The contents page already sets its row meta at 13px in
+            this same voice (`components/list-row.tsx`), so this is an existing
+            register on a sheet rather than a new size.
+          */}
+          <DialogDescription className='text-[0.8125rem] leading-relaxed'>
+            {shareLead}
+          </DialogDescription>
         </DialogHeader>
 
         {visibility === 'PRIVATE' ? (
@@ -466,7 +526,15 @@ const ShareListDialog: React.FC<ShareListDialogProps> = ({
             not require `SHARED` for it. Hiding that behind a private list would
             make access revocable only by deleting the list.
           */
-          <div className='flex flex-col gap-4'>
+          /*
+            `gap-5`, up from `gap-4`, for the same reason the shared branch below
+            is at 32: on a phone this sheet *is* the page under the header, so the
+            distance between the sentence that explains the state, the one control
+            that changes it, and the audience that can already be reached is the
+            distance between three parts of a page. On the card the same three are
+            three blocks of a form and 20px is enough.
+          */
+          <div className='flex flex-col gap-5'>
             <p
               className='text-[0.9375rem] leading-relaxed text-pretty text-caption'
               data-testid='privateFirst'
@@ -492,7 +560,25 @@ const ShareListDialog: React.FC<ShareListDialogProps> = ({
             />
           </div>
         ) : (
-          <div className='flex flex-col gap-6'>
+          /*
+            `gap-8 sm:gap-7`, and it is written the other way round from most of this
+            file on purpose.
+
+            Below `sm` the sheet is the page under the header, full-bleed and
+            `100dvh` tall, and 24px between its three regions is a page whose parts
+            are touching: measured at 390px, the audience head sat 96px under the
+            last line of the standing instruction and the search field 40px under the
+            last audience row. This is the cramping the sheet was reported for, and
+            it is a spacing problem rather than a width one - nothing here is
+            overflowing, everything is just too close.
+
+            32px on a phone and 28px on the card is one step, not two: the card is
+            the better-fitting of the two arrangements already, being 512px wide with
+            a line length this sheet never reaches, so it needs less separation
+            rather than more. Written mobile-first, which means the larger value is
+            the one with no breakpoint in front of it.
+          */
+          <div className='flex flex-col gap-8 sm:gap-7'>
             {/*
               **The audience comes first, because it is the state and the rest of
               this sheet is the two ways to change it.** It used to come last, under
@@ -570,9 +656,22 @@ const ShareListDialog: React.FC<ShareListDialogProps> = ({
                     className='divide-y divide-rule border-y border-rule'
                   >
                     {offerableGroups.map((group) => (
+                      /*
+                        `py-3` and `gap-4`, up from `py-2` and `gap-3`.
+
+                        A row here is two lines of type - a name and how many
+                        people one grant reaches - beside a 44px control, and
+                        `py-2` made it 60px of which the padding was 16. On a
+                        phone, where this block can be several rows and is the
+                        last thing on the sheet, they read as a solid block of
+                        buttons rather than as a list of groups. `py-3` is 68px
+                        and the name clears the control's edge; `gap-4` is what
+                        stops a long name from touching "Hinzufügen", which is
+                        `whitespace-nowrap` and therefore never gives way itself.
+                      */
                       <li
                         key={group.id}
-                        className='flex min-h-11 items-center justify-between gap-3 py-2'
+                        className='flex min-h-11 items-center justify-between gap-4 py-3'
                         data-testid='groupPickerRow'
                       >
                         <span className='flex min-w-0 flex-col'>
