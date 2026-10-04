@@ -133,6 +133,7 @@ const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({ label }) => {
             <IconChevronDown
               className={cn('h-3.5', 'w-3.5', 'shrink-0')}
               aria-hidden='true'
+              data-testid='languageSwitcherChevron'
             />
           </Button>
         </DropdownMenuTrigger>

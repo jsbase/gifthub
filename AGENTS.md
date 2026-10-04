@@ -13,7 +13,8 @@ wishy gives one person a list of gift ideas and lets them share it with the spec
 - `lib/` — `auth.ts` (browser fetch wrappers), `auth-server.ts` (`requireAccountId` and `requireAccount`, the server-side JWT), `prisma.ts` (client singleton), `list-access.ts` (**the entire authorization surface** — the permission table is in its header comment), `refusals.ts` (the closed `Refusal` vocabulary shared by routes and client), `gift-count.ts` (a sheet: counts and the four count states), `account-name.ts` (what a display name may be, and the password rule), `email.ts` (what an address may be, and its normalization), `nickname.ts` (what the unique sign-in handle may be), `cookie.ts` (whether a cookie served on this request may be marked `Secure`), `api-refusal.ts` (the `Refusal` to status mapping, server-only), `member-ink.ts` (stable colour tray, keyed on the **owner** account id), `i18n-config.ts` (locale list and default), `utils.ts` (`cn`), `translations/{de,en,ru}.json`.
 - `hooks/` — `use-debounce.ts` only.
 - `prisma/` — `schema.prisma` (Postgres; `Account`, `List`, `ListAccess`, `Gift`), `migrations/`, and `seed.mjs`, which **deletes every row** before seeding. Read its guards before running it.
-- `tests/` — Playwright end-to-end specs only (`app`, `auth-buttons`, `dashboard`, `language-switcher`, `sharing`). There are no unit tests in this repo and no unit test runner. `sharing.spec.ts` is the security surface and the most important test in the repo.
+- `tests/` — two runners, one directory. The Playwright end-to-end specs sit at the top: `app`, `auth-buttons`, `dashboard`, `gift-fields`, `group-sheets`, `groups`, `landing`, `language-switcher`, `sharing`. `sharing.spec.ts` is the security surface and the most important test in the repo; `groups.spec.ts` is the second HTTP-only permission surface. `tests/unit/` holds `node --test` unit tests for the pure rule functions in `lib/` (`gift-text`, `gift-count`, `refusals`, `member-ink`, and the normalization rules), which `playwright.config.ts` excludes via `testIgnore` so Playwright does not collect them.
+- How a unit test imports a `lib/` module — `node --test` runs the `.ts` files directly, and Node's resolver requires a real file extension and has no equivalent of the `@/*` path alias. An extensionless `../../lib/gift-text` fails at runtime with `ERR_MODULE_NOT_FOUND`, and a `.ts` extension fails `tsc` under this `tsconfig.json`, which does not set `allowImportingTsExtensions`. So each unit test bridges with `createRequire(import.meta.url)('../../lib/x.ts') as typeof import('@/lib/x')`: the specifier carries the extension Node needs, the cast carries the types TypeScript needs, and neither needs a config change. `import type { … } from '@/lib/…'` is still fine for types alone, because a type-only import is erased before resolution.
 - `types.ts` — hand-written interfaces for every component prop and the whole translation dictionary surface. Single shared type file; see the serialization rules below. `Gift` deliberately has no `purchasedById`: the database has it, and the client's type is a strict subset so no endpoint can leak the buyer without a visible type change.
 - `proxy.ts` — the Next 16 replacement for `middleware.ts`: locale negotiation plus the auth gate for the contents page and the list sheet.
 - `public/sw.js` — the actual service worker, plus `offline.html`, `flags/`, `site.webmanifest`.
@@ -34,6 +35,7 @@ npm run start                # next start
 npm run lint                 # eslint .  — errors fail, warnings do not
 npm run lint:ratchet         # fails on warnings absent from lint-baseline.json
 npm run lint:baseline        # rewrite lint-baseline.json to accept current warnings
+npm run test:unit            # node --test on the pure rule functions in tests/unit/
 npm run test:e2e             # playwright test
 npm run test:e2e:ui          # playwright test --ui
 npm run test:e2e:headed      # playwright test --headed
@@ -93,6 +95,7 @@ Run all of these, in this order, before calling any task complete:
 3. `npm run lint:ratchet` — clean. This is a separate gate from `lint` and CI runs both; a new warning fails it even though `npm run lint` passes.
 4. `npm run test:e2e` — passing, against a migrated and seeded database.
 5. `npm run build` — succeeds.
+6. `npm run test:unit` — green. Needs no database and no secrets, so it is a cheap gate and CI runs it: a change to a pure rule function in `lib/` fails in milliseconds rather than after a browser download.
 
 Conditional:
 

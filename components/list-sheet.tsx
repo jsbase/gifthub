@@ -982,6 +982,7 @@ It cannot be rendered inside the cell: `GiftCardProps.dict` is
             </Label>
             <Input
               id='title'
+              data-testid='giftTitleInput'
               name='title'
               placeholder={dict.listSheet.enterGiftTitle}
               maxLength={GIFT_FIELD_LIMITS.title.max}
@@ -996,6 +997,7 @@ It cannot be rendered inside the cell: `GiftCardProps.dict` is
             </Label>
             <Textarea
               id='description'
+              data-testid='giftDescriptionInput'
               name='description'
               placeholder={`${dict.listSheet.enterDescription} (${dict.listSheet.optional})`}
               maxLength={GIFT_FIELD_LIMITS.description.max}
@@ -1009,6 +1011,7 @@ It cannot be rendered inside the cell: `GiftCardProps.dict` is
             </Label>
             <Input
               id='url'
+              data-testid='giftUrlInput'
               name='url'
               type='url'
               placeholder={`${dict.listSheet.enterUrl} (${dict.listSheet.optional})`}

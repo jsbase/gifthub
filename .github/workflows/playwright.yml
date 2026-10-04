@@ -73,20 +73,21 @@ jobs:
       # Everything from here to the build step needs no database at all. Verified
       # on a clean checkout with DATABASE_URL, DIRECT_URL and JWT_SECRET set to
       # the empty string a fork pull request gets: `npm ci` (including the
-      # `prisma generate` postinstall), typecheck, lint, ratchet and build all
-      # succeed. `prisma generate` only writes files, and nothing imports a
-      # PrismaClient while Next collects route config. So no placeholder
-      # connection string is needed either - these steps simply never get one.
+      # `prisma generate` postinstall), typecheck, lint, ratchet, unit tests and
+      # build all succeed. `prisma generate` only writes files, and nothing
+      # imports a PrismaClient while Next collects route config. So no
+      # placeholder connection string is needed either - these steps simply never
+      # get one.
       #
-      # These five steps carry no `if:`, so they run whenever nothing above them
+      # These six steps carry no `if:`, so they run whenever nothing above them
       # has failed. That is why the secret preflight sits *below* them and not
       # above: a step that exits non-zero aborts the rest of the job by the
       # default `success()`, so a preflight placed here would skip typecheck,
-      # lint, ratchet and build entirely on a push with the secrets unset - which
-      # is the state this gate was added to protect against. Inverted paths were
-      # the result: a fork pull request, with no secrets reachable and the
-      # preflight gated off, ran the whole static half, while a same-repository
-      # push with full secret access ran none of it.
+      # lint, ratchet, unit tests and build entirely on a push with the secrets
+      # unset - which is the state this gate was added to protect against.
+      # Inverted paths were the result: a fork pull request, with no secrets
+      # reachable and the preflight gated off, ran the whole static half, while
+      # a same-repository push with full secret access ran none of it.
       - name: Install dependencies
         run: npm ci
       - name: Typecheck
@@ -100,6 +101,19 @@ jobs:
         # the accepted warnings cannot become one more by accident. Shrinking the
         # debt passes; only growing it fails.
         run: npm run lint:ratchet
+      - name: Unit tests
+        # `node --test` over the pure rule functions in `lib/`. A step and not a
+        # second job, for the reason the job is single: a second job would add a
+        # check-run name branch protection does not require, and the required
+        # `Playwright / run-e2e-tests` would then stop reporting type errors. This
+        # step touches no database and reads no secret, so it also runs on a fork
+        # pull request - the same reason the static steps above it carry no `if:`.
+        #
+        # The glob is quoted on purpose. Node expands the pattern itself, and an
+        # unquoted one would be expanded by the shell first - which works on this
+        # runner and fails on Windows, where npm scripts go through cmd and cmd
+        # does not expand globs. Quoted, the same command is green in both.
+        run: npm run test:unit
       - name: Build
         run: npm run build
       - name: Check required secrets

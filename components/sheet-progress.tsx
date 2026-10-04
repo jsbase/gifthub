@@ -90,7 +90,11 @@ const SheetProgress: React.FC<SheetProgressProps> = ({
         />
       </span>
       {nothingLeft ? (
-        <IconCheck className='h-4 w-4 text-done' stroke={2.5} />
+        <IconCheck
+          className='h-4 w-4 text-done'
+          stroke={2.5}
+          data-testid='sheetProgressCheck'
+        />
       ) : (
         <span
           className={cn(

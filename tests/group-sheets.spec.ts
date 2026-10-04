@@ -42,8 +42,8 @@ const GROUP_NAME = `spec-group-${process.pid}`;
 const signIn = async (page: Page, email: string) => {
   await page.goto(`/${lang}`);
   await page.getByTestId('OpenLogin').click();
-  await page.fill('#identifier', email);
-  await page.fill('#password', PASSWORD);
+  await page.getByTestId('loginIdentifier').fill(email);
+  await page.getByTestId('loginPassword').fill(PASSWORD);
   await Promise.all([
     page.waitForURL(/\/(dashboard|list)/, { timeout: 20000 }),
     page.getByTestId('SubmitLogin').click(),
@@ -109,7 +109,7 @@ test.describe('Group sheets', () => {
       dialog title rather than through the group's own heading, since the title is
       what tells a reader which level they are on.
     */
-    await expect(page.getByRole('dialog')).toContainText(GROUP_NAME);
+    await expect(page.getByTestId('dialogContent')).toContainText(GROUP_NAME);
 
     // The block carries no head of its own any more: the title above it says which
     // group these are, which is what the old section head had to repeat.
