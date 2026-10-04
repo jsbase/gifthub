@@ -226,7 +226,7 @@
     "private": "Private",
     "privateHint": "Only you see it.",
     "shared": "Shared",
-    "sharedHint": "Exactly the people you add later with an address."
+    "sharedHint": "Can be viewed by others"
   },
   "listBoard": {
     "yourLists": "All your wishes",

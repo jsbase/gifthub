@@ -226,7 +226,7 @@
     "private": "Privat",
     "privateHint": "Nur du siehst sie.",
     "shared": "Geteilt",
-    "sharedHint": "Genau die, die du später mit einer Adresse einträgst."
+    "sharedHint": "Kann von anderen angesehen werden"
   },
   "listBoard": {
     "yourLists": "Alle Deine Wünsche",

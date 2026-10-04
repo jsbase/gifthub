@@ -2,6 +2,7 @@
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
+import { IconEye, IconEyeOff } from '@tabler/icons-react';
 import {
   Dialog,
   DialogContent,
@@ -52,11 +53,13 @@ export const ListVisibilityDialog: React.FC<ListVisibilityDialogProps> = ({
       value: 'PRIVATE' as const,
       label: dict.visibility.private,
       hint: dict.visibility.privateHint,
+      icon: IconEyeOff,
     },
     {
       value: 'SHARED' as const,
       label: dict.visibility.shared,
       hint: dict.visibility.sharedHint,
+      icon: IconEye,
     },
   ];
 
@@ -88,6 +91,7 @@ export const ListVisibilityDialog: React.FC<ListVisibilityDialogProps> = ({
         <div role='group' className='flex flex-col gap-2'>
           {options.map((option) => {
             const isCurrent = option.value === visibility;
+            const OptionIcon = option.icon;
             return (
               <Button
                 key={option.value}
@@ -115,6 +119,21 @@ export const ListVisibilityDialog: React.FC<ListVisibilityDialogProps> = ({
                   'whitespace-normal'
                 )}
               >
+                {/*
+                  The same two glyphs, at the same size and in the same two
+                  inks, that `create-list-dialog.tsx` puts on this pair. These two
+                  sheets are the only places the product asks the question, and
+                  an icon that meant one thing in the first and another in the
+                  second would be worse than no icon.
+                */}
+                <OptionIcon
+                  aria-hidden='true'
+                  className={cn(
+                    'h-5 w-5 shrink-0',
+                    'mt-px',
+                    isCurrent ? 'text-ink-foreground' : 'text-caption'
+                  )}
+                />
                 <span className='flex min-w-0 flex-col gap-1'>
                   <span className='label-print'>{option.label}</span>
                   <span

@@ -224,93 +224,113 @@ const ListRow: React.FC<ListRowProps> = ({
           </span>
 
           {/*
-            How far this list reaches, printed under the name rather than in a
-            menu. The state is on a chip and the reach is a figure beside it, and
-            they used to be one string: `Geteilt` in the label face, then
-            `Geteilt mit: 1` in the meta face, forty pixels apart, saying the same
-            word twice in two voices. That was the redundancy the owner named on
-            this page, and it was structural rather than a wording problem - so it
-            is fixed by giving each fact one carrier, not by rewording either.
+            One line of facts under the name, and it is not the same line for both
+            kinds of row.
 
-            Both are still words. A dot in a colour would be a state only colour
-            carries, which is the one kind of state this product refuses, and the
-            chip answers that by weight and enclosure instead of by hue.
+            **A row you do not own says one thing: whose it is.** The chip and the
+            audience count are owner facts - what a list reaches is a decision the
+            owner made and the only person who can change it - and printed on a row
+            somebody else owns they were two ways of saying the section head. The
+            row already sits under "Wünsche deiner Liebsten", so a `Geteilt` chip
+            on it restated the heading in a chip, and "mit: 0 Personen · Gruppen:
+            1" described an audience the reader has no standing over and no way to
+            act on. Both belonged to the owner's row, and only there, because they
+            are the two questions an owner arrives at: is this list private, and
+            who else can open it.
+
+            The owner's name is what remains, and it is not one label among several -
+            it is the fact a reader in this section shops by, since two people can
+            own lists with the same name.
           */}
           <span className='flex flex-wrap items-center gap-x-3 gap-y-1.5'>
-            <StatusBadge
-              variant={isShared ? 'shared' : 'private'}
-              label={
-                isShared ? dict.listBoard.shared : dict.listBoard.private
-              }
-            />
+            {list.isOwner ? (
+              <>
+                {/*
+                  How far this list reaches, printed under the name rather than in a
+                  menu. The state is on a chip and the reach is a figure beside it,
+                  and they used to be one string: `Geteilt` in the label face, then
+                  `Geteilt mit: 1` in the meta face, forty pixels apart, saying the
+                  same word twice in two voices. That was the redundancy the owner
+                  named on this page, and it was structural rather than a wording
+                  problem - so it is fixed by giving each fact one carrier, not by
+                  rewording either.
 
-            {/*
-              Whose list it is, but only when it is not yours. On your own row
-              the owner is the reader, so printing it would be a word on every
-              row saying nothing; on a row somebody else shared with you it is the
-              only thing that tells the two lists apart, because two people can
-              own lists with the same name.
+                  Both are still words. A dot in a colour would be a state only colour
+                  carries, which is the one kind of state this product refuses, and
+                  the chip answers that by weight and enclosure instead of by hue.
+                */}
+                <StatusBadge
+                  variant={isShared ? 'shared' : 'private'}
+                  label={
+                    isShared ? dict.listBoard.shared : dict.listBoard.private
+                  }
+                />
 
-              This comment is load-bearing in a way that is worth one note. It was
-              once closed with two closing braces and no terminator, and because a
-              JSX comment runs until it finds a terminator it did not stop here: it
-              ran on to the end of the comment below it and took the owner's name
-              with it. Nothing failed. The row compiled, the row rendered, the API
-              sent `isOwner: false`, and the name was simply never asked for - so
-              the owner of a shared list was never named anywhere in the product,
-              and every test asserting on it failed for a reason that read like a
-              selector problem.
+                {/*
+                  How many people can also read it, and how many groups. The figure
+                  is bare - "Personen: 3" - because the chip beside it already says
+                  `Geteilt`, and the old string said it a second time.
 
-              A missing terminator inside a comment is the cheapest bug in this
-              codebase to write and the most expensive to find, because it does not
-              look like a syntax error at all. If a block of JSX stops being
-              rendered and nothing complains, count the comment terminators before
-              counting anything else.
-            */}
-            {!list.isOwner && (
+                  It is printed conditionally, so a `SHARED` list nobody has been
+                  added to does not carry a count of zero. A counter is not a fact
+                  about a list: the true sentence about that list is the same one
+                  the sheet prints, that nobody has been reached yet, and it is read
+                  from the visibility section rather than duplicated here because it
+                  is one fact about one list and it already has one sentence.
+
+                  Two counts and not one sum, and the reason is in
+                  `ListSummary.sharedWithGroupCount`: individuals and group members
+                  overlap, so a sum would count somebody in two granted groups
+                  twice and the row would then disagree with the number of people
+                  who can actually open the list. `sharedWithGroupCount > 0` also
+                  covers the case that motivated the split - a list whose *only*
+                  readers are reachable through a group has no people to count and
+                  is emphatically not nobody - and it is the case that has to keep
+                  the longer sentence, because a bare "Personen: 0" beside a group
+                  of nine is a wrong number rather than a thin one.
+                */}
+                {isShared && (
+                  <span className='text-[0.8125rem] leading-snug text-caption'>
+                    {list.sharedWithCount > 0 || list.sharedWithGroupCount > 0
+                      ? list.sharedWithGroupCount > 0
+                        ? dict.listBoard.sharedWithGroupCount
+                            .replace('{count}', String(list.sharedWithCount))
+                            .replace('{groups}', String(list.sharedWithGroupCount))
+                        : dict.shareList.groupReaches.replace(
+                            '{count}',
+                            String(list.sharedWithCount)
+                          )
+                      : dict.visibility.sharedWithNobody}
+                  </span>
+                )}
+              </>
+            ) : (
+              /*
+                Whose list it is, and the reason it is printed on this row alone.
+                On your own row the owner is the reader, so the name would be a word
+                on every row saying nothing.
+
+                This comment is load-bearing in a way that is worth one note. It was
+                once closed with two closing braces and no terminator, and because a
+                JSX comment runs until it finds a terminator it did not stop here: it
+                ran on to the end of the comment below it and took the owner's name
+                with it. Nothing failed. The row compiled, the row rendered, the API
+                sent `isOwner: false`, and the name was simply never asked for - so
+                the owner of a shared list was never named anywhere in the product,
+                and every test asserting on it failed for a reason that read like a
+                selector problem.
+
+                A missing terminator inside a comment is the cheapest bug in this
+                codebase to write and the most expensive to find, because it does
+                not look like a syntax error at all. If a block of JSX stops being
+                rendered and nothing complains, count the comment terminators before
+                counting anything else.
+              */
               <span
                 className='text-[0.8125rem] leading-snug text-caption'
                 data-testid='listOwner'
               >
                 {list.ownerDisplayName}
-              </span>
-            )}
-
-            {/*
-              How many people can also read it, and how many groups. The figure is
-              bare - "Personen: 3" - because the chip above already says `Geteilt`,
-              and the old string said it a second time.
-
-              It is printed conditionally, so a `SHARED` list nobody has been added
-              to does not carry a count of zero. A counter is not a fact about a
-              list: the true sentence about that list is the same one the sheet
-              prints, that nobody has been reached yet, and it is read from the
-              visibility section rather than duplicated here because it is one fact
-              about one list and it already has one sentence.
-
-              Two counts and not one sum, and the reason is in
-              `ListSummary.sharedWithGroupCount`: individuals and group members
-              overlap, so a sum would count somebody in two granted groups twice
-              and the row would then disagree with the number of people who can
-              actually open the list. `sharedWithGroupCount > 0` also covers the
-              case that motivated the split - a list whose *only* readers are
-              reachable through a group has no people to count and is emphatically
-              not nobody - and it is the case that has to keep the longer sentence,
-              because a bare "Personen: 0" beside a group of nine is a wrong number
-              rather than a thin one.
-            */}
-            {isShared && (
-              <span className='text-[0.8125rem] leading-snug text-caption'>
-                {list.sharedWithCount > 0 || list.sharedWithGroupCount > 0
-                  ? list.sharedWithGroupCount > 0
-                    ? dict.listBoard.sharedWithGroupCount
-                        .replace('{count}', String(list.sharedWithCount))
-                        .replace('{groups}', String(list.sharedWithGroupCount))
-                    : dict.shareList.groupReaches.replace(
-                        '{count}',
-                        String(list.sharedWithCount)
-                      )
-                  : dict.visibility.sharedWithNobody}
               </span>
             )}
           </span>
