@@ -20,22 +20,20 @@
 # `v3` is the same action rewritten around the GitHub Copilot CLI, which is the
 # only provider it supports now. Three consequences:
 #   1. The CLI is not preinstalled on GitHub-hosted runners, so `setup-node` and
-#      a global `npm install -g @github/copilot` come before the action.
+#      a global `npm install -g @github/copilot` come before the call.
 #   2. Authentication is the CLI's own: `COPILOT_GITHUB_TOKEN` in the step's
-#      environment. The `token` input still exists and still defaults to
-#      `github.token`, but that value is only logged - the CLI reads the env var,
-#      so the repository secret named below is what actually authorises the call.
-#      `github.token` does not work here; a user token with Copilot access does.
+#      environment. That is a user token with Copilot access;
+#      `github.token` is not one.
 #   3. `models: read` is dropped. It authorised the dead Models endpoint. The
 #      `pull-requests: write` below is separate and covers the comment, which
 #      posts through the issue-comments endpoint.
 #
-# `model` is a Copilot model name (`gpt-4.1`), not a GitHub Models catalogue id
-# (`openai/gpt-4o`); the CLI is handed the string verbatim and does not know the
-# catalogue.
+# The action turned out to be the wrong wrapper anyway, so the CLI is called
+# directly; the steps below say why in full.
 #
-# No `checkout`: the prompt is inline text, so there is nothing on disk to read,
-# and fetching the repository would cost time on every pull request for nothing.
+# No `checkout`: nothing here reads the repository. The only inputs are the pull
+# request's own title and body, which `gh pr view` fetches over the API, so a
+# clone would cost time on every pull request for nothing.
 #
 # Unlike an `issues` trigger, a `pull_request` workflow is read from the pull
 # request's own merge ref rather than from the default branch, so this file
@@ -81,12 +79,6 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       pull-requests: write
-    env:
-      # TEMPORARY. `actions/ai-inference` hides the Copilot CLI's stderr behind
-      # "exited with code 1" unless this is set, and that message alone does not
-      # say whether the token lacks a Copilot seat, the CLI wants interactive
-      # setup, or the model name is unknown. Remove once the run is green.
-      ACTIONS_STEP_DEBUG: "true"
 
     steps:
       - uses: actions/setup-node@v6
@@ -94,12 +86,12 @@ jobs:
       - name: Install Copilot CLI
         run: npm install -g @github/copilot
 
-      # Title and body are read with `gh` rather than interpolated out of
-      # `github.event.pull_request` so that both triggers take the same path. It
-      # also keeps the untrusted text out of the `with:` block: the action
-      # substitutes `${{ }}` in prompt files too, so a pull request body that
-      # happened to contain a template expression would be evaluated. Going
-      # through a file keeps it data.
+# Title and body are read with `gh` rather than interpolated out of
+      # `github.event.pull_request`, so that both triggers take one path: a
+      # `workflow_dispatch` run has no pull request payload at all. It also
+      # keeps the untrusted text out of the workflow file itself, where a body
+      # containing `${{ ... }}` would be substituted before the CLI ever saw it.
+      # The prompt goes through a file because the CLI takes it as one argument.
       - name: Write the summary prompt
         env:
           GH_TOKEN: ${{ github.token }}
@@ -127,21 +119,36 @@ jobs:
           } > summary-prompt.txt
           echo "prompt for PR $number: $(wc -c < summary-prompt.txt) bytes"
 
-      - name: Run AI inference
-        id: inference
-        uses: actions/ai-inference@v3
-        with:
-          model: gpt-4.1
-          prompt-file: summary-prompt.txt
+      # The Copilot CLI is invoked directly rather than through
+      # `actions/ai-inference`, for two reasons that each cost a run to learn.
+      #  1. The action always appends `--model <value>`, and its default
+      #     `gpt-4.1` is rejected by the CLI on this account:
+      #     `Error: Model "gpt-4.1" from --model flag is not available.` So does
+      #     every other name tried (gpt-5, gpt-5-mini, gpt-4o, gpt-4.1-mini, o3,
+      #     claude-sonnet-4.5) - and so does an empty string, which rules out the
+      #     action's documented "set it empty to let the CLI choose" escape
+      #     hatch. With no `--model` at all the CLI picks a default and answers.
+      #  2. The action reports a non-zero CLI exit as
+      #     `Copilot CLI exited with code 1` and discards the CLI's stderr - and
+      #     it does so even with `ACTIONS_STEP_DEBUG=true`, so its own hint does
+      #     not help. A plain `run:` step prints the real error.
+      # Nothing else is lost: stdout is the answer and stderr is empty, so
+      # `> summary.txt` captures exactly the text to post.
+      - name: Summarize with the Copilot CLI
         env:
-          # Must be a user token with Copilot access; `github.token` is not one.
           COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+        run: |
+          copilot -p "$(cat summary-prompt.txt)" -s --no-ask-user > summary.txt
+          echo "response: $(wc -c < summary.txt) bytes"
+          cat summary.txt
 
       - name: Comment with AI summary
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
           PR_NUMBER: ${{ inputs.pr || github.event.pull_request.number }}
-          RESPONSE: ${{ steps.inference.outputs.response }}
         run: |
-          gh pr comment "$PR_NUMBER" --body "$RESPONSE"
+          # `--body-file` rather than `--body "$(cat summary.txt)"`: a model
+          # response is free text that may begin with a dash, which `--body`
+          # would read as an option.
+          gh pr comment "$PR_NUMBER" --body-file summary.txt
