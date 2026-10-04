@@ -149,6 +149,7 @@ const ListBoard: React.FC<ListBoardProps> = ({
   const ownSection = (
     <section className='flex flex-col gap-6' data-testid='ownSection'>
       <SectionHead
+        heading={!sharedFirst}
         label={dict.listBoard.yourLists}
         action={
           <Button
@@ -210,7 +211,10 @@ const ListBoard: React.FC<ListBoardProps> = ({
       control - there is nothing to create here.
     */
     <section className='flex flex-col gap-6' data-testid='sharedSection'>
-      <SectionHead label={dict.listBoard.sharedWithYou} />
+      <SectionHead
+        heading={sharedFirst}
+        label={dict.listBoard.sharedWithYou}
+      />
 
       {shared.length > 0 ? (
         <ul data-testid='sharedLists' className='divide-y divide-rule'>
@@ -295,10 +299,24 @@ const ListBoard: React.FC<ListBoardProps> = ({
  * title. The action sits beside it from `sm` up and under it below, because at
  * 390px a German and a Russian label do not fit on one line each.
  */
-const SectionHead: React.FC<{ label: string; action?: React.ReactNode }> = ({
-  label,
-  action,
-}) => (
+const SectionHead: React.FC<{
+  label: string;
+  action?: React.ReactNode;
+  /**
+   * This label is the page's heading rather than a label above a run of rows, so it
+   * draws no rule and takes no bottom padding.
+   *
+   * The section mark belongs to a section label. A heading that owns a hairline says
+   * "a block starts here", which is not what a heading says - and the first label on
+   * this page is the one line that says what the page is, with nothing above it to
+   * separate from in any case.
+   *
+   * Passed rather than inferred from a CSS :first-child selector, because which label is the
+   * heading is not a question about the DOM: a reader who owns nothing is shown
+   * "Wünsche deiner Liebsten" first, and on that page *that* is the heading.
+   */
+  heading?: boolean;
+}> = ({ label, action, heading = false }) => (
   <div
     className={cn(
       'flex',
@@ -308,19 +326,33 @@ const SectionHead: React.FC<{ label: string; action?: React.ReactNode }> = ({
       'border-rule',
       'pb-4',
       /*
-        Under the head, not over it. A rule above a label is the right mark when
-        there is a block above it to be separated from - which is the list sheet's
-        case and not this one. Here the first section sits at the top of the sheet
-        with nothing over it, so a rule over the label drew a line across an empty
-        margin, and a rule over a 44px button is a statement about the button that
-        the button never made.
+        Under the head, not over it. A rule above a label is the right mark when there
+        is a block above it to be separated from - which is the list sheet's case and
+        not this one. Here the first section sits at the top of the sheet with nothing
+        over it, so a rule over the label drew a line across an empty margin, and a
+        rule over a 44px button is a statement about the button that the button never
+        made.
       */
+      /*
+        And a heading takes neither the rule nor the padding under it, so the distance
+        from the heading to the first row is the section's own gap and not the sum of
+        the two.
+      */
+      heading && 'border-b-0',
+      heading && 'pb-0',
       'sm:flex-row',
       'sm:items-end',
       'sm:justify-between',
       'sm:gap-6'
     )}
   >
+    {/*
+      The same label face for both labels, and the same size. The page's heading is
+      not set larger than its second section label: this is an album index, and the
+      rows underneath it are the thing worth looking at - a 32px heading above a list
+      of names makes the names read as captions to a title, which is the exact
+      failure the original note on this component warned about.
+    */}
     <h2 className='label-print pt-1 text-caption'>{label}</h2>
 
     {/*
