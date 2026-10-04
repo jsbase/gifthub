@@ -19,7 +19,26 @@
 # read-only token and the action would find nothing it is allowed to change.
 
 name: Labeler
-on: [pull_request]
+
+# No `branches:` filter here, deliberately: the trigger keys on the *base* branch,
+# so filtering would exclude exactly the pull requests this workflow exists for —
+# the ones opened against `preview` and `main` from a feature branch or a
+# `Preview (#N)` branch. Left unfiltered it runs for a pull request from any
+# branch in this repository, which is what "label whatever changed" requires.
+#
+# `types` is spelled out because the default set is narrower than it looks:
+# GitHub fires `opened`, `synchronize` and `reopened` on its own, and a pull
+# request that sits as a draft while its branch is being reworked has no
+# `synchronize` event of its own when it leaves draft — `ready_for_review` is the
+# only event that says the author considers the work finished, and without it a
+# draft-turned-ready pull request keeps whatever labels its first push earned.
+on:
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+      - ready_for_review
 
 jobs:
   label:

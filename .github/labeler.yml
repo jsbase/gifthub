@@ -7,6 +7,13 @@
 # requires every entry, and `changed-files` holds glob patterns tested against
 # the files the pull request touches.
 #
+# Every label below is a single `changed-files` array rather than an `any` block
+# wrapping one. An `any` list must hold globs itself — a nested `changed-files`
+# under it is not a valid configuration, and the action rejects the whole file
+# with "The 'changed-files' section must have a valid config structure" before
+# it labels anything. For one set of globs the wrapper is also redundant:
+# `changed-files` already means "matches any of these".
+#
 # The three labels below are the repository's existing labels that map onto
 # changed paths. `bug`, `enhancement`, `duplicate` and the rest describe intent
 # rather than location, so they stay a human's decision.
@@ -29,15 +36,14 @@ documentation:
       - '**/*.md'
 
 javascript:
-  - any:
-      - changed-files:
-          - 'app/**'
-          - 'components/**'
-          - 'hooks/**'
-          - 'lib/**'
-          - 'types.ts'
-          - 'proxy.ts'
-          - '*.ts'
-          - '*.tsx'
-          - '*.js'
-          - '*.mjs'
+  - changed-files:
+      - 'app/**'
+      - 'components/**'
+      - 'hooks/**'
+      - 'lib/**'
+      - 'types.ts'
+      - 'proxy.ts'
+      - '*.ts'
+      - '*.tsx'
+      - '*.js'
+      - '*.mjs'
