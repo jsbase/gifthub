@@ -38,27 +38,56 @@ export interface SheetProgressProps {
   unbought: number;
   /** How many ideas exist in total, open and collected. */
   total: number;
+  /**
+   * Lets a caller place the pair inside a declared grid track.
+   *
+   * Two callers need it and they need opposite things. A contents-page row
+   * declares a 5rem column for the figure so the number lands in the same place on
+   * an owned row and on a shared one, which means justifying it to the end of that
+   * column. The landing plate's row is one column while the plate is narrower than
+   * 330px and two above that, so there the pair is right-aligned on its own line on
+   * a phone and left on the name's baseline once the plate is wide enough - which is
+   * a container query on the plate's own measure rather than a viewport one, since
+   * the plate is 704px wide at 768 and 392px at 1024. The rule-plus-figure pair is
+   * 80px wide whichever way it is aligned; what changes is which edge it is pinned
+   * to, and that is the caller's decision rather than this component's.
+   */
+  className?: string;
 }
 
-const SheetProgress: React.FC<SheetProgressProps> = ({ unbought, total }) => {
+const SheetProgress: React.FC<SheetProgressProps> = ({
+  unbought,
+  total,
+  className,
+}) => {
   const collected = total - unbought;
   const pct = total === 0 ? 0 : Math.round((collected / total) * 100);
   const nothingLeft = total > 0 && collected === total;
 
   return (
-    <span aria-hidden='true' className='flex shrink-0 items-center gap-3'>
+    <span
+      aria-hidden='true'
+      className={cn('flex shrink-0 items-center gap-3', className)}
+    >
       <span className='relative block h-[3px] w-14 bg-wash-strong'>
-        {total === 0 ? (
-          <span className='absolute inset-0 border-t border-dashed border-rule' />
-        ) : (
-          <span
-            className={cn(
-              'absolute inset-y-0 left-0',
-              nothingLeft ? 'bg-done' : 'bg-[var(--member-ink)]'
-            )}
-            style={{ width: `${pct}%` }}
-          />
-        )}
+        {/*
+          Always drawn. A second, absolutely-positioned span used to be laid over the
+          track for a list with no wishes on it - a dashed rule, which is what a
+          broken progress bar looks like rather than what an empty one looks like,
+          and it appeared on the contents page of every new list in the product.
+
+          At zero collected the fill is zero pixels wide and the track underneath it
+          is the whole story. The figure beside it already prints 0, and
+          `giftCount.none` is the sentence that says "no wishes written yet" where
+          somebody reads sentences.
+        */}
+        <span
+          className={cn(
+            'absolute inset-y-0 left-0',
+            nothingLeft ? 'bg-done' : 'bg-[var(--member-ink)]'
+          )}
+          style={{ width: `${pct}%` }}
+        />
       </span>
       {nothingLeft ? (
         <IconCheck className='h-4 w-4 text-done' stroke={2.5} />

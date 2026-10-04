@@ -46,11 +46,17 @@ DialogOverlay.displayName = DialogPrimitive.Overlay.displayName;
  * this is a printed page rather than a card - which is the difference this whole
  * world is making.
  *
- * They are positioned for the padding they sit in. A mark is 8px wide, so
- * `left-3` puts its outer edge at 20px and its inner edge at 12px: against the
- * dialog's `p-5` that ends exactly where the content starts, and against
- * `xs:p-4` it ran 4px over the first cell. Hence `xs:left-2` and its siblings -
- * the marks belong in the margin, never on top of what is printed.
+ * They are positioned against the paper, not against the content. A printer's
+ * crop mark is a fixed distance in from the edge of the sheet, and tying it to
+ * whatever padding the content happens to carry is what put it in the wrong
+ * place twice: at 16px against a 24px gutter its 8px arm reached the first
+ * element exactly, so the bracket read as though it belonged to the text rather
+ * than to the page.
+ *
+ * So the marks sit at a printer's 12px from the corner (`xs:8px`, where the
+ * sheet is the whole page and the margin has to earn its room elsewhere) and the
+ * gutter carries the rest: 32px of it at `sm` and up, which leaves the mark a
+ * 12px margin of its own instead of touching what is printed.
  *
  * They are also `pointer-events-none` and must stay that way. A mark that
  * cannot be tapped is furniture; a mark that eats a tap is a bug.
@@ -215,10 +221,14 @@ const DialogContent = React.forwardRef<
           // of eleven scroll positions - a tap meant to delete closed the sheet
           // instead. Positioned here, it scrolls away with the text it belongs
           // to, which is also how it behaved before.
-          'relative',
-          'flex grow min-h-0 flex-col gap-5 overflow-y-auto',
-          'overflow-x-hidden',
-          'p-5 xs:gap-4 xs:p-4'
+          //
+          // The step and the gutter are NOT here. They are `.sheet-body` in
+          // `app/globals.css`, because a rhythm belongs to every sheet in the
+          // product rather than to this primitive alone, and written here they
+          // would be one more pair of class names for the next call site to
+          // outvote.
+          'sheet-body relative flex grow min-h-0 flex-col',
+          'overflow-y-auto overflow-x-hidden'
         )}
       >
         {children}
@@ -226,8 +236,17 @@ const DialogContent = React.forwardRef<
           <DialogPrimitive.Close
             className={cn(
               'absolute',
-              'right-3',
-              'top-3',
+              // Inside the crop mark, not under it. At `right-3 top-3` the 44px
+              // box started on the mark's own 12px and its corner bracket was
+              // printing through the button's hover ground; 20px puts the box
+              // past the mark's 8px arm while its 16px glyph still sits well
+              // clear of the type. `xs:16px` because the phone gutter is 24px
+              // rather than 32px, and `pr-11` on the header is the room this
+              // control is allowed to take out of the measure.
+              'right-5',
+              'top-5',
+              'xs:right-4',
+              'xs:top-4',
               'grid',
               'h-11',
               'w-11',

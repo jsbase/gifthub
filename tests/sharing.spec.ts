@@ -281,9 +281,22 @@ test.describe('Sharing permissions', () => {
     const miaLists = await mia.api.get('/api/lists');
     expect(miaLists.status()).toBe(200);
 
+    /*
+      Every body below is one the server accepts, and that is load-bearing rather than
+      incidental. Each route here checks the shape of its request before it asks who is
+      asking - a wish under `MIN_TITLE_LENGTH`, a malformed address, a name that is
+      nothing - so a body chosen for being invalid is answered 400 without the gate in
+      `lib/list-access.ts` ever running. A 400 in this loop would fail today and pass the
+      moment the check were removed, which is the opposite of what this test is for: each
+      request is one that only the gate can refuse, so a 404 here can only mean Mia has
+      no relationship to the list.
+    */
     const denied: [string, Promise<{ status(): number }>][] = [
       ['read', mia.api.get(`/api/lists/${listId}`)],
-      ['add an idea', mia.api.post(`/api/lists/${listId}/gifts`, { data: { title: 'x' } })],
+      [
+        'add an idea',
+        mia.api.post(`/api/lists/${listId}/gifts`, { data: { title: 'Lampe' } }),
+      ],
       ['rename', mia.api.patch(`/api/lists/${listId}`, { data: { name: 'x' } })],
       ['change visibility', mia.api.patch(`/api/lists/${listId}`, { data: { visibility: 'PRIVATE' } })],
       ['grant access', mia.api.post(`/api/lists/${listId}/access`, { data: { email: ANNA } })],

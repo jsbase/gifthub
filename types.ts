@@ -311,6 +311,19 @@ export interface Translations {
 export interface ErrorTranslations {
   loginRequired: string;
   failedToLoad: string;
+  /**
+   * A wish field arrived over its bound. One sentence per field rather than a shared
+   * one, because the bound is not shared: a wish title stops at 120 characters and a
+   * link at 2000, and telling somebody their 2000-character link is fine because
+   * "characters" is one word would be a lie about the field they are looking at.
+   *
+   * `{max}` and `{min}` are interpolated by the caller - `lib/gift-text.ts` holds the
+   * numbers and the rule, this holds the words.
+   */
+  titleTooLong: string;
+  titleTooShort: string;
+  noteTooLong: string;
+  urlTooLong: string;
   failedToLoadGifts: string;
   /**
    * A sign-in attempt that was refused, and the reason it is one sentence rather
@@ -512,7 +525,26 @@ export interface VisibilityTranslations {
 }
 
 export interface ListSheetTranslations {
-  listHint: string;
+  /*
+    `listHint` was here and is gone: the owner saw "Auf dieser Liste schreibst nur
+    du." between the list's name and the `PRIVAT` chip, which then said "Nur du
+    siehst diese Liste." One fact, three sentences, and the one that went was the
+    least useful of the three. `youAreABuyer` below stays for the reader who cannot
+    see the owner's controls at all.
+  */
+  /**
+   * The quiet row at the foot of a sheet that has wishes on it. It is an
+   * invitation with a whole promise in it - write it down, share it, done - rather
+   * than a label naming an object, because the reader who needs to be persuaded is
+   * one who has not written anything yet, and "add a gift idea" is an instruction,
+   * not a reason.
+   *
+   * Distinct from `addGift` below, which commits the form. They used to be one
+   * string, which meant the foot row and the submit button said the same words for
+   * two different actions.
+   */
+  addGiftRow: string;
+  /** Commits the add-wish form. A verb, because the field above it already named the thing. */
   addGift: string;
   enterGiftTitle: string;
   optional: string;
@@ -679,7 +711,19 @@ export interface ShareListDictionary {
    */
   privateFirst: string;
   makeShared: string;
-  /** The section head above the groups this list can be shared with. */
+  /**
+   * The one head over the whole audience - the people and the groups that can
+   * already reach this list. It is a question rather than a noun because the
+   * audience was two labelled lists ("Geteilt mit:" and "Gruppen") and the same
+   * group then appeared a third time in the offer below, saying the opposite
+   * thing about itself.
+   */
+  audienceHeading: string;
+  /**
+   * The head above the groups this list is *not* on yet. Groups already reaching
+   * the list are printed in the audience above, so this list holds every group
+   * exactly once and the two sections can never contradict each other.
+   */
   groupPickerHeading: string;
   /** The owner has no groups, so there is nothing to offer. Names where to make one. */
   noGroupsToShare: string;
@@ -712,7 +756,6 @@ export interface GroupsDictionary {
   save: string;
   saving: string;
   deleteGroup: string;
-  membersHeading: string;
   noMembers: string;
   /**
    * The group-member picker reuses the account picker rather than having a second one,
@@ -723,6 +766,20 @@ export interface GroupsDictionary {
   removeMemberConfirmTitle: string;
   /** A row's member count, as the owner reads it: "Family · 4 people". */
   memberCount: string;
+  /**
+   * The foot control that opens the name field. The create form used to sit at the
+   * top of this dialog permanently, under a solid ink button, above the reader's
+   * own groups - so the loudest object on the screen was "make another one" and
+   * the list was pushed down under it. It is at the foot now, quiet, and one tap
+   * away, which is the same arrangement the list sheet uses for its own add row.
+   */
+  newGroup: string;
+  /**
+   * The way back out of one group, and the answer to a drill-down with no exit.
+   * `aria-controls` points at the list this returns to, so the relationship is
+   * stated to assistive technology as well as drawn.
+   */
+  backToGroups: string;
 }
 
 export interface ListBoardDictionary {
@@ -730,7 +787,6 @@ export interface ListBoardDictionary {
   yourLists: string;
   sharedWithYou: string;
   createList: string;
-  addGift: string;
   rename: string;
   renameTitle: string;
   renameLabel: string;
@@ -739,10 +795,11 @@ export interface ListBoardDictionary {
   deleteList: string;
   changeVisibility: string;
   share: string;
-  /** The trailing sentence on a shared row: who else can see it. */
-  sharedWithCount: string;
   /**
-   * The same sentence for a row that a group also reaches.
+   * The same sentence for a row that a group also reaches. It opens with the
+   * preposition alone - "mit: 0 Personen · Gruppen: 1" - because the chip beside
+   * it has already printed the state as `Geteilt`, and a string that opened with
+   * the same word said it twice in two faces forty pixels apart.
    *
    * A second string rather than one string with an optional half, so the two counts are
    * always printed together and in a fixed order. A locale that wanted a different
@@ -778,12 +835,6 @@ export interface ListBoardDictionary {
    */
   noLists: string;
   /**
-   * Nobody has shared a list with this account. It gets a sentence and no plate:
-   * a dashed rule means there is room for a row, and the only thing anybody can
-   * do with room for a row here is create a list.
-   */
-  noSharedLists: string;
-  /**
    * The plate's second line, and the one that earns the plate: what actually goes
    * in. Without it a large dashed rectangle with a sentence in it is a wall, and
    * the reader cannot tell what pressing it will ask of them.
@@ -791,6 +842,13 @@ export interface ListBoardDictionary {
   emptyPlateHint: string;
   private: string;
   shared: string;
+  /**
+   * The sentence under the "shared with you" head when that section is empty.
+   * Reworded to name the moment rather than the absence: it used to say nobody has
+   * shared anything with you, which is a fact about the past and gives a reader
+   * who has just been given a list the impression that the app has not noticed.
+   */
+  sharedEmptyNote: string;
 }
 
 /*
@@ -851,6 +909,21 @@ export interface ListRowProps {
    * re-clicks, so a double submit cannot fire two mutations at one row.
    */
   busyId?: string | null;
+}
+
+/**
+ * The privacy state, on a chip rather than as a loose word in the caption label.
+ *
+ * A two-value union rather than a boolean because the two states are named things
+ * the owner chose, and a boolean would let a caller render the wrong one without
+ * the type noticing. `label` is passed in rather than looked up so the chip carries
+ * no dictionary of its own.
+ */
+export type StatusBadgeVariant = 'private' | 'shared';
+
+export interface StatusBadgeProps {
+  variant: StatusBadgeVariant;
+  label: string;
 }
 
 export interface ListSheetProps {

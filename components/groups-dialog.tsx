@@ -3,8 +3,10 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import {
+  IconArrowLeft,
   IconDotsVertical,
   IconPencil,
+  IconPlus,
   IconTrash,
   IconUserMinus,
 } from '@tabler/icons-react';
@@ -37,6 +39,52 @@ import type {
   GroupsDialogProps,
   Translations,
 } from '@/types';
+
+/**
+ * The quiet control at the foot of a level, and the only thing that adds to a block.
+ *
+ * It is the "add a gift" row from the list sheet, unchanged: a full-width 44px row,
+ * a plus glyph, the action in the caption label face, and a hairline above it so the
+ * row reads as the end of the block rather than as another item in it. It opens the
+ * person picker inside a group; the matching control on the group list is an
+ * outlined button rather than this row (see the comment at the foot of the list).
+ *
+ * The arrangement it replaced on both levels was a permanently visible form with a
+ * full-width ink button, which made the least likely action on the sheet the largest
+ * object on it.
+ */
+const AddRow: React.FC<{
+  label: string;
+  testId: string;
+  onClick: () => void;
+  /**
+   * The block directly above already ends in a rule of its own, which is what both
+   * lists in this sheet are (`border-y`). The row lands a `gap-4` below that rule,
+   * so its own hairline drew a second line 16px under the first: two rules around
+   * nothing, on the one control whose job is to add to the block, and the pair read
+   * as a band the row was sitting in rather than as the end of the list.
+   *
+   * Only the empty state above this row (`noGroups`, `noMembers`) has nothing
+   * separating it from the row, so there - and only there - the hairline is all
+   * there is, and the padding that goes with a top rule stays.
+   */
+  afterRule?: boolean;
+}> = ({ label, testId, onClick, afterRule = false }) => (
+  <button
+    type='button'
+    onClick={onClick}
+    data-testid={testId}
+    className={cn(
+      'flex min-h-11 w-full items-center gap-2',
+      !afterRule && 'border-t border-rule pt-3',
+      'text-left text-[0.8125rem] text-caption',
+      '[@media(hover:hover)_and_(pointer:fine)]:hover:text-ink'
+    )}
+  >
+    <IconPlus className='h-4 w-4 shrink-0' aria-hidden='true' />
+    {label}
+  </button>
+);
 
 /**
  * A refusal about a name is a form with a wrong value in it, and it is said on the
@@ -141,6 +189,19 @@ const GroupsDialog: React.FC<GroupsDialogProps> = ({
   const [createError, setCreateError] = useState<string | null>(null);
   const [renameError, setRenameError] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
+
+  /*
+    The two things this sheet used to do unconditionally: show the create form, and
+    show the member picker inside whichever group was open. Both are now one tap
+    away at the foot of their own level, and both are booleans rather than layout -
+    so the sheet has a list at the top of it again instead of a solid ink button.
+
+    They are reset by `handleOpenChange` and by the back control, because a sheet
+    that reopens still holding an open form is a sheet that starts by asking for a
+    name the reader did not come here to type.
+  */
+  const [creating, setCreating] = useState(false);
+  const [addingMember, setAddingMember] = useState(false);
   const [isRenaming, setIsRenaming] = useState(false);
 
   /*
@@ -255,6 +316,13 @@ const GroupsDialog: React.FC<GroupsDialogProps> = ({
   const members = openGroupId ? membersByGroup[openGroupId] : undefined;
   const renamingGroup =
     groups?.find((group) => group.id === renamingId) ?? null;
+
+  /*
+    The one test the three member branches below agree on, held here so the list,
+    the empty state and the `AddRow`'s own hairline cannot drift apart: a rule is
+    drawn under the members only when there are members to be ruled off.
+  */
+  const memberListHasRule = members !== undefined && members.length > 0;
 
   const handleCreate = useCallback(
     async (event: React.FormEvent<HTMLFormElement>) => {
@@ -568,6 +636,8 @@ const GroupsDialog: React.FC<GroupsDialogProps> = ({
       setOpenGroupId(null);
       setCreateError(null);
       setRenameError(null);
+      setCreating(false);
+      setAddingMember(false);
       onClose();
     },
     [onClose]
@@ -578,202 +648,136 @@ const GroupsDialog: React.FC<GroupsDialogProps> = ({
       <DialogContent closeLabel={dict.close} className='sm:max-w-md'>
         <DialogHeader>
           {/*
-            `font-sans text-xl` against the primitive's serif default, and the
-            reason is the one the other five dialogs give: the primitive leaves the
-            face to its caller because the serif in this app is for a name. "Groups"
-            is a category label and not a name, so it does not get one - the same
-            division that puts a group's *own* name in the specimen serif on its row
-            below.
+            Two levels, and the header is what tells you which one you are in.
+
+            On the list, the title is a category label and keeps the sans face the
+            other five dialogs use - the serif in this app is for a name. Inside a
+            group, the title *is* that group's name, so it takes the specimen serif
+            at the sheet size. Same component, two levels, and the difference is the
+            one the design system draws everywhere else: a name is set in the
+            serif, a label is not.
           */}
-          <DialogTitle className='font-sans text-xl'>
-            {dict.groups.title}
-          </DialogTitle>
-          <DialogDescription>{dict.groups.lead}</DialogDescription>
+          {openGroup ? (
+            <>
+              {/*
+                Lifted by exactly the difference between the sheet's padding and
+                the close control's own offset. The X is `absolute top-3` against
+                the content box (`components/ui/dialog.tsx:226-241`), so its 44px
+                target starts 12px from the top of the sheet, while a row in flow
+                starts at the content padding - 20px from `sm` down, 16px on a
+                phone. Left where the flow puts it, this row sat 8px (4px on a
+                phone) below the X standing right next to it, and three 44px
+                targets that are meant to read as one line read as a staircase.
+                Two values, because the padding steps with `xs:p-4` and the close
+                control does not move with it.
+              */}
+              <div className='-mt-2 flex items-center justify-between gap-2 xs:-mt-1'>
+                {/*
+                  The way out. `aria-controls` names the list this returns to, so
+                  the relationship is announced and not only drawn, and it is a real
+                  44px row rather than the window's own cross: a reader who has gone
+                  three levels deep in a sheet should not have to dismiss the sheet
+                  to leave a group.
+                */}
+                <button
+                  type='button'
+                  onClick={() => {
+                    setOpenGroupId(null);
+                    setAddingMember(false);
+                  }}
+                  aria-controls='groupList'
+                  data-testid='backToGroups'
+                  className={cn(
+                    'flex min-h-11 items-center gap-1.5',
+                    '-mx-2 px-2',
+                    'text-left text-[0.8125rem] text-caption',
+                    '[@media(hover:hover)_and_(pointer:fine)]:hover:text-ink'
+                  )}
+                >
+                  <IconArrowLeft className='h-4 w-4' aria-hidden='true' />
+                  {dict.groups.backToGroups}
+                </button>
+
+                {/*
+                  The group menu moves here with the reader. It used to be one
+                  identical button on every row of the list, so three groups meant
+                  three identical stops whose labels were the whole action list
+                  spelled out - and the one destructive control in this sheet was
+                  reachable from any row without going into that row first. Now it
+                  sits on the sheet whose subject it acts on: one button, one place,
+                  and it is on screen only while that group is open.
+                */}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      type='button'
+                      variant='ghost'
+                      size='icon'
+                      aria-label={`${openGroup.name} · ${dict.groups.rename} · ${dict.groups.deleteGroup}`}
+                      data-testid='groupMenu'
+                      className={cn(
+                        'shrink-0',
+                        'text-caption',
+                        '[@media(hover:hover)_and_(pointer:fine)]:hover:bg-wash',
+                        '[@media(hover:hover)_and_(pointer:fine)]:hover:text-ink'
+                      )}
+                    >
+                      <IconDotsVertical className='h-4 w-4' aria-hidden='true' />
+                    </Button>
+                  </DropdownMenuTrigger>
+
+                  <DropdownMenuContent align='end'>
+                    <DropdownMenuItem
+                      onClick={() => setRenamingId(openGroup.id)}
+                      data-testid='renameGroup'
+                      className='gap-2.5'
+                    >
+                      <IconPencil className='h-4 w-4' aria-hidden='true' />
+                      {dict.groups.rename}
+                    </DropdownMenuItem>
+
+                    {/*
+                      A rule before the destructive item rather than colour on it at
+                      rest: `DESIGN.md` reserves red for a button fill, and tinting
+                      the word would spend the one semantic colour in the app on a
+                      state that is not destructive until it is pressed.
+                    */}
+                    <DropdownMenuSeparator />
+
+                    <DropdownMenuItem
+                      onClick={() => setPendingDeletion(openGroup)}
+                      data-testid='deleteGroup'
+                      className='gap-2.5 text-destructive'
+                    >
+                      <IconTrash className='h-4 w-4' aria-hidden='true' />
+                      {dict.groups.deleteGroup}
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+
+              <DialogTitle className='mt-1 font-serif text-xl font-semibold'>
+                {openGroup.name}
+              </DialogTitle>
+              <DialogDescription>
+                {dict.groups.memberCount.replace(
+                  '{count}',
+                  String(openGroup.memberCount)
+                )}
+              </DialogDescription>
+            </>
+          ) : (
+            <>
+              <DialogTitle className='font-sans text-xl'>
+                {dict.groups.title}
+              </DialogTitle>
+              <DialogDescription>{dict.groups.lead}</DialogDescription>
+            </>
+          )}
         </DialogHeader>
 
-        <form onSubmit={handleCreate} className='flex flex-col gap-3'>
-          <div className='flex flex-col gap-1.5'>
-            {/*
-              A printed label, never a placeholder alone: it has to survive the
-              field being filled, and a screen reader meets a placeholder exactly
-              once.
-            */}
-            <Label htmlFor='newGroupName' className='label-print text-caption'>
-              {dict.groups.enterGroupName}
-            </Label>
-            <Input
-              id='newGroupName'
-              name='name'
-              type='text'
-              placeholder={dict.groups.enterGroupName}
-              required
-              aria-invalid={createError ? true : undefined}
-              aria-describedby={createError ? 'groupNameError' : undefined}
-              data-testid='groupNameInput'
-            />
-            {createError && (
-              <p
-                id='groupNameError'
-                role='alert'
-                data-testid='groupNameError'
-                className='text-destructive text-[0.875rem] leading-snug'
-              >
-                {createError}
-              </p>
-            )}
-          </div>
-
-          <Button
-            type='submit'
-            disabled={isCreating}
-            className={cn('w-full', 'xs:h-12', 'xs:text-base')}
-            data-testid='createGroupSubmit'
-          >
-            {isCreating ? dict.groups.creating : dict.groups.create}
-          </Button>
-        </form>
-
-        {groups === null ? null : groups.length === 0 ? (
-          <p
-            className='text-[0.8125rem] leading-relaxed text-caption'
-            data-testid='noGroups'
-          >
-            {dict.groups.noGroups}
-          </p>
-        ) : (
-          <ul
-            data-testid='groupList'
-            className='divide-y divide-rule border-y border-rule'
-          >
-            {groups.map((group) => {
-              const isThisGroupOpen = group.id === openGroupId;
-              return (
-                <li
-                  key={group.id}
-                  className='flex items-center justify-between gap-3 py-2'
-                >
-                  {/*
-                    The whole left half of the row opens this group's members, and
-                    `aria-pressed` because the mode's only other trace is a list
-                    appearing below, which a screen reader announces at the list
-                    rather than at the control that caused it.
-
-                    `h-auto` with `min-h-11`: two lines of text, and the primitive's
-                    44px would be the shorter of the two floors rather than the
-                    shape's own. The 44px still holds - the name line and the count
-                    line are taller than that together.
-                  */}
-                  <Button
-                    type='button'
-                    variant='ghost'
-                    onClick={() =>
-                      setOpenGroupId(
-                        isThisGroupOpen ? null : group.id
-                      )
-                    }
-                    aria-pressed={isThisGroupOpen}
-                    data-testid='openGroup'
-                    className={cn(
-                      'h-auto min-h-11 min-w-0 grow basis-0',
-                      'justify-start px-0 text-left',
-                      // The one control in this product allowed to wrap: a German
-                      // compound is one unbreakable token wider than a phone, and
-                      // `buttonVariants` is `whitespace-nowrap` everywhere else.
-                      'whitespace-normal',
-                      'text-ink',
-                      '[@media(hover:hover)_and_(pointer:fine)]:hover:bg-wash'
-                    )}
-                  >
-                    <span className='flex min-w-0 flex-col'>
-                      <span className='font-serif break-words text-[0.9375rem] font-semibold leading-snug'>
-                        {group.name}
-                      </span>
-                      <span className='text-[0.8125rem] text-caption'>
-                        {dict.groups.memberCount.replace(
-                          '{count}',
-                          String(group.memberCount)
-                        )}
-                      </span>
-                    </span>
-                  </Button>
-
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        type='button'
-                        variant='ghost'
-                        size='icon'
-                        // The group's own name plus both actions, because a menu
-                        // button labelled only "menu" is the same in every row and
-                        // three of them on one sheet are three identical stops. A
-                        // dedicated "more" string would be better and there is none.
-                        aria-label={`${group.name} \u00b7 ${dict.groups.rename} \u00b7 ${dict.groups.deleteGroup}`}
-                        data-testid='groupMenu'
-                        className={cn(
-                          'shrink-0',
-                          'text-caption',
-                          '[@media(hover:hover)_and_(pointer:fine)]:hover:bg-wash',
-                          '[@media(hover:hover)_and_(pointer:fine)]:hover:text-ink'
-                        )}
-                      >
-                        <IconDotsVertical
-                          className='h-4 w-4'
-                          aria-hidden='true'
-                        />
-                      </Button>
-                    </DropdownMenuTrigger>
-
-                    <DropdownMenuContent align='end'>
-                      <DropdownMenuItem
-                        onClick={() => setRenamingId(group.id)}
-                        data-testid='renameGroup'
-                        className='gap-2.5'
-                      >
-                        <IconPencil className='h-4 w-4' aria-hidden='true' />
-                        {dict.groups.rename}
-                      </DropdownMenuItem>
-
-                      {/*
-                        A rule before the destructive item rather than colour on it
-                        at rest: `DESIGN.md` reserves red for a button fill, and
-                        tinting the word would spend the one semantic colour in the
-                        app on a state that is not destructive until it is pressed.
-                      */}
-                      <DropdownMenuSeparator />
-
-                      <DropdownMenuItem
-                        onClick={() => setPendingDeletion(group)}
-                        data-testid='deleteGroup'
-                        className='gap-2.5 text-destructive'
-                      >
-                        <IconTrash className='h-4 w-4' aria-hidden='true' />
-                        {dict.groups.deleteGroup}
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </li>
-              );
-            })}
-          </ul>
-        )}
-
-        {openGroup && (
-          <section className='flex flex-col gap-2'>
-            {/*
-              Which group, in the printed label face the sheet uses for its section
-              heads. Two groups can be called the same thing, and the members below
-              belong to one of them.
-            */}
-            <h3
-              className='label-print flex items-baseline gap-2 text-caption'
-              data-testid='membersHeading'
-            >
-              {dict.groups.membersHeading}
-              <span className='font-serif text-[0.8125rem] font-semibold normal-case text-ink'>
-                {openGroup.name}
-              </span>
-            </h3>
-
+        {openGroup ? (
+          <section className='flex flex-col gap-4'>
             {members === undefined ? null : members.length === 0 ? (
               <p
                 className='text-[0.8125rem] leading-relaxed text-caption'
@@ -803,7 +807,7 @@ const GroupsDialog: React.FC<GroupsDialogProps> = ({
                         {member.displayName}
                       </span>
                       <span className='min-w-0 truncate text-[0.8125rem] text-caption'>
-                        {member.nickname} {'\u00b7'} {member.email}
+                        {member.nickname} {'·'} {member.email}
                       </span>
                     </span>
 
@@ -813,14 +817,14 @@ const GroupsDialog: React.FC<GroupsDialogProps> = ({
                       revoke carries: a control that looks destructive but is not
                       has to say what it actually does. This one removes one
                       membership and nothing else; deleting the group itself is the
-                      control above.
+                      control beside the title above.
                     */}
                     <Button
                       type='button'
                       variant='ghost'
                       size='icon'
                       onClick={() => setPendingRemoval(member)}
-                      aria-label={`${dict.groups.removeMember} \u00b7 ${member.displayName}`}
+                      aria-label={`${dict.groups.removeMember} · ${member.displayName}`}
                       data-testid='removeGroupMember'
                       className={cn(
                         'shrink-0',
@@ -837,41 +841,216 @@ const GroupsDialog: React.FC<GroupsDialogProps> = ({
             )}
 
             {/*
-              The add-member affordance, and it reuses the account picker rather
-              than having a second search field in this file - one lookup, one
-              debounce, one combobox, in the whole product.
+              The add-person control, at the foot and quiet, expanding in place into
+              the picker. The same arrangement as the "add a gift" row at the foot of
+              a list sheet: the action that fills a block belongs under that block,
+              not above it, and one tap should be enough to reach a keyboard.
 
-              `listId` is empty on purpose: there is no list here, and the grant
-              step is the wrong request (it takes an address and answers on a
-              list). `alreadyShared` is the group's own membership, so a person
-              already in the group is not offered again - and the server would
-              accept that as a success in any case, because `addMember` hands back
-              the row that already exists rather than inventing a refusal for it
-              (`lib/group-access.ts:487-508`).
+              It used to be a printed label *and* the picker, permanently, under a
+              second heading of its own - so inside a group there were two labels
+              for one field ("Person hinzufügen" and "Nickname oder E-Mail-Adresse"),
+              and the field was on screen whether or not the reader wanted to add
+              anybody. The picker's own printed label is the one that stays; it is
+              the one that says what the field wants, and `PRODUCT.md` requires a
+              printed label on a form rather than a placeholder alone.
             */}
-            <div className='flex flex-col gap-2 pt-2'>
-              <p
-                className='label-print text-caption'
+            {addingMember ? (
+              <div
+                className='flex flex-col gap-2'
                 data-testid='addMemberHeading'
               >
-                {dict.groups.addMemberLabel}
-              </p>
-
-              <AccountPicker
-                /*
-                  `null` and not a list id: this picker asks "which account?" and the
-                  request that follows is `POST /api/groups/{id}/members`, which is
-                  addressed by account id because adding somebody to a group is not
-                  adding them to a list. Handing the picker a list id here would let a
-                  click on a result grant the account access to a list nobody chose.
-                */
-                listId={null}
-                dict={dict}
-                alreadyShared={members?.map((member) => member.accountId) ?? []}
-                onPicked={onMemberPicked}
-                isVisible
+                <AccountPicker
+                  /*
+                    `null` and not a list id: this picker asks "which account?" and
+                    the request that follows is `POST /api/groups/{id}/members`,
+                    addressed by account id, because adding somebody to a group is
+                    not adding them to a list. Handing it a list id here would let a
+                    click on a result grant the account access to a list nobody
+                    chose.
+                  */
+                  listId={null}
+                  dict={dict}
+                  alreadyShared={
+                    members?.map((member) => member.accountId) ?? []
+                  }
+                  onPicked={onMemberPicked}
+                  isVisible
+                />
+              </div>
+            ) : (
+              <AddRow
+                label={dict.groups.addMemberLabel}
+                testId='addMemberButton'
+                onClick={() => setAddingMember(true)}
+                afterRule={memberListHasRule}
               />
-            </div>
+            )}
+          </section>
+        ) : (
+          <section className='flex flex-col gap-4'>
+            {groups === null ? null : groups.length === 0 ? (
+              <p
+                className='text-[0.8125rem] leading-relaxed text-caption'
+                data-testid='noGroups'
+              >
+                {dict.groups.noGroups}
+              </p>
+            ) : (
+              <ul
+                id='groupList'
+                data-testid='groupList'
+                className='divide-y divide-rule border-y border-rule'
+              >
+                {groups.map((group) => (
+                  <li key={group.id} className='py-1'>
+                    {/*
+                      The whole row opens the group, and it is the only control on
+                      it. Every row used to carry a second, identical menu button, so
+                      the list had two kinds of control repeated once each and the
+                      reader had to decide per row which of them they wanted - on a
+                      phone, two 44px targets side by side where one would do.
+
+                      `h-auto` with `min-h-11`: two lines of text, and the
+                      primitive's 44px would be the shorter of the two floors rather
+                      than the shape's own. And the one control in this product
+                      allowed to wrap - a German compound is one unbreakable token
+                      wider than a phone.
+                    */}
+                    <Button
+                      type='button'
+                      variant='ghost'
+                      onClick={() => setOpenGroupId(group.id)}
+                      data-testid='openGroup'
+                      className={cn(
+                        'h-auto min-h-11 w-full min-w-0',
+                        'group/name',
+                        'justify-start px-0 text-left',
+                        'whitespace-normal',
+                        'text-ink',
+                        '[@media(hover:hover)_and_(pointer:fine)]:hover:bg-wash'
+                      )}
+                    >
+                      <span className='flex min-w-0 flex-col'>
+                        {/*
+                          The underline is on the words and is driven by the
+                          button's own hover, which is the same arrangement as a
+                          list name on the contents page: the pointer is over the
+                          control here, so `hover:` on the name is honest, and the
+                          rule is gated because a touch device cannot leave it
+                          drawn.
+                        */}
+                        <span className='font-serif break-words text-[0.9375rem] font-semibold leading-snug underline-offset-2 [@media(hover:hover)_and_(pointer:fine)]:group-hover/name:underline'>
+                          {group.name}
+                        </span>
+                        <span className='text-[0.8125rem] text-caption'>
+                          {dict.groups.memberCount.replace(
+                            '{count}',
+                            String(group.memberCount)
+                          )}
+                        </span>
+                      </span>
+                    </Button>
+                  </li>
+                ))}
+              </ul>
+            )}
+
+            {/*
+              The create form is at the foot and closed, behind one button.
+
+              It used to be the first thing in the sheet: a printed label, a field,
+              and the app's only solid ink button at full width - permanently, on
+              every visit, above the reader's own groups. The loudest object on the
+              screen was "make another one", and a reader with nine groups had to
+              scroll past nine rows to reach it. Now the list is the sheet and the
+              form is one tap away at the bottom, where the action that adds to a
+              block belongs.
+            */}
+            {creating ? (
+              <form onSubmit={handleCreate} className='flex flex-col gap-3'>
+                <div className='flex flex-col gap-1.5'>
+                  {/*
+                    A printed label, never a placeholder alone: it has to survive
+                    the field being filled, and a screen reader meets a placeholder
+                    exactly once.
+                  */}
+                  <Label
+                    htmlFor='newGroupName'
+                    className='label-print text-caption'
+                  >
+                    {dict.groups.enterGroupName}
+                  </Label>
+                  <Input
+                    id='newGroupName'
+                    name='name'
+                    type='text'
+                    placeholder={dict.groups.enterGroupName}
+                    required
+                    autoFocus
+                    aria-invalid={createError ? true : undefined}
+                    aria-describedby={
+                      createError ? 'groupNameError' : undefined
+                    }
+                    data-testid='groupNameInput'
+                  />
+                  {createError && (
+                    <p
+                      id='groupNameError'
+                      role='alert'
+                      data-testid='groupNameError'
+                      className='text-destructive text-[0.875rem] leading-snug'
+                    >
+                      {createError}
+                    </p>
+                  )}
+                </div>
+
+                <div className='flex gap-2'>
+                  <Button
+                    type='button'
+                    variant='outline'
+                    onClick={() => setCreating(false)}
+                    className='flex-1'
+                  >
+                    {dict.cancel}
+                  </Button>
+                  <Button
+                    type='submit'
+                    disabled={isCreating}
+                    className={cn('flex-1', 'xs:h-12', 'xs:text-base')}
+                    data-testid='createGroupSubmit'
+                  >
+                    {isCreating ? dict.groups.creating : dict.groups.create}
+                  </Button>
+                </div>
+              </form>
+            ) : (
+              /*
+                An outlined button, not the quiet `AddRow` this level used and not
+                the solid ink fill it used before that. A group is the one entity
+                with a screen of its own, so this is not a row among rows and
+                nothing in the list competes with it for the reader's eye - which
+                is exactly why it may be a printed button: a reader who came here
+                to make a group finds it in one tap without the sheet having to
+                shout, and the list above keeps the sheet to itself.
+
+                `h-11 px-4` and the rule are the primitive's own `default` size and
+                `outline` variant, so the 44px target and the printed edge are the
+                ones every other secondary control in the app already has; only the
+                label is dropped to 0.875rem, which is the face `AddRow` and the
+                cancel beside it use.
+              */
+              <Button
+                type='button'
+                variant='outline'
+                onClick={() => setCreating(true)}
+                data-testid='newGroupButton'
+                className='w-full justify-center text-[0.875rem]'
+              >
+                <IconPlus className='h-4 w-4 shrink-0' aria-hidden='true' />
+                {dict.groups.newGroup}
+              </Button>
+            )}
           </section>
         )}
 

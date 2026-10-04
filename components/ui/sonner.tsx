@@ -8,12 +8,15 @@ import { useSyncExternalStore } from 'react';
 type ToasterProps = React.ComponentProps<typeof Sonner>;
 
 /**
- * The height of the running head: 56px of bar plus its own 1px rule. It is
- * duplicated from `--header-height` rather than read, because it is a constant
- * in the same sense the breakpoint is, and a phone that resized would have to
- * re-run this anyway.
+ * How far the phone toast sits above the foot of the screen. The head's height
+ * (56px of bar plus its own 1px rule) used to be used here, on the theory that a
+ * toast under the running head cannot cover anything anybody presses; measurement
+ * said the opposite, and the constant that replaces it is simply the gap above the
+ * footer's own `border-t`. Both props on `<Sonner>` are still needed: sonner keeps
+ * a separate `mobileOffset` and uses that one below its own breakpoint, so
+ * `offset` alone moves nothing on the device this is for.
  */
-const HEADER_OFFSET = 57;
+const PHONE_OFFSET = 16;
 
 /*
   Tailwind's `sm`, and the line the phone placement is drawn above. Stated once
@@ -67,21 +70,38 @@ const Toaster = ({ ...props }: ToasterProps) => {
     latest one anyway - each mutation gets its own line, and the line that is
     still there is the one describing what just happened.
 
-    `offset` - at the default the first toast lands on top of the running head,
-    over the wordmark and the two controls in it. Starting the stack under the
-    header's rule puts it over the sheet's top margin instead, which is the one
-    band of this page that holds nothing you can press. Both props are needed:
-    sonner keeps a separate `mobileOffset` and uses that one below its own
-    breakpoint, so `offset` alone moves nothing on the device this is for.
+`offset` - at the default the first toast lands on top of the running head,
+    over the wordmark and the two controls in it. That is the reason this block
+    bothers with an offset at all.
+
+    **Where it lands on a phone is now the bottom, and the comment above this one
+    was the thing that was wrong.** The claim was that a 57px offset "puts it over
+    the sheet's top margin, which is the one band of this page that holds nothing
+    you can press". Measured on both signed-in routes at 390x844, it is not: the
+    band holds the dashboard's own section label, and on the list sheet it holds
+    `backToLists` - the only way out of the page. A toast about an idea you just
+    added landed on the control that leaves the sheet, which is the one control a
+    thumb cannot be trusted to miss.
+
+    So the phone toaster is `bottom-center` with a short offset. The argument above
+    for the foot of a phone screen being where the page's primary control lives
+    does not survive contact with this product: the primary control on the list
+    sheet is the blank cell, at the top of the content, and the foot row is the
+    quiet add-gift ghost - a real control, but one the reader has to aim at rather
+    than one they will hit by accident, and the reverse is true of the back
+    control. Covering a control somebody has to aim at, briefly, costs less than
+    covering the exit. At 640px and up this is unchanged: bottom-right, out of the
+    way of the reading column, and the toast is narrower than the sheet so it
+    never crosses a row's text.
   */
 
   return (
     <Sonner
       theme={theme as ToasterProps['theme']}
       className={cn('toaster', 'group')}
-      position={isPhone ? 'top-center' : 'bottom-right'}
-      offset={isPhone ? HEADER_OFFSET : undefined}
-      mobileOffset={isPhone ? HEADER_OFFSET : undefined}
+      position={isPhone ? 'bottom-center' : 'bottom-right'}
+      offset={isPhone ? PHONE_OFFSET : undefined}
+      mobileOffset={isPhone ? PHONE_OFFSET : undefined}
       visibleToasts={isPhone ? 1 : undefined}
       toastOptions={{
         classNames: {

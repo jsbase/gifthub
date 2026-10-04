@@ -2,6 +2,7 @@
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
+import { IconEye, IconEyeOff } from '@tabler/icons-react';
 import {
   Dialog,
   DialogContent,
@@ -52,11 +53,13 @@ export const ListVisibilityDialog: React.FC<ListVisibilityDialogProps> = ({
       value: 'PRIVATE' as const,
       label: dict.visibility.private,
       hint: dict.visibility.privateHint,
+      icon: IconEyeOff,
     },
     {
       value: 'SHARED' as const,
       label: dict.visibility.shared,
       hint: dict.visibility.sharedHint,
+      icon: IconEye,
     },
   ];
 
@@ -88,6 +91,7 @@ export const ListVisibilityDialog: React.FC<ListVisibilityDialogProps> = ({
         <div role='group' className='flex flex-col gap-2'>
           {options.map((option) => {
             const isCurrent = option.value === visibility;
+            const OptionIcon = option.icon;
             return (
               <Button
                 key={option.value}
@@ -115,6 +119,21 @@ export const ListVisibilityDialog: React.FC<ListVisibilityDialogProps> = ({
                   'whitespace-normal'
                 )}
               >
+                {/*
+                  The same two glyphs, at the same size and in the same two
+                  inks, that `create-list-dialog.tsx` puts on this pair. These two
+                  sheets are the only places the product asks the question, and
+                  an icon that meant one thing in the first and another in the
+                  second would be worse than no icon.
+                */}
+                <OptionIcon
+                  aria-hidden='true'
+                  className={cn(
+                    'h-5 w-5 shrink-0',
+                    'mt-px',
+                    isCurrent ? 'text-ink-foreground' : 'text-caption'
+                  )}
+                />
                 <span className='flex min-w-0 flex-col gap-1'>
                   <span className='label-print'>{option.label}</span>
                   <span
@@ -408,10 +427,66 @@ const ShareListDialog: React.FC<ShareListDialogProps> = ({
     if (pendingRevocation) revoke(pendingRevocation);
   }, [pendingRevocation, revoke]);
 
+  /*
+    The groups this list is *not* on yet, and nothing else.
+
+    `myGroups` is every group the account owns; the audience above already prints
+    the ones that have a grant on this list. Rendering `myGroups` in full meant a
+    granted group appeared twice in one sheet - once under the audience saying
+    "you can reach this", once under the offer saying the same name with no
+    control at all - and the two rows looked identical because they were, down to
+    the name and the person count. Subtracting the granted ids here is the whole
+    fix, and it is a subtraction rather than a second lookup because
+    `groupAccess` is already on the sheet.
+  */
+  const offerableGroups = (myGroups ?? []).filter(
+    (group) => !groupAccess.some((row) => row.groupId === group.id)
+  );
+
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
-      <DialogContent closeLabel={dict.close} className='sm:max-w-md'>
-        <DialogHeader>
+      {/*
+        `sm:max-w-lg`, which is 512px, against the primitive's `sm:max-w-[32rem]`
+        that this file was overriding down to `sm:max-w-md` - 448px.
+
+        Measured, at 448: the widest row this sheet carries is a group in the offer,
+        which is a name, a person count and a 44px "Hinzufügen" in a
+        `whitespace-nowrap` button. The name got 236px of the card's 408px content
+        measure, and a German group name is longer than that. The audience row is the
+        same shape with a narrower control and fares a little better, and three
+        stacked regions make this the tallest thing per pixel of width on the page.
+
+        It is the one dialog in the app that has to carry a two-column row with an
+        action *and* three regions, so it is the one dialog that needs the wider
+        sheet - and it is set here rather than in `dialog.tsx` because every other
+        sheet in this app is a single-column form, and widening the primitive would
+        widen all of them for the sake of one. `ListVisibilityDialog` above keeps
+        the 448 it had.
+
+        A phone is untouched by this, and that is why it is written at `sm`: below
+        640 the sheet is the page under the header and takes the whole viewport
+        width, so a max-width cannot buy a phone anything. Everything that helps a
+        phone is in the spacing below.
+      */}
+      <DialogContent closeLabel={dict.close} className='sm:max-w-lg'>
+        {/*
+          `gap-2 xs:gap-2`, and both halves written out.
+
+          The primitive's header is `gap-1.5` with `xs:gap-1`, and this header
+          carries three things: the title, the list name, and the standing
+          instruction under them. Six pixels under a title, and four on a phone, is
+          the cramping this sheet was reported for - and passing `gap-2` alone would
+          not have fixed it, because `xs:gap-1` is a different modifier group and
+          `twMerge` keeps both, so the phone would have kept its four pixels. The
+          same trap `dialog.tsx` documents for `sm:max-w-*`; the second class is
+          worth it to be certain which value each width gets.
+
+          Eight pixels and not more, because the name is an 11px tracked label and
+          the instruction below it is a 13px sentence: these are three lines of one
+          head, not three sections, and what they want is the separation inside a
+          paragraph rather than the separation between parts of a page.
+        */}
+        <DialogHeader className='gap-2 xs:gap-2'>
           {/*
             `font-sans text-xl` against the primitive's serif default, and the
             reason is written down twice in this file already: the title is a
@@ -435,7 +510,27 @@ const ShareListDialog: React.FC<ShareListDialogProps> = ({
           >
             {listName}
           </p>
-          <DialogDescription>{shareLead}</DialogDescription>
+          {/*
+            `shareLead`, one rank down from the primitive's 15px.
+
+            It is a standing instruction, not content: it says what adding somebody
+            to this list *permits*, which is the same fact every time anybody opens
+            this sheet and is never the thing they came to do. At 15px it was the
+            second-loudest thing in the dialog after the title, it ran to two lines,
+            and it pushed the audience - the actual state, the reason the sheet was
+            opened - below 100px of its own. At 13px, in the caption weight it was
+            already in, with the leading opened up rather than tightened, it reads as
+            a printed note under the title and costs one line less.
+
+            13px rather than the 11px of `label-print`, because it is a sentence and
+            not a label: the registry puts 11px on tracked uppercase chrome and
+            nothing else. The contents page already sets its row meta at 13px in
+            this same voice (`components/list-row.tsx`), so this is an existing
+            register on a sheet rather than a new size.
+          */}
+          <DialogDescription className='text-[0.8125rem] leading-relaxed'>
+            {shareLead}
+          </DialogDescription>
         </DialogHeader>
 
         {visibility === 'PRIVATE' ? (
@@ -450,7 +545,15 @@ const ShareListDialog: React.FC<ShareListDialogProps> = ({
             not require `SHARED` for it. Hiding that behind a private list would
             make access revocable only by deleting the list.
           */
-          <div className='flex flex-col gap-4'>
+          /*
+            `gap-5`, up from `gap-4`, for the same reason the shared branch below
+            is at 32: on a phone this sheet *is* the page under the header, so the
+            distance between the sentence that explains the state, the one control
+            that changes it, and the audience that can already be reached is the
+            distance between three parts of a page. On the card the same three are
+            three blocks of a form and 20px is enough.
+          */
+          <div className='flex flex-col gap-5'>
             <p
               className='text-[0.9375rem] leading-relaxed text-pretty text-caption'
               data-testid='privateFirst'
@@ -476,7 +579,49 @@ const ShareListDialog: React.FC<ShareListDialogProps> = ({
             />
           </div>
         ) : (
-          <div className='flex flex-col gap-6'>
+          /*
+            `gap-8 sm:gap-7`, and it is written the other way round from most of this
+            file on purpose.
+
+            Below `sm` the sheet is the page under the header, full-bleed and
+            `100dvh` tall, and 24px between its three regions is a page whose parts
+            are touching: measured at 390px, the audience head sat 96px under the
+            last line of the standing instruction and the search field 40px under the
+            last audience row. This is the cramping the sheet was reported for, and
+            it is a spacing problem rather than a width one - nothing here is
+            overflowing, everything is just too close.
+
+            32px on a phone and 28px on the card is one step, not two: the card is
+            the better-fitting of the two arrangements already, being 512px wide with
+            a line length this sheet never reaches, so it needs less separation
+            rather than more. Written mobile-first, which means the larger value is
+            the one with no breakpoint in front of it.
+          */
+          <div className='flex flex-col gap-8 sm:gap-7'>
+            {/*
+              **The audience comes first, because it is the state and the rest of
+              this sheet is the two ways to change it.** It used to come last, under
+              a search field and a list of groups to offer, which meant the answer to
+              "who can already open this list" was below two invitations to add
+              somebody - and on a phone, below the fold.
+
+              And it used to answer that question twice. `AudienceList` printed the
+              groups already reaching this list under a head reading "Gruppen", and
+              the offer above it printed the *same* groups again, from `myGroups`,
+              each labelled "Geteilt" and each carrying no control. One group, one
+              sheet, two rows, two opposite affordances - and the only difference
+              between them was which list the renderer had walked. The offer is now
+              filtered to the groups that are not here yet, so every group appears
+              exactly once and the two sections cannot contradict each other.
+            */}
+            <AudienceList
+              access={access}
+              groupAccess={groupAccess}
+              dict={dict}
+              onRevoke={(row) => setPendingRevocation(row)}
+              onRevokeGroup={(row) => setPendingGroupRevocation(row)}
+            />
+
             {/*
               The lookup and the grant, in one component, because they are one
               interaction: picking a row *is* adding the person. Splitting them would
@@ -500,107 +645,93 @@ const ShareListDialog: React.FC<ShareListDialogProps> = ({
             />
 
             {/*
-              Groups, as an offer rather than as part of the audience: the rows below
-              are the groups already reaching this list, and this is the list of ones
-              that are not. Absent entirely rather than disabled or collapsed when the
-              owner has no groups, and when the list is private the whole thing is
-              already replaced by the sentence above - a group grant is refused on a
-              private list exactly as a person one is, and a control for it here would
-              be a rule the owner cannot read.
+              Groups that are not on this list yet. Absent entirely - not disabled,
+              not collapsed - when every group the owner has is already here, and
+              replaced by one sentence when they have no groups at all, and the
+              whole block is already replaced by the sentence above on a private
+              list, where a group grant is refused exactly as a person one is.
             */}
-            {myGroups !== null && (
-              <section className='flex flex-col gap-2'>
-                <h3 className='label-print text-caption'>
-                  {dict.shareList.groupPickerHeading}
-                </h3>
-
-                {myGroups.length === 0 ? (
+            {myGroups !== null &&
+              (myGroups.length === 0 ? (
+                <section className='flex flex-col gap-2'>
+                  <h3 className='label-print text-caption'>
+                    {dict.shareList.groupPickerHeading}
+                  </h3>
                   <p
                     className='text-[0.8125rem] leading-relaxed text-caption'
                     data-testid='noGroupsToShare'
                   >
                     {dict.shareList.noGroupsToShare}
                   </p>
-                ) : (
+                </section>
+              ) : offerableGroups.length > 0 && (
+                <section className='flex flex-col gap-2'>
+                  <h3 className='label-print text-caption'>
+                    {dict.shareList.groupPickerHeading}
+                  </h3>
+
                   <ul
                     data-testid='groupPicker'
                     className='divide-y divide-rule border-y border-rule'
                   >
-                    {myGroups.map((group) => {
+                    {offerableGroups.map((group) => (
                       /*
-                        A group already reaching this list is shown as granted, with no
-                        control. Pressing one would be answered `already_shared` - so a
-                        button that cannot do anything is not a button, and
-                        `PRODUCT.md:65` is the rule that says so.
+                        `py-3` and `gap-4`, up from `py-2` and `gap-3`.
+
+                        A row here is two lines of type - a name and how many
+                        people one grant reaches - beside a 44px control, and
+                        `py-2` made it 60px of which the padding was 16. On a
+                        phone, where this block can be several rows and is the
+                        last thing on the sheet, they read as a solid block of
+                        buttons rather than as a list of groups. `py-3` is 68px
+                        and the name clears the control's edge; `gap-4` is what
+                        stops a long name from touching "Hinzufügen", which is
+                        `whitespace-nowrap` and therefore never gives way itself.
                       */
-                      const isShared = groupAccess.some(
-                        (row) => row.groupId === group.id
-                      );
-
-                      return (
-                        <li
-                          key={group.id}
-                          className='flex min-h-11 items-center justify-between gap-3 py-2'
-                          data-testid='groupPickerRow'
-                        >
-                          <span className='flex min-w-0 flex-col'>
-                            {/*
-                              A group name is a name, so it takes the one serif this
-                              product allows. At this row's size rather than the
-                              contents page's, because this is a line in a list and not
-                              the largest object in a sheet.
-                            */}
-                            <span className='font-serif break-words text-[0.9375rem] font-semibold leading-snug text-ink'>
-                              {group.name}
-                            </span>
-                            <span className='min-w-0 truncate text-[0.8125rem] text-caption'>
-                              {dict.shareList.groupReaches.replace(
-                                '{count}',
-                                String(group.memberCount)
-                              )}
-                            </span>
+                      <li
+                        key={group.id}
+                        className='flex min-h-11 items-center justify-between gap-4 py-3'
+                        data-testid='groupPickerRow'
+                      >
+                        <span className='flex min-w-0 flex-col'>
+                          {/*
+                            A group name is a name, so it takes the one serif this
+                            product allows. At this row's size rather than the
+                            contents page's, because this is a line in a list and not
+                            the largest object in a sheet.
+                          */}
+                          <span className='font-serif break-words text-[0.9375rem] font-semibold leading-snug text-ink'>
+                            {group.name}
                           </span>
+                          <span className='min-w-0 truncate text-[0.8125rem] text-caption'>
+                            {dict.shareList.groupReaches.replace(
+                              '{count}',
+                              String(group.memberCount)
+                            )}
+                          </span>
+                        </span>
 
-                          {isShared ? (
-                            <span
-                              className='shrink-0 text-[0.8125rem] text-caption'
-                              data-testid='groupAlreadyShared'
-                            >
-                              {dict.visibility.shared}
-                            </span>
-                          ) : (
-                            <Button
-                              type='button'
-                              variant='outline'
-                              size='sm'
-                              disabled={isSharingGroup === group.id}
-                              onClick={() => shareWithGroup(group)}
-                              data-testid='shareWithGroup'
-                              className={cn(
-                                'shrink-0',
-                                '[@media(hover:hover)_and_(pointer:fine)]:hover:bg-wash'
-                              )}
-                            >
-                              {isSharingGroup === group.id
-                                ? dict.shareList.adding
-                                : dict.shareList.add}
-                            </Button>
+                        <Button
+                          type='button'
+                          variant='outline'
+                          size='sm'
+                          disabled={isSharingGroup === group.id}
+                          onClick={() => shareWithGroup(group)}
+                          data-testid='shareWithGroup'
+                          className={cn(
+                            'shrink-0',
+                            '[@media(hover:hover)_and_(pointer:fine)]:hover:bg-wash'
                           )}
-                        </li>
-                      );
-                    })}
+                        >
+                          {isSharingGroup === group.id
+                            ? dict.shareList.adding
+                            : dict.shareList.add}
+                        </Button>
+                      </li>
+                    ))}
                   </ul>
-                )}
-              </section>
-            )}
-
-            <AudienceList
-              access={access}
-              groupAccess={groupAccess}
-              dict={dict}
-              onRevoke={(row) => setPendingRevocation(row)}
-              onRevokeGroup={(row) => setPendingGroupRevocation(row)}
-            />
+                </section>
+              ))}
           </div>
         )}
 

@@ -2,6 +2,7 @@
 
 import React, { useCallback, useState } from 'react';
 import { toast } from 'sonner';
+import { IconEye, IconEyeOff } from '@tabler/icons-react';
 import {
   Dialog,
   DialogContent,
@@ -44,16 +45,40 @@ const CreateListDialog: React.FC<CreateListDialogProps> = ({
   const [visibility, setVisibility] = useState<ListVisibility>('PRIVATE');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  /*
+    An eye per option, and the same two glyphs `ListVisibilityDialog` prints.
+
+    Which one is set used to be carried by the fill and by nothing else, so the
+    pair was two words at two sizes with one of them inverted - readable, but
+    only after the eye had already travelled to the box and back to compare it
+    with the other one. The glyph states the reach on its own: crossed out is
+    nobody else, open is somebody else. It is a second channel rather than a
+    decoration, which is the whole argument `PRODUCT.md` makes about not resting
+    a state on one signal.
+
+    It is also the icon this product already spends on visibility - `list-row.tsx`
+    draws `IconEye` for the same decision on a row - so the shape that means
+    "who can read this" is one shape rather than two.
+
+    No hue on either glyph, and that is the standing decision rather than an
+    omission: `DESIGN.md` gives `--done` to "nothing left to buy", `--register`
+    to focus rings and `--destructive` to a button fill, so the palette has no
+    colour left to mean "shared" with. `status-badge.tsx` already prints this
+    same state with no hue for the same reason. The two channels here are the
+    glyph and the ink - which one it is, and which one is set.
+  */
   const options = [
     {
       value: 'PRIVATE' as const,
       label: dict.createListDialog.private,
       hint: dict.createListDialog.privateHint,
+      icon: IconEyeOff,
     },
     {
       value: 'SHARED' as const,
       label: dict.createListDialog.shared,
       hint: dict.createListDialog.sharedHint,
+      icon: IconEye,
     },
   ];
 
@@ -171,6 +196,7 @@ const CreateListDialog: React.FC<CreateListDialogProps> = ({
 
             {options.map((option) => {
               const isCurrent = option.value === visibility;
+              const OptionIcon = option.icon;
               return (
                 <Button
                   key={option.value}
@@ -194,6 +220,22 @@ const CreateListDialog: React.FC<CreateListDialogProps> = ({
                     'whitespace-normal'
                   )}
                 >
+                  {/*
+                    20px rather than the 16px `list-row.tsx` uses for its
+                    toolbar: this glyph sits beside an 11px label and a 13px
+                    hint rather than inside a 44px square, so at 16px it reads
+                    as an accessory to the words instead of as the mark that
+                    states the reach. `mt-px` aligns it with the label's cap
+                    height rather than with the top of its line box.
+                  */}
+                  <OptionIcon
+                    aria-hidden='true'
+                    className={cn(
+                      'h-5 w-5 shrink-0',
+                      'mt-px',
+                      isCurrent ? 'text-ink-foreground' : 'text-caption'
+                    )}
+                  />
                   <span className='flex min-w-0 flex-col gap-1'>
                     <span className='label-print'>{option.label}</span>
                     <span

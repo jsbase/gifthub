@@ -70,7 +70,20 @@ const Logo: React.FC<LogoProps> = ({ size = 'md', className, displayName }) => {
         stroke={1.75}
         aria-hidden='true'
       />
-      <h1 className={textClasses}>{displayName || 'wishy'}</h1>
+      {/*
+        `h1` only while it is the wordmark. Signed out, this is the product's own
+        name and the largest thing on the page, so it is the page's heading. Signed
+        in, the product substitutes the person's own display name here - and a
+        person's name is not the heading of the page they are looking at, so this
+        became a second `h1` on the list sheet (which has its own, the list's name)
+        and the heading outline there was h1, h1, h3, h3 with no `h2` between them.
+        Each route now owns exactly one `h1` and this component steps aside.
+      */}
+      {displayName ? (
+        <p className={textClasses}>{displayName}</p>
+      ) : (
+        <h1 className={textClasses}>wishy</h1>
+      )}
     </div>
   );
 };

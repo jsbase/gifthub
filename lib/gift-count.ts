@@ -62,10 +62,10 @@ export function giftCountLabel(
   if (!counts || counts.total === 0) return dict.giftCount.none;
   if (counts.unbought === 0) return dict.giftCount.zero;
   if (counts.unbought === 1) {
-    return dict.giftCount.one.replace('{{count}}', '1');
+    return dict.giftCount.one.replace('{count}', '1');
   }
   return dict.giftCount.many.replace(
-    '{{count}}',
+    '{count}',
     String(counts.unbought)
   );
 }
