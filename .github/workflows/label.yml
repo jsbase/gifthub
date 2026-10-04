@@ -1,22 +1,41 @@
-# This workflow will triage pull requests and apply a label based on the
-# paths that are modified in the pull request.
+# This workflow labels pull requests from the paths they modify, using
+# actions/labeler with the rules in .github/labeler.yml.
 #
-# To use this workflow, you will need to set up a .github/labeler.yml
-# file with configuration.  For more information, see:
-# https://github.com/actions/labeler
+# The trigger is `pull_request` and not `pull_request_target`, and that choice is
+# load-bearing rather than stylistic. GitHub resolves which workflows to run from
+# the pull request's own head ref for `pull_request`, but from the *base* branch
+# for `pull_request_target`. A workflow file introduced by a pull request is
+# therefore invisible to `pull_request_target` on that very pull request: nothing
+# matches the event, no run is created, and the pull request silently gets no
+# label until the file has been merged into the base branch and a later pull
+# request comes along. Under `pull_request` this workflow runs immediately, on
+# the pull request that adds it.
+#
+# What that costs is that the head branch's copy of this file decides what runs,
+# so the token comes from the pull request rather than from the trusted base
+# branch. That is acceptable here: every branch is in this repository, and the
+# job's permissions block narrows GITHUB_TOKEN to exactly what the action needs
+# instead of inheriting the repository's default grants. A fork would get a
+# read-only token and the action would find nothing it is allowed to change.
 
 name: Labeler
-on: [pull_request_target]
+on: [pull_request]
 
 jobs:
   label:
 
     runs-on: ubuntu-latest
+    # `pull-requests: write` is enough to attach labels that already exist in
+    # the repository. Creating a brand-new label would additionally need
+    # `issues: write`, which this workflow deliberately does not ask for.
     permissions:
       contents: read
       pull-requests: write
 
     steps:
-    - uses: actions/labeler@v4
+    # v7 rather than the v4 in GitHub's starter template: v4 declares the
+    # removed node16 runtime and only still runs because GitHub force-upgrades
+    # it to node20. v7 is the current major on node24.
+    - uses: actions/labeler@v7
       with:
         repo-token: "${{ secrets.GITHUB_TOKEN }}"

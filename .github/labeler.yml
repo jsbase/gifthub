@@ -1,0 +1,43 @@
+# Label rules for actions/labeler, read from .github/workflows/label.yml.
+#
+# Each top-level key is a label and each list under it is a match configuration.
+# The action only attaches labels that already exist in the repository — it never
+# creates them — so a key here that is not in the repository's label list is a
+# silent no-op, not an error. `any` matches as soon as one entry matches, `all`
+# requires every entry, and `changed-files` holds glob patterns tested against
+# the files the pull request touches.
+#
+# The three labels below are the repository's existing labels that map onto
+# changed paths. `bug`, `enhancement`, `duplicate` and the rest describe intent
+# rather than location, so they stay a human's decision.
+#
+# The `dot` input is left at its default of true, so a path that starts with a
+# dot — `.github/workflows/label.yml`, for instance — participates in matching
+# without needing a separate pattern for it.
+#
+# `prisma/schema.prisma` and `prisma/migrations/**` are deliberately absent:
+# they change the data model rather than a dependency, and none of the labels
+# this repository defines describe that.
+
+dependencies:
+  - changed-files:
+      - 'package.json'
+      - 'package-lock.json'
+
+documentation:
+  - changed-files:
+      - '**/*.md'
+
+javascript:
+  - any:
+      - changed-files:
+          - 'app/**'
+          - 'components/**'
+          - 'hooks/**'
+          - 'lib/**'
+          - 'types.ts'
+          - 'proxy.ts'
+          - '*.ts'
+          - '*.tsx'
+          - '*.js'
+          - '*.mjs'
