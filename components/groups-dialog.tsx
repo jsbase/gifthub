@@ -45,9 +45,9 @@ import type {
  *
  * It is the "add a gift" row from the list sheet, unchanged: a full-width 44px row,
  * a plus glyph, the action in the caption label face, and a hairline above it so the
- * row reads as the end of the block rather than as another item in it. Two of them
- * exist - one to open the name field on the list, one to open the person picker
- * inside a group - and they are the same object, so they are the same component.
+ * row reads as the end of the block rather than as another item in it. It opens the
+ * person picker inside a group; the matching control on the group list is an
+ * outlined button rather than this row (see the comment at the foot of the list).
  *
  * The arrangement it replaced on both levels was a permanently visible form with a
  * full-width ink button, which made the least likely action on the sheet the largest
@@ -57,14 +57,26 @@ const AddRow: React.FC<{
   label: string;
   testId: string;
   onClick: () => void;
-}> = ({ label, testId, onClick }) => (
+  /**
+   * The block directly above already ends in a rule of its own, which is what both
+   * lists in this sheet are (`border-y`). The row lands a `gap-4` below that rule,
+   * so its own hairline drew a second line 16px under the first: two rules around
+   * nothing, on the one control whose job is to add to the block, and the pair read
+   * as a band the row was sitting in rather than as the end of the list.
+   *
+   * Only the empty state above this row (`noGroups`, `noMembers`) has nothing
+   * separating it from the row, so there - and only there - the hairline is all
+   * there is, and the padding that goes with a top rule stays.
+   */
+  afterRule?: boolean;
+}> = ({ label, testId, onClick, afterRule = false }) => (
   <button
     type='button'
     onClick={onClick}
     data-testid={testId}
     className={cn(
       'flex min-h-11 w-full items-center gap-2',
-      'border-t border-rule pt-3',
+      !afterRule && 'border-t border-rule pt-3',
       'text-left text-[0.8125rem] text-caption',
       '[@media(hover:hover)_and_(pointer:fine)]:hover:text-ink'
     )}
@@ -304,6 +316,13 @@ const GroupsDialog: React.FC<GroupsDialogProps> = ({
   const members = openGroupId ? membersByGroup[openGroupId] : undefined;
   const renamingGroup =
     groups?.find((group) => group.id === renamingId) ?? null;
+
+  /*
+    The one test the three member branches below agree on, held here so the list,
+    the empty state and the `AddRow`'s own hairline cannot drift apart: a rule is
+    drawn under the members only when there are members to be ruled off.
+  */
+  const memberListHasRule = members !== undefined && members.length > 0;
 
   const handleCreate = useCallback(
     async (event: React.FormEvent<HTMLFormElement>) => {
@@ -851,6 +870,7 @@ const GroupsDialog: React.FC<GroupsDialogProps> = ({
                 label={dict.groups.addMemberLabel}
                 testId='addMemberButton'
                 onClick={() => setAddingMember(true)}
+                afterRule={memberListHasRule}
               />
             )}
           </section>
@@ -924,7 +944,7 @@ const GroupsDialog: React.FC<GroupsDialogProps> = ({
             )}
 
             {/*
-              The create form is at the foot and closed, behind one quiet row.
+              The create form is at the foot and closed, behind one button.
 
               It used to be the first thing in the sheet: a printed label, a field,
               and the app's only solid ink button at full width - permanently, on
@@ -993,11 +1013,31 @@ const GroupsDialog: React.FC<GroupsDialogProps> = ({
                 </div>
               </form>
             ) : (
-              <AddRow
-                label={dict.groups.newGroup}
-                testId='newGroupButton'
+              /*
+                An outlined button, not the quiet `AddRow` this level used and not
+                the solid ink fill it used before that. A group is the one entity
+                with a screen of its own, so this is not a row among rows and
+                nothing in the list competes with it for the reader's eye - which
+                is exactly why it may be a printed button: a reader who came here
+                to make a group finds it in one tap without the sheet having to
+                shout, and the list above keeps the sheet to itself.
+
+                `h-11 px-4` and the rule are the primitive's own `default` size and
+                `outline` variant, so the 44px target and the printed edge are the
+                ones every other secondary control in the app already has; only the
+                label is dropped to 0.875rem, which is the face `AddRow` and the
+                cancel beside it use.
+              */
+              <Button
+                type='button'
+                variant='outline'
                 onClick={() => setCreating(true)}
-              />
+                data-testid='newGroupButton'
+                className='w-full justify-center text-[0.875rem]'
+              >
+                <IconPlus className='h-4 w-4 shrink-0' aria-hidden='true' />
+                {dict.groups.newGroup}
+              </Button>
             )}
           </section>
         )}
