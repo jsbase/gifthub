@@ -14,6 +14,7 @@ import ConfirmDialog from '@/components/confirm-dialog';
 import { verifyAuth, logout } from '@/lib/auth';
 import type {
   ListAccess,
+  ListGroupAccess,
   ListSummary,
   PageProps,
   Translations,
@@ -63,6 +64,9 @@ const DashboardPage: NextPage<PageProps> = ({ params }) => {
   const [isCreating, setIsCreating] = useState(false);
   const [shareTarget, setShareTarget] = useState<ListSummary | null>(null);
   const [shareAccess, setShareAccess] = useState<ListAccess[]>([]);
+  const [shareGroupAccess, setShareGroupAccess] = useState<ListGroupAccess[]>(
+    []
+  );
   const [pendingDeletion, setPendingDeletion] = useState<ListSummary | null>(null);
 
   const fetchData = useCallback(async () => {
@@ -143,9 +147,11 @@ const DashboardPage: NextPage<PageProps> = ({ params }) => {
         const data = (await response.json()) as {
           list: ListSummary;
           access?: ListAccess[];
+          groupAccess?: ListGroupAccess[];
         };
         setShareTarget(data.list);
         setShareAccess(data.access ?? []);
+        setShareGroupAccess(data.groupAccess ?? []);
       } catch (error) {
         console.error('Error opening the share sheet:', error);
         toast.error(dict?.errors.failedToLoad);
@@ -253,6 +259,7 @@ const DashboardPage: NextPage<PageProps> = ({ params }) => {
           listName={shareTarget.name}
           visibility={shareTarget.visibility}
           access={shareAccess}
+          groupAccess={shareGroupAccess}
           dict={dict}
           onChanged={async () => {
             /*

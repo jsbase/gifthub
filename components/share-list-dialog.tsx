@@ -1,8 +1,7 @@
 'use client';
 
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
-import { IconUserMinus } from '@tabler/icons-react';
 import {
   Dialog,
   DialogContent,
@@ -11,13 +10,14 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import ConfirmDialog from '@/components/confirm-dialog';
-import { isRefusal, type Refusal } from '@/lib/refusals';
+import { AccountPicker } from '@/components/account-picker';
+import { AudienceList } from '@/components/audience-list';
 import { cn } from '@/lib/utils';
 import type {
+  Group,
   ListAccess,
+  ListGroupAccess,
   ListVisibilityDialogProps,
   ShareListDialogProps,
 } from '@/types';
@@ -148,12 +148,19 @@ export const ListVisibilityDialog: React.FC<ListVisibilityDialogProps> = ({
 };
 
 /**
- * The audience, and the one field that adds to it.
+ * The audience, and the two controls that add to it.
  *
- * Sharing is by address and only to an account that already exists: there is no
- * pending invitation and no mail anywhere in this product, so the sentence under
- * the field is the whole contract and the one that matters. `shareLead` says it;
- * a disabled field with no explanation would not.
+ * Sharing is by account, and an account is named either by a nickname or by an
+ * address. `shareLead` says so, and the control below it is a lookup rather than an
+ * address field because the owner very often knows one and not the other - which is
+ * the whole reason `GET /api/accounts/search` exists, and the reason its widening is
+ * recorded in `lib/account-search.ts` rather than glossed over.
+ *
+ * A list reaches people and groups, and the two are the *same* capability with
+ * different audiences: a group member gets exactly what an invited account gets.
+ * Both controls are here because this sheet is about one list's reach; where a group
+ * is *made* is `groups-dialog.tsx`, which cannot be reached from here because a group
+ * has to exist before there is a list to share it with.
  */
 const ShareListDialog: React.FC<ShareListDialogProps> = ({
   isOpen,
@@ -162,15 +169,24 @@ const ShareListDialog: React.FC<ShareListDialogProps> = ({
   listName,
   visibility,
   access,
+  groupAccess,
   dict,
   onChanged,
   onVisibilityChanged,
 }) => {
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [email, setEmail] = useState('');
-  const [emailError, setEmailError] = useState<string | null>(null);
   const [pendingRevocation, setPendingRevocation] =
     useState<ListAccess | null>(null);
+  const [pendingGroupRevocation, setPendingGroupRevocation] =
+    useState<ListGroupAccess | null>(null);
+
+  /*
+    `null` rather than `[]` for "not read yet", so the first paint of the group
+    section is not a claim that the owner has no groups. They may well have some and
+    the read may still be in flight, and "you have no groups" printed for two hundred
+    milliseconds on every open would be a false statement about their account.
+  */
+  const [myGroups, setMyGroups] = useState<Group[] | null>(null);
+  const [isSharingGroup, setIsSharingGroup] = useState<string | null>(null);
 
   /*
     Which sheet an answer belongs to, ported from the member sheet this dialog
@@ -190,13 +206,14 @@ const ShareListDialog: React.FC<ShareListDialogProps> = ({
         would put it back on an empty field the next time it opens, as an
         `aria-invalid` nobody earned.
 
-        `isSubmitting` is deliberately not cleared here, exactly as in the member
-        form this replaces: a request that succeeds closes the sheet, and
-        re-enabling the button on a sheet that has not asked for anything would
-        only invite a second POST for the same address.
+        Both pending confirmations are cleared for the same reason and one step
+        further: they name a row, and the audience they belong to is re-read on the
+        next open, so a confirmation surviving a close would be a prompt about a row
+        that may no longer be in the list.
       */
       sheetEpochRef.current += 1;
-      setEmailError(null);
+      setPendingRevocation(null);
+      setPendingGroupRevocation(null);
       if (!open) onClose();
     },
     [onClose]
@@ -204,126 +221,130 @@ const ShareListDialog: React.FC<ShareListDialogProps> = ({
 
   const shareLead = dict.shareList.shareLead;
 
-  const grant = useCallback(
-    async (rawEmail: string, epoch: number) => {
-      const belongsToOpenSheet = epoch === sheetEpochRef.current;
+  /*
+    The owner's own groups, read when the sheet opens and only on a shared list.
 
+    `null` state is not read yet, `[]` is read and there are none, and the render
+    distinguishes them: the third case is `noGroupsToShare` and the first renders
+    nothing. An effect rather than a read on open because Radix only calls
+    `onOpenChange` for a change made from inside the dialog, and both callers open
+    this sheet by setting their own state - so a read on open would never run.
+
+    Cancelled on cleanup, and the guard is checked after the `await` rather than
+    before the fetch, because the answer is the thing that arrives late: both callers
+    unmount the dialog on close, and a setState on an unmounted component is the
+    warning React 19 removed the log for rather than fixed.
+  */
+  useEffect(() => {
       /*
-        The address goes out exactly as it was typed. Normalising it here as well
-        would be a second authority for a rule that has one: `lib/email.ts` says
-        the form is not the boundary, and the route accepts the raw value and
-        normalises it with `acceptedEmail` before looking the account up - so an
-        owner who types `Anna@Example.de` finds the account either way, and a
-        malformed address comes back as `invalid_email` and is said so on the
-        field below rather than being swallowed by a regex here.
+        Early return rather than `setMyGroups(null)` on the way out. Clearing state
+        synchronously inside an effect body is a cascading render for a value nobody
+        is looking at - the private branch below does not render the group section at
+        all - and `react-hooks/set-state-in-effect` is right that it buys nothing. The
+        stale value is unreachable: every render of it is inside the `SHARED` branch,
+        and the effect re-reads on the next open anyway.
       */
-      const email = rawEmail.trim();
+      if (!isOpen || visibility !== 'SHARED') return;
 
-      setIsSubmitting(true);
+      let cancelled = false;
+
+    const read = async () => {
+      try {
+        const response = await fetch('/api/groups');
+        const body = (await response.json().catch(() => null)) as {
+          groups?: Group[];
+        } | null;
+        if (cancelled) return;
+        setMyGroups(response.ok ? body?.groups ?? [] : []);
+      } catch (error) {
+        if (cancelled) return;
+        console.error('Error loading groups:', error);
+        setMyGroups([]);
+      }
+    };
+
+    read();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isOpen, visibility]);
+
+  /*
+    Share with one whole group.
+
+    Addressed by group id and not by name, and the name is only ever display: two
+    groups can be called the same thing across two owners, and `Group.name` is unique
+    per owner rather than globally, so a name is not a key the server could accept.
+
+    A group row already in the audience is shown as granted rather than as a
+    control, because pressing it would be answered `already_shared` - a refusal the
+    owner would see for doing what the screen invited them to do.
+
+    Every failure here is a toast and not a sentence under the control, including
+    `already_shared`. The list is shared by people through a field that can hold a
+    wrong value and be corrected, and this is a row of buttons with no value to
+    correct; a toast is the honest place for "that did not work" when there is no
+    field to attach it to.
+  */
+  const shareWithGroup = useCallback(
+    async (group: Group) => {
+      setIsSharingGroup(group.id);
       try {
         const response = await fetch(`/api/lists/${listId}/access`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email }),
+          body: JSON.stringify({ groupId: group.id }),
         });
 
-        const body = (await response.json().catch(() => null)) as {
-          code?: unknown;
-          message?: string;
-          access?: { displayName?: string; email?: string };
-        } | null;
+        if (!response.ok) throw new Error(`Error: ${response.status}`);
 
-        /*
-          A refusal about the address is a form with a wrong value in it, not a
-          failed request, and `no_such_account` is the one this dialog exists to
-          explain well: the address has to belong to an account already, so the
-          sentence belongs on the field where the address was typed rather than
-          in a toast that leaves in four seconds.
-
-          The table is keyed by the shared `Refusal` union rather than by six
-          bare strings, so a refusal the server adds without a sentence here is
-          a type error rather than a missing case, and a refusal that is none of
-          the six below misses the table and falls through to the toast further
-          down - the same two-way split the member form used.
-        */
-        const fieldFailures: Record<Refusal, string | undefined> = {
-          invalid_email: dict.errors.invalidEmail,
-          no_such_account: dict.errors.noSuchAccount,
-          already_shared: dict.errors.alreadyShared,
-          cannot_share_with_owner: dict.errors.cannotShareWithOwner,
-          not_shared_yet: dict.errors.notSharedYet,
-          forbidden: dict.errors.forbidden,
-          // The other nine are not about this field: credentials, a handle, the
-          // three `PATCH` request-shape refusals, and the two authorization codes
-          // that mean "you may not", which belong on the sheet rather than under an
-          // address somebody typed.
-          duplicate_email: undefined,
-          weak_password: undefined,
-          invalid_display_name: undefined,
-          invalid_nickname: undefined,
-          duplicate_nickname: undefined,
-          invalid_identifier: undefined,
-          nothing_to_change: undefined,
-          ambiguous_change: undefined,
-          invalid_visibility: undefined,
-          not_found: undefined,
-          cannot_clear_purchase: undefined,
-        };
-
-        const fieldFailure =
-          isRefusal(body?.code) ? fieldFailures[body.code] : undefined;
-
-        if (fieldFailure !== undefined) {
-          if (belongsToOpenSheet) setEmailError(fieldFailure);
-          return;
-        }
-
-        if (!response.ok) {
-          throw new Error(body?.message || `Error: ${response.status}`);
-        }
-
-        /*
-          The toast names the person who was added, and `accessGranted` is the only
-          kind of string in the dictionaries that carries a placeholder. Rendering it
-          unsubstituted put a literal `{name}` in front of the owner, which is the
-          kind of thing that ships because nothing throws - the sentence is a valid
-          string either way, and the dictionary has no way to complain about it.
-
-          The name comes from the grant response rather than from the address the
-          owner typed, so the toast says the person's name and not the string they
-          happened to type. The address is the fallback: it is in the field above,
-          and a sentence with a hole in it is worse than a plainer one.
-        */
-        const grantee = body?.access?.displayName?.trim() || email;
-        toast.success(dict.toasts.accessGranted.replace('{name}', grantee));
-        setEmail('');
-        setEmailError(null);
+        toast.success(dict.toasts.groupShared.replace('{name}', group.name));
         onChanged();
-      } catch (error) {
-        console.error('Error sharing list:', error);
-        toast.error(dict.toasts.accessGrantFailed);
+      } catch {
+        toast.error(dict.toasts.groupShareFailed);
       } finally {
-        setIsSubmitting(false);
+        setIsSharingGroup(null);
       }
     },
-    [dict, listId, onChanged]
+    [dict.toasts.groupShareFailed, dict.toasts.groupShared, listId, onChanged]
   );
 
-  /*
-    Read from state rather than from `FormData`, because the field is emptied when a
-    grant lands. The dialog does not close on success - it stays open so the owner
-    can add the fourth person while the fourth is in front of them - and an
-    uncontrolled field would have kept the address that was just granted, so the
-    next submission would be a duplicate and the server would refuse it.
-  */
-  const handleSubmit = useCallback(
-    (e: React.FormEvent<HTMLFormElement>) => {
-      e.preventDefault();
-      setEmailError(null);
-      grant(email, sheetEpochRef.current);
+  const revokeGroup = useCallback(
+    async (row: ListGroupAccess) => {
+      try {
+        /*
+          The group's own path rather than the access one, because a `DELETE` has no
+          body to say which kind of row it means and guessing by trying both tables
+          is the unscoped lookup `app/api/lists/[id]/group-access/[accessId]/route.ts`
+          explains is not worth repeating.
+        */
+        const response = await fetch(
+          `/api/lists/${listId}/group-access/${row.id}`,
+          { method: 'DELETE' }
+        );
+
+        if (!response.ok) throw new Error(`Error: ${response.status}`);
+
+        toast.success(
+          dict.toasts.groupAccessRevoked.replace('{name}', row.groupName)
+        );
+        onChanged();
+      } catch {
+        toast.error(dict.toasts.groupAccessRevokeFailed);
+      }
     },
-    [email, grant]
+    [
+      dict.toasts.groupAccessRevokeFailed,
+      dict.toasts.groupAccessRevoked,
+      listId,
+      onChanged,
+    ]
   );
+
+  const handleConfirmRevokeGroup = useCallback(() => {
+    if (pendingGroupRevocation) revokeGroup(pendingGroupRevocation);
+  }, [pendingGroupRevocation, revokeGroup]);
 
   /*
     The one way a private list can become shared without leaving this dialog, and
@@ -446,70 +467,141 @@ const ShareListDialog: React.FC<ShareListDialogProps> = ({
               {dict.shareList.makeShared}
             </Button>
 
-            <AccessList
+            <AudienceList
               access={access}
+              groupAccess={groupAccess}
               dict={dict}
               onRevoke={(row) => setPendingRevocation(row)}
+              onRevokeGroup={(row) => setPendingGroupRevocation(row)}
             />
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className='flex flex-col gap-4'>
-            <div className='flex flex-col gap-1.5'>
-              <Label htmlFor='email' className='label-print text-caption'>
-                {dict.shareList.enterEmail}
-              </Label>
-              <Input
-                id='email'
-                name='email'
-                type='email'
-                value={email}
-                onChange={(e) => {
-                  setEmail(e.target.value);
-                  // A refusal is cleared on the way in rather than on submit, so
-                  // the sentence under the field disappears the moment the address
-                  // changes instead of outliving the thing it is about.
-                  setEmailError(null);
-                }}
-                placeholder={dict.shareList.enterEmail}
-                autoComplete='off'
-                aria-invalid={emailError ? true : undefined}
-                aria-describedby={emailError ? 'shareEmailError' : undefined}
-                required
-              />
-              {emailError && (
-                <p
-                  id='shareEmailError'
-                  role='alert'
-                  data-testid='shareEmailError'
-                  className='text-destructive text-[0.875rem] leading-snug'
-                >
-                  {emailError}
-                </p>
-              )}
-            </div>
+          <div className='flex flex-col gap-6'>
+            {/*
+              The lookup and the grant, in one component, because they are one
+              interaction: picking a row *is* adding the person. Splitting them would
+              have meant a result list with a separate confirm button, and a confirm
+              button on "add this person" asks a question the click already answered.
+
+              There is no submit button. The field is a search, not a form, and the old
+              `shareSubmit` existed only because the old field needed a typed address
+              submitted. A control that is only meaningful mid-interaction does not get
+              a 48px floor either - it is not a primary action of the sheet, and giving
+              it one would have made it look like the thing to press.
+            */}
+            <AccountPicker
+              listId={listId}
+              dict={dict}
+              alreadyShared={access
+                .map((row) => row.accountId)
+                .filter((id): id is string => id !== null)}
+              onGranted={onChanged}
+              isVisible
+            />
 
             {/*
-              The 48px floor, applied only where the one-handed case is: below
-              `sm` this is the primary action of the sheet and the phone is where
-              it is pressed, which is the same rule `login-form.tsx` applies
-              and the same one `PRODUCT.md` calls a floor rather than a
-              preference.
+              Groups, as an offer rather than as part of the audience: the rows below
+              are the groups already reaching this list, and this is the list of ones
+              that are not. Absent entirely rather than disabled or collapsed when the
+              owner has no groups, and when the list is private the whole thing is
+              already replaced by the sentence above - a group grant is refused on a
+              private list exactly as a person one is, and a control for it here would
+              be a rule the owner cannot read.
             */}
-            <Button
-              type='submit'
-              disabled={isSubmitting}
-              className={cn('w-full', 'xs:h-12', 'xs:text-base')}
-              data-testid='shareSubmit'
-            >
-              {isSubmitting ? dict.shareList.adding : dict.shareList.add}
-            </Button>
+            {myGroups !== null && (
+              <section className='flex flex-col gap-2'>
+                <h3 className='label-print text-caption'>
+                  {dict.shareList.groupPickerHeading}
+                </h3>
 
-            <AccessList
+                {myGroups.length === 0 ? (
+                  <p
+                    className='text-[0.8125rem] leading-relaxed text-caption'
+                    data-testid='noGroupsToShare'
+                  >
+                    {dict.shareList.noGroupsToShare}
+                  </p>
+                ) : (
+                  <ul
+                    data-testid='groupPicker'
+                    className='divide-y divide-rule border-y border-rule'
+                  >
+                    {myGroups.map((group) => {
+                      /*
+                        A group already reaching this list is shown as granted, with no
+                        control. Pressing one would be answered `already_shared` - so a
+                        button that cannot do anything is not a button, and
+                        `PRODUCT.md:65` is the rule that says so.
+                      */
+                      const isShared = groupAccess.some(
+                        (row) => row.groupId === group.id
+                      );
+
+                      return (
+                        <li
+                          key={group.id}
+                          className='flex min-h-11 items-center justify-between gap-3 py-2'
+                          data-testid='groupPickerRow'
+                        >
+                          <span className='flex min-w-0 flex-col'>
+                            {/*
+                              A group name is a name, so it takes the one serif this
+                              product allows. At this row's size rather than the
+                              contents page's, because this is a line in a list and not
+                              the largest object in a sheet.
+                            */}
+                            <span className='font-serif break-words text-[0.9375rem] font-semibold leading-snug text-ink'>
+                              {group.name}
+                            </span>
+                            <span className='min-w-0 truncate text-[0.8125rem] text-caption'>
+                              {dict.shareList.groupReaches.replace(
+                                '{count}',
+                                String(group.memberCount)
+                              )}
+                            </span>
+                          </span>
+
+                          {isShared ? (
+                            <span
+                              className='shrink-0 text-[0.8125rem] text-caption'
+                              data-testid='groupAlreadyShared'
+                            >
+                              {dict.visibility.shared}
+                            </span>
+                          ) : (
+                            <Button
+                              type='button'
+                              variant='outline'
+                              size='sm'
+                              disabled={isSharingGroup === group.id}
+                              onClick={() => shareWithGroup(group)}
+                              data-testid='shareWithGroup'
+                              className={cn(
+                                'shrink-0',
+                                '[@media(hover:hover)_and_(pointer:fine)]:hover:bg-wash'
+                              )}
+                            >
+                              {isSharingGroup === group.id
+                                ? dict.shareList.adding
+                                : dict.shareList.add}
+                            </Button>
+                          )}
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
+              </section>
+            )}
+
+            <AudienceList
               access={access}
+              groupAccess={groupAccess}
               dict={dict}
               onRevoke={(row) => setPendingRevocation(row)}
+              onRevokeGroup={(row) => setPendingGroupRevocation(row)}
             />
-          </form>
+          </div>
         )}
 
         {/*
@@ -535,91 +627,30 @@ const ShareListDialog: React.FC<ShareListDialogProps> = ({
           confirmLabel={dict.shareList.revoke}
           cancelLabel={dict.cancel}
         />
+
+        {/*
+          Withdrawing a group is confirmed in its own words, and the description is
+          the group's size rather than its name. The name is in the title area and the
+          size is the part that cannot be inferred from it: pressing this takes read
+          access away from everybody in the group at once, and somebody with four
+          people in their family group needs to be told four before they are told
+          anything.
+        */}
+        <ConfirmDialog
+          isOpen={pendingGroupRevocation !== null}
+          onClose={() => setPendingGroupRevocation(null)}
+          onConfirm={handleConfirmRevokeGroup}
+          title={dict.shareList.revokeGroupConfirmTitle}
+          description={`${pendingGroupRevocation?.groupName ?? ''} \u00b7 ${dict.shareList.groupReaches.replace(
+            '{count}',
+            String(pendingGroupRevocation?.memberCount ?? 0)
+          )}`}
+          confirmLabel={dict.shareList.revoke}
+          cancelLabel={dict.cancel}
+        />
       </DialogContent>
     </Dialog>
   );
 };
-
-/**
- * The people this list is shared with, oldest grant first.
- *
- * `accessForList` orders by `grantedAt`, so the order on screen is the order the
- * owner did it in - which is the useful order when somebody is deciding whether
- * one of these five addresses should still be on the list.
- *
- * The address is printed under the name, not instead of it. A name identifies the
- * person to the owner; the address is the key they will recognise them by, and
- * it is what they typed when they added them.
- */
-const AccessList: React.FC<{
-  access: ListAccess[];
-  dict: ShareListDialogProps['dict'];
-  onRevoke: (row: ListAccess) => void;
-}> = ({ access, dict, onRevoke }) => (
-  <section className='flex flex-col gap-2'>
-    <h3 className='label-print text-caption'>
-      {access.length > 0
-        ? dict.visibility.sharedWith
-        : dict.visibility.sharedWithNobody}
-    </h3>
-
-    {access.length === 0 ? (
-      <p
-        className='text-[0.8125rem] leading-relaxed text-caption'
-        data-testid='nobodyYet'
-      >
-        {dict.shareList.nobodyYet}
-      </p>
-    ) : (
-      <ul data-testid='accessList' className='divide-y divide-rule border-y border-rule'>
-        {access.map((row) => (
-          <li
-            key={row.id}
-            className='flex items-center justify-between gap-3 py-2'
-          >
-            <span className='flex min-w-0 flex-col'>
-              <span className='break-words text-[0.9375rem] text-ink'>
-                {row.displayName}
-              </span>
-              <span className='min-w-0 truncate text-[0.8125rem] text-caption'>
-                {row.email}
-              </span>
-            </span>
-
-            {/*
-              A person being taken off the list, not a row being deleted - and the
-              glyph says which. A bin here would read as "delete this person", and
-              the difference is the whole point of `PRODUCT.md:101`: a control that
-              looks destructive but is not has to say what it actually does. This
-              one removes one address's access to one list and nothing else, and the
-              person is named next to it.
-
-              Quiet by default and destructive on hover, like every other
-              destructive affordance here: a row of red buttons above somebody's
-              list says "these people are about to be removed" before anybody has
-              touched one.
-            */}
-            <Button
-              type='button'
-              variant='ghost'
-              size='icon'
-              onClick={() => onRevoke(row)}
-              aria-label={`${dict.shareList.revoke} \u00b7 ${row.displayName}`}
-              data-testid='revokeAccess'
-              className={cn(
-                'shrink-0',
-                'text-caption',
-                '[@media(hover:hover)_and_(pointer:fine)]:hover:bg-wash',
-                '[@media(hover:hover)_and_(pointer:fine)]:hover:text-ink'
-              )}
-            >
-              <IconUserMinus className='h-4 w-4' aria-hidden='true' />
-            </Button>
-          </li>
-        ))}
-      </ul>
-    )}
-  </section>
-);
 
 export default ShareListDialog;

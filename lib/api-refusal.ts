@@ -45,9 +45,19 @@ const STATUS: Record<Refusal, number> = {
   already_shared: 400,
   cannot_share_with_owner: 400,
   not_shared_yet: 400,
+  invalid_search_query: 400,
+  duplicate_group_name: 400,
   no_such_account: 404,
+  /*
+    404 for the same reason `no_such_account` is one, and it is the group's owner who
+    is refused: an account naming a group it does not own must not learn that the group
+    exists, exactly as an account naming somebody else's list is told there is nothing
+    there rather than that it is off limits.
+  */
+  no_such_group: 404,
   not_found: 404,
   forbidden: 403,
+  cannot_join_own_group: 403,
   cannot_clear_purchase: 403,
 };
 
@@ -66,6 +76,15 @@ const MESSAGE: Record<Refusal, string> = {
   cannot_share_with_owner: 'You already have this list',
   not_shared_yet: 'Make the list shared before sharing it',
   no_such_account: 'No account has this address',
+  invalid_search_query: 'Type a few more characters to look somebody up',
+  /*
+  Said in terms of the account rather than of a name, because the routes address a
+  group by id and a fallback sentence that offers a name would be answering a question
+  nobody asked.
+*/
+  no_such_group: 'There is no group of yours here',
+  duplicate_group_name: 'You already have a group with that name',
+  cannot_join_own_group: 'You cannot be a member of your own group',
   not_found: 'There is nothing here for you',
   forbidden: 'This list does not grant that',
   cannot_clear_purchase: 'Somebody else marked this idea bought',

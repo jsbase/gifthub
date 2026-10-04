@@ -14,21 +14,22 @@ import type { ListVisibility } from '@/types';
  * that is re-typed in each handler is a rule that will be re-typed wrongly in one
  * of them.
  *
- *   capability                          owner   invited on SHARED   anyone else
+ *   capability                          owner   invited   in a group   anyone else
  *   --------------------------------------------------------------------------------
- *   read the list and its ideas           yes            yes            404
- *   mark an OPEN idea bought             yes            yes            404
- *   clear a mark they set                 yes            yes            404
- *   clear a mark somebody else set        403            yes            404
- *   add an idea                           yes            403            404
- *   delete an idea                        yes            403            404
- *   rename the list                       yes            403            404
- *   change visibility                     yes            403            404
- *   grant access (needs SHARED)           yes            403            404
- *   revoke access                         yes            403            404
- *   delete the list (cascades ideas)      yes            403            404
+ *   read the list and its ideas           yes       yes        yes           404
+ *   mark an OPEN idea bought             yes       yes        yes           404
+ *   clear a mark they set                 yes       yes        yes           404
+ *   clear a mark somebody else set        403       yes        yes           404
+ *   add an idea                           yes       403        403           404
+ *   delete an idea                        yes       403        403           404
+ *   rename the list                       yes       403        403           404
+ *   change visibility                     yes       403        403           404
+ *   grant access (needs SHARED)           yes       403        403           404
+ *   revoke access                         yes       403        403           404
+ *   revoke a group grant                  yes       403        403           404
+ *   delete the list (cascades ideas)      yes       403        403           404
  *
- * Three things in that table are not obvious and each has a reason.
+ * Four things in that table are not obvious and each has a reason.
  *
  * 1. `404` and `403` are not interchangeable. An account with no relationship to a
  *    list is told there is nothing there, so another person's list is never
@@ -44,15 +45,40 @@ import type { ListVisibility } from '@/types';
  *    would be possible again, which is the one thing this product exists to
  *    prevent.
  *
- * 3. An invited account may clear a mark somebody else set. The mark is shared by
+* 3. An invited account may clear a mark somebody else set. The mark is shared by
  *    design, so a buyer correcting another buyer's mark is the coordination
  *    working: "Anna marked this but she is not getting it, Ben is." The asymmetry
  *    in 2 is aimed at the owner specifically, because the owner's reason for
  *    wanting a mark gone is the one that breaks the guarantee.
  *
- * Note what is deliberately absent: there is no repository port here. Prisma is
- * the only implementation, and a seam with one adapter is indirection rather than
- * a seam.
+ * 4. "In a group" is a third column rather than a fourth kind of person, because it
+ *    is not one. A group member gets *exactly* the row an invited account gets, in
+ *    both directions: they may read and may mark, and they may not add, rename,
+ *    re-share or delete. The column exists to make the route each takes visible -
+ *    reaching a list through `ListGroupAccess` rather than through `ListAccess` -
+ *    and not to suggest a fourth tier of permission. There is no group-level
+ *    permission in this product and no read-only group.
+ *
+ *    Nothing in the table distinguishes the two, and that is the design rather than
+ *    an omission. The reach is *derived*: `readableBy` walks a `ListGroupAccess` row
+ *    to a `GroupMember` row on every read, so a membership deleted from
+ *    `lib/group-access.ts` changes the answer on the next read with no list-level
+ *    row to delete and no stored audience to fall out of step. The snapshot
+ *    alternative - writing a `ListAccess` per member at grant time - is rejected on
+ *    the `ListGroupAccess` doc comment in `prisma/schema.prisma`, because removal
+ *    would then have to delete rows and members added afterwards would need a
+ *    backfill.
+ *
+ *    It also gets the awkward case right without being instructed to: an account
+ *    holding both an individual grant and a group grant keeps its access when it
+ *    leaves the group, because `readableBy` is an `OR` and the individual row is
+ *    still there. `tests/groups.spec.ts` asserts that case directly, because a
+ *    permission rule only one implementation knows about is a rule with one
+ *    implementation.
+ *
+ * Note what is deliberately absent: there is no repository port here. Prisma is the
+ * only implementation, and a seam with one adapter is indirection rather than a
+ * seam.
  */
 
 /** A gift as Prisma holds it. Dates are still `Date` at this seam. */
@@ -70,8 +96,8 @@ const refused = <T>(refusal: Refusal): Outcome<T> => ({ ok: false, refusal });
  *
  * A list is readable by its owner, always - an owner reading their own list is not
  * gated on its visibility, or a `PRIVATE` list would be unreadable by the one person
- * who owns it - and by an account holding a `ListAccess` row **only while the list
- * is `SHARED`**.
+ * who owns it - and by an account holding a `ListAccess` row **or sitting in a group
+ * that holds a `ListGroupAccess` row** *only while the list is `SHARED`*.
  *
  * The visibility term is not decorative and was missing for a while, which is worth
  * recording because the omission was silent and the suite caught it. The reasoning
@@ -86,19 +112,47 @@ const refused = <T>(refusal: Refusal): Outcome<T> => ({ ok: false, refusal });
  *
  * The access rows surviving is what makes the pause reversible. Re-sharing restores
  * exactly the same audience without anybody being asked for their address again.
+ *
+ * The group term is inside the same `AND` as the visibility term and that placement
+ * is load-bearing in the same way. A `ListGroupAccess` row is a row like any other,
+ * it survives going private for the same reason `ListAccess` does, and putting the
+ * group disjunction outside the `AND` would have handed every member of every group a
+ * read on every list that had ever been shared with it - including the ones its owner
+ * had just closed.
  */
 const readableBy = (accountId: string) =>
   ({
-    OR: [
-      { ownerId: accountId },
-      {
-        AND: [
-          { visibility: 'SHARED' },
-          { access: { some: { accountId } } },
-        ],
-      },
-    ],
+    OR: [{ ownerId: accountId }, readableWhileShared(accountId)],
   }) satisfies Prisma.ListWhereInput;
+
+/**
+ * The second half of `readableBy`, written out.
+ *
+ * It exists as a named value rather than being spelled a third time inline, and that
+ * is the point: the `visibility: 'SHARED'` term was once dropped from one copy of
+ * this predicate and not from the other, and the resulting bug - a paused list still
+ * sitting in somebody else's "shared with you" section - is described at
+ * `listSummariesFor` below. Three copies of a security predicate is three chances to
+ * drop a term from exactly one of them. So there are two: this one, and
+ * `readableBy`, which composes it.
+ */
+const readableWhileShared = (
+  accountId: string
+): Prisma.ListWhereInput => ({
+  AND: [
+    { visibility: 'SHARED' },
+    {
+      OR: [
+        { access: { some: { accountId } } },
+        {
+          groupAccess: {
+            some: { group: { members: { some: { accountId } } } },
+          },
+        },
+      ],
+    },
+  ],
+});
 
 /** One row of the contents page, with the counts it is read by. */
 export interface StoredListSummary {
@@ -109,6 +163,17 @@ export interface StoredListSummary {
   ownerDisplayName: string;
   giftCounts: { unbought: number; total: number };
   sharedWithCount: number;
+  /**
+   * How many groups reach this list, counted beside the people rather than folded
+   * into them.
+   *
+   * Two numbers rather than one, and the reason is that the honest people count is not
+   * a cheap query while a dishonest one is worse than useless: individuals and group
+   * members overlap, so somebody in two granted groups is one reader and would be
+   * counted twice by a sum. What the contents page is asking is how wide the list
+   * reaches, and "3 people · 1 group" answers it with two `_count`s and no join.
+   */
+  sharedWithGroupCount: number;
   isOwner: boolean;
   createdAt: Date;
 }
@@ -116,7 +181,7 @@ export interface StoredListSummary {
 type StoredListWithCounts = Prisma.ListGetPayload<{
   include: {
     owner: { select: { id: true; displayName: true } };
-    _count: { select: { access: true } };
+    _count: { select: { access: true; groupAccess: true } };
     gifts: { select: { isPurchased: true } };
   };
 }>;
@@ -132,13 +197,14 @@ const toSummary = (list: StoredListWithCounts, accountId: string): StoredListSum
     total: list.gifts.length,
   },
   sharedWithCount: list._count.access,
+  sharedWithGroupCount: list._count.groupAccess,
   isOwner: list.ownerId === accountId,
   createdAt: list.createdAt,
 });
 
 const summaryInclude = {
   owner: { select: { id: true, displayName: true } },
-  _count: { select: { access: true } },
+  _count: { select: { access: true, groupAccess: true } },
   gifts: { select: { isPurchased: true } },
 } satisfies Prisma.ListInclude;
 
@@ -165,8 +231,10 @@ const summaryInclude = {
  * should no longer be able to see that it exists.
  *
  * One predicate, written twice, was enough for it to be wrong twice. The two copies
- * are deliberate rather than shared: `readableBy` is a private helper because its
- * shape is an internal detail, and the assertion that they agree is the test below.
+ * are `readableWhileShared` above and the `where` below, and they are now a single
+ * value used by both rather than two literals that have to agree: `readableBy`
+ * composes the helper, and this query uses it directly, so the term cannot be dropped
+ * from one without the other noticing. The assertion that they agree is the test.
  */
 export const listSummariesFor = async (
   accountId: string
@@ -178,7 +246,7 @@ export const listSummariesFor = async (
       orderBy: { createdAt: 'desc' },
     }),
     prisma.list.findMany({
-      where: { visibility: 'SHARED', access: { some: { accountId } } },
+      where: readableWhileShared(accountId),
       include: summaryInclude,
       orderBy: { createdAt: 'desc' },
     }),
@@ -295,6 +363,56 @@ export const accessForList = async (
   );
 };
 
+/**
+ * The groups this list is shared with. Owner only, like `accessForList`.
+ *
+ * A second function rather than a second half of one return value, because the two
+ * rows are different shapes and folding them into a union would make every caller
+ * narrow on a discriminant before it could read a name. The dialog renders people and
+ * groups as two lists of rows precisely because a group row is a control that
+ * withdraws reach from several people at once, and printing nine names for one group
+ * would say the list is shared nine times.
+ *
+ * `memberCount` is the size of the group, not the number of additional readers this
+ * list gains: somebody in two granted groups is one reader, and counting reach
+ * exactly is the distinct-count join `sharedWithGroupCount` explains avoiding.
+ */
+export interface StoredGroupAccessRow {
+  id: string;
+  groupId: string;
+  groupName: string;
+  memberCount: number;
+  grantedAt: Date;
+}
+
+export const groupAccessForList = async (
+  listId: string,
+  accountId: string
+): Promise<Outcome<StoredGroupAccessRow[]>> => {
+  const gate = await requireWritableList(listId, accountId);
+  if (!gate.ok) return refused(gate.refusal);
+
+  const rows = await prisma.listGroupAccess.findMany({
+    where: { listId },
+    include: {
+      group: {
+        select: { id: true, name: true, _count: { select: { members: true } } },
+      },
+    },
+    orderBy: { grantedAt: 'asc' },
+  });
+
+  return done(
+    rows.map((row) => ({
+      id: row.id,
+      groupId: row.group.id,
+      groupName: row.group.name,
+      memberCount: row.group._count.members,
+      grantedAt: row.grantedAt,
+    }))
+  );
+};
+
 // ---------------------------------------------------------------------------
 // Owning a list
 // ---------------------------------------------------------------------------
@@ -369,8 +487,13 @@ export const deleteList = async (
  * would mean a resolution pass during registration. Neither buys anything here,
  * because there is no mail to tell the recipient they had been invited - so the
  * owner says it out loud either way.
+ *
+ * Split from the group grant below rather than sharing one body, because the two
+ * refuse different things and a single function branching on which field arrived is a
+ * function whose refusals are spread across both branches. This one knows about
+ * accounts and has exactly one account-shaped failure, `no_such_account`.
  */
-export const grantAccess = async (
+export const grantAccessToAccount = async (
   listId: string,
   ownerId: string,
   email: string
@@ -408,6 +531,70 @@ export const grantAccess = async (
 };
 
 /**
+ * Give one whole group the list.
+ *
+ * Every member reaches it, with exactly the access an individual invitation gives -
+ * readable, and able to mark bought. Not a lesser or a different kind of grant, which
+ * is the reason `readableBy` has one column for both rather than a tier each: the
+ * requirement is that a group member is treated as a person who was invited, and
+ * anything else would be inventing a permission the product does not have.
+ *
+ * The group must belong to the caller. `no_such_group` rather than `forbidden`,
+ * because a group somebody else owns is not something this account has any
+ * relationship to, and confirming it exists is the disclosure `lib/group-access.ts`
+ * header rule 2 exists to prevent.
+ *
+ * Refused on a private list with `not_shared_yet`, before the group is even looked
+ * at, and that order is deliberate: the visibility of the list is the owner's own
+ * business, and there is no answer here that depends on whether the group exists.
+ *
+ * `already_shared` is reused rather than given a group-shaped twin. The sentence a
+ * person needs for "this list is already shared with Family" is the sentence they
+ * already have for a person, and the closed union in `lib/refusals.ts` should not
+ * grow two names for one thing.
+ */
+export const grantAccessToGroup = async (
+  listId: string,
+  ownerId: string,
+  groupId: string
+): Promise<Outcome<StoredGroupAccessRow>> => {
+  const gate = await requireWritableList(listId, ownerId);
+  if (!gate.ok) return refused(gate.refusal);
+
+  const list = await prisma.list.findUnique({ where: { id: listId } });
+  if (!list) return refused('not_found');
+  if (list.visibility !== 'SHARED') return refused('not_shared_yet');
+
+  const group = await prisma.group.findFirst({
+    where: { id: groupId, ownerId },
+    include: { _count: { select: { members: true } } },
+  });
+  if (!group) return refused('no_such_group');
+
+  const existing = await prisma.listGroupAccess.findFirst({
+    where: { listId, groupId },
+  });
+  if (existing) return refused('already_shared');
+
+  const row = await prisma.listGroupAccess.create({
+    data: { listId, groupId },
+    include: {
+      group: {
+        select: { id: true, name: true, _count: { select: { members: true } } },
+      },
+    },
+  });
+
+  return done({
+    id: row.id,
+    groupId: row.group.id,
+    groupName: row.group.name,
+    memberCount: row.group._count.members,
+    grantedAt: row.grantedAt,
+  });
+};
+
+/**
  * Take one account back off the list.
  *
  * Keyed by the access row rather than by account id, so the URL names the thing
@@ -437,6 +624,52 @@ export const revokeAccess = async (
     accountId: row.account.id,
     email: row.account.email,
     displayName: row.account.displayName,
+    grantedAt: row.grantedAt,
+  });
+};
+
+/**
+ * Take one whole group back off the list.
+ *
+ * Keyed by the grant row rather than by group id, so the URL names the thing being
+ * withdrawn and two lists sharing one group have two different grants to withdraw.
+ * Scoped by `{ id, listId }` for the reason `lib/group-access.ts` header rule 1
+ * records: a grant id is looked up with its parent in the same query, never alone.
+ *
+ * Available in either visibility state and never conditional on `SHARED`, exactly as
+ * `revokeAccess` is. Withdrawing is the one action on an audience that can only
+ * reduce what somebody else can reach, so there is no state in which refusing it
+ * would be right.
+ *
+ * It withdraws the group and nothing else. Everybody who also holds an individual
+ * grant keeps it, which is `readableBy` being an `OR` rather than this function
+ * having to check anything - the row it deletes was the only record that the group
+ * reached this list, and once it is gone there is no second path to revoke.
+ */
+export const revokeGroupAccess = async (
+  listId: string,
+  ownerId: string,
+  accessId: string
+): Promise<Outcome<StoredGroupAccessRow>> => {
+  const gate = await requireWritableList(listId, ownerId);
+  if (!gate.ok) return refused(gate.refusal);
+
+  const row = await prisma.listGroupAccess.findFirst({
+    where: { id: accessId, listId },
+    include: {
+      group: {
+        select: { id: true, name: true, _count: { select: { members: true } } },
+      },
+    },
+  });
+  if (!row) return refused('not_found');
+
+  await prisma.listGroupAccess.delete({ where: { id: row.id } });
+  return done({
+    id: row.id,
+    groupId: row.group.id,
+    groupName: row.group.name,
+    memberCount: row.group._count.members,
     grantedAt: row.grantedAt,
   });
 };

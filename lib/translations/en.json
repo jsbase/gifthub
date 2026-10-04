@@ -86,6 +86,11 @@
     "alreadyShared": "That person can already see this list.",
     "cannotShareWithOwner": "This list is already yours.",
     "notSharedYet": "This list is still private.",
+    "searchNeedsList": "Make a wish list of your own first, then you can look people up.",
+    "invalidSearchQuery": "Type a few more characters to find someone.",
+    "noSuchGroup": "You have no group with that name.",
+    "duplicateGroupName": "You already have a group with that name.",
+    "cannotJoinOwnGroup": "You cannot be a member of your own group.",
     "cannotClearPurchase": "Somebody else marked this idea as bought. That cannot be undone.",
     "forbidden": "That is not allowed on this list.",
     "notFound": "This list does not exist."
@@ -113,12 +118,27 @@
     "accessGrantFailed": "Person not added",
     "accessRevoked": "{name} can no longer see the list.",
     "accessRevokeFailed": "Person not removed",
+    "groupCreated": "Group “{name}” created",
+    "groupCreateFailed": "Group not created",
+    "groupRenamed": "Group renamed",
+    "groupRenameFailed": "Group not renamed",
+    "groupDeleted": "Group deleted",
+    "groupDeleteFailed": "Group not deleted",
+    "groupMemberAdded": "{name} is in the group now.",
+    "groupMemberAddFailed": "Person not added to the group",
+    "groupMemberRemoved": "{name} is no longer in the group.",
+    "groupMemberRemoveFailed": "Person not removed from the group",
+    "groupShared": "The group “{name}” can see the list now.",
+    "groupShareFailed": "Group not added",
+    "groupAccessRevoked": "The group “{name}” can no longer see the list.",
+    "groupAccessRevokeFailed": "Group not removed",
     "loginSuccess": "Logged in successfully",
     "registrationSuccess": "Account created"
   },
   "confirmations": {
     "deleteGift": "This takes the idea off this list — including for everyone you share it with.",
-    "deleteListNamed": "“{name}” will be deleted, along with every gift idea on it. This cannot be undone."
+    "deleteListNamed": "“{name}” will be deleted, along with every gift idea on it. This cannot be undone.",
+    "deleteGroupNamed": "“{name}” will be deleted. Anyone who was seeing the list only through this group will lose access. This cannot be undone."
   },
   "visibility": {
     "private": "Private",
@@ -152,15 +172,44 @@
   },
   "shareList": {
     "shareTitle": "Share list",
-    "shareLead": "Every address you enter here sees the whole list and may tick ideas off. Nothing else.",
-    "enterEmail": "Email address",
+    "shareLead": "Every person you add here sees the whole list and may tick ideas off. Nothing else.",
+    "enterNameOrEmail": "Nickname or email address",
+    "searching": "Searching...",
+    "noSearchResults": "No one found for that.",
+    "searchHint": "At least three characters.",
+    "searchPickPrompt": "Tap a name to add that person.",
     "add": "Add",
     "adding": "Adding...",
     "revoke": "Remove access",
     "revokeConfirmTitle": "Remove access?",
     "nobodyYet": "Nobody added yet.",
     "privateFirst": "While the list is private you cannot add anybody. Share it first.",
-    "makeShared": "Share it now"
+    "makeShared": "Share it now",
+    "groupPickerHeading": "Or share it with a group",
+    "noGroupsToShare": "You have no groups yet. Create one in the bar above.",
+    "groupReaches": "People: {count}",
+    "revokeGroupConfirmTitle": "Remove group?"
+  },
+  "groups": {
+    "openGroups": "Groups",
+    "title": "Groups",
+    "lead": "A group is a list of people. Share a wish list with a group and everyone in it sees the list.",
+    "noGroups": "You have no groups yet.",
+    "create": "Create group",
+    "creating": "Creating...",
+    "enterGroupName": "Group name",
+    "rename": "Rename",
+    "renameTitle": "Rename group",
+    "renameLabel": "New name",
+    "save": "Save",
+    "saving": "Saving...",
+    "deleteGroup": "Delete group",
+    "membersHeading": "People in the group",
+    "noMembers": "Nobody in it yet.",
+    "addMemberLabel": "Add person",
+    "removeMember": "Remove from group",
+    "removeMemberConfirmTitle": "Remove from group?",
+    "memberCount": "People: {count}"
   },
   "createListDialog": {
     "createListTitle": "New list",
@@ -187,6 +236,7 @@
     "changeVisibility": "Change visibility",
     "share": "Share",
     "sharedWithCount": "Shared with: {count}",
+    "sharedWithGroupCount": "Shared with: {count} people · groups: {groups}",
     "noLists": "Create your first wish list.",
     "noSharedLists": "No wish lists have been shared with you yet.",
     "emptyPlateHint": "A name is enough. Who sees it, you decide.",
@@ -215,7 +265,7 @@
       },
       {
         "title": "4. Use of Data for Wishlist Management",
-        "content": "Each wishlist belongs to exactly one person. It is private at first and visible only to the person it belongs to. Once it is shared, exactly the people who have been entered on it can see that list and the ideas on it. Those people may mark an idea as bought; they cannot add, change or delete entries. Product links and ideas are stored in our database."
+        "content": "Each wishlist belongs to exactly one person. It is private at first and visible only to the person it belongs to. Once it is shared, exactly the people who have been entered on it, as well as everyone in a group it has been shared with, can see that list and the ideas on it. Those people may mark an idea as bought; they cannot add, change or delete entries. Product links and ideas are stored in our database."
       },
       {
         "title": "5. Data Sharing and Transfer",
@@ -245,7 +295,7 @@
       },
       {
         "title": "b) Registration and Login for Using the Web App",
-        "content": "To use the app you need an account with a nickname, an email address and a password; we derive the display name from the nickname. When you register we store your account data (nickname, email address, password and display name), your own wishlists with their gift ideas and product links, and on shared lists the email address and display name of the people the list is shared with. The password is hashed before it is stored and cannot be recovered as plain text. For every idea marked as bought we also store the account that marked it. Everyone the list is shared with sees the same mark and can correct each other's marks. The person who owns the list cannot take away a mark somebody else set. The name is never shown in the app."
+        "content": "To use the app you need an account with a nickname, an email address and a password; we derive the display name from the nickname. When you register we store your account data (nickname, email address, password and display name), your own wishlists with their gift ideas and product links, and on shared lists the email address and display name of the people the list is shared with. The password is hashed before it is stored and cannot be recovered as plain text. For every idea marked as bought we also store the account that marked it. Everyone the list is shared with sees the same mark and can correct each other's marks. The person who owns the list cannot take away a mark somebody else set. The name is never shown in the app. We store the groups you create together with their name and the accounts they contain. When a person is removed from a group, they lose access to every list that was shared with them only through that group; a separate individual grant of such a list is unaffected. Anyone who searches for a person in the share dialog in order to add them sees that person's nickname, display name and email address. Only a signed-in person who owns at least one list of their own can do this, and the results are not stored."
       }
     ]
   },

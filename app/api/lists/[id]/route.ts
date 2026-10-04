@@ -3,13 +3,14 @@ import { requireAccountId } from '@/lib/auth-server';
 import {
   accessForList,
   deleteList,
+  groupAccessForList,
   listGifts,
   readableListSummary,
   renameList,
   setVisibility,
 } from '@/lib/list-access';
 import { refusalResponse } from '@/lib/api-refusal';
-import { toWireAccess, toWireGift } from '@/lib/wire';
+import { toWireAccess, toWireGift, toWireGroupAccess } from '@/lib/wire';
 
 type ListContext = { params: Promise<{ id: string }> };
 
@@ -66,6 +67,18 @@ export const GET: (
     const audience = isOwner ? await accessForList(id, accountId) : null;
     if (audience && !audience.ok) return refusalResponse(audience.refusal);
 
+    /*
+      The group half of the audience, under the same three conditions as the people
+      half above and for the same reasons: it is the owner's business, it is withheld
+      from a buyer, and a buyer reading this list does not get a directory of everyone
+      who shares it. `groupAccessForList` gates on ownership internally, so the `null`
+      for a non-owner is decided here rather than asked for and refused.
+    */
+    const groupAudience = isOwner ? await groupAccessForList(id, accountId) : null;
+    if (groupAudience && !groupAudience.ok) {
+      return refusalResponse(groupAudience.refusal);
+    }
+
     return NextResponse.json({
       // `createdAt` is still a `Date` at the seam and becomes a string here, for the
       // same reason the gifts are mapped rather than spread: the response is the shape
@@ -75,6 +88,7 @@ export const GET: (
       list: { ...list, createdAt: list.createdAt.toISOString() },
       gifts: gifts.value.map((gift) => toWireGift(gift, accountId, isOwner)),
       access: (audience?.value ?? []).map(toWireAccess),
+      groupAccess: (groupAudience?.value ?? []).map(toWireGroupAccess),
       isOwner,
       giftCounts: list.giftCounts,
     });

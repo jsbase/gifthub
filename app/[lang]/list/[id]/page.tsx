@@ -14,6 +14,7 @@ import { verifyAuth, logout } from '@/lib/auth';
 import type {
   Gift,
   ListAccess,
+  ListGroupAccess,
   ListPageProps,
   ListSummary,
   Translations,
@@ -56,6 +57,7 @@ const ListPage: NextPage<ListPageProps> = ({ params }) => {
   const [list, setList] = useState<ListSummary | null>(null);
   const [gifts, setGifts] = useState<Gift[]>([]);
   const [access, setAccess] = useState<ListAccess[]>([]);
+  const [groupAccess, setGroupAccess] = useState<ListGroupAccess[]>([]);
   const [loading, setLoading] = useState(true);
   /*
     Where this sheet is navigating to, if anywhere, rather than a boolean an
@@ -75,15 +77,21 @@ const ListPage: NextPage<ListPageProps> = ({ params }) => {
       const response = await fetch(`/api/lists/${id}`);
 
       /*
-        `access` is optional because the API only returns it to the owner, and a
-        buyer reading somebody else's list gets none. Defaulting it to an empty
-        list is what makes the audience section a consequence of `isOwner` rather
-        than of the response shape.
+        `access` and `groupAccess` are optional because the API only returns them to
+        the owner, and a buyer reading somebody else's list gets neither. Defaulting
+        both to empty lists is what makes the audience a consequence of `isOwner`
+        rather than of the response shape.
+
+        They are two arrays rather than one because a group is one grant reaching
+        several people: folding the rows together would either print the same reader
+        twice or lose the row that withdraws all of them at once. See
+        `ListGroupAccess` in `types.ts`.
       */
       const body = (await response.json().catch(() => null)) as {
         list: ListSummary;
         gifts: Gift[];
         access?: ListAccess[];
+        groupAccess?: ListGroupAccess[];
       } | null;
 
       if (!response.ok || !body) {
@@ -93,6 +101,7 @@ const ListPage: NextPage<ListPageProps> = ({ params }) => {
       setList(body.list);
       setGifts(body.gifts);
       setAccess(body.access ?? []);
+      setGroupAccess(body.groupAccess ?? []);
     } catch (error) {
       console.error('Error fetching list:', error);
       /*
@@ -196,6 +205,7 @@ const ListPage: NextPage<ListPageProps> = ({ params }) => {
         list={list}
         gifts={gifts}
         access={access}
+        groupAccess={groupAccess}
         isOwner={list.isOwner}
         dict={dict}
         onClose={handleBackToLists}
@@ -221,6 +231,7 @@ const ListPage: NextPage<ListPageProps> = ({ params }) => {
           listName={list.name}
           visibility={list.visibility}
           access={access}
+          groupAccess={groupAccess}
           dict={dict}
           onChanged={fetchData}
           onVisibilityChanged={fetchData}

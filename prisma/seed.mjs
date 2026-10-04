@@ -5,8 +5,9 @@ const prisma = new PrismaClient();
 
 const PASSWORD = 'test1234';
 
-// The four `deleteMany` calls below are unfiltered: they empty `gift`, `listAccess`,
-// `list` and `account` in whatever database DATABASE_URL names. In CI that is
+// The `deleteMany` calls below are unfiltered: they empty `gift`, `listAccess`,
+// `listGroupAccess`, `groupMember`, `group`, `list` and `account` in whatever
+// database DATABASE_URL names. In CI that is
 // `CI_DATABASE_URL`, and nothing forces it to be a Neon *branch* rather than the
 // parent the deployed app reads - a workflow comment asks for a branch, but a
 // comment is not a check. So a misconfigured secret would destroy the demo data
@@ -77,7 +78,7 @@ function assertDisposableTarget() {
   if (reasons.length > 0) {
     console.error(
       [
-        'Refusing to seed: this script deletes every row in gift, listAccess, list and account.',
+        'Refusing to seed: this script deletes every row in gift, listAccess, listGroupAccess, groupMember, group, list and account.',
         ...reasons.map((r) => `  - ${r}`),
         '',
         `Set ${WIPE_MARKER}=${WIPE_MARKER_VALUE} to confirm DATABASE_URL points at a throwaway database (a Neon branch, not the parent the deployed app uses), then re-run.`,
@@ -90,10 +91,17 @@ function assertDisposableTarget() {
 async function main() {
   assertDisposableTarget();
 
-  // Reset in FK-safe order so re-seeding is idempotent.
+  // Reset in FK-safe order so re-seeding is idempotent. Children before parents, and
+  // the three group tables sit between the two lists they reference: `listGroupAccess`
+  // points at both a list and a group, and `groupMember` at both a group and an
+  // account, so either one emptied after its parent is a foreign-key violation rather
+  // than a clean reset.
   await prisma.gift.deleteMany();
   await prisma.listAccess.deleteMany();
+  await prisma.listGroupAccess.deleteMany();
   await prisma.list.deleteMany();
+  await prisma.groupMember.deleteMany();
+  await prisma.group.deleteMany();
   await prisma.account.deleteMany();
 
   const password = await bcrypt.hash(PASSWORD, 10);
@@ -198,6 +206,32 @@ async function main() {
     data: [{ title: 'Kaffeemühle', listId: bensList.id }],
   });
 
+  /*
+    A group, so the feature is demoable and the UI specs have something to open.
+
+    Owned by Anna and holding Ben - deliberately the *same* person who is on
+    `Weihnachten` individually. That overlap is the interesting case rather than an
+    accident: it is what makes "Ben keeps his access after leaving the group" a
+    meaningful assertion, because without the individual grant there would be nothing
+    left to keep. It also means the two share paths are visible side by side in the
+    share dialog, which is how a person learns the difference between adding a person
+    and adding everybody they keep together anyway.
+
+    One member rather than two. A group of one is a real state, and seeding a larger
+    one would not teach anything the specs do not already create themselves through
+    the API under test.
+  */
+  const familyGroup = await prisma.group.create({
+    data: { name: 'Family', ownerId: accounts.anna.id },
+  });
+
+  await prisma.groupMember.create({
+    data: { groupId: familyGroup.id, accountId: accounts.ben.id },
+  });
+
+  // Mia's list reaches her through no group, which keeps the "a group member gets the
+  // same column as an invited account" claim testable in both directions: Ben is in
+  // a group, Mia is not, and neither is a second way to be on somebody's list.
   console.log('Seeded three accounts (sign in with the nickname or the address):');
 
   /*
@@ -221,6 +255,7 @@ async function main() {
   console.log("Anna's PRIVATE list 'Für mich' (2 open ideas)");
   console.log("Anna's SHARED list 'Weihnachten', shared with Ben (1 open, 1 bought by Ben)");
   console.log("Ben's SHARED list 'Geburtstag', shared with Mia (1 open idea)");
+  console.log("Anna's group 'Family' (1 person: Ben), not shared with any list");
 }
 
 main()

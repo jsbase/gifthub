@@ -86,6 +86,11 @@
     "alreadyShared": "Diese Person kann die Liste schon sehen.",
     "cannotShareWithOwner": "Die Liste gehört dir selbst.",
     "notSharedYet": "Die Liste ist noch nicht geteilt.",
+    "searchNeedsList": "Um jemanden zu suchen, brauchst du zuerst eine eigene Wunschliste.",
+    "invalidSearchQuery": "Tippe noch ein paar Zeichen, um jemanden zu finden.",
+    "noSuchGroup": "Eine Gruppe von dir mit diesem Namen gibt es nicht.",
+    "duplicateGroupName": "Du hast schon eine Gruppe mit diesem Namen.",
+    "cannotJoinOwnGroup": "Du kannst dich nicht in deine eigene Gruppe aufnehmen.",
     "cannotClearPurchase": "Diese Idee hat jemand anderes abgehakt. Das lässt sich nicht rückgängig machen.",
     "forbidden": "Das ist auf dieser Liste nicht erlaubt.",
     "notFound": "Diese Liste gibt es nicht."
@@ -113,12 +118,27 @@
     "accessGrantFailed": "Person nicht hinzugefügt",
     "accessRevoked": "{name} sieht die Liste nicht mehr.",
     "accessRevokeFailed": "Person nicht entfernt",
+    "groupCreated": "Gruppe „{name}“ erstellt",
+    "groupCreateFailed": "Gruppe nicht erstellt",
+    "groupRenamed": "Gruppe umbenannt",
+    "groupRenameFailed": "Gruppe nicht umbenannt",
+    "groupDeleted": "Gruppe gelöscht",
+    "groupDeleteFailed": "Gruppe nicht gelöscht",
+    "groupMemberAdded": "{name} ist jetzt in der Gruppe.",
+    "groupMemberAddFailed": "Person nicht zur Gruppe hinzugefügt",
+    "groupMemberRemoved": "{name} ist nicht mehr in der Gruppe.",
+    "groupMemberRemoveFailed": "Person nicht aus der Gruppe entfernt",
+    "groupShared": "Die Gruppe „{name}“ kann die Liste jetzt ansehen.",
+    "groupShareFailed": "Gruppe nicht hinzugefügt",
+    "groupAccessRevoked": "Die Gruppe „{name}“ sieht die Liste nicht mehr.",
+    "groupAccessRevokeFailed": "Gruppe nicht entfernt",
     "loginSuccess": "Erfolgreich angemeldet",
     "registrationSuccess": "Konto erstellt"
   },
   "confirmations": {
     "deleteGift": "Damit verschwindet die Idee von dieser Liste — auch für alle, mit denen du sie teilst.",
-    "deleteListNamed": "„{name}“ wird gelöscht, mit allen Ideen darauf. Das lässt sich nicht rückgängig machen."
+    "deleteListNamed": "„{name}“ wird gelöscht, mit allen Ideen darauf. Das lässt sich nicht rückgängig machen.",
+    "deleteGroupNamed": "„{name}“ wird gelöscht. Wer die Liste nur über diese Gruppe gesehen hat, verliert den Zugriff. Das lässt sich nicht rückgängig machen."
   },
   "visibility": {
     "private": "Privat",
@@ -152,15 +172,44 @@
   },
   "shareList": {
     "shareTitle": "Liste teilen",
-    "shareLead": "Jede eingetragene Adresse sieht die ganze Liste und darf Ideen abhaken. Sonst nichts.",
-    "enterEmail": "E-Mail-Adresse",
+    "shareLead": "Jede eingetragene Person sieht die ganze Liste und darf Ideen abhaken. Sonst nichts.",
+    "enterNameOrEmail": "Nickname oder E-Mail-Adresse",
+    "searching": "Wird gesucht...",
+    "noSearchResults": "Dazu wurde niemand gefunden.",
+    "searchHint": "Mindestens drei Zeichen.",
+    "searchPickPrompt": "Tippe auf einen Namen, um die Person hinzuzufügen.",
     "add": "Hinzufügen",
     "adding": "Wird hinzugefügt...",
     "revoke": "Zugriff entziehen",
     "revokeConfirmTitle": "Zugriff entziehen?",
     "nobodyYet": "Noch niemand eingetragen.",
     "privateFirst": "Solange die Liste privat ist, kannst du niemanden eintragen. Teile sie zuerst.",
-    "makeShared": "Jetzt teilen"
+    "makeShared": "Jetzt teilen",
+    "groupPickerHeading": "Oder mit einer Gruppe teilen",
+    "noGroupsToShare": "Du hast noch keine Gruppe. Leg sie oben in der Leiste an.",
+    "groupReaches": "Personen: {count}",
+    "revokeGroupConfirmTitle": "Gruppe entfernen?"
+  },
+  "groups": {
+    "openGroups": "Gruppen",
+    "title": "Gruppen",
+    "lead": "Eine Gruppe ist eine Liste von Personen. Teilst du eine Wunschliste mit einer Gruppe, sehen alle darin die Liste.",
+    "noGroups": "Du hast noch keine Gruppe.",
+    "create": "Gruppe anlegen",
+    "creating": "Wird angelegt...",
+    "enterGroupName": "Name der Gruppe",
+    "rename": "Umbenennen",
+    "renameTitle": "Gruppe umbenennen",
+    "renameLabel": "Neuer Name",
+    "save": "Speichern",
+    "saving": "Wird gespeichert...",
+    "deleteGroup": "Gruppe löschen",
+    "membersHeading": "Personen in der Gruppe",
+    "noMembers": "Noch niemand drin.",
+    "addMemberLabel": "Person hinzufügen",
+    "removeMember": "Aus der Gruppe entfernen",
+    "removeMemberConfirmTitle": "Aus der Gruppe entfernen?",
+    "memberCount": "Personen: {count}"
   },
   "createListDialog": {
     "createListTitle": "Neue Liste",
@@ -187,6 +236,7 @@
     "changeVisibility": "Sichtbarkeit ändern",
     "share": "Teilen",
     "sharedWithCount": "Geteilt mit: {count}",
+    "sharedWithGroupCount": "Geteilt mit: {count} Personen · Gruppen: {groups}",
     "noLists": "Lege deine erste Wunschliste an.",
     "noSharedLists": "Es wurden noch keine Wunschlisten mit dir geteilt.",
     "emptyPlateHint": "Ein Name reicht. Wer sie sieht, entscheidest du.",
@@ -215,7 +265,7 @@
       },
       {
         "title": "4. Verwendung der Daten zur Verwaltung der Wunschlisten",
-        "content": "Jede Wunschliste gehört genau einer Person. Sie ist zuerst privat und nur für die Person sichtbar, der sie gehört. Wird sie geteilt, sehen genau die Personen diese Liste und die darin enthaltenen Ideen, die dort ausdrücklich eingetragen sind. Diese Personen können eine Idee als gekauft markieren; Einträge hinzufügen, ändern oder löschen können sie nicht. Produktlinks und Ideen werden in unserer Datenbank gespeichert."
+        "content": "Jede Wunschliste gehört genau einer Person. Sie ist zuerst privat und nur für die Person sichtbar, der sie gehört. Wird sie geteilt, sehen genau die Personen diese Liste und die darin enthaltenen Ideen, die dort ausdrücklich eingetragen sind, sowie alle Personen, die in einer Gruppe sind, mit der sie geteilt wurde. Diese Personen können eine Idee als gekauft markieren; Einträge hinzufügen, ändern oder löschen können sie nicht. Produktlinks und Ideen werden in unserer Datenbank gespeichert."
       },
       {
         "title": "5. Weitergabe und Übermittlung von Daten",
@@ -245,7 +295,7 @@
       },
       {
         "title": "b) Registrierung und Anmeldung zur Nutzung der Web-App",
-        "content": "Um die Web-App zu nutzen, ist ein Konto mit einem Nickname, einer E-Mail-Adresse und einem Passwort erforderlich; den Anzeigamen leiten wir aus dem Nickname ab. Bei der Registrierung speichern wir die Kontodaten (Nickname, E-Mail-Adresse, Passwort und Anzeigename), die eigenen Wunschlisten mit ihren Geschenkideen und Links zu Produkten sowie bei geteilten Listen die E-Mail-Adresse und den Anzeigenamen der Personen, mit denen sie geteilt wurden. Das Passwort wird vor der Speicherung gehasht und lässt sich nicht im Klartext wiederherstellen. Zu jeder als gekauft markierten Idee speichern wir außerdem das Konto, das sie abgehakt hat. Alle, mit denen die Liste geteilt ist, sehen dieselbe Markierung und können sie untereinander korrigieren. Die Person, der die Liste gehört, kann eine von jemand anderem gesetzte Markierung nicht aufheben. Der Name wird in der Web-App nicht angezeigt."
+        "content": "Um die Web-App zu nutzen, ist ein Konto mit einem Nickname, einer E-Mail-Adresse und einem Passwort erforderlich; den Anzeigenamen leiten wir aus dem Nickname ab. Bei der Registrierung speichern wir die Kontodaten (Nickname, E-Mail-Adresse, Passwort und Anzeigenamen), die eigenen Wunschlisten mit ihren Geschenkideen und Links zu Produkten sowie bei geteilten Listen die E-Mail-Adresse und den Anzeigenamen der Personen, mit denen sie geteilt wurden. Das Passwort wird vor der Speicherung gehasht und lässt sich nicht im Klartext wiederherstellen. Zu jeder als gekauft markierten Idee speichern wir außerdem das Konto, das sie abgehakt hat. Alle, mit denen die Liste geteilt ist, sehen dieselbe Markierung und können sie untereinander korrigieren. Die Person, der die Liste gehört, kann eine von jemand anderem gesetzte Markierung nicht aufheben. Der Name wird in der Web-App nicht angezeigt. Gruppen, die Sie anlegen, speichern wir mit ihrem Namen und den Konten, die darin enthalten sind. Wird eine Person aus einer Gruppe entfernt, verliert sie den Zugriff auf die Listen, die nur über diese Gruppe geteilt wurden; eine eigene Freigabe dieser Liste bleibt davon unberührt. Wer im Teilen-Dialog nach einer Person sucht, um sie einzutragen, sieht deren Nickname, Anzeigenamen und E-Mail-Adresse. Das kann nur jemand, der angemeldet ist und mindestens eine eigene Wunschliste hat; die Ergebnisse werden nicht gespeichert."
       }
     ]
   },

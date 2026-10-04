@@ -34,6 +34,21 @@ export type Refusal =
   | 'already_shared'
   | 'cannot_share_with_owner'
   | 'not_shared_yet'
+  // The account lookup behind the sharing dialog.
+  //
+  // Its own sentence rather than a reuse of `no_such_account`, and the distinction is
+  // the useful one: that code says "that exact address belongs to nobody", this one
+  // says "that was not enough to look anybody up", and telling somebody to retype a
+  // whole address they already typed in full is the wrong instruction.
+  | 'invalid_search_query'
+  // Groups.
+  | 'no_such_group'
+  | 'duplicate_group_name'
+  // A group's owner may not also be in it. Its own code rather than a reuse of
+  // `forbidden`, because that sentence is about a *list* - "this list does not grant
+  // that" - and it would be read in a dialog that is not about a list at all. The
+  // closed vocabulary is where that mismatch is meant to be impossible.
+  | 'cannot_join_own_group'
   // Authorization.
   | 'not_found'
   | 'forbidden'
@@ -54,6 +69,10 @@ export const REFUSALS: Refusal[] = [
   'already_shared',
   'cannot_share_with_owner',
   'not_shared_yet',
+  'invalid_search_query',
+  'no_such_group',
+  'duplicate_group_name',
+  'cannot_join_own_group',
   'not_found',
   'forbidden',
   'cannot_clear_purchase',

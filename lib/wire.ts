@@ -1,5 +1,11 @@
 import { mayClearMark } from '@/lib/list-access';
-import type { Gift, ListAccess } from '@/types';
+import type {
+  Gift,
+  Group,
+  GroupMember,
+  ListAccess,
+  ListGroupAccess,
+} from '@/types';
 
 /**
  * The one place a stored row becomes a response body.
@@ -85,3 +91,77 @@ export const toWireAccess = (row: {
   displayName: row.displayName,
   grantedAt: iso(row.grantedAt),
 });
+
+/**
+ * One group on the list's audience.
+ *
+ * The four fields of `StoredGroupAccessRow` and no others, for the reason the header
+ * gives. Note what is *not* here: the group's member list. A group row is one grant,
+ * and shipping its members would both make the audience say a list is shared nine
+ * times when it is shared once and put a per-member audience on the wire that no
+ * client has any use for - the reader who is affected already learns that they are
+ * affected by opening the list.
+ */
+export const toWireGroupAccess = (row: {
+  id: string;
+  groupId: string;
+  groupName: string;
+  memberCount: number;
+  grantedAt: Date;
+}): ListGroupAccess => ({
+  id: row.id,
+  groupId: row.groupId,
+  groupName: row.groupName,
+  memberCount: row.memberCount,
+  grantedAt: iso(row.grantedAt),
+});
+
+export const toWireGroup = (group: {
+  id: string;
+  name: string;
+  memberCount: number;
+  createdAt: Date;
+}): Group => ({
+  id: group.id,
+  name: group.name,
+  memberCount: group.memberCount,
+  createdAt: iso(group.createdAt),
+});
+
+/**
+ * One member of one group, as its owner sees it.
+ *
+ * The only place in the product where an account's nickname and email go to the wire
+ * together outside the share dialog, and the reach is the same: the group's owner, who
+ * put them there.
+ */
+export const toWireGroupMember = (member: {
+  id: string;
+  accountId: string;
+  nickname: string;
+  displayName: string;
+  email: string;
+  addedAt: Date;
+}): GroupMember => ({
+  id: member.id,
+  accountId: member.accountId,
+  nickname: member.nickname,
+  displayName: member.displayName,
+  email: member.email,
+  addedAt: iso(member.addedAt),
+});
+
+/*
+  There is deliberately no `toWireSearchResult`.
+
+  Every other mapper in this file exists because the stored row and the wire row are
+  different shapes - a `Date` becomes a string, `purchasedById` is dropped,
+  `mayClearMark` is computed. `searchAccounts` in `lib/account-search.ts` already
+  returns the wire shape: it names its four fields in a `select`, adds the one value no
+  column holds (`matched`, which only the caller knows), and types the return as
+  `AccountSearchResult`. A mapper over it would copy four fields into four fields and
+  invent nothing, which is the ceremony this module exists to avoid - the header's
+  reason is that a *spread* would carry a new column out silently, and an explicit
+  `select` in the query is already that explicitness, one layer earlier and therefore
+  closer to the column that would have to be added.
+*/

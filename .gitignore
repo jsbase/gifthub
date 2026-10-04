@@ -74,3 +74,5 @@ node_modules/
 .neon
 /.shots
 /.impeccable
+kilo.json
+.mcp.json
