@@ -109,6 +109,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
         <Input
           name='nickname'
           id='newNickname'
+          data-testid='registerNickname'
           type='text'
           value={nickname}
           onChange={(event) => {
@@ -154,6 +155,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
         <Input
           name='email'
           id='newEmail'
+          data-testid='registerEmail'
           type='text'
           inputMode='email'
           autoComplete='email'
@@ -192,6 +194,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
         <Input
           name='password'
           id='newPassword'
+          data-testid='registerPassword'
           type='password'
           autoComplete='new-password'
           onChange={onPasswordChange}
@@ -226,6 +229,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
         <Input
           name='confirmPassword'
           id='confirmPassword'
+          data-testid='registerConfirmPassword'
           type='password'
           autoComplete='new-password'
           onChange={onConfirmPasswordChange ?? onPasswordChange}

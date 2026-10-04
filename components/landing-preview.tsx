@@ -118,6 +118,7 @@ const LandingPreview: React.FC<LandingPreviewProps> = ({
           return (
             <li
               key={item.name}
+              data-testid='landingPlateRow'
               className={cn(
                 'grid',
                 /*

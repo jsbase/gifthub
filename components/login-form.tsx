@@ -71,6 +71,7 @@ const LoginForm: React.FC<LoginFormProps> = ({
         <Input
           name='identifier'
           id='identifier'
+          data-testid='loginIdentifier'
           type='text'
           inputMode='email'
           autoComplete='username'
@@ -106,6 +107,7 @@ const LoginForm: React.FC<LoginFormProps> = ({
         <Input
           name='password'
           id='password'
+          data-testid='loginPassword'
           type='password'
           autoComplete='current-password'
           required

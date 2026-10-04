@@ -280,7 +280,7 @@ for (const lang of locales) {
       await expect(plate).toHaveCount(1);
       await expect(plate).toBeVisible();
 
-      const rows = plate.locator('li');
+      const rows = plate.getByTestId('landingPlateRow');
       await expect(rows, 'the plate draws one row per state').toHaveCount(
         OPEN_ON_THE_PLATE.length
       );
@@ -321,7 +321,7 @@ for (const lang of locales) {
       const dict = DICTIONARIES[lang];
       const plate = page.getByTestId('landingPlate');
 
-      const rows = plate.locator('li');
+      const rows = plate.getByTestId('landingPlateRow');
       await expect(rows).toHaveCount(OPEN_ON_THE_PLATE.length);
 
       for (const [index, unbought] of OPEN_ON_THE_PLATE.entries()) {
@@ -362,35 +362,39 @@ for (const lang of locales) {
         }
       }
 
-      /*
+/*
         The check, and the row it stands on.
 
-        `svg` is a reliable name for it because the crop marks in the corners are
-        spans, so the check is the only SVG inside `landingPlate`. The rows come
-        first because a count of one on the plate cannot tell a check in the last
-        row from a check in the first, and the plate's own total comes last
-        because that is the half which says how many: the row counts say which row,
-        the plate count says there is no second one anywhere on it. Both are
+        The check is named by its own `data-testid` rather than by `svg`, which is
+        what the corner crop marks would have needed - they are spans, so the check
+        used to be the only SVG inside `landingPlate`, and "the only SVG" was standing
+        in for "the check". A name on the glyph itself is the claim; a leftover of the
+        markup around it is not.
+
+        The rows come first because a count of one on the plate cannot tell a check
+        in the last row from a check in the first, and the plate's own total comes
+        last because that is the half which says how many: the row counts say which
+        row, the plate count says there is no second one anywhere on it. Both are
         asserted because each fails alone.
 
-        The last row is `OPEN_ON_THE_PLATE`'s last entry - the zero - so this is
-        the check standing on the finished list whichever row the dictionary puts
-        it in, and a reordered `items` fails here.
+        The last row is `OPEN_ON_THE_PLATE`'s last entry - the zero - so this is the
+        check standing on the finished list whichever row the dictionary puts it in,
+        and a reordered `items` fails here.
       */
       await expect(
-        rows.nth(OPEN_ON_THE_PLATE.length - 1).locator('svg'),
+        rows.nth(OPEN_ON_THE_PLATE.length - 1).getByTestId('sheetProgressCheck'),
         'the finished row carries the check'
       ).toHaveCount(1);
 
       for (const [index, open] of OPEN_ON_THE_PLATE.slice(0, -1).entries()) {
         await expect(
-          rows.nth(index).locator('svg'),
+          rows.nth(index).getByTestId('sheetProgressCheck'),
           `row ${index + 1} stands at ${open} and carries no check`
         ).toHaveCount(0);
       }
 
       await expect(
-        plate.locator('svg'),
+        plate.getByTestId('sheetProgressCheck'),
         'the plate carries exactly one check'
       ).toHaveCount(1);
     });

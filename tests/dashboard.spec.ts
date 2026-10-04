@@ -39,8 +39,8 @@ const signIn = async (
   email: string
 ) => {
   await page.getByTestId('OpenLogin').click();
-  await page.fill('#identifier', email);
-  await page.fill('#password', PASSWORD);
+  await page.getByTestId('loginIdentifier').fill(email);
+  await page.getByTestId('loginPassword').fill(PASSWORD);
   await Promise.all([
     page.waitForNavigation({ timeout: 15000, waitUntil: 'load' }),
     page.getByTestId('SubmitLogin').click(),
@@ -99,7 +99,7 @@ test.describe('Contents page', () => {
     // Private first: it is the default, and the default is the state that means
     // "only me" rather than "nobody has decided yet".
     await page.getByTestId('createListButton').click();
-    await page.fill('#listName', 'e2e-owned');
+    await page.getByTestId('createListName').fill('e2e-owned');
     await page.getByTestId('createVisibility-private').click();
     await page.getByTestId('createListSubmit').click();
 
@@ -118,9 +118,9 @@ test.describe('Contents page', () => {
     await expect(page.getByTestId('addGiftButton')).toBeVisible();
 
     await page.getByTestId('addGiftButton').click();
-    await page.fill('#title', 'PlayStation 5');
-    await page.fill('#description', 'Latest console');
-    await page.fill('#url', 'https://search.brave.com/');
+    await page.getByTestId('giftTitleInput').fill('PlayStation 5');
+    await page.getByTestId('giftDescriptionInput').fill('Latest console');
+    await page.getByTestId('giftUrlInput').fill('https://search.brave.com/');
     await page.getByTestId('addGiftSubmit').click();
 
     const card = page.getByTestId('giftCard');
@@ -131,7 +131,7 @@ test.describe('Contents page', () => {
 
     // Add a second idea so the count on the row is something rather than nothing.
     await page.getByTestId('addGiftButton').click();
-    await page.fill('#title', 'Lampe');
+    await page.getByTestId('giftTitleInput').fill('Lampe');
     await page.getByTestId('addGiftSubmit').click();
     await expect(page.getByTestId('giftCard')).toHaveCount(2);
 
@@ -150,7 +150,7 @@ test.describe('Contents page', () => {
     // Now a shared one, to prove the choice is actually taken rather than offered on
     // a control that does nothing.
     await page.getByTestId('createListButton').click();
-    await page.fill('#listName', 'e2e-doomed');
+    await page.getByTestId('createListName').fill('e2e-doomed');
     await page.getByTestId('createVisibility-shared').click();
     await page.getByTestId('createListSubmit').click();
     await expect(page).toHaveURL(new RegExp(`/${lang}/list/`), {
@@ -281,14 +281,16 @@ test.describe('Contents page', () => {
 
     await page.setViewportSize({ width: 375, height: 667 });
     await expect(logout).toHaveAttribute('aria-label', /./);
-    await expect(logout.locator('span')).toBeHidden();
+    await expect(logout.getByTestId('logoutLabel')).toBeHidden();
 
     await page.setViewportSize({ width: 800, height: 800 });
-    await expect(logout.locator('span')).toBeVisible();
-    await expect(logout.locator('span')).toHaveText('Log out');
+    await expect(logout.getByTestId('logoutLabel')).toBeVisible();
+    await expect(logout.getByTestId('logoutLabel')).toHaveText('Log out');
 
     await expect(switcher).toContainText('EN');
-    await expect(switcher.locator('svg')).toHaveCount(1); // the chevron
+    await expect(
+      switcher.getByTestId('languageSwitcherChevron')
+    ).toHaveCount(1); // the chevron
 
     // The two-tone ring, read off a focused element: the gap in the local ground,
     // then the registration-cyan ring. Asserted as two shadows because a single

@@ -175,6 +175,7 @@ const CreateListDialog: React.FC<CreateListDialogProps> = ({
             </Label>
             <Input
               id='listName'
+              data-testid='createListName'
               name='name'
               type='text'
               placeholder={dict.createListDialog.enterListName}
