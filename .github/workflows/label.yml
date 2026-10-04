@@ -1,0 +1,60 @@
+# This workflow labels pull requests from the paths they modify, using
+# actions/labeler with the rules in .github/labeler.yml.
+#
+# The trigger is `pull_request` and not `pull_request_target`, and that choice is
+# load-bearing rather than stylistic. GitHub resolves which workflows to run from
+# the pull request's own head ref for `pull_request`, but from the *base* branch
+# for `pull_request_target`. A workflow file introduced by a pull request is
+# therefore invisible to `pull_request_target` on that very pull request: nothing
+# matches the event, no run is created, and the pull request silently gets no
+# label until the file has been merged into the base branch and a later pull
+# request comes along. Under `pull_request` this workflow runs immediately, on
+# the pull request that adds it.
+#
+# What that costs is that the head branch's copy of this file decides what runs,
+# so the token comes from the pull request rather than from the trusted base
+# branch. That is acceptable here: every branch is in this repository, and the
+# job's permissions block narrows GITHUB_TOKEN to exactly what the action needs
+# instead of inheriting the repository's default grants. A fork would get a
+# read-only token and the action would find nothing it is allowed to change.
+
+name: Labeler
+
+# No `branches:` filter here, deliberately: the trigger keys on the *base* branch,
+# so filtering would exclude exactly the pull requests this workflow exists for —
+# the ones opened against `preview` and `main` from a feature branch or a
+# `Preview (#N)` branch. Left unfiltered it runs for a pull request from any
+# branch in this repository, which is what "label whatever changed" requires.
+#
+# `types` is spelled out because the default set is narrower than it looks:
+# GitHub fires `opened`, `synchronize` and `reopened` on its own, and a pull
+# request that sits as a draft while its branch is being reworked has no
+# `synchronize` event of its own when it leaves draft — `ready_for_review` is the
+# only event that says the author considers the work finished, and without it a
+# draft-turned-ready pull request keeps whatever labels its first push earned.
+on:
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+      - ready_for_review
+
+jobs:
+  label:
+
+    runs-on: ubuntu-latest
+    # `pull-requests: write` is enough to attach labels that already exist in
+    # the repository. Creating a brand-new label would additionally need
+    # `issues: write`, which this workflow deliberately does not ask for.
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+    # v7 rather than the v4 in GitHub's starter template: v4 declares the
+    # removed node16 runtime and only still runs because GitHub force-upgrades
+    # it to node20. v7 is the current major on node24.
+    - uses: actions/labeler@v7
+      with:
+        repo-token: "${{ secrets.GITHUB_TOKEN }}"
