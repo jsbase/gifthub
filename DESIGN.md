@@ -213,7 +213,8 @@ audience, not a degradation.
 - **Source Serif 4** — the specimen label, reserved for **a name**: the wordmark, a
   list, a person. This is the one typographic commitment carried over from the
   previous world, and it is better motivated here — a museum label is exactly where
-  a serif belongs. (A *group* was in that list once; there are no groups.)
+  a serif belongs. (A *group* is in that list again, and correctly so: a group
+  has a name, and this is the only place a serif is spent on one.)
 - **PT Sans Narrow** — the printed chrome. Section heads, cell titles, the numerals.
   Confined to 11–12px, where a condensed face reads as stamped type rather than as
   a third body font.

@@ -56,6 +56,77 @@ export interface ListAccess {
 }
 
 /**
+ * One account that a search matched, and nothing else about it.
+ *
+ * Four fields, listed rather than spread, for the reason `lib/wire.ts` gives: `Gift`
+ * on the wire is a strict subset of `Gift` on disk, so a spread would ship a new
+ * column to the browser the first time one was added to the schema and nothing would
+ * fail. `password` and `createdAt` are the two that exist on the row and are
+ * deliberately absent here.
+ *
+ * `matched` says which of the two columns the query actually hit. It is the only way
+ * the result list can answer the question the requirement is really about - which of
+ * two similar handles is the person I meant - without the owner having to compare two
+ * addresses by eye, and it is derived from the caller's own query rather than said
+ * anything about the account it found.
+ */
+export interface AccountSearchResult {
+  id: string;
+  nickname: string;
+  displayName: string;
+  email: string;
+  matched: 'email' | 'nickname';
+}
+
+/**
+ * One of a person's own groups.
+ *
+ * `memberCount` rides along rather than being a second request, for the reason
+ * `readableListSummary` gives its owner name and audience count: two queries means a
+ * window in which the two halves of a sheet disagree about how many people something
+ * reaches.
+ */
+export interface Group {
+  id: string;
+  name: string;
+  memberCount: number;
+  createdAt: string;
+}
+
+/**
+ * One account inside one group.
+ *
+ * Carries the address and the handle, and the owner is the only person who ever sees
+ * either: a member is shown the list they have reached, never the group that reached
+ * it, because whose group somebody is in is the group owner's business.
+ */
+export interface GroupMember {
+  id: string;
+  accountId: string;
+  nickname: string;
+  displayName: string;
+  email: string;
+  addedAt: string;
+}
+
+/**
+ * One list shared with one group - the audience row that is a group rather than a
+ * person.
+ *
+ * The row is deliberately not the group's member list. A group with nine members is
+ * one grant, and printing nine names here would say the list is shared nine times
+ * when it is shared once; `memberCount` is the size of the group, and what it reaches
+ * is worked out per reader by `lib/list-access.ts` rather than shown to anybody.
+ */
+export interface ListGroupAccess {
+  id: string;
+  groupId: string;
+  groupName: string;
+  memberCount: number;
+  grantedAt: string;
+}
+
+/**
  * A list as the contents page and the share dialog both need to describe it.
  *
  * One type rather than one for an owned list and one for a shared list: the two
@@ -71,8 +142,20 @@ export interface ListSummary {
   ownerId: string;
   ownerDisplayName: string;
   giftCounts: MemberGiftCounts;
-  /** How many people the list is shared with. Zero on a private list. */
+  /** How many people the list is shared with directly. Zero on a private list. */
   sharedWithCount: number;
+  /**
+   * How many *groups* reach this list, counted separately from `sharedWithCount`.
+   *
+   * A separate number rather than one figure counting people, because the honest
+   * people count is not a cheap query and the dishonest one is worse than useless.
+   * Individuals plus group members has overlaps - somebody in two granted groups is
+   * one reader, not two - so an exact figure needs a distinct-count over a join, and
+   * `sharedWithCount` reads a `_count` on one relation. What the owner is actually
+   * asking on the contents page is "how wide does this reach", and "3 people · 1
+   * group" answers it without either the join or a number that could be wrong.
+   */
+  sharedWithGroupCount: number;
   /** Whether the signed-in account owns this list, which decides every affordance. */
   isOwner: boolean;
   createdAt: string;
@@ -183,6 +266,7 @@ export interface Translations {
   visibility: VisibilityTranslations;
   listSheet: ListSheetTranslations;
   shareList: ShareListDictionary;
+  groups: GroupsDictionary;
   createListDialog: CreateListDialogDictionary;
   listBoard: ListBoardDictionary;
   footer: {
@@ -309,6 +393,34 @@ export interface ErrorTranslations {
   alreadyShared: string;
   cannotShareWithOwner: string;
   notSharedYet: string;
+  /**
+   * The picker found nobody for what was typed.
+   *
+   * A refusal in the closed union rather than an empty list, because an empty list and
+   * a query too short to run are different answers and a person needs to know which
+   * one they got: "keep typing" is useless advice for somebody who has typed the whole
+   * address of somebody who does not exist.
+   */
+  invalidSearchQuery: string;
+  /** Group refusals, shown against the group name field. */
+  noSuchGroup: string;
+  /**
+   * A second group under one owner's name.
+   *
+   * Its own sentence rather than a reuse of `alreadyShared`, for the same reason
+   * `duplicateNickname` is not `duplicateEmail`: it is a different field and the words
+   * a person needs for "you already have a group called Family" are not the words for
+   * "this list is already shared with them".
+   */
+  duplicateGroupName: string;
+  /**
+   * A group's owner tried to put themselves in it.
+   *
+   * Its own sentence because `forbidden` is a sentence about a list: reusing it here
+   * would put "this list does not grant that" into a dialog that is not about a list,
+   * which is the exact failure the closed vocabulary exists to make impossible.
+   */
+  cannotJoinOwnGroup: string;
   cannotClearPurchase: string;
   forbidden: string;
   notFound: string;
@@ -452,6 +564,26 @@ export interface ToastTranslations {
   accessGrantFailed: string;
   accessRevoked: string;
   accessRevokeFailed: string;
+  /**
+   * Every group sentence carries a `{name}` placeholder for the same reason
+   * `accessGranted` does: rendered unsubstituted it would put a literal `{name}` in
+   * front of the owner, and because an unsubstituted placeholder is still a valid
+   * string, nothing throws and the dictionary has no way to complain.
+   */
+  groupCreated: string;
+  groupCreateFailed: string;
+  groupRenamed: string;
+  groupRenameFailed: string;
+  groupDeleted: string;
+  groupDeleteFailed: string;
+  groupMemberAdded: string;
+  groupMemberAddFailed: string;
+  groupMemberRemoved: string;
+  groupMemberRemoveFailed: string;
+  groupShared: string;
+  groupShareFailed: string;
+  groupAccessRevoked: string;
+  groupAccessRevokeFailed: string;
   loginSuccess: string;
   registrationSuccess: string;
 }
@@ -466,6 +598,17 @@ export interface ConfirmationTranslations {
    * out which list the sentence is about.
    */
   deleteListNamed: string;
+  /**
+   * Names the group, and states what is lost.
+   *
+   * A group is the product's second irreversible control and the first sentence this
+   * has to carry two clauses. Deleting one is not like withdrawing access from a row:
+   * it takes the group out of every list that was shared with it, so anybody who was
+   * reaching a list only through this group stops reaching it, and the group cannot be
+   * restored. `PRODUCT.md:101` says say what will happen before it happens, and the
+   * consequence is the whole content of the prompt.
+   */
+  deleteGroupNamed: string;
 }
 
 export interface CreateListDialogDictionary {
@@ -485,11 +628,32 @@ export interface ShareListDictionary {
   shareTitle: string;
   /**
    * The one-sentence explanation of what sharing does. It is the load-bearing
-   * string in this dialog: the field below it takes an email address and grants
-   * that person the whole list, and nothing else on screen says so.
+   * string in this dialog: the field below it grants one person the whole list, and
+   * nothing else on screen says so.
+   *
+   * It says a name *or* an address because the field below takes either and searches
+   * both. This string was written for a field that took an email address and nothing
+   * else, and a sheet that describes itself wrongly is worse than one that describes
+   * itself briefly - it is the only sentence on screen telling the owner what the
+   * control does.
    */
   shareLead: string;
-  enterEmail: string;
+  /** The picker's field label and placeholder: one field, either kind of answer. */
+  enterNameOrEmail: string;
+  /** Shown while a lookup is in flight, where the field used to say "adding". */
+  searching: string;
+  /** A query that ran and matched nobody. */
+  noSearchResults: string;
+  /** A query too short to run, which is not the same answer as matching nobody. */
+  searchHint: string;
+  /**
+   * The instruction for the result list: pick one, and it is added.
+   *
+   * Without it the list is a read-only thing on screen, and an owner who typed three
+   * characters and got eight rows has been told a question rather than given a
+   * control.
+   */
+  searchPickPrompt: string;
   add: string;
   adding: string;
   revoke: string;
@@ -503,6 +667,50 @@ export interface ShareListDictionary {
    */
   privateFirst: string;
   makeShared: string;
+  /** The section head above the groups this list can be shared with. */
+  groupPickerHeading: string;
+  /** The owner has no groups, so there is nothing to offer. Names where to make one. */
+  noGroupsToShare: string;
+  /** On a group row in the audience: how many people the group reaches. */
+  groupReaches: string;
+  revokeGroupConfirmTitle: string;
+}
+
+/**
+ * Managing the groups an account owns.
+ *
+ * A whole dictionary rather than keys spread across `shareList` and `header`, because
+ * groups are the only entity in this product that has a management surface of its own:
+ * lists are managed from the contents page and people are managed from the share
+ * dialog, but a group is created before there is any list to share it with, so it has
+ * to be reachable from somewhere that is not a list.
+ */
+export interface GroupsDictionary {
+  /** The header control's accessible name. */
+  openGroups: string;
+  title: string;
+  lead: string;
+  noGroups: string;
+  create: string;
+  creating: string;
+  enterGroupName: string;
+  rename: string;
+  renameTitle: string;
+  renameLabel: string;
+  save: string;
+  saving: string;
+  deleteGroup: string;
+  membersHeading: string;
+  noMembers: string;
+  /**
+   * The group-member picker reuses the account picker rather than having a second one,
+   * so these are its label and its two states inside this dialog.
+   */
+  addMemberLabel: string;
+  removeMember: string;
+  removeMemberConfirmTitle: string;
+  /** A row's member count, as the owner reads it: "Family · 4 people". */
+  memberCount: string;
 }
 
 export interface ListBoardDictionary {
@@ -521,6 +729,26 @@ export interface ListBoardDictionary {
   share: string;
   /** The trailing sentence on a shared row: who else can see it. */
   sharedWithCount: string;
+  /**
+   * The same sentence for a row that a group also reaches.
+   *
+   * A second string rather than one string with an optional half, so the two counts are
+   * always printed together and in a fixed order. A locale that wanted a different
+   * conjunction or word order gets it here rather than by the component deciding to
+   * join two halves with a middle dot.
+   *
+   * Both halves are abbreviated in Russian ("{count} чел. · {groups} гр."), and that is
+   * a deliberate trade rather than sloppiness. Russian inflects the noun by the number:
+   * 1 человек, 2 человека, 5 человек. One template string cannot express that, and a
+   * group of two to four people is the *common* case for the very groups this feature
+   * exists for — "Family" is usually three people — so getting it wrong is not a rare
+   * edge, it is the ordinary one. `gift-count.ts` solves this properly for gift counts
+   * by deriving four states from the number, and these three strings are what such a
+   * mechanism would have to cover to be fixed properly. The abbreviation is correct for
+   * every number today and costs no new machinery; the alternative was shipping the
+   * wrong word for most groups.
+   */
+  sharedWithGroupCount: string;
   /**
    * The contents page with nothing on it, and the plate it prints. `noLists` is
    * the sentence and it is the control: the empty board's blank plate is a
@@ -610,6 +838,14 @@ export interface ListSheetProps {
   list: ListSummary;
   gifts: Gift[];
   access: ListAccess[];
+  /**
+   * The group grants on this list, which the owner is shown beside `access` and a
+   * buyer is not. Two arrays rather than one union because a person who reaches this
+   * list through two grants appears once as a person, and folding a group into the
+   * person list would either duplicate them or lose the group row that removes nine
+   * people at once.
+   */
+  groupAccess: ListGroupAccess[];
   isOwner: boolean;
   dict: Translations;
   onClose: () => void;
@@ -679,10 +915,89 @@ export interface ShareListDialogProps {
   listName: string;
   visibility: ListVisibility;
   access: ListAccess[];
+  groupAccess: ListGroupAccess[];
   dict: Translations;
   onChanged: () => void;
   /** Called after the list is switched to shared from inside the dialog. */
   onVisibilityChanged: () => void;
+}
+
+/**
+ * Naming somebody, by nickname or by address.
+ *
+ * Extracted from `share-list-dialog.tsx` into its own module because it is a
+ * self-contained control with its own request lifecycle - a debounced lookup, a
+ * result list, a selection and then a grant - and leaving it inline would have put
+ * three concerns and two unrelated waits in one file that is already the largest in
+ * the repo.
+ *
+ * Two shapes, and the union rather than two optional callbacks because a caller who
+ * supplied neither would only find out on the first click: `listId` decides which
+ * callback exists, and `?: never` on the other makes the compiler say so at the call
+ * site. That is what stops the group manager, which has no list to grant to, from
+ * having to pass a dead `onGranted` to satisfy a type.
+ *
+ * The null case is not a second kind of picker. It is the same control with the last
+ * step left off, and it exists because the group manager must ask "which account?"
+ * and then make its own request - `POST /api/groups/{id}/members`, which is addressed
+ * by account id because adding to a group is not adding to a list. Folding that into
+ * the picker would have put a group's membership inside a component whose name is
+ * about a list's audience.
+ */
+export type AccountPickerProps = {
+  dict: Translations;
+  /** Account ids to hide from the results - the audience, or the current members. */
+  alreadyShared: string[];
+  /** The picker is unusable without a `SHARED` list; the sheet replaces it instead. */
+  isVisible: boolean;
+} & (
+    | {
+        /** The list to grant access to. */
+        listId: string;
+        /** Called after a successful grant to `listId`. */
+        onGranted: () => void;
+        onPicked?: never;
+      }
+    | {
+        /** `null` for a search that grants nothing and only reports a choice. */
+        listId: null;
+        /** Called with the chosen account. No request is made by the picker. */
+        onPicked: (account: AccountSearchResult) => void;
+        onGranted?: never;
+      }
+  );
+
+/**
+ * Who may reach one list: the people, then the groups.
+ *
+ * `access` and `groupAccess` stay two arrays and two callbacks rather than one list of
+ * a union. A group row is a control that withdraws reach from several people at once
+ * and saying so is the point of it, so it cannot be rendered as a row that looks like
+ * a person and removes one.
+ */
+export interface AudienceListProps {
+  access: ListAccess[];
+  groupAccess: ListGroupAccess[];
+  dict: Translations;
+  onRevoke: (row: ListAccess) => void;
+  onRevokeGroup: (row: ListGroupAccess) => void;
+}
+
+/**
+ * The header's control that opens the group manager.
+ *
+ * Nothing outside `components/` reads these; `header.tsx` owns the open state and
+ * renders `GroupsDialog` itself. The gate that matters is not the prop shape but
+ * where the control is drawn: `header.tsx` shows it only when the session says the
+ * account is signed in, so there is no route to a dialog whose every request would be
+ * answered 401.
+ */
+export interface GroupsDialogProps {
+  isOpen: boolean;
+  onClose: () => void;
+  dict: Translations;
+  /** Called after any create, rename, delete or membership change. */
+  onChanged: () => void;
 }
 
 /**
@@ -777,7 +1092,19 @@ export interface HeaderProps {
    * (`PRODUCT.md:72`). Absent when nobody is signed in.
    */
   displayName?: string;
-  dict?: Pick<Translations, 'logout' | 'changeLanguage'>;
+  /*
+    The whole dictionary rather than a `Pick` of the two keys the bar used to need.
+
+    The bar needed two keys because it only had a logout control and a language
+    switcher, and naming exactly those was the honest type. It now also opens the
+    group manager, which needs `groups.openGroups` and `groups.title` and hands the
+    whole `Translations` to `GroupsDialog`. `Pick` was the wrong shape rather than
+    merely the narrow one: the bar renders a *dialog* that is written against the
+    full dictionary, and the alternative - `Pick` plus `Pick` plus the four keys -
+    would describe a bar that reads less of the dictionary than it does, and would
+    break again the next time that dialog grows a string.
+  */
+  dict?: Translations;
   onLogout?: () => void;
   showAuth?: boolean;
 }

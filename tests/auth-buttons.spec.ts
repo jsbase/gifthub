@@ -49,7 +49,13 @@ const prisma = new PrismaClient();
   was cleaned up in the same place.
 
   Scoped to this one address, in dependency order, so the cascade is explicit rather
-  than a chain of single deletes that stops working when the schema gains a relation.
+  than a chain of single deletes that stops working when the schema gains a relation -
+  and `Account` has gained two relations since that sentence was written. Every row
+  that points at this account, at one of its lists, or at one of its groups goes before
+  the row it points at, which puts the two tables that span a pair in front of both
+  parents: `listGroupAccess` references a list *and* a group, and `groupMember`
+  references a group *and* an account. Emptied after either parent they are foreign-key
+  violations rather than a clean reset.
 */
 test.beforeAll(async () => {
   const existing = await prisma.account.findMany({
@@ -58,11 +64,33 @@ test.beforeAll(async () => {
   });
   const ids = existing.map((a) => a.id);
   if (ids.length > 0) {
-    await prisma.listAccess.deleteMany({
-      where: { OR: [{ accountId: { in: ids } }, { list: { ownerId: { in: ids } } }] },
-    });
     await prisma.gift.deleteMany({ where: { list: { ownerId: { in: ids } } } });
+    await prisma.listGroupAccess.deleteMany({
+      where: {
+        OR: [
+          { list: { ownerId: { in: ids } } },
+          { group: { ownerId: { in: ids } } },
+        ],
+      },
+    });
+    await prisma.listAccess.deleteMany({
+      where: {
+        OR: [
+          { accountId: { in: ids } },
+          { list: { ownerId: { in: ids } } },
+        ],
+      },
+    });
     await prisma.list.deleteMany({ where: { ownerId: { in: ids } } });
+    await prisma.groupMember.deleteMany({
+      where: {
+        OR: [
+          { accountId: { in: ids } },
+          { group: { ownerId: { in: ids } } },
+        ],
+      },
+    });
+    await prisma.group.deleteMany({ where: { ownerId: { in: ids } } });
     await prisma.account.deleteMany({ where: { id: { in: ids } } });
   }
   await prisma.$disconnect();

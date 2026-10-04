@@ -18,6 +18,11 @@ import type { ListSummary, ListVisibility } from '@/types';
  * `types.ts` says a string - and it is converted here rather than left to
  * `JSON.stringify`, so the response is the shape the type claims on any
  * serialization.
+ *
+ * `sharedWithCount` and `sharedWithGroupCount` are both carried rather than summed
+ * into one figure, for the reason `lib/list-access.ts` sets out: individuals and group
+ * members overlap, so a sum counts somebody in two granted groups twice and the figure
+ * on a row would then disagree with the number of people who can actually read it.
  */
 const toWireSummary = (list: StoredListSummary): ListSummary => ({
   id: list.id,
@@ -27,6 +32,7 @@ const toWireSummary = (list: StoredListSummary): ListSummary => ({
   ownerDisplayName: list.ownerDisplayName,
   giftCounts: list.giftCounts,
   sharedWithCount: list.sharedWithCount,
+  sharedWithGroupCount: list.sharedWithGroupCount,
   isOwner: list.isOwner,
   createdAt: list.createdAt.toISOString(),
 });
