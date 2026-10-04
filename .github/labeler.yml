@@ -1,0 +1,71 @@
+# Label rules for actions/labeler, read from .github/workflows/label.yml.
+#
+# Each top-level key is a label and each list under it is a list of match
+# configurations. The action only attaches labels that already exist in the
+# repository — it never creates them — so a key here that is not in the
+# repository's label list is a silent no-op, not an error.
+#
+# `changed-files` takes a list of *objects*, and the action accepts exactly four
+# keys inside them:
+#
+#   any-glob-to-any-file     one of these globs matches one changed file
+#   any-glob-to-all-files    one of these globs matches every changed file
+#   all-globs-to-any-file    every one of these globs matches one changed file
+#   all-globs-to-all-files   every one of these globs matches every changed file
+#
+# All three labels below use `any-glob-to-any-file`, which is the ordinary case:
+# touching any of the listed paths earns the label.
+#
+# A list of bare strings is NOT accepted, however natural it looks:
+#
+#   javascript:
+#     - changed-files:
+#         - 'app/**'          # <- a string, and the action rejects the whole file
+#
+# with `The "changed-files" section must have a valid config structure` before it
+# labels anything. Two earlier versions of this file made exactly that mistake -
+# first `changed-files` nested under `any`, then flattened into plain strings -
+# and the diagnosis at the time blamed the `any` wrapper, which was wrong. The
+# rule the code enforces is `isObject()` on each element, not the nesting.
+#
+# `v7` reads this file over the API with `ref: github.context.sha`, so it loads
+# from the pull request's merge ref rather than from the head branch. That is why
+# a fix has to land on the base branch eventually even when the pull request that
+# needs it points somewhere else.
+#
+# The three labels below are the repository's existing labels that map onto
+# changed paths. `bug`, `enhancement`, `duplicate` and the rest describe intent
+# rather than location, so they stay a human's decision.
+#
+# The `dot` input is left at its default of true, so a path that starts with a
+# dot — `.github/workflows/label.yml`, for instance — participates in matching
+# without needing a separate pattern for it.
+#
+# `prisma/schema.prisma` and `prisma/migrations/**` are deliberately absent:
+# they change the data model rather than a dependency, and none of the labels
+# this repository defines describe that.
+
+dependencies:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'package.json'
+          - 'package-lock.json'
+
+documentation:
+  - changed-files:
+      - any-glob-to-any-file:
+          - '**/*.md'
+
+javascript:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'app/**'
+          - 'components/**'
+          - 'hooks/**'
+          - 'lib/**'
+          - 'types.ts'
+          - 'proxy.ts'
+          - '*.ts'
+          - '*.tsx'
+          - '*.js'
+          - '*.mjs'
