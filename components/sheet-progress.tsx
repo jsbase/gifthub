@@ -68,17 +68,24 @@ const SheetProgress: React.FC<SheetProgressProps> = ({
       className={cn('flex shrink-0 items-center gap-3', className)}
     >
       <span className='relative block h-[3px] w-14 bg-wash-strong'>
-        {total === 0 ? (
-          <span className='absolute inset-0 border-t border-dashed border-rule' />
-        ) : (
-          <span
-            className={cn(
-              'absolute inset-y-0 left-0',
-              nothingLeft ? 'bg-done' : 'bg-[var(--member-ink)]'
-            )}
-            style={{ width: `${pct}%` }}
-          />
-        )}
+        {/*
+          Always drawn. A second, absolutely-positioned span used to be laid over the
+          track for a list with no wishes on it - a dashed rule, which is what a
+          broken progress bar looks like rather than what an empty one looks like,
+          and it appeared on the contents page of every new list in the product.
+
+          At zero collected the fill is zero pixels wide and the track underneath it
+          is the whole story. The figure beside it already prints 0, and
+          `giftCount.none` is the sentence that says "no wishes written yet" where
+          somebody reads sentences.
+        */}
+        <span
+          className={cn(
+            'absolute inset-y-0 left-0',
+            nothingLeft ? 'bg-done' : 'bg-[var(--member-ink)]'
+          )}
+          style={{ width: `${pct}%` }}
+        />
       </span>
       {nothingLeft ? (
         <IconCheck className='h-4 w-4 text-done' stroke={2.5} />

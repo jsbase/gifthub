@@ -831,7 +831,7 @@ const ListSheet: React.FC<ListSheetProps> = ({
                     label={dict.listSheet.openIdeas}
                     count={openGifts.length}
                   />
-                  <ul>
+                  <ul className='flex flex-col gap-2'>
                     {openGifts.map((gift) => (
                       <GiftCard
                         key={gift.id}
@@ -906,7 +906,7 @@ It cannot be rendered inside the cell: `GiftCardProps.dict` is
                     </p>
                   )}
 
-                  <ul>
+                  <ul className='flex flex-col gap-2'>
                     {collectedGifts.map((gift) => (
                       <GiftCard
                         key={gift.id}

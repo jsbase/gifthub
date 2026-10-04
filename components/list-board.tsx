@@ -150,17 +150,28 @@ const ListBoard: React.FC<ListBoardProps> = ({
     <section className='flex flex-col gap-6' data-testid='ownSection'>
       <SectionHead
         label={dict.listBoard.yourLists}
-        count={lists.length}
+        action={
+          <Button
+            variant='outline'
+            onClick={onCreateList}
+            className='justify-center text-[0.875rem]'
+            data-testid='createListButton'
+          >
+            <IconPlus className='h-4 w-4' aria-hidden='true' />
+            {dict.listBoard.createList}
+          </Button>
+        }
       />
 
       {lists.length > 0 ? (
-        <ul data-testid='ownedLists'>{/* No `divide-y`, and that is the load-bearing
-            absence on this page. Two lists in one section are two rows of one
-            block; a hairline between them claimed they were two blocks, and it
-            was the same hairline the section head uses to say a block starts here,
-            so the page had one mark doing two opposite jobs and a reader could
-            not tell where a group ended. The rule now means one thing - a
-            boundary - and rows inside a block are separated by space. */}
+        /* `divide-y`, and it is a ruled index rather than a floating one. This was
+           removed on the argument that a hairline between two rows of one section
+           claims they are two sections - which is true, and costs more than it saves.
+           The section head's rule sits *under* the label and therefore directly above
+           the first row, so the two lines are 16px apart and about different things;
+           the hairline between rows 2 and 3 is a hundred pixels from any head. A
+           printed index rules its rows and it reads as one. */
+        <ul data-testid='ownedLists' className='divide-y divide-rule'>
           {lists.map((list) => (
             <ListRow
               key={list.id}
@@ -181,42 +192,12 @@ const ListBoard: React.FC<ListBoardProps> = ({
           sentences about two different relationships, and an end-to-end assertion
           that pinned a single name would pass on whichever section happened to
           render first.
+
+          This plate is the create control on an empty board, which is why the head's
+          button and this cannot both be there. Two controls for one action is the
+          same defect as an inert one.
         */
         <CreatePlate dict={dict} onCreate={onCreateList} />
-      )}
-
-      {/*
-        Where the create button went.
-
-        A row under the last list rather than a control inside the head, for the
-        reason the head's rule moved: a boundary line that runs above a 44px button
-        is a line about the button, and the button is not a block. Here the rule
-        below the last row separates the rows from the action, which is a statement
-        about both, and the action sits under the thing it acts on.
-
-        Shown only when there are lists. On an empty board the plate above already
-        *is* the control - it is the cell waiting to be written in - and a second
-        button saying the same thing one line below would be the same defect as an
-        inert control: two controls, one action.
-      */}
-      {lists.length > 0 && (
-        <div className='border-t border-rule pt-3'>
-          <Button
-            variant='ghost'
-            onClick={onCreateList}
-            className={cn(
-              'w-full',
-              'justify-start',
-              'gap-2.5',
-              'px-3',
-              'text-caption'
-            )}
-            data-testid='createListButton'
-          >
-            <IconPlus className='h-4 w-4' aria-hidden='true' />
-            <span className='label-print'>{dict.listBoard.createList}</span>
-          </Button>
-        </div>
       )}
     </section>
   );
@@ -229,13 +210,10 @@ const ListBoard: React.FC<ListBoardProps> = ({
       control - there is nothing to create here.
     */
     <section className='flex flex-col gap-6' data-testid='sharedSection'>
-      <SectionHead
-        label={dict.listBoard.sharedWithYou}
-        count={shared.length}
-      />
+      <SectionHead label={dict.listBoard.sharedWithYou} />
 
       {shared.length > 0 ? (
-        <ul data-testid='sharedLists'>
+        <ul data-testid='sharedLists' className='divide-y divide-rule'>
           {shared.map((list) => (
             <ListRow
               key={list.id}
@@ -271,7 +249,7 @@ const ListBoard: React.FC<ListBoardProps> = ({
       paragraph, so each route owns its own heading and this one can say what the
       page is for rather than who is looking at it.
     */
-    <div className='flex flex-col gap-6'>
+    <div className='flex flex-col gap-8'>
       <h1 className='sr-only'>{dict.listBoard.yourLists}</h1>
 
       {sharedFirst ? (
@@ -317,18 +295,26 @@ const ListBoard: React.FC<ListBoardProps> = ({
  * title. The action sits beside it from `sm` up and under it below, because at
  * 390px a German and a Russian label do not fit on one line each.
  */
-const SectionHead: React.FC<{ label: string; count: number }> = ({
+const SectionHead: React.FC<{ label: string; action?: React.ReactNode }> = ({
   label,
-  count,
+  action,
 }) => (
   <div
     className={cn(
       'flex',
       'flex-col',
       'gap-4',
-      'border-t',
+      'border-b',
       'border-rule',
-      'pt-3',
+      'pb-4',
+      /*
+        Under the head, not over it. A rule above a label is the right mark when
+        there is a block above it to be separated from - which is the list sheet's
+        case and not this one. Here the first section sits at the top of the sheet
+        with nothing over it, so a rule over the label drew a line across an empty
+        margin, and a rule over a 44px button is a statement about the button that
+        the button never made.
+      */
       'sm:flex-row',
       'sm:items-end',
       'sm:justify-between',
@@ -338,22 +324,13 @@ const SectionHead: React.FC<{ label: string; count: number }> = ({
     <h2 className='label-print pt-1 text-caption'>{label}</h2>
 
     {/*
-      How many rows are under this label, as the sheet prints it. It was absent here
-      because the create button was standing where the figure goes, and two objects
-      cannot share the right-hand end of one line.
+      The create button, at the size and weight it always had: a 44px outline on the
+      right end of the head. It briefly became a quiet ghost row at the foot of the
+      section, which read as tidier and was worse - on a board with no lists the
+      plate is already the control, and on a board with lists this is the one thing
+      anybody came to do. A quiet row for it says it does not matter.
     */}
-    <span
-      className={cn(
-        'font-label',
-        'text-[0.6875rem]',
-        'font-bold',
-        'tabular-nums',
-        'tracking-[0.1em]',
-        'text-caption'
-      )}
-    >
-      {String(count).padStart(2, '0')}
-    </span>
+    {action}
   </div>
 );
 

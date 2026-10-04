@@ -126,8 +126,15 @@ const GiftCard: React.FC<GiftCardProps> = ({
           edge belongs to the block, and the block's boundary is drawn once, above
           the section label. One line, one job, one owner.
         */
-        'border-x',
-        'border-b',
+        /*
+          All four sides, which is what it was. The run of cells was changed to three
+          sides so that a block boundary and a cell edge would not be the same line
+          sixteen pixels apart - and in doing that the cells stopped reading as cells,
+          which is a worse loss than the doubled line was. The block's own boundary
+          now sits under the section head, on the other side of the label, so the two
+          lines are far enough apart to be about different things.
+        */
+        'border',
         'border-rule',
         'transition-colors',
         'duration-200',
@@ -422,6 +429,14 @@ const GiftCardBody: React.FC<{
           'mt-1.5',
           'max-w-[54ch]',
           'break-words',
+          /*
+            Six lines. The note is the other unbounded text in the cell and it was the
+            other half of the problem: a 600-character note at `text-[0.8125rem]`
+            with `leading-relaxed` is a wall about eleven lines tall, and a cell with
+            three of them is a page. Six is enough for a sentence and a link, which is
+            what a note is for.
+          */
+          'line-clamp-6',
           'text-[0.8125rem]',
           'leading-relaxed',
           gift.isPurchased ? 'text-collected-foreground/70' : 'text-caption'
