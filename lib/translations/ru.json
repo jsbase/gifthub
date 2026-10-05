@@ -114,6 +114,8 @@
     "giftsCopied": "Желания скопированы",
     "giftsMoved": "Желания перенесены",
     "giftsTransferFailed": "Желания не перенесены",
+    "giftsTransferNotFound": "Желания или списка назначения больше нет",
+    "giftsTransferTooMany": "Слишком много желаний сразу",
     "listCreated": "Список создан",
     "listCreateFailed": "Список не создан",
     "listRenamed": "Список переименован",

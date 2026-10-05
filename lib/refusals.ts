@@ -36,6 +36,14 @@ export type Refusal =
     is answered by comparing two ids rather than by looking anything up.
   */
   | 'already_on_this_list'
+  /*
+    A transfer naming more wishes than one request may carry. Request-shape like the
+    code above - it is decided from the body alone, before any list is looked at - so
+    it is 400, and it is its own code rather than a reuse of `nothing_to_change`
+    because the instruction it earns is different: not "name something" but "name
+    fewer, and go again".
+  */
+  | 'too_many_gifts'
   // Sharing.
   | 'no_such_account'
   | 'already_shared'
@@ -73,6 +81,7 @@ export const REFUSALS: Refusal[] = [
   'ambiguous_change',
   'invalid_visibility',
   'already_on_this_list',
+  'too_many_gifts',
   'no_such_account',
   'already_shared',
   'cannot_share_with_owner',

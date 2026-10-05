@@ -6,6 +6,15 @@ import { refusalResponse } from '@/lib/api-refusal';
 type ListContext = { params: Promise<{ id: string }> };
 
 /**
+ * What an attempt's name may look like: the characters of a UUID and of the
+ * base-36 fallback the sheet uses where `crypto.randomUUID` does not exist, and no
+ * more. It is hashed into the ids of the copies (`keyedGiftId`), so there is no
+ * reason to accept anything the sheet cannot send, and a closed alphabet means no
+ * request can smuggle a separator or a control character into that input.
+ */
+const REQUEST_ID = /^[A-Za-z0-9_-]{1,64}$/;
+
+/**
  * A batch of ideas from this list onto another one, keeping them or leaving them.
  *
  * One request for a whole selection rather than one per wish, and that is the
@@ -20,6 +29,12 @@ type ListContext = { params: Promise<{ id: string }> };
  * rule that `purchasedById` never reaches the browser is held here structurally: it
  * is held there by naming every field explicitly, and a response with nothing to
  * name cannot leak one.
+ *
+ * **`requestId` is optional, and what it buys is a safe second press.** It names one
+ * attempt, so a request whose reply was lost can be sent again without a copy being
+ * written twice - see `transferGifts` for how. It is optional because the route is
+ * an API as well as the sheet's back end, and a caller that has no use for the
+ * guarantee should not have to invent a value; the sheet always sends one.
  */
 export const POST: (
   request: NextRequest,
@@ -32,10 +47,10 @@ export const POST: (
     }
 
     const { id } = await params;
-    const { giftIds, targetListId, mode } = await request.json();
+    const { giftIds, targetListId, mode, requestId } = await request.json();
 
     /*
-      The three fields, checked before anything is looked up.
+      The fields, checked before anything is looked up.
 
       `mode` is checked against the two literals rather than cast, because the whole
       of `transferGifts`'s behaviour is selected by it: an unrecognised string would
@@ -44,6 +59,15 @@ export const POST: (
       strings so that `rows.length !== giftIds.length` inside `transferGifts` cannot
       be satisfied by an empty request - which would report success for a batch that
       did nothing.
+
+      `requestId` is allowed to be absent but not to be wrong. A present value that
+      does not match is refused rather than ignored, because ignoring it would turn
+      a caller's attempt at repeat-safety into a copy that is silently repeatable -
+      the one outcome the field exists to prevent.
+
+      How many ids is not checked here. The cap is a rule about the work a batch may
+      ask for rather than about the shape of the body, and it lives in
+      `transferGifts` beside the other rules about what a batch may do.
     */
     if (
       !Array.isArray(giftIds) ||
@@ -51,7 +75,9 @@ export const POST: (
       !giftIds.every((value) => typeof value === 'string') ||
       typeof targetListId !== 'string' ||
       targetListId.length === 0 ||
-      (mode !== 'copy' && mode !== 'move')
+      (mode !== 'copy' && mode !== 'move') ||
+      (requestId !== undefined &&
+        (typeof requestId !== 'string' || !REQUEST_ID.test(requestId)))
     ) {
       return NextResponse.json(
         { message: 'Name the wishes, the destination and the mode' },
@@ -60,7 +86,7 @@ export const POST: (
     }
 
     const result = await transferGifts(
-      { giftIds, mode },
+      { giftIds, mode, requestId },
       id,
       targetListId,
       accountId
@@ -70,7 +96,7 @@ export const POST: (
 
     return NextResponse.json({
       success: true,
-      count: result.value.transferred.length,
+      count: result.value.count,
     });
   } catch (error) {
     console.error('Error transferring gifts:', error);

@@ -48,6 +48,7 @@ const STATUS: Record<Refusal, number> = {
     is being denied. It is the answer to a malformed request, which is what it is.
   */
   already_on_this_list: 400,
+  too_many_gifts: 400,
   already_shared: 400,
   cannot_share_with_owner: 400,
   not_shared_yet: 400,
@@ -79,6 +80,7 @@ const MESSAGE: Record<Refusal, string> = {
   ambiguous_change: 'Change either the name or the visibility, not both',
   invalid_visibility: 'That visibility does not exist',
   already_on_this_list: 'That wish is already on this list',
+  too_many_gifts: 'Too many wishes in one request',
   already_shared: 'This list is already shared with them',
   cannot_share_with_owner: 'You already have this list',
   not_shared_yet: 'Make the list shared before sharing it',

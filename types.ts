@@ -698,8 +698,8 @@ export interface ToastTranslations {
   /**
    * A batch of wishes that arrived on another list.
    *
-   * **No `{count}`.** The three transfer toasts are the only strings in this
-   * interface that carry no number, and that is the point rather than an omission:
+   * **No `{count}`.** The transfer toasts are the only strings in this interface
+   * that carry no number, and that is the point rather than an omission:
    * Russian inflects the noun by number (1 идея, 2 идеи, 5 идей), so a single
    * counted template cannot be written correctly in one of the three shipped
    * languages. The bar above the add row already states the figure in a properly
@@ -711,10 +711,22 @@ export interface ToastTranslations {
    * parameter, for the same reason: the verb is the whole difference between the
    * two operations and interpolating it into a sentence would need a placeholder
    * that no locale can fill with a correctly inflected pair of words.
+   *
+   * **Three ways to fail, because the server says which.** `giftsTransferFailed` is
+   * the sentence for a request that did not arrive or was not understood - the reader
+   * cannot act on it except by pressing again. The other two are for refusals the
+   * reader *can* act on: `giftsTransferNotFound` when a wish or the destination has
+   * gone since the sheet was loaded (the sheet reloads and the next press is a
+   * different request), and `giftsTransferTooMany` when the selection is over the
+   * limit. The limit is not in the sentence for the same reason there is no `{count}`
+   * - and so that the number can change on the server without three translations
+   * going stale.
    */
   giftsCopied: string;
   giftsMoved: string;
   giftsTransferFailed: string;
+  giftsTransferNotFound: string;
+  giftsTransferTooMany: string;
 }
 
 export interface ConfirmationTranslations {

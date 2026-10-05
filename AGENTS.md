@@ -102,3 +102,13 @@ Conditional:
 - Translation strings changed → all three of `lib/translations/{de,en,ru}.json` updated, and the key present in the `Translations` interface in `types.ts`.
 - Prisma schema changed → a migration exists under `prisma/migrations/` and `npx prisma migrate deploy` applies it cleanly.
 - Pre-existing lint findings → do not "fix" them as a side effect and do not re-baseline to make a gate pass. The ratchet works like this: `scripts/lint-ratchet.mjs` runs ESLint, identifies each warning by file + rule + first line of prose (deliberately not line number, and not the code frame, which embeds an absolute path), and compares that multiset against `lint-baseline.json`. Duplicates count, so three `setState` calls in one file are three warnings and only the fourth is new. Shrinking the debt passes; only growing it fails. `npm run lint:baseline` rewrites the baseline to accept the current warnings — that is a deliberate, reviewable act, not a way to get to green. Note that `prisma/**` is globally ignored by ESLint, so Prisma files are not linted at all.
+
+<!-- BEGIN:nextjs-agent-rules -->
+
+# This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+
+<!-- END:nextjs-agent-rules -->

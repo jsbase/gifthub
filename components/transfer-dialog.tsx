@@ -62,27 +62,33 @@ const TransferDialog: React.FC<TransferDialogProps> = ({
   onTransfer,
 }) => {
   /*
-    The chosen destination, which is local and therefore free - selecting a row is
-    never a request. It is a `string | null` rather than an index so that reordering
-    or re-fetching the list cannot make a selection point at a different list than
-    the one the reader picked.
+    The destination the reader picked, which is local and therefore free - selecting
+    a row is never a request. It is a `string | null` rather than an index so that
+    reordering or re-fetching the list cannot make a selection point at a different
+    list than the one the reader picked.
   */
-  const [targetId, setTargetId] = useState<string | null>(null);
+  const [pickedId, setPickedId] = useState<string | null>(null);
 
   /*
-    Cleared when the sheet closes, not on open. A reader who opens the picker for a
-    second batch would otherwise find the previous destination still chosen - and
-    * for the common case of filing two batches into the same list that is a helpful
-    * shortcut, while for a reader who means to file into a *different* list it is a
-    control that starts out wrong. Clearing on close keeps the sheet honest: it opens
-    with nothing chosen, every time.
+    The destination that is actually chosen: the picked one, but only while it is
+    still one of the rows on offer. Derived rather than reset, so there is no render
+    in which the button is enabled for a list that is no longer shown - the sheet
+    reloads these rows when a transfer is refused because a list has gone, and a
+    pick of that list would otherwise commit against an id the reader can no longer
+    see, into the same refusal.
+  */
+  const targetId = lists.some((list) => list.id === pickedId) ? pickedId : null;
 
-    It is also cleared whenever the list of rows changes underneath it, because a
-    selection of a list that is no longer offered would commit against an id the
-    reader can no longer see.
+  /*
+    Cleared when the dialog closes, not on open. A reader who opens the picker for a
+    second batch would otherwise find the previous destination still chosen - which
+    for the common case of filing two batches into the same list is a helpful
+    shortcut, and for a reader who means to file into a *different* list is a control
+    that starts out wrong. Clearing on close keeps it honest: it opens with nothing
+    chosen, every time.
   */
   const close = () => {
-    setTargetId(null);
+    setPickedId(null);
     onClose();
   };
 
@@ -128,12 +134,12 @@ const TransferDialog: React.FC<TransferDialogProps> = ({
           </div>
         ) : isLoading ? (
           /*
-            The prefetch is still in flight. The spec starts it when the transfer
-            mode is entered rather than when this opens, which is what makes the dialog fast
-            - but "fast" is not "already finished", and a reader who taps the button
-            the instant the bar appears lands here. The alternative was the empty
-            state, which says they have no other lists, and that is not a fact this
-            dialog knows.
+            The prefetch is still in flight. The sheet starts it when the transfer
+            mode is entered rather than when this opens, which is what makes the
+            dialog fast - but "fast" is not "already finished", and a reader who taps
+            the button the instant the bar appears lands here. The alternative was
+            the empty state, which says they have no other lists, and that is not a
+            fact this dialog knows.
           */
           <div
             className='grid place-items-center py-8'
@@ -197,7 +203,7 @@ const TransferDialog: React.FC<TransferDialogProps> = ({
                       name='transferTarget'
                       value={list.id}
                       checked={isChosen}
-                      onChange={() => setTargetId(list.id)}
+                      onChange={() => setPickedId(list.id)}
                       disabled={isPending}
                       className='h-4 w-4 shrink-0 accent-ink'
                       data-testid={`transferTarget-${list.id}`}

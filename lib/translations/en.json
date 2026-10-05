@@ -114,6 +114,8 @@
     "giftsCopied": "Wishes copied",
     "giftsMoved": "Wishes moved",
     "giftsTransferFailed": "Wishes not transferred",
+    "giftsTransferNotFound": "A wish or the destination list is gone",
+    "giftsTransferTooMany": "Too many wishes at once",
     "listCreated": "List created",
     "listCreateFailed": "List not created",
     "listRenamed": "List renamed",

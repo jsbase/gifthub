@@ -15,7 +15,7 @@ import Footer from '@/components/footer';
 import Header from '@/components/header';
 import { StatusBadge } from '@/components/status-badge';
 import { ListVisibilityDialog } from '@/components/share-list-dialog';
-import { isRefusal } from '@/lib/refusals';
+import { isRefusal, type Refusal } from '@/lib/refusals';
 import { cn } from '@/lib/utils';
 import { memberInkStyle } from '@/lib/member-ink';
 import {
@@ -33,7 +33,72 @@ import type {
   ListSummary,
   ListVisibility,
   SheetFrameProps,
+  Translations,
 } from '@/types';
+
+/**
+ * A name for one transfer attempt, sent with the request so that pressing the same
+ * button again after a lost reply cannot write a copy twice (`transferGifts` has the
+ * server half).
+ *
+ * `crypto.randomUUID` is only defined in a secure context, and the sheet is opened
+ * over plain `http` by anybody testing from a phone against a development machine's
+ * address - where it is simply absent, and a missing function would fail every
+ * transfer with a sentence about the network. The fallback is not secret and does not
+ * need to be: the server namespaces the value by account, so all it has to be is
+ * different from the last attempt's. Its alphabet is the one the route accepts.
+ */
+const newRequestId = (): string =>
+  typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
+    ? crypto.randomUUID()
+    : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
+
+/**
+ * The sentence for a transfer the server answered with a refusal.
+ *
+ * Exhaustive over `Refusal`, like the tables in `account-picker.tsx` and
+ * `groups-dialog.tsx`: a code added to the vocabulary does not typecheck here until
+ * somebody has decided what a person making a transfer is told. Most of them are the
+ * generic sentence, and that is a decision rather than an omission - an
+ * `invalid_email` cannot come out of this route, and if one ever did the honest thing
+ * to say is that the wishes were not transferred.
+ *
+ * Only two are specific, and both because the reader can do something about them:
+ * `not_found` (a wish or the destination has gone since the sheet loaded) and
+ * `too_many_gifts` (select fewer).
+ */
+const transferFailureText = (dict: Translations, code: unknown): string => {
+  const generic = dict.toasts.giftsTransferFailed;
+  if (!isRefusal(code)) return generic;
+
+  const table: Record<Refusal, string> = {
+    not_found: dict.toasts.giftsTransferNotFound,
+    too_many_gifts: dict.toasts.giftsTransferTooMany,
+    invalid_email: generic,
+    duplicate_email: generic,
+    invalid_nickname: generic,
+    duplicate_nickname: generic,
+    weak_password: generic,
+    invalid_display_name: generic,
+    invalid_identifier: generic,
+    nothing_to_change: generic,
+    ambiguous_change: generic,
+    invalid_visibility: generic,
+    already_on_this_list: generic,
+    no_such_account: generic,
+    already_shared: generic,
+    cannot_share_with_owner: generic,
+    not_shared_yet: generic,
+    invalid_search_query: generic,
+    no_such_group: generic,
+    duplicate_group_name: generic,
+    cannot_join_own_group: generic,
+    forbidden: generic,
+    cannot_clear_purchase: generic,
+  };
+
+  return table[code];
+};
 
 /**
  * The board, the sheet it holds, and the two pieces of furniture around them.
@@ -396,7 +461,36 @@ const ListSheet: React.FC<ListSheetProps> = ({
   */
   const pathname = usePathname();
 
-  const hasSelection = selectedIds.length > 0;
+  /*
+    The selection as it stands on the sheet *now*, which is what is counted, sent and
+    dimmed - not `selectedIds` itself.
+
+    The two differ after a transfer is refused with `not_found`: the sheet reloads to
+    show what is really there, and a wish that is no longer on it would otherwise stay
+    in the batch with nothing on screen to untick. The bar would count a wish nobody
+    can see and every further press would be refused for it - a batch the reader could
+    only escape by leaving the mode. Derived in render rather than pruned in an effect,
+    so there is no moment at which the bar and the sheet disagree.
+  */
+  const liveSelectedIds = useMemo(
+    () => selectedIds.filter((id) => gifts.some((gift) => gift.id === id)),
+    [selectedIds, gifts]
+  );
+
+  const hasSelection = liveSelectedIds.length > 0;
+
+  /*
+    The name of the attempt in flight, held across presses on purpose. It is created
+    on the first press of a batch and kept until a transfer succeeds, so a press that
+    follows a failure of unknown outcome - a dropped connection, a reply that never
+    came - is the *same* attempt and the server can recognise it. Dropped on success
+    and with the mode, so the next batch is a new attempt and "copy it again" still
+    means a second copy.
+
+    A ref rather than state: nothing renders it, and it must be readable by the press
+    handler at the instant of the press, not at the render before.
+  */
+  const transferRequestId = useRef<string | null>(null);
 
   /*
     Whether the caller's lists have been asked for already.
@@ -483,6 +577,7 @@ const ListSheet: React.FC<ListSheetProps> = ({
   const exitTransferMode = useCallback(() => {
     setTransferMode(null);
     clearSelection();
+    transferRequestId.current = null;
   }, [clearSelection]);
 
   /*
@@ -613,15 +708,19 @@ const ListSheet: React.FC<ListSheetProps> = ({
         toast.success(dict.toasts.giftDeleted);
         /*
           Dropped from the batch here rather than by watching the sheet for ids that
-          have gone. Deleting is the only event in this component that can remove a
-          row without the selection being cleared first - a transfer clears it before
-          it sends, and marking bought only moves the wish between two sections of
-          the same sheet - so handling the one event that can is both smaller than a
+          have gone. Deleting is the one event the reader performs on this sheet that
+          removes a row while the selection stands - a transfer clears it before it
+          sends, and marking bought only moves the wish between two sections of the
+          same sheet - so handling the one event that does is both smaller than a
           general effect and impossible to get wrong on a path nobody tested.
 
-          Without it the id would sit in the bar until the request came back 404, and
-          the server would refuse the *whole* batch over a row the reader had just
-          deleted themselves.
+          Without it the id would sit in the bar until the reload landed, and a press
+          in that gap would have the server refuse the *whole* batch over a row the
+          reader had just deleted themselves.
+
+          A row that goes for a reason the reader did not perform - a transfer refused
+          because a wish was already gone - is the other case, and `liveSelectedIds`
+          covers it by being derived from the sheet rather than from an event.
         */
         setSelectedIds((current) => current.filter((id) => id !== giftId));
         onGiftDeleted();
@@ -657,25 +756,58 @@ const ListSheet: React.FC<ListSheetProps> = ({
     which is the tedium this feature exists to remove. So on a failure the dialog is
     still open with the same row chosen, the selection is still on the sheet, and the
     only new fact is the toast. Pressing again is one tap.
+
+    **That second press is safe, and it has to be.** A dropped connection and a lost
+    reply look the same from here: either the batch never arrived or it landed and the
+    answer did not come back. The attempt's name (`transferRequestId`) goes out with
+    every press and survives a failure, so the server can tell a repeat from a new
+    request - a copy is not written twice and a move that already happened answers as
+    the success it was.
+
+    **A refusal is read, not flattened.** The server says *why* in `code`, and the
+    toast says it back (`transferFailureText`). The one that changes what the sheet
+    does is `not_found`: a wish or the destination has gone since this loaded, so the
+    sheet and the picker are reloaded to show what is really there. The picker's list
+    is the reason - a destination that was deleted would otherwise still be offered,
+    and the reader would press the same row into the same refusal.
   */
   const handleTransfer = useCallback(
     async (targetListId: string, mode: 'copy' | 'move') => {
       setIsTransferPending(true);
-      setTransferringIds(selectedIds);
+      setTransferringIds(liveSelectedIds);
+
+      if (transferRequestId.current === null) {
+        transferRequestId.current = newRequestId();
+      }
 
       try {
         const response = await fetch(`/api/lists/${list.id}/gifts/transfer`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            giftIds: selectedIds,
+            giftIds: liveSelectedIds,
             targetListId,
             mode,
+            requestId: transferRequestId.current,
           }),
         });
 
-        if (!response.ok) throw new Error('Failed to transfer gifts');
+        if (!response.ok) {
+          const body = (await response.json().catch(() => null)) as {
+            code?: unknown;
+          } | null;
 
+          toast.error(transferFailureText(dict, body?.code));
+
+          if (body?.code === 'not_found') {
+            onGiftChanged();
+            void loadTransferTargets();
+          }
+
+          return;
+        }
+
+        transferRequestId.current = null;
         toast.success(
           mode === 'copy' ? dict.toasts.giftsCopied : dict.toasts.giftsMoved
         );
@@ -699,13 +831,12 @@ const ListSheet: React.FC<ListSheetProps> = ({
     },
     [
       clearSelection,
-      dict.toasts.giftsCopied,
-      dict.toasts.giftsMoved,
-      dict.toasts.giftsTransferFailed,
+      dict,
       list.id,
+      liveSelectedIds,
+      loadTransferTargets,
       onGiftChanged,
       onTransferred,
-      selectedIds,
     ]
   );
 
@@ -1255,7 +1386,7 @@ It cannot be rendered inside the cell: `GiftCardProps.dict` is
                   data-testid='selectedCount'
                 >
                   {selectedCountLabel(
-                    selectedIds.length,
+                    liveSelectedIds.length,
                     getLocaleFromPath(pathname),
                     dict.listSheet
                   )}
