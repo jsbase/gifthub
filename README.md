@@ -124,3 +124,7 @@ Because CI seeds `dev` and `prisma/seed.mjs` deletes every row, a CI run resets 
 | `.github/workflows/summary.yml`    | `pull_request`, `workflow_dispatch` | Posts an AI-written summary as a comment.                                                                                                                                                                |
 
 Pull requests from forks cannot read repository secrets, so the database half of the Playwright job is skipped for them.n
+
+---
+
+☕ [ko-fi.com/wishyapp](https://ko-fi.com/wishyapp) — covers the hosting and database costs
