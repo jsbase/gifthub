@@ -62,6 +62,7 @@ node_modules/
 # agent tooling that lives inside .github - ignored, not deleted
 /.github/agents
 /.github/hooks
+/.cursor
 
 # agent plan workspace
 # Local planning and audit documents only. Nothing under /docs belongs in the
