@@ -1,7 +1,5 @@
 # wishy
 
-☕ [**ko-fi.com/wishyapp**](https://ko-fi.com/wishyapp) — if wishy kept two people from buying the same present, this is what pays for the hosting and the database.
-
 One list of gift ideas, shared with exactly the people who will buy from it, so nobody buys the same present twice.
 
 ## What it is
@@ -126,3 +124,7 @@ Because CI seeds `dev` and `prisma/seed.mjs` deletes every row, a CI run resets 
 | `.github/workflows/summary.yml`    | `pull_request`, `workflow_dispatch` | Posts an AI-written summary as a comment.                                                                                                                                                                |
 
 Pull requests from forks cannot read repository secrets, so the database half of the Playwright job is skipped for them.n
+
+---
+
+☕ [ko-fi.com/wishyapp](https://ko-fi.com/wishyapp) — covers the hosting and database costs
