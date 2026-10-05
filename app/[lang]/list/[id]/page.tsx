@@ -165,6 +165,30 @@ const ListPage: NextPage<ListPageProps> = ({ params }) => {
   }, [lang, router]);
 
   /*
+    A batch of wishes has landed on another list, and the reader goes there.
+
+    Both modes, and that is the deliberate half of this. Moving leaves this sheet
+    without those wishes, and staying would show a sheet that looks emptied by a bug;
+    copying leaves everything where it was, so the same navigation applies and
+    branching it for no visible difference is a branch nobody would be able to
+    justify later.
+
+    `pendingPath` rather than a bare `push`, and that is the whole reason this
+    handler exists on the page at all: setting it puts `isRouteChanging` true, which
+    is the existing `LoadingSpinner` condition - so the destination sheet's own load
+    is the loader, and it is the one the back row and the delete already use. A
+    `push` without it would navigate with nothing on screen in between.
+  */
+  const handleTransferred = useCallback(
+    (targetListId: string) => {
+      const destination = `/${lang}/list/${targetListId}`;
+      setPendingPath(destination);
+      router.push(destination);
+    },
+    [lang, router]
+  );
+
+  /*
     Deleting the list this sheet is on. The sheet is the only place in the product
     where the list being destroyed is the thing the reader is looking at, so this
     is the path that most needs the confirmation and the path after it has to leave
@@ -215,6 +239,7 @@ const ListPage: NextPage<ListPageProps> = ({ params }) => {
         onDeleteList={() => setPendingDeletion(true)}
         onShareList={() => setIsSharing(true)}
         onVisibilityChanged={fetchData}
+        onTransferred={handleTransferred}
       />
 
       {/*

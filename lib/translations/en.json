@@ -79,6 +79,7 @@
     "nothingToChange": "Nothing was changed.",
     "ambiguousChange": "Change either the name or the visibility, not both at once.",
     "invalidVisibility": "That visibility does not exist.",
+    "alreadyOnThisList": "That wish is already on this list.",
     "duplicateEmail": "There is already an account for this email address. A forgotten password cannot be reset.",
     "weakPassword": "At least 8 characters.",
     "invalidDisplayName": "Names may contain letters, numbers, spaces, dots, hyphens and apostrophes, up to 100 characters.",
@@ -110,6 +111,9 @@
     "giftStatusUpdateFailed": "Wish not updated",
     "giftDeleted": "Wish deleted",
     "giftDeleteFailed": "Wish not deleted",
+    "giftsCopied": "Wishes copied",
+    "giftsMoved": "Wishes moved",
+    "giftsTransferFailed": "Wishes not transferred",
     "listCreated": "List created",
     "listCreateFailed": "List not created",
     "listRenamed": "List renamed",
@@ -172,7 +176,24 @@
     "youAreABuyer": "This list belongs to someone else. You may tick an idea off once you have bought it — nothing else.",
     "markedBySomeoneElse": "Somebody else marked this — the mark stays.",
     "backToLists": "Back to your lists",
-    "addGiftRow": "Just write your wish down, share it, done!"
+    "addGiftRow": "Just write your wish down, share it, done!",
+    "selectGift": "Select wish",
+    "selectedCount": {
+      "one": "{count} wish selected",
+      "two": "{count} wishes selected",
+      "few": "{count} wishes selected",
+      "many": "{count} wishes selected"
+    },
+    "takeTo": "Take to…"
+  },
+  "transferDialog": {
+    "title": "Take wishes to another list",
+    "copyHere": "Copy here",
+    "moveHere": "Move here",
+    "copying": "Copying…",
+    "moving": "Moving…",
+    "error": "Your lists could not be loaded.",
+    "retry": "Try again"
   },
   "shareList": {
     "shareTitle": "Share list",

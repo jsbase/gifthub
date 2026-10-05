@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { IconArrowLeft, IconCirclePlus, IconTrash } from '@tabler/icons-react';
 import { Button } from '@/components/ui/button';
@@ -10,6 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { CropMarks } from '@/components/ui/dialog';
 import ConfirmDialog from '@/components/confirm-dialog';
 import GiftCard from '@/components/gift-card';
+import TransferDialog from '@/components/transfer-dialog';
 import Footer from '@/components/footer';
 import Header from '@/components/header';
 import { StatusBadge } from '@/components/status-badge';
@@ -17,11 +18,19 @@ import { ListVisibilityDialog } from '@/components/share-list-dialog';
 import { isRefusal } from '@/lib/refusals';
 import { cn } from '@/lib/utils';
 import { memberInkStyle } from '@/lib/member-ink';
-import { giftCountLabel, sheetCounts, splitSheet } from '@/lib/gift-count';
+import {
+  giftCountLabel,
+  selectedCountLabel,
+  sheetCounts,
+  splitSheet,
+} from '@/lib/gift-count';
 import { GIFT_FIELD_LIMITS } from '@/lib/gift-text';
+import { getLocaleFromPath } from '@/lib/i18n-config';
+import { usePathname } from 'next/navigation';
 import type {
   Gift,
   ListSheetProps,
+  ListSummary,
   ListVisibility,
   SheetFrameProps,
 } from '@/types';
@@ -303,6 +312,7 @@ const ListSheet: React.FC<ListSheetProps> = ({
   onDeleteList,
   onShareList,
   onVisibilityChanged,
+  onTransferred,
 }) => {
   const [showAddGiftForm, setShowAddGiftForm] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
@@ -313,6 +323,137 @@ const ListSheet: React.FC<ListSheetProps> = ({
   const [changedId, setChangedId] = useState<string | null>(null);
   const [pendingDeletion, setPendingDeletion] = useState<Gift | null>(null);
   const [isVisibilityOpen, setIsVisibilityOpen] = useState(false);
+
+  /*
+    THE BATCH, AND WHERE IT LIVES.
+
+    `selectedIds` is plain local state and nothing else. It is not a URL, not a
+    context and not a server round trip, because marking a wish selected is a
+    gesture and a gesture that waits on a request is slower than retyping the wishes
+    this whole feature exists to avoid. The page does not change, the sheet does not
+    re-fetch, and the only thing that happens is that a bar appears at the foot.
+
+    That is the whole of the "instant" half of the rule: anything that is only local
+    state is instant, and this is the most local state in the component.
+  */
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [isTransferOpen, setIsTransferOpen] = useState(false);
+  const [pendingMode, setPendingMode] = useState<'copy' | 'move' | null>(null);
+
+  /*
+    The caller's own lists, fetched when the selection bar first appears rather than
+    when the dialog opens.
+
+    The timing is the point. There is idle time between the two moments - the reader
+    marks a wish, reads the bar, decides, and then opens the picker - and fetching
+    during it means the dialog opens with its rows already in hand and has nothing
+    to wait for. Fetching on open would make the one sheet in the product whose
+    content cannot be known in advance into the one that visibly stalls.
+
+    `null` rather than `[]` because "not fetched yet" and "fetched, and there are
+    none" are different states: the first is a spinner, the second is an invitation
+    to make a list, and collapsing them would tell a reader with a dozen lists that
+    they have none.
+  */
+  const [transferTargets, setTransferTargets] = useState<ListSummary[] | null>(null);
+  const [targetsFailed, setTargetsFailed] = useState(false);
+
+  /*
+    The batch whose request is in flight, which is NOT the live selection.
+
+    Two lists, and conflating them is a bug with a symptom nothing else would
+    catch: the selection is cleared the moment a transfer is sent, so passing it as
+    the "currently transferring" set would make that set empty for the whole duration
+    of the request - the rows would never dim and never go inert, and the property
+    `gift-card.tsx` documents would simply never happen. Worse, the sheet would be
+    fully interactive again mid-flight, so a reader could start a second batch on top
+    of the first and watch the first one's navigation arrive underneath it.
+
+    So this is captured at the moment the request goes out and released when it
+    comes back, and the selection is free to be whatever the reader does next.
+  */
+  const [transferringIds, setTransferringIds] = useState<string[]>([]);
+
+  /*
+    The locale, from the path, because `selectedCountLabel` has to be told which
+    language's plural rules to apply and a client component is not handed one.
+    `usePathname` plus `getLocaleFromPath` is what `auth-buttons.tsx` already does
+    for the same reason, so this is the second place and not a new convention.
+  */
+  const pathname = usePathname();
+
+  const hasSelection = selectedIds.length > 0;
+
+  /*
+    Whether the caller's lists have been asked for already.
+
+    A ref rather than state, and the reason is that this is a latch, not a value
+    anything renders: it decides whether a *gesture* starts a request, and reading
+    `transferTargets === null` for the same purpose would both re-render the whole
+    sheet to answer it and still be wrong on the second wish of a batch, because by
+    then `transferTargets` is non-null only if the first request had already landed.
+  */
+  const targetsRequested = useRef(false);
+
+  const loadTransferTargets = useCallback(async () => {
+    try {
+      const response = await fetch('/api/lists');
+      if (!response.ok) throw new Error('Failed to load lists');
+
+      const body = (await response.json()) as { owned?: ListSummary[] };
+      /*
+        `owned` and not `shared`: a destination is gated by `findOwnedList`, which
+        is 404 for a list the caller does not own, so offering a list they may merely
+        read would be offering a row that cannot be pressed. The source is removed
+        here rather than in the dialog so that the sheet - which knows which list it
+        is - is what guarantees it.
+      */
+      setTransferTargets((body.owned ?? []).filter((row) => row.id !== list.id));
+      setTargetsFailed(false);
+    } catch {
+      setTargetsFailed(true);
+    }
+  }, [list.id]);
+
+  const ensureTargets = useCallback(() => {
+    if (targetsRequested.current) return;
+    targetsRequested.current = true;
+    void loadTransferTargets();
+  }, [loadTransferTargets]);
+
+  /*
+    Selection is computed here rather than inside the state updater, and the fetch
+    is started from here rather than from an effect watching `selectedIds`.
+
+    Both halves of that are the same decision. An effect would have to watch "did a
+    selection appear", which means the request starts one render *after* the reader
+    marked the wish - correct, but it also means `react-hooks/set-state-in-effect`
+    fires and, more to the point, that the fetch is triggered by *observing* state
+    rather than by the thing the reader did. Starting it on the gesture is both
+    cheaper and honest about why it is running.
+
+    The updater stays pure, which matters: React may call a `setState` updater twice
+    in StrictMode, so a fetch kicked off from inside one would fire twice on mount in
+    development and never be explainable from the code that starts it.
+  */
+  const toggleSelected = useCallback(
+    (giftId: string) => {
+      const next = selectedIds.includes(giftId)
+        ? selectedIds.filter((id) => id !== giftId)
+        : [...selectedIds, giftId];
+
+      setSelectedIds(next);
+
+      // Fetched on the gesture that makes a batch visible, which is the earliest
+      // moment intent exists - and once only, so ticking a second wish does not
+      // start the request again. That is what keeps the second mark as instant as
+      // the first.
+      if (next.length > 0) ensureTargets();
+    },
+    [selectedIds, ensureTargets]
+  );
+
+  const clearSelection = useCallback(() => setSelectedIds([]), []);
 
   /*
     Newest first within each section, because that is the order the API returns
@@ -440,6 +581,19 @@ const ListSheet: React.FC<ListSheetProps> = ({
         if (!response.ok) throw new Error('Failed to delete gift');
 
         toast.success(dict.toasts.giftDeleted);
+        /*
+          Dropped from the batch here rather than by watching the sheet for ids that
+          have gone. Deleting is the only event in this component that can remove a
+          row without the selection being cleared first - a transfer clears it before
+          it sends, and marking bought only moves the wish between two sections of
+          the same sheet - so handling the one event that can is both smaller than a
+          general effect and impossible to get wrong on a path nobody tested.
+
+          Without it the id would sit in the bar until the request came back 404, and
+          the server would refuse the *whole* batch over a row the reader had just
+          deleted themselves.
+        */
+        setSelectedIds((current) => current.filter((id) => id !== giftId));
         onGiftDeleted();
       } catch {
         toast.error(dict.toasts.giftDeleteFailed);
@@ -451,6 +605,75 @@ const ListSheet: React.FC<ListSheetProps> = ({
   const handleConfirmDelete = useCallback(() => {
     if (pendingDeletion) handleDeleteGift(pendingDeletion.id);
   }, [pendingDeletion, handleDeleteGift]);
+
+  /*
+    ONE REQUEST FOR THE WHOLE SELECTION, then a toast and a route change.
+
+    The batch is sent as one call because that is the feature: a dozen wishes filed
+    wrongly are one mistake, and twelve requests would be twelve chances for the
+    batch to end up half-transferred. The server refuses the whole thing if any id
+    is not on this sheet, so there is no partial case to reconcile here.
+
+    **The dialog stays open and the selection stays intact until the request has
+    succeeded.** Both halves are the spec's own shape rather than a preference: the
+    pressed button is what swaps to its pending wording, and a pressed button is only
+    visible while the dialog is on screen. Closing it first - which is what this did
+    the first time - made that pending state unreachable and threw the state away
+    while it was still needed.
+
+    Which matters on failure. A reader who has just discovered their twelve wishes
+    are on the wrong sheet is not going to thank an interface that answered a dropped
+    request by clearing their selection: they would be back to marking twelve boxes,
+    which is the tedium this feature exists to remove. So on a failure the dialog is
+    still open with the same row chosen, the selection is still on the sheet, and the
+    only new fact is the toast. Pressing again is one tap.
+  */
+  const handleTransfer = useCallback(
+    async (targetListId: string, mode: 'copy' | 'move') => {
+      setPendingMode(mode);
+      setTransferringIds(selectedIds);
+
+      try {
+        const response = await fetch(`/api/lists/${list.id}/gifts/transfer`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            giftIds: selectedIds,
+            targetListId,
+            mode,
+          }),
+        });
+
+        if (!response.ok) throw new Error('Failed to transfer gifts');
+
+        toast.success(
+          mode === 'copy' ? dict.toasts.giftsCopied : dict.toasts.giftsMoved
+        );
+
+        // Only now, and in this order: the sheet is leaving, so the batch and the
+        // bar go together rather than one of them being visible on their own.
+        setIsTransferOpen(false);
+        clearSelection();
+        onGiftChanged();
+        onTransferred(targetListId);
+      } catch {
+        toast.error(dict.toasts.giftsTransferFailed);
+      } finally {
+        setPendingMode(null);
+        setTransferringIds([]);
+      }
+    },
+    [
+      clearSelection,
+      dict.toasts.giftsCopied,
+      dict.toasts.giftsMoved,
+      dict.toasts.giftsTransferFailed,
+      list.id,
+      onGiftChanged,
+      onTransferred,
+      selectedIds,
+    ]
+  );
 
   const handleVisibilitySelected = useCallback(
     async (visibility: ListVisibility) => {
@@ -841,17 +1064,21 @@ const ListSheet: React.FC<ListSheetProps> = ({
                         gift={gift}
                         dict={dict.listSheet}
                         canDelete={isOwner}
-                        // The mark is the one control that is never simply
-                        // present: an owner may put a mark on but may not take one
-                        // off, so on an open idea - which nobody has marked - the
-                        // owner clears it and everybody can.
+                        canSelect={isOwner}
                         onDelete={(id) =>
                           setPendingDeletion(
                             gifts.find((candidate) => candidate.id === id) ??
                               null
                           )
                         }
+                        // The mark is the one control that is never simply
+                        // present: an owner may put a mark on but may not take one
+                        // off, so on an open idea - which nobody has marked - the
+                        // owner clears it and everybody can.
                         onTogglePurchased={handleTogglePurchased}
+                        onToggleSelected={toggleSelected}
+                        isSelected={selectedIds.includes(gift.id)}
+                        transferringIds={transferringIds}
                         togglingId={togglingId}
                         changedId={changedId}
                       />
@@ -913,6 +1140,7 @@ It cannot be rendered inside the cell: `GiftCardProps.dict` is
                         gift={gift}
                         dict={dict.listSheet}
                         canDelete={isOwner}
+                        canSelect={isOwner}
                         onDelete={(id) =>
                           setPendingDeletion(
                             gifts.find((candidate) => candidate.id === id) ??
@@ -920,6 +1148,9 @@ It cannot be rendered inside the cell: `GiftCardProps.dict` is
                           )
                         }
                         onTogglePurchased={handleTogglePurchased}
+                        onToggleSelected={toggleSelected}
+                        isSelected={selectedIds.includes(gift.id)}
+                        transferringIds={transferringIds}
                         togglingId={togglingId}
                         changedId={changedId}
                       />
@@ -927,6 +1158,89 @@ It cannot be rendered inside the cell: `GiftCardProps.dict` is
                   </ul>
                 </section>
               )}
+            </div>
+          )}
+
+          {/*
+            THE SELECTION BAR, ABOVE THE ADD ROW.
+
+            Sticky, and that is the load-bearing part of it. A selection made near
+            the top of a long sheet has to keep its action reachable, and the add row
+            is the one row at the foot of this sheet that is *also* the bottom of the
+            scroll on a phone - so a bar that merely sat above the add row would be
+            a bar the reader had to scroll to the end of a list of twelve wishes in
+            order to use, which is the same tedium the feature exists to remove.
+
+            `bottom-0` rather than `top-*`: it is pinned to the foot of the
+            viewport, so it stays in the thumb zone on a phone, and it is rendered
+            above the add row in the flow so it never covers it.
+
+            Three things and no more: how many are selected, where to put them, and
+            how to stop. Every other action on a selected wish is still on the cell -
+            a bar that also carried "delete these" would make a batch of four
+            destructive controls out of one, and this product has exactly two
+            destructive controls by design (`PRODUCT.md:67`).
+          */}
+          {hasSelection && (
+            <div
+              data-testid='selectionBar'
+              className={cn(
+                'sticky',
+                'bottom-0',
+                'z-10',
+                '-mx-4',
+                'border-t',
+                'border-rule',
+                'bg-sheet',
+                'px-4',
+                'py-2.5'
+              )}
+            >
+              <div className='flex items-center gap-2'>
+                {/*
+                  The count, in words, through `selectedCountLabel` and not as a
+                  numeral. It is the one new number in the feature and Russian
+                  inflects it by number, so a figure here would be a sentence three
+                  times over in one of the three shipped languages - and not only in
+                  the single digits, which is why the function asks the platform for
+                  the plural category rather than counting. The four dictionary keys
+                  are the four CLDR categories, beside the one `giftCountLabel`
+                  already uses.
+                */}
+                <span
+                  className='min-w-0 flex-1 text-[0.8125rem] leading-snug text-caption'
+                  data-testid='selectedCount'
+                >
+                  {selectedCountLabel(
+                    selectedIds.length,
+                    getLocaleFromPath(pathname),
+                    dict.listSheet
+                  )}
+                </span>
+
+                <Button
+                  variant='outline'
+                  onClick={() => setIsTransferOpen(true)}
+                  className={cn('shrink-0', 'text-[0.875rem]')}
+                  data-testid='takeToButton'
+                >
+                  {dict.listSheet.takeTo}
+                </Button>
+
+                {/*
+                  Out of the batch, not out of the sheet. It says what it does: a
+                  reader who meant to leave the page can tell this apart from the
+                  back row above, which navigates.
+                */}
+                <Button
+                  variant='ghost'
+                  onClick={clearSelection}
+                  className={cn('shrink-0', 'text-[0.875rem]')}
+                  data-testid='clearSelection'
+                >
+                  {dict.listSheet.cancel}
+                </Button>
+              </div>
             </div>
           )}
 
@@ -1107,6 +1421,35 @@ It cannot be rendered inside the cell: `GiftCardProps.dict` is
         dict={dict}
         onSelect={handleVisibilitySelected}
       />
+
+      {/*
+        The destination picker, and the one place on this sheet that has to be
+        rendered *only* when it is open rather than toggled with a prop - because it
+        holds local state (which list is chosen) and a `Dialog` that stays mounted
+        with `open={false}` would keep that choice alive between two batches. Mounting
+        it fresh each time means it opens with nothing selected, which is the only
+        honest state for a picker whose answer depends on a selection the previous
+        batch has already gone.
+
+        `isLoading` is `transferTargets === null`, and it is passed rather than
+        inferred from an empty array on purpose: the prefetch begins when the bar
+        appears, so a reader can open this before it lands, and `[]` would tell them
+        they own no other lists - advice for a situation they are not in.
+      */}
+      {isTransferOpen && (
+        <TransferDialog
+          isOpen
+          onClose={() => setIsTransferOpen(false)}
+          lists={transferTargets ?? []}
+          isLoading={transferTargets === null}
+          sourceListName={list.name}
+          dict={dict}
+          loadFailed={targetsFailed}
+          onRetry={loadTransferTargets}
+          pendingMode={pendingMode}
+          onTransfer={handleTransfer}
+        />
+      )}
 
       {/*
         The one destructive action on a cell, and the only one a buyer cannot

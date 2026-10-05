@@ -79,6 +79,7 @@
     "nothingToChange": "Es wurde nichts geändert.",
     "ambiguousChange": "Bitte entweder den Namen oder die Sichtbarkeit ändern, nicht beides.",
     "invalidVisibility": "Diese Sichtbarkeit gibt es nicht.",
+    "alreadyOnThisList": "Dieser Wunsch steht schon auf dieser Liste.",
     "duplicateEmail": "Zu dieser E-Mail-Adresse gibt es schon ein Konto. Ein vergessenes Passwort lässt sich nicht zurücksetzen.",
     "weakPassword": "Mindestens 8 Zeichen.",
     "invalidDisplayName": "Der Name darf Buchstaben, Zahlen, Leerzeichen, Punkte, Bindestriche und Apostrophe enthalten, höchstens 100 Zeichen.",
@@ -110,6 +111,9 @@
     "giftStatusUpdateFailed": "Wunsch nicht aktualisiert",
     "giftDeleted": "Wunsch gelöscht",
     "giftDeleteFailed": "Wunsch nicht gelöscht",
+    "giftsCopied": "Wünsche kopiert",
+    "giftsMoved": "Wünsche umgezogen",
+    "giftsTransferFailed": "Wünsche nicht übertragen",
     "listCreated": "Liste erstellt",
     "listCreateFailed": "Liste nicht erstellt",
     "listRenamed": "Liste umbenannt",
@@ -172,7 +176,24 @@
     "youAreABuyer": "Diese Liste gehört jemand anderem. Abhaken, sobald du etwas besorgt hast, darfst du — mehr nicht.",
     "markedBySomeoneElse": "Jemand anderes hat das abgehakt — die Markierung bleibt.",
     "backToLists": "Zurück zu den Listen",
-    "addGiftRow": "Einfach deinen Wunsch eintragen, teilen, fertig!"
+    "addGiftRow": "Einfach deinen Wunsch eintragen, teilen, fertig!",
+    "selectGift": "Wunsch auswählen",
+    "selectedCount": {
+      "one": "{count} Wunsch ausgewählt",
+      "two": "{count} Wünsche ausgewählt",
+      "few": "{count} Wünsche ausgewählt",
+      "many": "{count} Wünsche ausgewählt"
+    },
+    "takeTo": "Bringen nach …"
+  },
+  "transferDialog": {
+    "title": "Wünsche auf eine andere Liste bringen",
+    "copyHere": "Hierher kopieren",
+    "moveHere": "Hierher verschieben",
+    "copying": "Wird kopiert …",
+    "moving": "Wird verschoben …",
+    "error": "Deine Listen konnten nicht geladen werden.",
+    "retry": "Noch einmal versuchen"
   },
   "shareList": {
     "shareTitle": "Liste teilen",

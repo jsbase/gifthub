@@ -1,11 +1,36 @@
 'use client';
 
-import React, { memo } from 'react';
+import React, { memo, useCallback, useEffect, useRef } from 'react';
 import { IconExternalLink, IconShoppingCart, IconShoppingCartMinus, IconShoppingCartPlus, IconTrash } from '@tabler/icons-react';
 import { Button } from '@/components/ui/button';
 import { useDebounce } from '@/hooks/use-debounce';
 import { cn } from '@/lib/utils';
 import type { GiftCardProps } from '@/types';
+
+/**
+ * How long a finger has to rest on a cell before it counts as a selection.
+ *
+ * Named rather than inlined because the same number appears in a comment three
+ * times and a comment that quotes a different number than the code is worse than no
+ * comment. Long enough that a thumb settling onto a cell while scrolling does not
+ * fire it, short enough that twelve wishes do not become twelve deliberate holds.
+ */
+const LONG_PRESS_MS = 500;
+
+/**
+ * How far the pointer may travel before a press stops being a press.
+ *
+ * Ten pixels, and the reason it exists is the one interaction this cell has that
+ * the others do not: the sheet scrolls under the finger. A long press that survived
+ * a scroll would select wishes the reader was trying to scroll past, silently and in
+ * bulk - which on a phone is the difference between filing twelve wishes wrongly and
+ * filing twelve wishes rightly.
+ *
+ * Cancelling rather than committing on movement is the safe direction. A reader who
+ * meant to select and moved a little can press again; a reader who meant to scroll
+ * and got a selection would have to find the bar and clear it.
+ */
+const LONG_PRESS_SLOP_PX = 10;
 
 /**
  * One cell of the album page.
@@ -29,14 +54,14 @@ import type { GiftCardProps } from '@/types';
  *     on it. An inverted cell is a black field in a white grid, legible at a
  *     glance from across a room and identical in greyscale.
  *
- * The row is a flex of three siblings - the tick, the link, the delete button.
- * They cannot be nested: interactive content inside an `<a>` is invalid HTML, it
- * is axe-core's `nested-interactive`, and it makes the link's accessible name
- * recurse into the tick's label, so the link would announce as "Mark as bought,
- * <title>, <url>". Tab also reached the tick from inside the link, and Enter
- * navigated away instead of ticking.
+ * The row is a flex of four siblings - the selection box, the tick, the link, the
+ * delete button. They cannot be nested: interactive content inside an `<a>` is
+ * invalid HTML, it is axe-core's `nested-interactive`, and it makes the link's
+ * accessible name recurse into the tick's label, so the link would announce as
+ * "Mark as bought, <title>, <url>". Tab also reached the tick from inside the link,
+ * and Enter navigated away instead of ticking.
  *
- * Two of the three are conditional, and *how* they are conditional is the whole
+ * Three of the four are conditional, and *how* they are conditional is the whole
  * point of this component having been rewritten for individual accounts:
  *
  *   - The delete button is absent for a reader who may not delete, not disabled.
@@ -44,6 +69,10 @@ import type { GiftCardProps } from '@/types';
  *     and those two need different words - which is why the sheet shows an
  *     invited account none of the owner-only surface and then says so in a
  *     sentence above it.
+ *   - The selection box is absent for a reader who may not transfer, for exactly
+ *     that reason: the transfer is owner-only (`lib/list-access.ts`), and a buyer
+ *     looking at a column of boxes they may not use would be reading an invitation
+ *     the server refuses.
  *   - The mark is a **stamp rather than a button** when this reader may not clear
  *     this particular mark: the owner, on an idea somebody has already marked.
  *     The column keeps its place, its 44px measure and its rule, and the cart
@@ -57,6 +86,10 @@ const GiftCard: React.FC<GiftCardProps> = ({
   dict,
   onDelete,
   onTogglePurchased,
+  onToggleSelected,
+  isSelected,
+  transferringIds,
+  canSelect,
   togglingId,
   changedId,
   canDelete,
@@ -72,6 +105,70 @@ const GiftCard: React.FC<GiftCardProps> = ({
     }
   );
 
+  /*
+    The long-press timer, and the point it was started from.
+
+    A `useRef` rather than state because it is touched on pointer events at a rate
+    that would re-render the cell on every move, and because a press that starts on
+    this cell has to stay attached to this cell even if the sheet re-renders under
+    the finger. The origin is stored beside it because the 10px rule needs to
+    compare against where the finger *landed*, not against wherever it has got to.
+  */
+  const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pressOrigin = useRef<{ x: number; y: number } | null>(null);
+
+  const cancelLongPress = useCallback(() => {
+    if (longPressTimer.current !== null) {
+      clearTimeout(longPressTimer.current);
+      longPressTimer.current = null;
+    }
+    pressOrigin.current = null;
+  }, []);
+
+  /*
+    Cleared on unmount, which is the case that would otherwise leak: the pointer can
+    be released over a *different* element - the sheet scrolled, or a dialog opened -
+    so this cell never sees the `pointerup` that would have cancelled the timer, and
+    a wish would be selected by a press the reader abandoned.
+  */
+  useEffect(() => cancelLongPress, [cancelLongPress]);
+
+  const handlePointerDown = useCallback(
+    (event: React.PointerEvent<HTMLElement>) => {
+      /*
+        Only a primary pointer, and never for the reader who is already using the
+        keyboard or the checkbox: a long press on a cell is a *second* way to reach
+        the same selection, so it must not fire while the pointer is on the control
+        that already does it - otherwise one press on the checkbox would both check
+        it and toggle it back.
+      */
+      if (!canSelect || event.pointerType === 'mouse' || event.button !== 0) {
+        return;
+      }
+      if ((event.target as HTMLElement).closest('[data-no-longpress]')) return;
+
+      pressOrigin.current = { x: event.clientX, y: event.clientY };
+      longPressTimer.current = setTimeout(() => {
+        longPressTimer.current = null;
+        pressOrigin.current = null;
+        onToggleSelected(gift.id);
+      }, LONG_PRESS_MS);
+    },
+    [canSelect, gift.id, onToggleSelected]
+  );
+
+  const handlePointerMove = useCallback(
+    (event: React.PointerEvent<HTMLElement>) => {
+      if (longPressTimer.current === null || !pressOrigin.current) return;
+      const moved = Math.hypot(
+        event.clientX - pressOrigin.current.x,
+        event.clientY - pressOrigin.current.y
+      );
+      if (moved > LONG_PRESS_SLOP_PX) cancelLongPress();
+    },
+    [cancelLongPress]
+  );
+
   const handleDelete = () => {
     debouncedDelete(gift.id);
   };
@@ -80,7 +177,18 @@ const GiftCard: React.FC<GiftCardProps> = ({
     onTogglePurchased(gift.id);
   };
 
+  const handleToggleSelected = () => {
+    onToggleSelected(gift.id);
+  };
+
   const isPending = togglingId === gift.id;
+  /*
+    This row is part of a batch whose transfer is in flight. It is dimmed rather
+    than locked on its own, and the whole cell is inert below - because a row the
+    reader can still uncheck mid-transfer would be a selection that changed after the
+    request was built.
+  */
+  const isTransferring = transferringIds.includes(gift.id);
   // The state is persistent - a collected idea stays inverted and stays in the
   // album - but the motion is one-shot, confined to the cell that changed.
   const justChanged = changedId === gift.id;
@@ -104,6 +212,12 @@ const GiftCard: React.FC<GiftCardProps> = ({
   return (
     <li
       data-testid='giftCard'
+      data-selected={isSelected ? 'true' : undefined}
+      onPointerDown={canSelect ? handlePointerDown : undefined}
+      onPointerMove={canSelect ? handlePointerMove : undefined}
+      onPointerUp={canSelect ? cancelLongPress : undefined}
+      onPointerCancel={canSelect ? cancelLongPress : undefined}
+      onPointerLeave={canSelect ? cancelLongPress : undefined}
       className={cn(
         'group/cell',
         'flex',
@@ -140,9 +254,64 @@ const GiftCard: React.FC<GiftCardProps> = ({
         'duration-200',
         isCollected ? 'bg-collected text-collected-foreground' : 'bg-cell text-ink',
         // The sheet takes a press as the mark lands on it.
-        justChanged && isCollected && 'animate-collect-settle'
+        justChanged && isCollected && 'animate-collect-settle',
+        /*
+          Selection is an OUTLINE and nothing else, and the reason is that the
+          inverted cell is already spent. A bought idea is read on three channels -
+          the inverted field, the owner's ink in the margin, and `aria-pressed` on
+          the live marks - and `PRODUCT.md:112` requires all three to stay intact.
+          An inverted or filled selection state would put a second meaning on the
+          one channel the bought state is already using, which is how this sheet has
+          produced a bug once already: two states competing for one signal.
+
+          A ring draws *outside* the border and so cannot be confused with the cell's
+          own edge, and it is the one treatment that reads on a collected cell
+          without either state hiding the other.
+        */
+        isSelected &&
+          'outline-2 outline-offset-[-2px] outline-ink',
+        /*
+          The whole cell goes inert while its row is in a batch being transferred.
+          `pointer-events-none` rather than `disabled` on the two controls, because
+          they are a button and a checkbox and a disabled checkbox is announced as
+          unavailable rather than as busy - and the reason it is here at all is that
+          unchecking a row mid-flight would change the selection after the request
+          was built.
+        */
+        isTransferring && 'pointer-events-none opacity-60'
       )}
     >
+      {/*
+        The selection checkbox, in a 44px column before the mark.
+
+        A real `<input type="checkbox">` with a visible label rather than a `<div>`
+        with a click handler, and that is not a detail: this is the accessible path
+        to the whole feature. A div would be reachable by mouse and by nothing else -
+        not by Tab, not announced as a checkbox, not toggled by Space - and the
+        feature's alternative is a 500ms press, which no keyboard can produce at all.
+
+        `data-no-longpress` is on the input so that the long-press on the cell does
+        not also fire when the reader's thumb lands on the box: one press must not
+        select and deselect.
+
+        The column is identical in width, measure and rule to the mark column
+        opposite, so a cell does not reflow depending on who owns it - the same
+        property that keeps the mark's stamp from reflowing the cell for an owner.
+      */}
+      {canSelect && (
+        <div className='grid min-h-11 w-11 shrink-0 place-items-center border-r border-rule'>
+          <input
+            type='checkbox'
+            checked={isSelected}
+            onChange={handleToggleSelected}
+            disabled={isTransferring}
+            aria-label={dict.selectGift}
+            data-no-longpress
+            data-testid='giftSelect'
+            className='h-4 w-4 cursor-pointer accent-ink'
+          />
+        </div>
+      )}
       {/*
         The tick is the whole toggle, and there is no second "mark as bought"
         button doing the same job. It sits in the left margin of the cell with a

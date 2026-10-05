@@ -42,6 +42,12 @@ const STATUS: Record<Refusal, number> = {
   nothing_to_change: 400,
   ambiguous_change: 400,
   invalid_visibility: 400,
+  /*
+    400 rather than 404 or 403 because the two lists in this request are both the
+    caller's own and they are the same one: nothing is being hidden and no permission
+    is being denied. It is the answer to a malformed request, which is what it is.
+  */
+  already_on_this_list: 400,
   already_shared: 400,
   cannot_share_with_owner: 400,
   not_shared_yet: 400,
@@ -72,6 +78,7 @@ const MESSAGE: Record<Refusal, string> = {
   nothing_to_change: 'Nothing was changed',
   ambiguous_change: 'Change either the name or the visibility, not both',
   invalid_visibility: 'That visibility does not exist',
+  already_on_this_list: 'That wish is already on this list',
   already_shared: 'This list is already shared with them',
   cannot_share_with_owner: 'You already have this list',
   not_shared_yet: 'Make the list shared before sharing it',

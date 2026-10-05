@@ -69,3 +69,59 @@ export function giftCountLabel(
     String(counts.unbought)
   );
 }
+
+/**
+ * How many wishes are selected, in four forms rather than two.
+ *
+ * A second function rather than a parameter of the one above, because the two
+ * counts have different shapes of truth. `giftCountLabel`'s four states are two
+ * zeroes and two numbers - a sheet can be empty and a sheet can be finished, and
+ * the row has to be able to say which - while a selection has neither state: the bar
+ * this belongs to is rendered only when something is selected. Carrying `none` and
+ * `zero` here would add two branches that cannot be reached, and the first would be
+ * actively wrong, since "no wishes selected" printed on a bar that exists precisely
+ * because some are is a contradiction.
+ *
+ * What is left is the part that varies, and it varies by more than singular and
+ * plural. Russian has three forms - 1 пожелание, 2-4 пожелания, 5+ пожеланий - and
+ * one template carrying a `{count}` cannot produce them; a wish list is exactly the
+ * kind of noun a Slavic language inflects hardest. The four dictionary keys are the
+ * four CLDR plural categories, which is why they are exactly those four and not a
+ * singular/plural pair: `two` is a real category in Irish, Welsh and Breton, and
+ * a locale that needs it must be able to *name* it rather than have the function
+ * decide for it.
+ *
+ * **The category comes from `Intl.PluralRules`, not from counting.** An earlier
+ * version of this compared the number against a ladder - 1, 2, 3-4, 5+ - and that
+ * is correct for every number a reader can see on a phone and wrong for the rest:
+ * Russian 21 is `одно` (21 желание) and 22 is two (22 желания), while the ladder
+ * put both in the `many` band and printed "21 желаний". The rule is not "pick the
+ * form for this digit", it is "pick the form this language uses for this number",
+ * and only the platform knows the answer for 21 in a language nobody on this
+ * feature has thought about. `giftCountLabel` above still counts by hand, which is
+ * the same latent bug in a function that predates this one; it is not copied here.
+ *
+ * `other` has no key and falls through to `many`, deliberately: `other` is what
+ * German returns for every count above one, and German's plural *is* the band that
+ * `many` names, so the two languages disagree about the category name and not about
+ * the sentence.
+ */
+export function selectedCountLabel(
+  count: number,
+  locale: string,
+  dict: {
+    selectedCount: {
+      one: string;
+      two: string;
+      few: string;
+      many: string;
+    };
+  }
+): string {
+  const category = new Intl.PluralRules(locale).select(count);
+  const key =
+    category === 'one' || category === 'two' || category === 'few'
+      ? category
+      : 'many';
+  return dict.selectedCount[key].replace('{count}', String(count));
+}

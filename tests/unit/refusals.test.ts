@@ -19,7 +19,7 @@ import type { Refusal } from '@/lib/refusals';
 
   So the array is compared against a literal copy written out here. That copy is
   deliberately *not* derived from the union - deriving it would compare the array
-  with itself and pass forever. It is 21 strings, and changing one is a
+  with itself and pass forever. It is 22 strings, and changing one is a
   deliberate act in two files.
 */
 
@@ -42,6 +42,7 @@ const EXPECTED: Refusal[] = [
   'nothing_to_change',
   'ambiguous_change',
   'invalid_visibility',
+  'already_on_this_list',
   // Sharing.
   'no_such_account',
   'already_shared',

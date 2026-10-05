@@ -29,6 +29,13 @@ export type Refusal =
   | 'nothing_to_change'
   | 'ambiguous_change'
   | 'invalid_visibility'
+  /*
+    A transfer whose destination is the list it started from. It is a request-shape
+    refusal rather than a permission one - there is nothing here being hidden and
+    nothing the caller is not allowed to do - so it is 400 and not 403 or 404, and it
+    is answered by comparing two ids rather than by looking anything up.
+  */
+  | 'already_on_this_list'
   // Sharing.
   | 'no_such_account'
   | 'already_shared'
@@ -65,6 +72,7 @@ export const REFUSALS: Refusal[] = [
   'nothing_to_change',
   'ambiguous_change',
   'invalid_visibility',
+  'already_on_this_list',
   'no_such_account',
   'already_shared',
   'cannot_share_with_owner',

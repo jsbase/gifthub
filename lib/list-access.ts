@@ -22,6 +22,8 @@ import type { ListVisibility } from '@/types';
  *   clear a mark somebody else set        403       yes        yes           404
  *   add an idea                           yes       403        403           404
  *   delete an idea                        yes       403        403           404
+ *   copy an idea to a list you own        yes       403        403           404
+ *   move an idea to a list you own        yes       403        403           404
  *   rename the list                       yes       403        403           404
  *   change visibility                     yes       403        403           404
  *   grant access (needs SHARED)           yes       403        403           404
@@ -29,7 +31,7 @@ import type { ListVisibility } from '@/types';
  *   revoke a group grant                  yes       403        403           404
  *   delete the list (cascades ideas)      yes       403        403           404
  *
- * Four things in that table are not obvious and each has a reason.
+ * Five things in that table are not obvious and each has a reason.
  *
  * 1. `404` and `403` are not interchangeable. An account with no relationship to a
  *    list is told there is nothing there, so another person's list is never
@@ -75,6 +77,18 @@ import type { ListVisibility } from '@/types';
  *    still there. `tests/groups.spec.ts` asserts that case directly, because a
  *    permission rule only one implementation knows about is a rule with one
  *    implementation.
+ *
+ * 5. The two transfer rows are gated *asymmetrically*, and the asymmetry is the
+ *    whole of the rule. The source goes through `requireWritableList`, which is
+ *    403 for somebody who can already read it; the destination goes through
+ *    `findOwnedList`, which is 404 for anybody who does not own it. So naming
+ *    somebody else's list as a destination is answered with "there is nothing here
+ *    for you" rather than with "that list exists and is not yours" - the same
+ *    disclosure rule as rule 1, applied to a second list in a single request. A
+ *    destination the caller may merely *read* is refused too: being able to see a
+ *    sheet is not a reason a wish may be written on it, and reusing
+ *    `requireWritableList` there would have quietly granted the group-reach row
+ *    above a capability its owners do not have.
  *
  * Note what is deliberately absent: there is no repository port here. Prisma is the
  * only implementation, and a seam with one adapter is indirection rather than a
@@ -909,6 +923,161 @@ export const removeGift = async (
 
   await prisma.gift.delete({ where: { id: giftId } });
   return done(gift);
+};
+
+/**
+ * Put one or more ideas from this list onto another list this account owns, keeping
+ * them or leaving them behind.
+ *
+ * Owner on both ends, and the two ends are gated differently - see header rule 5.
+ * The source is `requireWritableList` because the caller is removing from it, which
+ * is a write; the destination is `findOwnedList` because a list the caller can only
+ * read is not a place a wish may be put.
+ *
+ * **The state travels, and that is the entire design.** A bought idea arrives
+ * bought, carrying the account that marked it, so it cannot become purchasable
+ * again on the other sheet. An open idea arrives open. `move` is therefore a bare
+ * re-point and `copy` writes the row's own values back, and neither one decides
+ * anything - which is the reason there is no branch here on `isPurchased`. An
+ * earlier draft of this had `move` split into an open case and a bought case so
+ * that a bought wish would arrive open on the target; with the state travelling,
+ * that split is not a rule any more but a way to reintroduce the double-buy the
+ * mark exists to prevent, so the two cases were deleted rather than written.
+ *
+ * **The read that `copy` needs is inside the transaction.** An idea a buyer marks
+ * while this request is in flight is copied with the mark it carries by then, which
+ * is the honest answer; reading it before the transaction would copy the state the
+ * row had when the request arrived instead.
+ *
+ * **All of it or none of it.** A batch of twelve that lands eight is worse than
+ * retyping the twelve, and it is the only failure mode this function creates that
+ * did not exist before it. So one transaction wraps every write, and a requested id
+ * that is not on the source refuses the whole batch rather than transferring the
+ * ones that happened to exist.
+ */
+export const transferGifts = async (
+  input: { giftIds: string[]; mode: 'copy' | 'move' },
+  listId: string,
+  targetListId: string,
+  accountId: string
+): Promise<Outcome<{ transferred: StoredGift[] }>> => {
+  const source = await requireWritableList(listId, accountId);
+  if (!source.ok) return refused(source.refusal);
+
+  /*
+    The destination is checked after the source and with a different gate, and the
+    order is the point: a buyer is refused at the source before a second list is
+    looked at at all, so nothing about the caller's other lists is observable to
+    somebody who cannot write to the one they named.
+  */
+  const target = await findOwnedList(targetListId, accountId);
+  if (!target.ok) return refused(target.refusal);
+
+  /*
+    Refused on the request shape rather than looked up, and 400 rather than 404 for
+    the reason `lib/api-refusal.ts` records: both ids are already known to be the
+    caller's own, so there is nothing here being hidden. A transfer onto the sheet
+    it started from is a client that built its request wrong, not a permission
+    question, and the picker never offers it.
+  */
+  if (listId === targetListId) return refused('already_on_this_list');
+
+  /*
+    Scoped to the source list, and that scoping is the batch's security property: an
+    id belonging to some other sheet matches no row here, so the length check below
+    refuses it and a caller cannot use a transfer to pull an idea off a list they
+    only have read access to - or off anybody's list at all.
+  */
+  const rows = await prisma.gift.findMany({
+    where: { id: { in: input.giftIds }, listId },
+  });
+
+  /*
+    One bad id refuses all of them. A partial transfer is the failure this function
+    must not have, and it is refused here - before the transaction, where there is
+    still nothing to undo - rather than detected halfway through one.
+  */
+  if (rows.length !== input.giftIds.length) return refused('not_found');
+
+  /*
+    Wrapped in an interactive transaction rather than the array form, and that is
+    forced by the one thing the array form cannot express: a write that has to be
+    *checked* and able to undo the batch.
+
+    The condition on each update is the narrowing. `where: { id, listId }` says "this
+    row, and only while it is still on the source", so a row that somebody moved
+    between the read above and this write matches nothing and the batch is refused
+    whole. The unguarded form - `where: { id }` - would have quietly re-pointed a wish
+    from whatever list it had moved to in the meantime, which is a batch landing on
+    the target with a row in it that was never selected from the source. That window is
+    narrow and it is the same shape of failure as the partial batch the atomicity
+    paragraph above exists to prevent: wishes on a list the reader did not choose.
+
+    The copy branch is left exactly as it was. It inserts rather than re-points, so
+    there is no row that could have moved underneath it and no condition to write.
+  */
+  const transferred = await prisma.$transaction(async (tx) => {
+    /*
+      Collected on the way through, and only the copy branch fills it: an insert hands
+      back the row it made, whereas `updateMany` answers only with a count. The two
+      modes therefore have to be answered by two different reads, and pretending
+      otherwise is a bug this function already had once - a single re-read keyed on
+      the *source* ids finds every moved row and none of the copied ones, because a
+      copy is a new row with a new id.
+    */
+    const created: StoredGift[] = [];
+
+    for (const row of rows) {
+      if (input.mode === 'move') {
+        const result = await tx.gift.updateMany({
+          where: { id: row.id, listId },
+          data: { listId: targetListId },
+        });
+
+        /*
+          Zero rows matched, so the row is no longer where it was when this batch was
+          composed. Throwing rolls the whole transaction back, which is the only way
+          to keep the promise above: a batch that cannot land entirely does not land.
+        */
+        if (result.count !== 1) {
+          throw new Error(`Gift ${row.id} is no longer on list ${listId}`);
+        }
+      } else {
+        /*
+          `createdAt` is carried so the copy lands on the target in the position it
+          holds on the source. `listGifts` orders by `createdAt desc`, and a copied
+          idea that jumped to the top of a list it was written for last year would
+          say the owner had just thought of it.
+        */
+        created.push(
+          await tx.gift.create({
+            data: {
+              title: row.title,
+              description: row.description,
+              url: row.url,
+              isPurchased: row.isPurchased,
+              purchasedById: row.purchasedById,
+              createdAt: row.createdAt,
+              listId: targetListId,
+            },
+          })
+        );
+      }
+    }
+
+    if (input.mode === 'copy') return created;
+
+    /*
+      The moved rows as they now stand **on the target**, which is what the count and
+      the response describe. The ids are the source ids here precisely because a move
+      re-points rather than inserts.
+    */
+    return tx.gift.findMany({
+      where: { listId: targetListId, id: { in: rows.map((row) => row.id) } },
+    });
+  });
+
+  return done({ transferred });
 };
 
 /**

@@ -269,6 +269,7 @@ export interface Translations {
   groups: GroupsDictionary;
   createListDialog: CreateListDialogDictionary;
   listBoard: ListBoardDictionary;
+  transferDialog: TransferDialogDictionary;
   footer: {
     copyright: string;
     privacyPolicy: string;
@@ -397,6 +398,16 @@ export interface ErrorTranslations {
   nothingToChange: string;
   ambiguousChange: string;
   invalidVisibility: string;
+  /**
+   * A transfer named the list it started from as its own destination.
+   *
+   * The one refusal in this union that describes a client bug rather than a
+   * permission: both ids are the caller's own and they are the same one, so nothing
+   * is being hidden from anybody and the sentence does not need to hedge about
+   * existence. The picker never offers it - the source list is filtered out of the
+   * dialog's rows - so reaching this means the request was built wrongly.
+   */
+  alreadyOnThisList: string;
   /** Nickname refusals, shown against the nickname field. */
   invalidNickname: string;
   duplicateNickname: string;
@@ -586,6 +597,43 @@ export interface ListSheetTranslations {
    */
   markedBySomeoneElse: string;
   backToLists: string;
+
+  /**
+   * The checkbox in the left margin of a cell, for the owner only.
+   *
+   * A visible label rather than an `aria-label` alone, because it is what the
+   * control *is* and a sighted owner has to be able to see that the cell can be
+   * picked up at all - a checkbox drawn only for assistive technology is a control
+   * the person holding the phone cannot find.
+   */
+  selectGift: string;
+  /**
+   * How many wishes are selected, in four forms.
+   *
+   * Russian inflects by number and one template cannot express it, so this is a
+   * ladder rather than a singular/plural pair - see `selectedCountLabel` in
+   * `lib/gift-count.ts` for why the bands are cut where they are. A language that
+   * does not need four forms maps three of them onto one string.
+   *
+   * Deliberately separate from `giftCount` above: a sheet's open count and a
+   * selection's size are different facts that are frequently different numbers, and
+   * one dict entry for "how many" would have had to say which one it meant.
+   */
+  selectedCount: {
+    one: string;
+    two: string;
+    few: string;
+    many: string;
+  };
+  /**
+   * Opens the destination picker from the selection bar.
+   *
+   * A verb with an ellipsis because it leads somewhere: the reader is choosing a
+   * list, not performing the transfer. Which of the two transfers is not decided
+   * here - that is the dialog's, and the two commits are two buttons rather than a
+   * mode to be set first.
+   */
+  takeTo: string;
 }
 
 export interface ToastTranslations {
@@ -630,6 +678,26 @@ export interface ToastTranslations {
   groupAccessRevokeFailed: string;
   loginSuccess: string;
   registrationSuccess: string;
+  /**
+   * A batch of wishes that arrived on another list.
+   *
+   * **No `{count}`.** The three transfer toasts are the only strings in this
+   * interface that carry no number, and that is the point rather than an omission:
+   * Russian inflects the noun by number (1 идея, 2 идеи, 5 идей), so a single
+   * counted template cannot be written correctly in one of the three shipped
+   * languages. The bar above the add row already states the figure in a properly
+   * inflected form, so the toast reports the *outcome* and the count sentence
+   * reports the size - two jobs, two mechanisms, and no second plural machinery
+   * invented here.
+   *
+   * `giftsMoved` and `giftsCopied` are separate strings rather than one with a
+   * parameter, for the same reason: the verb is the whole difference between the
+   * two operations and interpolating it into a sentence would need a placeholder
+   * that no locale can fill with a correctly inflected pair of words.
+   */
+  giftsCopied: string;
+  giftsMoved: string;
+  giftsTransferFailed: string;
 }
 
 export interface ConfirmationTranslations {
@@ -851,6 +919,60 @@ export interface ListBoardDictionary {
   sharedEmptyNote: string;
 }
 
+/**
+ * Choosing where a selection of wishes goes.
+ *
+ * A dictionary of its own rather than more keys on `listSheet`, because it is a
+ * separate surface with a separate lifetime: this is a sheet that opens over the
+ * sheet and closes again, while the ones it describes are printed on the page
+ * underneath. `dict` here is a narrow `Pick` for the same reason
+ * `ListVisibilityDialogProps` is - the dialog cannot reach the landing page's copy,
+ * so there is nothing to stop it printing the wrong sentence from the wrong object.
+ *
+ * **Two commits and no mode.** `copyHere` and `moveHere` are the two buttons rather
+ * than one button with a toggle above it, and that is the whole argument for the
+ * shape of this dialog: the mode is a verb applied to a list the reader has already
+ * chosen, so it belongs on the things that perform it. A switch would mean deciding
+ * copy-or-move *before* choosing where, holding two pieces of state at once, and
+ * offering a reader a "mode" with no meaning until a second decision gives it one.
+ *
+ * `copying` and `moving` are separate strings rather than one label with a
+ * parameter, so the button that is pressed is the button that names itself - and so
+ * a locale can inflect them differently, which a spliced-in word would not allow.
+ */
+export interface TransferDialogDictionary {
+  /**
+   * Names what the reader is doing, and says neither verb on purpose: this sheet
+   * offers both a copy and a move, so a title naming one of them would be wrong for
+   * half the time it is on screen. The two verbs belong on the two commits, where
+   * they are the actual decision.
+   */
+  title: string;
+  copyHere: string;
+  moveHere: string;
+  /** The pressed state of each commit, swapped in while its request is in flight. */
+  copying: string;
+  moving: string;
+  /** The prefetch of the caller's own lists failed. Paired with `retry`. */
+  error: string;
+  retry: string;
+}
+
+/*
+  There is deliberately no `noLists` on `TransferDialogDictionary`, and that is the
+  reuse rather than the omission. The sentence a reader needs when they own no other
+  list is the one the contents page already prints to invite exactly that -
+  `listBoard.noLists` - and a second key holding the same words in two files is two
+  places for the two copies to drift, which is the reason the closed dictionary
+  exists. The dialog takes `listBoard` in its `Pick` for exactly this line.
+
+  The empty state and the *failure* state are different sentences on screen at the
+  same moment, and neither of them is this one: `error` is for a failed request,
+  which says retry, and `noLists` is for an account with genuinely nowhere to put the
+  selection, which says make a list. Collapsing them would tell a reader whose
+  network failed to go and create a list they already have.
+*/
+
 /*
   The privacy policy and the terms are long, sectioned prose that changes only
   when the product's data handling changes - which this refactor does, and
@@ -947,6 +1069,70 @@ export interface ListSheetProps {
   onDeleteList: () => void;
   onShareList: () => void;
   onVisibilityChanged: () => void;
+  /**
+   * A batch of wishes has landed on another list the owner holds.
+   *
+   * Reports the *destination*, and it is the only prop here that carries an
+   * argument, because it is the only one whose consequence is a navigation rather
+   * than a refetch. The sheet has performed the transfer; the page owns the route
+   * change, the same way it owns the one after a list is deleted - and it does that
+   * through `pendingPath`, which is what puts the existing route-change loader up
+   * rather than inventing a second one.
+   *
+   * Called in both modes. Moving leaves this sheet without those wishes and staying
+   * on it would show a sheet that looks emptied by a bug; copying leaves everything
+   * where it was, and branching the navigation for no visible difference is a branch
+   * nobody could justify later.
+   */
+  onTransferred: (targetListId: string) => void;
+}
+
+/**
+ * The destination picker for a selection.
+ *
+ * Reports the list the reader chose and the mode they pressed; it performs nothing
+ * itself. That split is what lets the request live in `ListSheet`, which already
+ * performs every other gift mutation, and leaves this component a list of rows and
+ * two buttons.
+ *
+ * `lists` is the caller's own lists with the source already removed, and it arrives
+ * as a prop rather than being fetched here: the fetch happens when the selection bar
+ * appears, which is earlier than this dialog opens, so by the time this is on screen
+ * the rows are in hand and the dialog has nothing to wait for.
+ */
+export interface TransferDialogProps {
+  isOpen: boolean;
+  onClose: () => void;
+  /** The caller's own lists, minus the one they are transferring out of. */
+  lists: ListSummary[];
+  /**
+   * Those lists are still on their way.
+   *
+   * Separate from `lists` being empty, and the distinction is the whole point: the
+   * prefetch starts when the selection bar appears, but nothing stops a reader
+   * opening the picker before it lands, and an empty list read as "you have no other
+   * lists" would send them off to create one they already have. Three states, three
+   * sentences - loading, none, and the refusal's.
+   */
+  isLoading: boolean;
+  /** The list being transferred out of, named in the dialog's own sentence. */
+  sourceListName: string;
+  dict: Pick<Translations, 'transferDialog' | 'close' | 'giftCount' | 'listBoard'>;
+  /** The prefetch failed. The dialog shows `error` and a retry rather than an empty list. */
+  loadFailed: boolean;
+  onRetry: () => void;
+  /**
+   * Which commit's request is in flight, or `null`.
+   *
+   * The mode rather than a boolean, and the reason is that both commits are on
+   * screen at once and each swaps to its *own* progress wording. A single `boolean`
+   * would put "moving…" on the copy button too, which reports a verb nobody chose -
+   * and the reader who pressed *Copy here* would be told the wish is being moved.
+   * The pressed button is the one that should say it is working, so the state has to
+   * be able to say which one that was.
+   */
+  pendingMode: 'copy' | 'move' | null;
+  onTransfer: (targetListId: string, mode: 'copy' | 'move') => void;
 }
 
 /**
@@ -1326,10 +1512,34 @@ export interface GiftCardProps {
   gift: Gift;
   dict: Pick<
     ListSheetTranslations,
-    'markAsPurchased' | 'markAsAvailable' | 'deleteGift'
+    'markAsPurchased' | 'markAsAvailable' | 'deleteGift' | 'selectGift'
   >;
   onDelete: (id: string) => void;
   onTogglePurchased: (id: string) => void;
+  /**
+   * Marks or unmarks this wish as part of a batch, from the checkbox or from a long
+   * press. Same shape as `onDelete` - an id, no arguments about which direction -
+   * because the component holds the selection state it was given and has nothing to
+   * decide.
+   *
+   * Not offered to a buyer, and absent rather than inert for the reason `canDelete`
+   * is: see `canSelect`.
+   */
+  onToggleSelected: (id: string) => void;
+  /** Whether this wish is in the current batch. Draws an outline, nothing else. */
+  isSelected: boolean;
+  /** The row whose transfer is in flight; it dims and the cell goes inert. */
+  transferringIds: string[];
+  /**
+   * Whether this reader may put wishes into a batch. Owner only, and absent for a
+   * buyer for the same reason the delete button is.
+   *
+   * Distinct from `canDelete` rather than reused from it, because the two are
+   * different capabilities that happen to have the same answer today: deleting a
+   * wish is one wish at a time and this is a batch, and a future change to either
+   * rule would otherwise silently move the other's control with it.
+   */
+  canSelect: boolean;
   /** The row whose toggle request is in flight; it dims and refuses re-clicks. */
   togglingId: string | null;
   /**

@@ -22,12 +22,29 @@ import { PrismaClient } from '@prisma/client';
     clear other's mark 403        200             200          404
     add an idea        200        403             403          404
     delete an idea     200        403             403          404
+    copy an idea       200        403             403          404
+    move an idea       200        403             403          404
     rename             200        403             403          404
     change visibility  200        403             403          404
     grant access       200        403             403          404
     revoke access      200        403             403          404
     revoke group grant 200        403             403          404
     delete the list    200        403             403          404
+
+  The two transfer rows are owner-only for the same reason `add an idea` and
+  `delete an idea` are - both write onto a sheet - and they are the only rows here
+  that gate their two ends differently. The *source* is `requireWritableList`, which
+  is the 403 in the `invited buyer` column; the *destination* is `findOwnedList`,
+  which is 404 for anybody who does not own it, including an account that can
+  perfectly well read it. Being able to see a list is not a reason a wish may be
+  written on it, and naming somebody else's list as a destination is answered with
+  "there is nothing here for you" rather than with a status that would confirm the
+  list exists.
+
+  That asymmetry is why the destination refusals below are asserted as separate
+  cases rather than folded into the two matrices: a request can fail at its source,
+  at its destination, or at both, and the order they are checked in means only the
+  first of those is visible in a status.
 
   "In a group" is a third column rather than a fourth kind of person, and it is carried
   the same in both directions: a member reaches a list through a `ListGroupAccess` row
@@ -206,6 +223,16 @@ test.describe('Sharing permissions', () => {
     const giftId = await addGift(anna, listId, 'Nur lesen');
     await grant(anna, listId, BEN);
 
+    /*
+      Ben's own list, so the two transfer rows below are refused for the reason the
+      table says rather than for a missing destination. A buyer naming a list that
+      does not exist would also be refused, but at the *destination* gate with a 404,
+      and the row this matrix is asserting is the 403 at the source - so the
+      destination has to be real and Ben's, or the test would pass for the wrong
+      reason and the source gate would never run.
+    */
+    const bensListId = await createList(ben, names.next(), 'PRIVATE');
+
     // Read as the owner, because the owner is who is shown the audience at all. A
     // buyer gets `[]` here by design, so asking Ben would have yielded nothing and
     // quietly dropped the revoke case from the matrix below.
@@ -227,6 +254,27 @@ test.describe('Sharing permissions', () => {
         ben.api.patch(`/api/lists/${listId}`, { data: { visibility: 'PRIVATE' } }),
       ],
       ['grant access', ben.api.post(`/api/lists/${listId}/access`, { data: { email: MIA } })],
+      /*
+        Both transfer modes, and the destination is Ben's own list rather than
+        something invented. This is the case the product refuses for its own sake:
+        letting a buyer pull an idea off somebody's shared sheet onto a list he owns
+        would make one list's audience a source of another account's wishlists, and
+        the owner of the list it was taken from would never learn it happened. The
+        refusal is at the *source*, before the destination is looked at, so Ben's
+        ownership of it changes nothing.
+      */
+      [
+        'copy an idea to a list of their own',
+        ben.api.post(`/api/lists/${listId}/gifts/transfer`, {
+          data: { giftIds: [giftId], targetListId: bensListId, mode: 'copy' },
+        }),
+      ],
+      [
+        'move an idea to a list of their own',
+        ben.api.post(`/api/lists/${listId}/gifts/transfer`, {
+          data: { giftIds: [giftId], targetListId: bensListId, mode: 'move' },
+        }),
+      ],
     ];
     if (accessId) {
       forbidden.push([
@@ -272,6 +320,14 @@ test.describe('Sharing permissions', () => {
     await grant(anna, listId, BEN);
 
     /*
+      A second list of Anna's, so the transfer rows below are malformed in exactly
+      one respect: Mia owns nothing and has been given nothing. Naming a destination
+      that does not exist would also answer 404, but at the destination gate, and
+      these rows are asserting the source.
+    */
+    const annasOtherListId = await createList(anna, names.next(), 'PRIVATE');
+
+    /*
       Mia holds access to a *different* list, so she is a real signed-in user
       rather than an anonymous one. That is the case worth testing: an anonymous
       request is refused by the session check, but a signed-in user asking about a
@@ -302,6 +358,18 @@ test.describe('Sharing permissions', () => {
       ['grant access', mia.api.post(`/api/lists/${listId}/access`, { data: { email: ANNA } })],
       ['delete an idea', mia.api.delete(`/api/lists/${listId}/gifts/${giftId}`)],
       ['delete the list', mia.api.delete(`/api/lists/${listId}`)],
+      [
+        'copy an idea off it',
+        mia.api.post(`/api/lists/${listId}/gifts/transfer`, {
+          data: { giftIds: [giftId], targetListId: annasOtherListId, mode: 'copy' },
+        }),
+      ],
+      [
+        'move an idea off it',
+        mia.api.post(`/api/lists/${listId}/gifts/transfer`, {
+          data: { giftIds: [giftId], targetListId: annasOtherListId, mode: 'move' },
+        }),
+      ],
     ];
 
     for (const [what, response] of denied) {
@@ -318,6 +386,29 @@ test.describe('Sharing permissions', () => {
     const refusedSheet = await mia.api.get(`/api/lists/${listId}`);
     expect(refusedSheet.status()).toBe(404);
     expect(await refusedSheet.text()).not.toContain('Geheimgeschenk');
+
+    /*
+      The transfer rows in the loop above name a destination Mia also cannot reach,
+      and neither of them moved anything. The status is the same 404 the read got,
+      and it is the *same* refusal rather than a new one: the destination gate is
+      `findOwnedList`, which cannot tell "not yours" from "not there" and is not
+      trying to. A 403 here would have confirmed both that Anna's second list exists
+      and that it is off limits.
+    */
+    const annasSheet = await anna.api.get(`/api/lists/${listId}`);
+    expect(annasSheet.status()).toBe(200);
+    const untouched = await annasSheet.json();
+    // Exactly the one idea: neither moved away nor duplicated onto the source, and
+    // `toEqual` on the whole array is what makes a second copy fail rather than pass
+    // a `toContain`.
+    expect(
+      untouched.gifts.map((g: { id: string }) => g.id),
+      "Mia's refused transfers must not have moved or copied the idea"
+    ).toEqual([giftId]);
+    expect(
+      await prisma.gift.count({ where: { listId: annasOtherListId } }),
+      "and nothing may have landed on Anna's other list"
+    ).toBe(0);
 
     /*
       The status is pinned above, and in many places, and it is the right thing to pin.
@@ -346,8 +437,193 @@ test.describe('Sharing permissions', () => {
     expect(
       (await anonymous.request.post(`/api/lists/${listId}/gifts`, { data: { title: 'x' } })).status()
     ).toBe(401);
+    expect(
+      (
+        await anonymous.request.post(`/api/lists/${listId}/gifts/transfer`, {
+          data: { giftIds: ['x'], targetListId: 'y', mode: 'move' },
+        })
+      ).status(),
+      'the transfer route is behind the same session gate as every other'
+    ).toBe(401);
 
     await anonymous.close();
+    await anna.context.close();
+  });
+
+  /*
+    THE TRANSFER'S TWO ENDS.
+
+    The two matrices above cover the source: a buyer gets 403 and an unrelated
+    account gets 404. What is left is the destination, which is gated by a different
+    function on purpose, and the three refusals below are the cases only it can
+    produce. `findOwnedList` answers 404 for a list that does not exist and for a
+    list somebody else owns, and does not distinguish them - so each assertion here
+    also pins the fact that neither can be told apart.
+  */
+  test('a destination the account does not own is refused, and nothing moves', async ({
+    browser,
+  }) => {
+    const anna = await signIn(browser, ANNA);
+    const ben = await signIn(browser, BEN);
+
+    const sourceId = await createList(anna, names.next(), 'PRIVATE');
+    const bensListId = await createList(ben, names.next(), 'PRIVATE');
+    const giftId = await addGift(anna, sourceId, 'Nur auf meiner Liste');
+
+    for (const mode of ['copy', 'move'] as const) {
+      const refused = await anna.api.post(`/api/lists/${sourceId}/gifts/transfer`, {
+        data: { giftIds: [giftId], targetListId: bensListId, mode },
+      });
+
+      expect(
+        refused.status(),
+        `a destination the caller does not own must be 404 on ${mode}`
+      ).toBe(404);
+      expect((await refused.json()).code).toBe('not_found');
+
+      // And the same answer, byte for byte, for a destination that is not there at
+      // all. The gate cannot tell the two apart and must not: a status that did
+      // would confirm which of Anna's lists exist.
+      const nowhere = await anna.api.post(`/api/lists/${sourceId}/gifts/transfer`, {
+        data: { giftIds: [giftId], targetListId: 'no-such-list', mode },
+      });
+      expect(
+        nowhere.status(),
+        `a destination that does not exist must be refused identically on ${mode}`
+      ).toBe(404);
+      expect((await nowhere.json()).code).toBe('not_found');
+    }
+
+    // Neither list changed. Asserted as counts off the database rather than off a
+    // status: a transfer that refused at the destination and moved the idea anyway
+    // would still answer 404 here.
+    expect(
+      await prisma.gift.count({ where: { listId: sourceId } }),
+      'a refused transfer must leave the source with the idea still on it'
+    ).toBe(1);
+    expect(
+      await prisma.gift.count({ where: { listId: bensListId } }),
+      "a refused transfer must not put the idea on somebody else's list"
+    ).toBe(0);
+
+    await anna.context.close();
+    await ben.context.close();
+  });
+
+  test('a destination the account may read but does not own is still refused', async ({
+    browser,
+  }) => {
+    const anna = await signIn(browser, ANNA);
+    const ben = await signIn(browser, BEN);
+
+    const sourceId = await createList(anna, names.next(), 'SHARED');
+    const bensListId = await createList(ben, names.next(), 'SHARED');
+    const giftId = await addGift(anna, sourceId, 'Wunsch');
+    await grant(anna, bensListId, ANNA);
+
+    /*
+      Anna can *read* Ben's list - she is on its audience - and still cannot have a
+      wish written on it. This is the case that rules out reusing
+      `requireWritableList` for the destination: that function returns `not_found`
+      for a list nobody owns and `forbidden` for one the caller can read but not
+      write, which would have answered 403 here and confirmed that Ben's list
+      exists. A list you can see is not a list you may file things on.
+    */
+    const refused = await anna.api.post(`/api/lists/${sourceId}/gifts/transfer`, {
+      data: { giftIds: [giftId], targetListId: bensListId, mode: 'move' },
+    });
+
+    expect(
+      refused.status(),
+      'a readable destination is still not a writable one'
+    ).toBe(404);
+    expect(
+      await prisma.gift.count({ where: { listId: bensListId } }),
+      'and nothing may be written there'
+    ).toBe(0);
+
+    await anna.context.close();
+    await ben.context.close();
+  });
+
+  test('a destination equal to the source is a malformed request, not a refusal', async ({
+    browser,
+  }) => {
+    const anna = await signIn(browser, ANNA);
+    const listId = await createList(anna, names.next(), 'PRIVATE');
+    const giftId = await addGift(anna, listId, 'Schon hier');
+
+    const refused = await anna.api.post(`/api/lists/${listId}/gifts/transfer`, {
+      data: { giftIds: [giftId], targetListId: listId, mode: 'move' },
+    });
+
+    /*
+      400 and not 404, which is the one status in this file that is not about
+      authority at all - and that is the point. Both lists in the request are the
+      caller's own and they are the same one, so there is nothing here being hidden
+      from anybody and no permission being denied. It is answered by comparing two
+      ids rather than by looking anything up, which is why it can be a request-shape
+      refusal at all.
+
+      The picker never offers the source list as a destination, so reaching this
+      means the request was built wrongly rather than that the reader chose badly.
+    */
+    expect(refused.status()).toBe(400);
+    expect((await refused.json()).code).toBe('already_on_this_list');
+
+    // Still exactly one idea on the list - a `move` onto itself that quietly
+    // deleted the row would answer 400 here too.
+    expect(
+      await prisma.gift.count({ where: { listId } }),
+      'a transfer onto the same list must change nothing'
+    ).toBe(1);
+
+    await anna.context.close();
+  });
+
+  test('a batch naming one idea that is not on the source is refused whole', async ({
+    browser,
+  }) => {
+    const anna = await signIn(browser, ANNA);
+
+    const sourceId = await createList(anna, names.next(), 'PRIVATE');
+    const otherId = await createList(anna, names.next(), 'PRIVATE');
+    const targetId = await createList(anna, names.next(), 'PRIVATE');
+    const mineId = await addGift(anna, sourceId, 'Gehört hierher');
+    const foreignId = await addGift(anna, otherId, 'Gehört woanders');
+
+    for (const mode of ['copy', 'move'] as const) {
+      const refused = await anna.api.post(`/api/lists/${sourceId}/gifts/transfer`, {
+        data: { giftIds: [mineId, foreignId], targetListId: targetId, mode },
+      });
+
+      expect(
+        refused.status(),
+        `one id from another list must refuse the whole batch on ${mode}`
+      ).toBe(404);
+      expect((await refused.json()).code).toBe('not_found');
+    }
+
+    /*
+      Three counts, because the batch could have gone wrong in three places and a
+      status cannot tell them apart: the real idea left the source, the foreign idea
+      was pulled in from the other list, or the target received something. The
+      refusal is what makes this whole feature safe to use on a dozen wishes, so it
+      is asserted here rather than inferred from the 404s above.
+    */
+    expect(
+      await prisma.gift.count({ where: { listId: sourceId } }),
+      'the real idea must still be on the source'
+    ).toBe(1);
+    expect(
+      await prisma.gift.count({ where: { listId: otherId } }),
+      'the foreign idea must still be on its own list'
+    ).toBe(1);
+    expect(
+      await prisma.gift.count({ where: { listId: targetId } }),
+      'and the target must be empty'
+    ).toBe(0);
+
     await anna.context.close();
   });
 
