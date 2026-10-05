@@ -176,15 +176,18 @@
     "youAreABuyer": "This list belongs to someone else. You may tick an idea off once you have bought it — nothing else.",
     "markedBySomeoneElse": "Somebody else marked this — the mark stays.",
     "backToLists": "Back to your lists",
-    "addGiftRow": "Just write your wish down, share it, done!",
+    "newGift": "Create new wish",
+    "copy": "Copy",
+    "move": "Move",
+    "chooseTarget": "Choose destination",
     "selectGift": "Select wish",
+    "selectGiftNamed": "Select wish “{title}”",
     "selectedCount": {
       "one": "{count} wish selected",
       "two": "{count} wishes selected",
       "few": "{count} wishes selected",
       "many": "{count} wishes selected"
-    },
-    "takeTo": "Take to…"
+    }
   },
   "transferDialog": {
     "title": "Take wishes to another list",

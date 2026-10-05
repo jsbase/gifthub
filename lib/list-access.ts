@@ -934,20 +934,33 @@ export const removeGift = async (
  * is a write; the destination is `findOwnedList` because a list the caller can only
  * read is not a place a wish may be put.
  *
- * **The state travels, and that is the entire design.** A bought idea arrives
- * bought, carrying the account that marked it, so it cannot become purchasable
- * again on the other sheet. An open idea arrives open. `move` is therefore a bare
- * re-point and `copy` writes the row's own values back, and neither one decides
- * anything - which is the reason there is no branch here on `isPurchased`. An
- * earlier draft of this had `move` split into an open case and a bought case so
- * that a bought wish would arrive open on the target; with the state travelling,
- * that split is not a rule any more but a way to reintroduce the double-buy the
- * mark exists to prevent, so the two cases were deleted rather than written.
+ * **`move` keeps the mark, `copy` leaves it behind - and that is the
+ * entire design.** A moved idea arrives on the target exactly as it
+ * stood: a bought one arrives bought, carrying the account that
+ * marked it, so it cannot become purchasable again on the other
+ * sheet, and an open one arrives open. `move` is therefore a bare
+ * re-point, and the double-buy the mark exists to prevent is
+ * prevented on the target exactly as it was on the source.
  *
- * **The read that `copy` needs is inside the transaction.** An idea a buyer marks
- * while this request is in flight is copied with the mark it carries by then, which
- * is the honest answer; reading it before the transaction would copy the state the
- * row had when the request arrived instead.
+ * A **copy** is a new thought on a new sheet, so it arrives as an
+ * *open* wish: `isPurchased` false, no attribution, ready to be
+ * marked by the target's own audience. The original keeps its mark
+ * on the source, because copying changes nothing there - the
+ * coordination the mark carries is neither duplicated onto the
+ * target nor lost from the source. That is why the copy branch
+ * writes two literals instead of the row's own values, and why
+ * there is no branch anywhere on `isPurchased`: a moved wish must
+ * not arrive open, and a copied one must.
+ *
+ * **Nothing the copy reads can change.** The only mutation the product
+ * makes to a gift row is the mark - there is no edit endpoint - and
+ * the mark no longer travels with a copy, so the fields the copy
+ * reads (`title`, `description`, `url`, `createdAt`) are the same at
+ * the insert as they were at the read, whichever request lands in
+ * between. The old reason this read's timing mattered - a buyer
+ * marking mid-flight would be copied with the mark it carried by
+ * then - went away with the mark itself. `move` reads nothing: it
+ * re-points the row, so the row's own state is its own answer.
  *
  * **All of it or none of it.** A batch of twelve that lands eight is worse than
  * retyping the twelve, and it is the only failure mode this function creates that
@@ -955,6 +968,17 @@ export const removeGift = async (
  * that is not on the source refuses the whole batch rather than transferring the
  * ones that happened to exist.
  */
+/*
+  The one failure inside the transaction that is a result rather than an
+  error: a row that stopped being on the source list between the read above
+  and the guarded write below. Its own type so the catch around the
+  transaction can answer it with the same `not_found` the pre-flight check
+  gives - a race a caller can see and retry - instead of letting it escape
+  as an unhandled exception that the route answers with a 500. Anything else
+  thrown inside the transaction is not foreseeable and stays an exception.
+*/
+class GiftLeftSource extends Error {}
+
 export const transferGifts = async (
   input: { giftIds: string[]; mode: 'copy' | 'move' },
   listId: string,
@@ -987,9 +1011,16 @@ export const transferGifts = async (
     id belonging to some other sheet matches no row here, so the length check below
     refuses it and a caller cannot use a transfer to pull an idea off a list they
     only have read access to - or off anybody's list at all.
+
+    Deduplicated first, because the length check is only honest against what was
+    actually asked for: `findMany` answers a repeated id with one row, and compared
+    against the raw length a redundant request would be refused as `not_found` for
+    a wish that was found. The sheet's own selection cannot repeat an id - it is
+    toggled - so this is the crafted-request case, answered as the duplicate it is.
   */
+  const giftIds = [...new Set(input.giftIds)];
   const rows = await prisma.gift.findMany({
-    where: { id: { in: input.giftIds }, listId },
+    where: { id: { in: giftIds }, listId },
   });
 
   /*
@@ -997,7 +1028,7 @@ export const transferGifts = async (
     must not have, and it is refused here - before the transaction, where there is
     still nothing to undo - rather than detected halfway through one.
   */
-  if (rows.length !== input.giftIds.length) return refused('not_found');
+  if (rows.length !== giftIds.length) return refused('not_found');
 
   /*
     Wrapped in an interactive transaction rather than the array form, and that is
@@ -1016,66 +1047,87 @@ export const transferGifts = async (
     The copy branch is left exactly as it was. It inserts rather than re-points, so
     there is no row that could have moved underneath it and no condition to write.
   */
-  const transferred = await prisma.$transaction(async (tx) => {
-    /*
-      Collected on the way through, and only the copy branch fills it: an insert hands
-      back the row it made, whereas `updateMany` answers only with a count. The two
-      modes therefore have to be answered by two different reads, and pretending
-      otherwise is a bug this function already had once - a single re-read keyed on
-      the *source* ids finds every moved row and none of the copied ones, because a
-      copy is a new row with a new id.
-    */
-    const created: StoredGift[] = [];
+  let transferred: StoredGift[];
+  try {
+    transferred = await prisma.$transaction(async (tx) => {
+      /*
+        Collected on the way through, and only the copy branch fills it: an insert hands
+        back the row it made, whereas `updateMany` answers only with a count. The two
+        modes therefore have to be answered by two different reads, and pretending
+        otherwise is a bug this function already had once - a single re-read keyed on
+        the *source* ids finds every moved row and none of the copied ones, because a
+        copy is a new row with a new id.
+      */
+      const created: StoredGift[] = [];
 
-    for (const row of rows) {
-      if (input.mode === 'move') {
-        const result = await tx.gift.updateMany({
-          where: { id: row.id, listId },
-          data: { listId: targetListId },
-        });
+      for (const row of rows) {
+        if (input.mode === 'move') {
+          const result = await tx.gift.updateMany({
+            where: { id: row.id, listId },
+            data: { listId: targetListId },
+          });
 
-        /*
-          Zero rows matched, so the row is no longer where it was when this batch was
-          composed. Throwing rolls the whole transaction back, which is the only way
-          to keep the promise above: a batch that cannot land entirely does not land.
-        */
-        if (result.count !== 1) {
-          throw new Error(`Gift ${row.id} is no longer on list ${listId}`);
+          /*
+            Zero rows matched, so the row is no longer where it was when this batch was
+            composed. Throwing rolls the whole transaction back, which is the only way
+            to keep the promise above: a batch that cannot land entirely does not land.
+            The dedicated type is what lets the catch below answer this as a refusal
+            rather than as a server error.
+          */
+          if (result.count !== 1) {
+            throw new GiftLeftSource(
+              `Gift ${row.id} is no longer on list ${listId}`
+            );
+          }
+        } else {
+          /*
+            `createdAt` is carried so the copy lands on the target in the position it
+            holds on the source. `listGifts` orders by `createdAt desc`, and a copied
+            idea that jumped to the top of a list it was written for last year would
+            say the owner had just thought of it.
+
+            The mark is the one thing deliberately NOT carried. A copy is a new
+            thought on a new sheet, so it arrives open - `isPurchased: false` and no
+            attribution - and the target's own audience is the one that decides
+            whether it is already bought. The source keeps its mark, untouched,
+            because this branch inserts rather than updates.
+          */
+          created.push(
+            await tx.gift.create({
+              data: {
+                title: row.title,
+                description: row.description,
+                url: row.url,
+                isPurchased: false,
+                purchasedById: null,
+                createdAt: row.createdAt,
+                listId: targetListId,
+              },
+            })
+          );
         }
-      } else {
-        /*
-          `createdAt` is carried so the copy lands on the target in the position it
-          holds on the source. `listGifts` orders by `createdAt desc`, and a copied
-          idea that jumped to the top of a list it was written for last year would
-          say the owner had just thought of it.
-        */
-        created.push(
-          await tx.gift.create({
-            data: {
-              title: row.title,
-              description: row.description,
-              url: row.url,
-              isPurchased: row.isPurchased,
-              purchasedById: row.purchasedById,
-              createdAt: row.createdAt,
-              listId: targetListId,
-            },
-          })
-        );
       }
-    }
 
-    if (input.mode === 'copy') return created;
+      if (input.mode === 'copy') return created;
 
-    /*
-      The moved rows as they now stand **on the target**, which is what the count and
-      the response describe. The ids are the source ids here precisely because a move
-      re-points rather than inserts.
-    */
-    return tx.gift.findMany({
-      where: { listId: targetListId, id: { in: rows.map((row) => row.id) } },
+      /*
+        The moved rows as they now stand **on the target**, which is what the count and
+        the response describe. The ids are the source ids here precisely because a move
+        re-points rather than inserts.
+      */
+      return tx.gift.findMany({
+        where: { listId: targetListId, id: { in: rows.map((row) => row.id) } },
+      });
     });
-  });
+  } catch (error) {
+    /*
+      The rollback has already happened by the time the error arrives here. Only the
+      race is translated; everything else is a failure this function cannot foresee,
+      and those stay exceptions so the route answers them as the 500 they are.
+    */
+    if (error instanceof GiftLeftSource) return refused('not_found');
+    throw error;
+  }
 
   return done({ transferred });
 };

@@ -544,17 +544,35 @@ export interface ListSheetTranslations {
     see the owner's controls at all.
   */
   /**
-   * The quiet row at the foot of a sheet that has wishes on it. It is an
-   * invitation with a whole promise in it - write it down, share it, done - rather
-   * than a label naming an object, because the reader who needs to be persuaded is
-   * one who has not written anything yet, and "add a gift idea" is an instruction,
-   * not a reason.
+   * The first of the three buttons in the action bar at the foot of a sheet
+   * that has wishes on it, and the only one of the three that is solid:
+   * writing a wish down is the action this surface exists for, while copy
+   * and move are things done to wishes that already exist. It opens the
+   * add form.
    *
-   * Distinct from `addGift` below, which commits the form. They used to be one
-   * string, which meant the foot row and the submit button said the same words for
-   * two different actions.
+   * Distinct from `addGift` below, which commits the form. They used to be
+   * one string (`addGiftRow`, the foot row's own label), which meant the
+   * foot row and the submit button said the same words for two different
+   * actions.
    */
-  addGiftRow: string;
+  newGift: string;
+  /**
+   * The action-bar verb that puts the sheet into copy mode: the selection
+   * boxes appear and the bar becomes the selection bar. A verb, because it
+   * names what will happen to the wishes the reader is about to mark.
+   */
+  copy: string;
+  /** The action-bar verb for move mode; see `copy` above. */
+  move: string;
+  /**
+   * Opens the destination picker from the selection bar.
+   *
+   * Names the next decision rather than the transfer itself: which of the
+   * two verbs applies was already decided on the action bar, and the only
+   * question the selection bar leaves open is which list the selection
+   * goes to.
+   */
+  chooseTarget: string;
   /** Commits the add-wish form. A verb, because the field above it already named the thing. */
   addGift: string;
   enterGiftTitle: string;
@@ -608,6 +626,14 @@ export interface ListSheetTranslations {
    */
   selectGift: string;
   /**
+   * The same checkbox's name for assistive technology, with the wish's
+   * own title in it. The bare `selectGift` would name every box on the
+   * sheet identically, so a reader working through a transfer mode would
+   * hear what the control is and never which wish it belongs to; the
+   * title is the fact the cell's text gives a sighted owner.
+   */
+  selectGiftNamed: string;
+  /**
    * How many wishes are selected, in four forms.
    *
    * Russian inflects by number and one template cannot express it, so this is a
@@ -625,15 +651,6 @@ export interface ListSheetTranslations {
     few: string;
     many: string;
   };
-  /**
-   * Opens the destination picker from the selection bar.
-   *
-   * A verb with an ellipsis because it leads somewhere: the reader is choosing a
-   * list, not performing the transfer. Which of the two transfers is not decided
-   * here - that is the dialog's, and the two commits are two buttons rather than a
-   * mode to be set first.
-   */
-  takeTo: string;
 }
 
 export interface ToastTranslations {
@@ -929,12 +946,14 @@ export interface ListBoardDictionary {
  * `ListVisibilityDialogProps` is - the dialog cannot reach the landing page's copy,
  * so there is nothing to stop it printing the wrong sentence from the wrong object.
  *
- * **Two commits and no mode.** `copyHere` and `moveHere` are the two buttons rather
- * than one button with a toggle above it, and that is the whole argument for the
- * shape of this dialog: the mode is a verb applied to a list the reader has already
- * chosen, so it belongs on the things that perform it. A switch would mean deciding
- * copy-or-move *before* choosing where, holding two pieces of state at once, and
- * offering a reader a "mode" with no meaning until a second decision gives it one.
+ * **One commit, and the verb is already chosen.** The copy-or-move decision
+ * was made on the action bar before this dialog ever opened, so the sheet
+ * below lists the caller's own lists and exactly one button performs the
+ * transfer: the verb the reader already pressed, on the row they have just
+ * chosen. Two buttons would put a second decision on screen that the reader
+ * has already made, and a pair of commits each disabled until a row is
+ * chosen is two inert controls where one says everything. One button names
+ * what the press will do, and nothing else on this sheet can start it.
  *
  * `copying` and `moving` are separate strings rather than one label with a
  * parameter, so the button that is pressed is the button that names itself - and so
@@ -942,10 +961,10 @@ export interface ListBoardDictionary {
  */
 export interface TransferDialogDictionary {
   /**
-   * Names what the reader is doing, and says neither verb on purpose: this sheet
-   * offers both a copy and a move, so a title naming one of them would be wrong for
-   * half the time it is on screen. The two verbs belong on the two commits, where
-   * they are the actual decision.
+   * Names what the reader is doing, and says neither verb on purpose: the
+   * verb was chosen on the sheet that opened this one, so the title is the
+   * same sentence in both modes. The verb belongs on the one commit button,
+   * where it names what the press will do.
    */
   title: string;
   copyHere: string;
@@ -1093,12 +1112,12 @@ export interface ListSheetProps {
  * Reports the list the reader chose and the mode they pressed; it performs nothing
  * itself. That split is what lets the request live in `ListSheet`, which already
  * performs every other gift mutation, and leaves this component a list of rows and
- * two buttons.
+ * one button.
  *
  * `lists` is the caller's own lists with the source already removed, and it arrives
- * as a prop rather than being fetched here: the fetch happens when the selection bar
- * appears, which is earlier than this dialog opens, so by the time this is on screen
- * the rows are in hand and the dialog has nothing to wait for.
+ * as a prop rather than being fetched here: the fetch happens when the transfer
+ * mode is entered, which is earlier than this dialog opens, so by the time this is
+ * on screen the rows are in hand and the dialog has nothing to wait for.
  */
 export interface TransferDialogProps {
   isOpen: boolean;
@@ -1109,7 +1128,7 @@ export interface TransferDialogProps {
    * Those lists are still on their way.
    *
    * Separate from `lists` being empty, and the distinction is the whole point: the
-   * prefetch starts when the selection bar appears, but nothing stops a reader
+   * prefetch starts when the transfer mode is entered, but nothing stops a reader
    * opening the picker before it lands, and an empty list read as "you have no other
    * lists" would send them off to create one they already have. Three states, three
    * sentences - loading, none, and the refusal's.
@@ -1122,16 +1141,21 @@ export interface TransferDialogProps {
   loadFailed: boolean;
   onRetry: () => void;
   /**
-   * Which commit's request is in flight, or `null`.
+   * Which verb this dialog commits, decided on the sheet that opened it.
    *
-   * The mode rather than a boolean, and the reason is that both commits are on
-   * screen at once and each swaps to its *own* progress wording. A single `boolean`
-   * would put "moving…" on the copy button too, which reports a verb nobody chose -
-   * and the reader who pressed *Copy here* would be told the wish is being moved.
-   * The pressed button is the one that should say it is working, so the state has to
-   * be able to say which one that was.
+   * Non-nullable because there is no way to reach this dialog without it: the
+   * only trigger is the selection bar, which exists only inside a transfer
+   * mode. A `null` case would be a state the type promises but the product
+   * cannot produce.
    */
-  pendingMode: 'copy' | 'move' | null;
+  mode: 'copy' | 'move';
+  /**
+   * Whether the commit's request is in flight, and the one boolean this
+   * dialog needs: with a single commit there is no second button that could
+   * be told the wrong progress wording, so the mode alone says *which*
+   * transfer is running and this says *that* one is.
+   */
+  isPending: boolean;
   onTransfer: (targetListId: string, mode: 'copy' | 'move') => void;
 }
 
@@ -1512,7 +1536,11 @@ export interface GiftCardProps {
   gift: Gift;
   dict: Pick<
     ListSheetTranslations,
-    'markAsPurchased' | 'markAsAvailable' | 'deleteGift' | 'selectGift'
+    | 'markAsPurchased'
+    | 'markAsAvailable'
+    | 'deleteGift'
+    | 'selectGift'
+    | 'selectGiftNamed'
   >;
   onDelete: (id: string) => void;
   onTogglePurchased: (id: string) => void;
@@ -1531,8 +1559,11 @@ export interface GiftCardProps {
   /** The row whose transfer is in flight; it dims and the cell goes inert. */
   transferringIds: string[];
   /**
-   * Whether this reader may put wishes into a batch. Owner only, and absent for a
-   * buyer for the same reason the delete button is.
+   * Whether this reader may put wishes into a batch - owner only, and
+   * only while the sheet is in a transfer mode. Absent for a buyer for
+   * the same reason the delete button is, and absent for an owner who is
+   * not transferring, because a column of boxes with nothing to do with
+   * them is an invitation to a request the server has not been asked for.
    *
    * Distinct from `canDelete` rather than reused from it, because the two are
    * different capabilities that happen to have the same answer today: deleting a

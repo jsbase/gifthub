@@ -566,7 +566,7 @@ test.describe('Moving and copying wishes between your own lists', () => {
     await ben.context.close();
   });
 
-  test("a copy of somebody else's bought wish arrives bought and cannot be cleared", async ({
+  test("a copy of somebody else's bought wish arrives open and can be marked", async ({
     browser,
   }) => {
     const anna = await signIn(browser, ANNA);
@@ -586,21 +586,57 @@ test.describe('Moving and copying wishes between your own lists', () => {
 
     const copy = (await sheet(anna, targetId)).find((gift) => gift.id !== giftId);
     expect(copy, 'the copy is on the target under a new id').toBeTruthy();
-    expect(copy!.isPurchased, 'and it arrives bought').toBe(true);
-    expect(copy!.canClear, 'and the owner cannot clear it there either').toBe(false);
+    /*
+      The mark does NOT travel with a copy. A copy is a new thought on a
+      new sheet: it arrives open, and the target's own audience is the one
+      that decides whether it is already bought. `canClear: true` is the
+      observable form of that, the same way `canClear: false` was the
+      observable form of the mark travelling before the semantics changed -
+      `purchasedById` never leaves the server, so this boolean is the only
+      way the rule can be seen from outside (see `mayClearMark`).
+    */
+    expect(
+      copy!.isPurchased,
+      'a copy arrives open - the mark belongs to the source list, not to the copy'
+    ).toBe(false);
+    expect(
+      copy!.canClear,
+      'and the owner may mark it there, because it is open'
+    ).toBe(true);
 
     // The source keeps the mark it had, because copy changes nothing on this side.
     const original = (await sheet(anna, sourceId))[0];
     expect(original.isPurchased, 'the source is unchanged by a copy').toBe(true);
-    expect(original.canClear, 'including who may clear it').toBe(false);
+    expect(
+      original.canClear,
+      "and Ben's mark on it is still the owner's to live with"
+    ).toBe(false);
 
-    // And the attempt the interface does not offer is still refused on the target,
-    // which is the guarantee restated at the only place it could have leaked.
-    const attempted = await anna.api.post(
+    /*
+      The positive form of "arrives open": the one request the old
+      semantics refused - the owner marking the copy - is the request
+      that works now. The copy becomes a bought wish on the target,
+      marked by its own owner, and clearable by her for the same reason.
+    */
+    const marked = await anna.api.post(
       `/api/lists/${targetId}/gifts/${copy!.id}/toggle`
     );
-    expect(attempted.status()).toBe(403);
-    expect((await attempted.json()).code).toBe('cannot_clear_purchase');
+    expect(
+      marked.status(),
+      'the owner can mark an open copy like any open wish'
+    ).toBe(200);
+
+    const markedCopy = (await sheet(anna, targetId)).find(
+      (gift) => gift.id === copy!.id
+    );
+    expect(
+      markedCopy!.isPurchased,
+      'the copy takes the mark like any open wish'
+    ).toBe(true);
+    expect(
+      markedCopy!.canClear,
+      'and the owner may clear what they themselves marked'
+    ).toBe(true);
 
     await anna.context.close();
     await ben.context.close();

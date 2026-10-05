@@ -19,15 +19,16 @@ import type { TransferDialogProps } from '@/types';
 /**
  * WHERE A SELECTION OF WISHES GOES.
  *
- * **Two commits and no mode.** The sheet below lists the caller's own lists; picking
- * one does not commit anything, and two buttons at the foot do - *Copy here* and
- * *Move here*. That is the whole argument for the shape, and it is worth stating
- * because the obvious alternative is a two-position switch above the list: the mode
- * is a verb applied to a list the reader has already chosen, so it belongs on the
- * things that perform it. A switch would mean deciding copy-or-move *before*
- * choosing where, holding two pieces of state at once, and putting on screen a
- * "mode" with no meaning until a second decision gives it one. One decision at a
- * time, and no state to get wrong.
+ * **One commit, and the verb is already chosen.** The sheet below lists
+ * the caller's own lists; picking one does not commit anything, and the
+ * single button at the foot does - *Copy here* or *Move here*, whichever
+ * verb the reader pressed on the sheet that opened this one. That is the
+ * whole argument for the shape, and it is worth stating because the
+ * obvious alternative is a pair of buttons: with the verb already decided,
+ * two commits would offer a second decision the reader has already made,
+ * and two inert buttons - both disabled until a row is chosen - would be
+ * two controls where one says everything. One decision at a time, and no
+ * state to get wrong.
  *
  * **The source list is not in the list at all.** It is filtered out upstream, in
  * `ListSheet`, and that is deliberate rather than a detail of where the filter
@@ -37,7 +38,7 @@ import type { TransferDialogProps } from '@/types';
  * `PRODUCT.md:66` names - a control a reader may not use.
  *
  * **A failed prefetch shows a sentence and a retry, not an empty list.** The rows
- * are fetched when the selection bar appears rather than when this opens, so a
+ * are fetched when the transfer mode is entered rather than when this opens, so a
  * failure here is a failed request and not an account with no lists - and rendering
  * it as "you have no other lists" would tell the reader to go and make one, which is
  * advice for a situation they are not in. The empty state and the failure state are
@@ -45,7 +46,7 @@ import type { TransferDialogProps } from '@/types';
  *
  * This component performs nothing. It reports a list and a mode and the caller does
  * the request, which is what lets `ListSheet` keep owning every gift mutation and
- * leaves this a list of rows and two buttons.
+ * leaves this a list of rows and one button.
  */
 const TransferDialog: React.FC<TransferDialogProps> = ({
   isOpen,
@@ -56,7 +57,8 @@ const TransferDialog: React.FC<TransferDialogProps> = ({
   dict,
   loadFailed,
   onRetry,
-  pendingMode,
+  mode,
+  isPending,
   onTransfer,
 }) => {
   /*
@@ -126,8 +128,8 @@ const TransferDialog: React.FC<TransferDialogProps> = ({
           </div>
         ) : isLoading ? (
           /*
-            The prefetch is still in flight. The spec starts it when the selection bar
-            appears rather than when this opens, which is what makes the dialog fast
+            The prefetch is still in flight. The spec starts it when the transfer
+            mode is entered rather than when this opens, which is what makes the dialog fast
             - but "fast" is not "already finished", and a reader who taps the button
             the instant the bar appears lands here. The alternative was the empty
             state, which says they have no other lists, and that is not a fact this
@@ -171,7 +173,8 @@ const TransferDialog: React.FC<TransferDialogProps> = ({
                 <li key={list.id}>
                   {/*
                     A radio, not a row with a click handler. The reader is choosing
-                    one destination out of several and then one of two verbs, and a
+                    one destination out of several - the verb was decided on the
+                    sheet that opened this one - and a
                     list of mutually exclusive choices is what a radio group is for:
                     it announces how many options there are, arrow keys move between
                     them, and the current choice is something the interface states
@@ -195,7 +198,7 @@ const TransferDialog: React.FC<TransferDialogProps> = ({
                       value={list.id}
                       checked={isChosen}
                       onChange={() => setTargetId(list.id)}
-                      disabled={pendingMode !== null}
+                      disabled={isPending}
                       className='h-4 w-4 shrink-0 accent-ink'
                       data-testid={`transferTarget-${list.id}`}
                     />
@@ -239,43 +242,28 @@ const TransferDialog: React.FC<TransferDialogProps> = ({
 
         <DialogFooter className='xs:mt-auto'>
           {/*
-            Both buttons are disabled until a destination is chosen, and both are
-            shown rather than only the applicable one. Which verb applies is decided
-            by whether a row is selected, so a dialog with nothing selected has no
-            verb to offer - and hiding the pair until then would make the sheet's
-            height jump the moment a row is tapped, which is worse than two plainly
-            inert buttons.
-
-            `pendingMode` rather than a boolean, and the reason is on the next line:
-            each button swaps to its own progress wording, so the state has to say
-            which one was pressed. A single `isPending` would put "moving…" on the
-            copy button as well, telling a reader who pressed *Copy here* that the
-            wish is being moved - which is the one sentence about this feature that
-            would be a lie.
+            One button, disabled until a destination is chosen. The verb was
+            decided on the sheet that opened this dialog, so the button's label
+            is the verb the reader already pressed, and while its request is in
+            flight the same button swaps to its own progress wording - `copying`
+            or `moving`, chosen by `mode`, so the button that is working is the
+            button that names itself.
           */}
           <Button
             type='button'
             variant='outline'
-            disabled={targetId === null || pendingMode !== null}
-            onClick={() => targetId && onTransfer(targetId, 'copy')}
+            disabled={targetId === null || isPending}
+            onClick={() => targetId && onTransfer(targetId, mode)}
             className='xs:w-full'
-            data-testid='transferCopyHere'
+            data-testid={mode === 'copy' ? 'transferCopyHere' : 'transferMoveHere'}
           >
-            {pendingMode === 'copy'
-              ? dict.transferDialog.copying
-              : dict.transferDialog.copyHere}
-          </Button>
-
-          <Button
-            type='button'
-            disabled={targetId === null || pendingMode !== null}
-            onClick={() => targetId && onTransfer(targetId, 'move')}
-            className='xs:w-full'
-            data-testid='transferMoveHere'
-          >
-            {pendingMode === 'move'
-              ? dict.transferDialog.moving
-              : dict.transferDialog.moveHere}
+            {isPending
+              ? mode === 'copy'
+                ? dict.transferDialog.copying
+                : dict.transferDialog.moving
+              : mode === 'copy'
+                ? dict.transferDialog.copyHere
+                : dict.transferDialog.moveHere}
           </Button>
 
           <Button

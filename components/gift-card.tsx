@@ -69,10 +69,13 @@ const LONG_PRESS_SLOP_PX = 10;
  *     and those two need different words - which is why the sheet shows an
  *     invited account none of the owner-only surface and then says so in a
  *     sentence above it.
- *   - The selection box is absent for a reader who may not transfer, for exactly
- *     that reason: the transfer is owner-only (`lib/list-access.ts`), and a buyer
- *     looking at a column of boxes they may not use would be reading an invitation
- *     the server refuses.
+ *   - The selection box is absent until the sheet is in a transfer mode,
+ *     and absent for a reader who may not transfer, for exactly that
+ *     reason: the transfer is owner-only (`lib/list-access.ts`), and a
+ *     buyer - or an owner merely browsing - looking at a column of boxes
+ *     they may not use would be reading an invitation the server refuses.
+ *     The boxes appear the moment a mode is entered, because that is the
+ *     moment selecting a wish becomes something the sheet can do with one.
  *   - The mark is a **stamp rather than a button** when this reader may not clear
  *     this particular mark: the owner, on an idea somebody has already marked.
  *     The column keeps its place, its 44px measure and its rule, and the cart
@@ -136,11 +139,12 @@ const GiftCard: React.FC<GiftCardProps> = ({
   const handlePointerDown = useCallback(
     (event: React.PointerEvent<HTMLElement>) => {
       /*
-        Only a primary pointer, and never for the reader who is already using the
-        keyboard or the checkbox: a long press on a cell is a *second* way to reach
-        the same selection, so it must not fire while the pointer is on the control
-        that already does it - otherwise one press on the checkbox would both check
-        it and toggle it back.
+        Only a primary pointer, and never for the reader who is already using
+        the keyboard or the checkbox: a long press on a cell is a *second* way to
+        reach the same selection - both paths exist only inside a transfer mode -
+        so it must not fire while the pointer is on the
+        control that already does it - otherwise one press on the checkbox would both
+        check it and toggle it back.
       */
       if (!canSelect || event.pointerType === 'mouse' || event.button !== 0) {
         return;
@@ -282,22 +286,31 @@ const GiftCard: React.FC<GiftCardProps> = ({
       )}
     >
       {/*
-        The selection checkbox, in a 44px column before the mark.
+         The selection checkbox, in a 44px column before the mark - and
+         only while the sheet is in a transfer mode, because that is the
+         only time a selection is a thing the sheet can do with a wish.
 
-        A real `<input type="checkbox">` with a visible label rather than a `<div>`
-        with a click handler, and that is not a detail: this is the accessible path
-        to the whole feature. A div would be reachable by mouse and by nothing else -
-        not by Tab, not announced as a checkbox, not toggled by Space - and the
-        feature's alternative is a 500ms press, which no keyboard can produce at all.
+         A real `<input type="checkbox">` with a visible label rather than a `<div>`
+         with a click handler, and that is not a detail: this is the accessible path
+         to the whole feature. A div would be reachable by mouse and by nothing else -
+         not by Tab, not announced as a checkbox, not toggled by Space - and the
+         feature's alternative is a 500ms press, which no keyboard can produce at all.
 
         `data-no-longpress` is on the input so that the long-press on the cell does
         not also fire when the reader's thumb lands on the box: one press must not
         select and deselect.
 
-        The column is identical in width, measure and rule to the mark column
-        opposite, so a cell does not reflow depending on who owns it - the same
-        property that keeps the mark's stamp from reflowing the cell for an owner.
-      */}
+         The column is identical in width, measure and rule to the mark column
+         opposite, so a cell does not reflow depending on who owns it - the same
+         property that keeps the mark's stamp from reflowing the cell for an owner.
+
+         The name announced for the box is `selectGiftNamed`, the plain
+         `selectGift` with the wish's title in it, because every box on the
+         sheet would otherwise carry the same name: a reader working through a
+         transfer mode hears what the control is but never which wish it
+         belongs to, and the title is the fact the cell's text gives a sighted
+         owner.
+       */}
       {canSelect && (
         <div className='grid min-h-11 w-11 shrink-0 place-items-center border-r border-rule'>
           <input
@@ -305,7 +318,7 @@ const GiftCard: React.FC<GiftCardProps> = ({
             checked={isSelected}
             onChange={handleToggleSelected}
             disabled={isTransferring}
-            aria-label={dict.selectGift}
+            aria-label={dict.selectGiftNamed.replace('{title}', gift.title)}
             data-no-longpress
             data-testid='giftSelect'
             className='h-4 w-4 cursor-pointer accent-ink'

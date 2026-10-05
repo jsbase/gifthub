@@ -176,15 +176,18 @@
     "youAreABuyer": "Diese Liste gehört jemand anderem. Abhaken, sobald du etwas besorgt hast, darfst du — mehr nicht.",
     "markedBySomeoneElse": "Jemand anderes hat das abgehakt — die Markierung bleibt.",
     "backToLists": "Zurück zu den Listen",
-    "addGiftRow": "Einfach deinen Wunsch eintragen, teilen, fertig!",
+    "newGift": "Neuen Wunsch erstellen",
+    "copy": "Kopieren",
+    "move": "Verschieben",
+    "chooseTarget": "Ziel wählen",
     "selectGift": "Wunsch auswählen",
+    "selectGiftNamed": "Wunsch „{title}“ auswählen",
     "selectedCount": {
       "one": "{count} Wunsch ausgewählt",
       "two": "{count} Wünsche ausgewählt",
       "few": "{count} Wünsche ausgewählt",
       "many": "{count} Wünsche ausgewählt"
-    },
-    "takeTo": "Bringen nach …"
+    }
   },
   "transferDialog": {
     "title": "Wünsche auf eine andere Liste bringen",
