@@ -1,5 +1,7 @@
 # wishy
 
+☕ [**ko-fi.com/wishyapp**](https://ko-fi.com/wishyapp) — if wishy kept two people from buying the same present, this is what pays for the hosting and the database.
+
 One list of gift ideas, shared with exactly the people who will buy from it, so nobody buys the same present twice.
 
 ## What it is
@@ -17,10 +19,6 @@ Bought ideas stay on the list, struck through, and the person who bought them is
 ## Live URL
 
 <https://wishy-store.vercel.app/>
-
-## Support
-
-If wishy kept two people from buying the same present, you can back it at [**ko-fi.com/wishyapp**](https://ko-fi.com/wishyapp). That is what pays for the hosting and the database.
 
 ## Tech stack
 
