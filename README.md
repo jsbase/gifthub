@@ -18,6 +18,10 @@ Bought ideas stay on the list, struck through, and the person who bought them is
 
 <https://wishy-store.vercel.app/>
 
+## Support
+
+If wishy kept two people from buying the same present, you can back it at [**ko-fi.com/wishyapp**](https://ko-fi.com/wishyapp). That is what pays for the hosting and the database.
+
 ## Tech stack
 
 | Concern            | Choice                                                                       |
