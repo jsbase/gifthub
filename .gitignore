@@ -63,6 +63,7 @@ node_modules/
 /.github/agents
 /.github/hooks
 /.cursor
+/.gemini
 
 # agent plan workspace
 # Local planning and audit documents only. Nothing under /docs belongs in the
