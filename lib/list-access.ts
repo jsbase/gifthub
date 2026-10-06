@@ -1078,6 +1078,19 @@ export const transferGifts = async (
   const giftIds = [...new Set(input.giftIds)];
 
   /*
+    An empty batch is refused here as well as in the route, because this is the
+    function that would otherwise report it as a success. With nothing named every
+    length check below is `0 === 0`, so a copy or a move of nothing would answer `ok`
+    with a count of zero - a success for a request that did nothing, which a second
+    caller that is not the route could hand it without anyone noticing.
+
+    `nothing_to_change` rather than `not_found`: it is the same 400 the route gives
+    for the same body, whereas a 404 would say that something the caller named is
+    missing, and they named nothing.
+  */
+  if (giftIds.length === 0) return refused('nothing_to_change');
+
+  /*
     Refused before either list is looked up, and that order discloses nothing: the
     answer is decided from the body alone, so it is the same for a stranger as for the
     owner and says nothing about whether either list exists. It also spares two

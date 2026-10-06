@@ -487,6 +487,12 @@ const ListSheet: React.FC<ListSheetProps> = ({
     and with the mode, so the next batch is a new attempt and "copy it again" still
     means a second copy.
 
+    It is deliberately not keyed on the selection or the destination. A reader whose
+    reply was lost and who then ticks one more wish should get the new wish and not a
+    second copy of the old ones, and the server already tells batches apart by wish
+    and by destination (`keyedGiftId`) - so a key that changed with the selection
+    would turn that second press into a duplicate instead of a continuation.
+
     A ref rather than state: nothing renders it, and it must be readable by the press
     handler at the instant of the press, not at the render before.
   */

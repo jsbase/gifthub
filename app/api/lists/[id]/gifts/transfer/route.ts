@@ -58,7 +58,8 @@ export const POST: (
       the reader asked to move. And `giftIds` is checked as a non-empty array of
       strings so that `rows.length !== giftIds.length` inside `transferGifts` cannot
       be satisfied by an empty request - which would report success for a batch that
-      did nothing.
+      did nothing. `transferGifts` refuses an empty batch again for the same reason, so
+      the guarantee does not depend on this being its only caller.
 
       `requestId` is allowed to be absent but not to be wrong. A present value that
       does not match is refused rather than ignored, because ignoring it would turn
