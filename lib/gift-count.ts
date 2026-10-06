@@ -76,11 +76,19 @@ export function giftCountLabel(
  * A second function rather than a parameter of the one above, because the two
  * counts have different shapes of truth. `giftCountLabel`'s four states are two
  * zeroes and two numbers - a sheet can be empty and a sheet can be finished, and
- * the row has to be able to say which - while a selection has neither state: the bar
- * this belongs to is rendered only when something is selected. Carrying `none` and
- * `zero` here would add two branches that cannot be reached, and the first would be
- * actively wrong, since "no wishes selected" printed on a bar that exists precisely
- * because some are is a contradiction.
+ * the row has to be able to say which - while a selection has neither state. The bar
+ * this belongs to is rendered for as long as a transfer mode is active, so it also
+ * stands there with nothing ticked yet, and the figure it prints then is simply
+ * zero. A selection is a count of what is ticked: the two zeroes above describe a
+ * *sheet* (nothing on it, nothing left to buy), and a bar that says "0 selected" is
+ * making neither claim. Carrying `none` and `zero` here would answer a question the
+ * bar is not asking, and would invite the sheet's two meanings into a sentence about
+ * a selection.
+ *
+ * Zero needs no branch of its own because the plural rules already word it: it is
+ * `other` in German and English and `many` in Russian, and `other` falls through to
+ * `many` below, so all three shipped locales print the plural form, which is the
+ * right one.
  *
  * What is left is the part that varies, and it varies by more than singular and
  * plural. Russian has three forms - 1 пожелание, 2-4 пожелания, 5+ пожеланий - and

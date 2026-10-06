@@ -146,10 +146,10 @@ test('the two zero states are told apart by the counts they are given', () => {
   Not a reuse of `giftCountLabel` and not a second copy of it. That function's four
   states are two zeroes and two numbers - a sheet can be empty and a sheet can be
   finished, and the row has to say which - and a selection has neither state: the
-  bar it belongs to is only rendered when something is selected. Carrying `none` and
-  `zero` here would be two branches that cannot be reached, and the first of them
-  would be actively wrong, because "no wishes selected" on a bar that exists
-  precisely because some are is a contradiction.
+  bar it belongs to is rendered for as long as a transfer mode is active, so it also
+  stands there with nothing ticked, and what it prints then is a number. Carrying
+  `none` and `zero` here would answer a question the bar is not asking: those two
+  describe a sheet, and "0 selected" makes neither claim.
 
   What is left is the part that does vary, and it varies by more than one/plural:
   Russian has three forms (1 пожелание, 2-4 пожелания, 5+ пожеланий) and a
@@ -225,12 +225,15 @@ test('German has one plural band and everything else lands in it', () => {
 
 test('a zero selection is still a grammatical sentence', () => {
   /*
-    Zero is unreachable rather than worded: the bar is rendered on
-    `selectedIds.length > 0`, so the function is never called with it. Pinned
-    because it is the one value where a clamp or an exception would be most
-    tempting, and because all three locales put zero in the plural band - so the
-    accidental answer would have been a correct one, which is the worst way for it
-    to go unnoticed.
+    Zero is reachable: the bar is rendered for as long as a transfer mode is active
+    (`transferMode !== null`), and a reader who has just pressed *Kopieren* has
+    ticked nothing yet, so the function is called with it. It is the one value where
+    a clamp or an exception would be most tempting. All three locales put zero in
+    the plural band - `other` in German and English, `many` in Russian, and `other`
+    falls through to `many` - so the plain answer is the correct one in each.
+    Pinned all the same, because that is a fact about the platform's plural rules
+    rather than about this function, and a new locale could change it without any
+    other test noticing.
   */
   assert.equal(selected(0), 'SELECTED:many 0');
 });
