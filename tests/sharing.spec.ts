@@ -519,7 +519,16 @@ test.describe('Sharing permissions', () => {
     const sourceId = await createList(anna, names.next(), 'SHARED');
     const bensListId = await createList(ben, names.next(), 'SHARED');
     const giftId = await addGift(anna, sourceId, 'Wunsch');
-    await grant(anna, bensListId, ANNA);
+    // Ben grants it, because only the owner can. This line used to be `grant(anna, ...)`,
+    // which Anna is not allowed to do - the grant failed unnoticed, Anna could not read
+    // Ben's list at all, and the 404 below was the answer to "no relationship" rather
+    // than to "readable but not owned". The test passed for a reason that had nothing
+    // to do with the rule it names, so the grant is now asserted.
+    const granted = await grant(ben, bensListId, ANNA);
+    expect(
+      granted.ok(),
+      `Ben must be able to put Anna on his list: ${granted.status()} ${await granted.text()}`
+    ).toBe(true);
 
     /*
       Anna can *read* Ben's list - she is on its audience - and still cannot have a
