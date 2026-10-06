@@ -206,7 +206,7 @@ const ListRow: React.FC<ListRowProps> = ({
           {/*
             `group-hover/row`, not `hover:`, because the thing under the pointer is
             the whole row - the name is eight characters wide inside a control that
-            is 910px wide, and an underline that appeared only when the pointer
+            spans the row's whole name track, and an underline that appeared only when the pointer
             happened to be over the glyphs would report the hit area wrongly. On a
             pointer that cannot hover it is never drawn at all, which is
             `DESIGN.md`'s rule and the reason it is gated rather than written as

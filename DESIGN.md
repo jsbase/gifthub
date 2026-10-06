@@ -315,7 +315,10 @@ the header's left edge and ends on its right.
 
 The dashboard keeps its `max-w-5xl`: a mounted sheet is *meant* to sit inset from
 the desk on all four sides, and from `sm` up that inset is the design rather than an
-accident.
+accident. The contents sheet is narrower than that column from `sm`: `SheetFrame`'s
+`narrow` caps it at 44rem and centres it, so the desk shows at the sides too and a
+row's name, figure and controls fall inside one glance instead of across 910px. The
+sheet of a single list does not pass it and still fills the column.
 
 **Below `sm` the dashboard sheet is not inset, and that is the same rule the
 dialog already follows.** `ui/dialog.tsx` states it: below `sm` a sheet "becomes
