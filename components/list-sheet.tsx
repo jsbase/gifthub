@@ -143,6 +143,7 @@ export const SheetFrame: React.FC<SheetFrameProps> = ({
   header,
   dict,
   children,
+  narrow = false,
 }) => (
   <div className={cn('min-h-screen', 'bg-board', 'flex flex-col')}>
     <Header {...header} />
@@ -226,7 +227,28 @@ export const SheetFrame: React.FC<SheetFrameProps> = ({
                 'min-h-[calc(100dvh-var(--header-height)-1px)]',
                 'sm:min-h-0',
                 'sm:px-8',
-                'sm:py-7'
+                'sm:py-7',
+                /*
+                  `narrow`, for the contents page only. In the 910px content
+                  column of a full-width sheet a row's three tracks are
+                  `1fr 5rem 13rem`, which by the grid's own arithmetic left the
+                  name a 574px track and put the figure about 600px from the
+                  start of the row: a short name and the number that belongs to
+                  it were two islands with nothing between them, and the
+                  controls a third. At 44rem the column is 638px, the name track
+                  302px, and the whole row sits inside one glance. Chosen between
+                  38rem, where the name track is 206px and a German compound
+                  wraps at the second word, and 52rem, where it is 430px and the
+                  gap is back. A sheet that hugs a narrower column is still a
+                  mounted sheet: the desk shows at the sides as well as above and
+                  below, which is the figure/ground this frame exists to draw.
+
+                  `sm:mx-auto` replaces the `sm:mx-0` above rather than adding to
+                  it - `cn` merges the two - and below `sm` neither applies, so a
+                  phone still gets the full-bleed page it has always had.
+                */
+                narrow && 'sm:mx-auto',
+                narrow && 'sm:max-w-[44rem]'
               )}
             >
               {/* The same corner furniture the floating sheets carry: four

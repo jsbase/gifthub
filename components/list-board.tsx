@@ -24,6 +24,16 @@ import type {
 } from '@/types';
 
 /**
+ * A ruled index of rows. From `sm` the first row gives up 8px of its `py-5`: it is
+ * the one row with a label directly over it, and its top padding is half of the
+ * distance between that label and its name. The rest of the rows keep the padding
+ * the rules between them are measured from. The same string on both sections,
+ * because the two heads have to sit the same distance from the first row of the
+ * list under them - see "where the space goes" in `ListBoard`.
+ */
+const ROW_LIST = 'divide-y divide-rule sm:[&>li:first-child]:pt-3';
+
+/**
  * The contents page: two lists of lists.
  *
  * **The two sections are two different relationships, and that is why they are
@@ -146,8 +156,28 @@ const ListBoard: React.FC<ListBoardProps> = ({
   */
   const sharedFirst = lists.length === 0 && shared.length > 0;
 
+  /*
+    **Where the space goes from `sm` up, and why it moves.**
+
+    A label has to be nearer the rows it heads than the rows it follows, and on
+    this page it was not. By the declared values, the second section's label sat
+    78px above its first row's name (label 17, `pb-4` 16, rule 1, `gap-6` 24, row
+    `py-5` 20) and 52px below the last row of the section before it (row `py-5` 20,
+    `gap-8` 32): further from its own list than from the other one, which is what
+    "the headlines and the list items are too far away" reads as. It was reported on
+    a 976px sheet at desktop width.
+
+    From `sm` the head now takes 12px under it, the section's own gap is 4px, and
+    the first row gives up 8px of its top padding, so the label is about 29px from
+    what it heads; the sections are 48px apart, 68px with the last row's padding.
+    About 2.3 to 1 instead of 0.7 to 1. Every one of those is an `sm:` override:
+    below `sm` nothing moves and the label is still 78px from its rows. That is
+    left alone on purpose rather than judged fine: the report was about desktop,
+    a phone stacks the label over its button and gives each row a second line, so
+    the same numbers do not mean the same thing there, and it has not been measured.
+  */
   const ownSection = (
-    <section className='flex flex-col gap-6' data-testid='ownSection'>
+    <section className='flex flex-col gap-6 sm:gap-1' data-testid='ownSection'>
       <SectionHead
         heading={!sharedFirst}
         label={dict.listBoard.yourLists}
@@ -172,7 +202,7 @@ const ListBoard: React.FC<ListBoardProps> = ({
            the first row, so the two lines are 16px apart and about different things;
            the hairline between rows 2 and 3 is a hundred pixels from any head. A
            printed index rules its rows and it reads as one. */
-        <ul data-testid='ownedLists' className='divide-y divide-rule'>
+        <ul data-testid='ownedLists' className={ROW_LIST}>
           {lists.map((list) => (
             <ListRow
               key={list.id}
@@ -210,14 +240,14 @@ const ListBoard: React.FC<ListBoardProps> = ({
       left to wonder whether it exists at all. It does not carry the create
       control - there is nothing to create here.
     */
-    <section className='flex flex-col gap-6' data-testid='sharedSection'>
+    <section className='flex flex-col gap-6 sm:gap-1' data-testid='sharedSection'>
       <SectionHead
         heading={sharedFirst}
         label={dict.listBoard.sharedWithYou}
       />
 
       {shared.length > 0 ? (
-        <ul data-testid='sharedLists' className='divide-y divide-rule'>
+        <ul data-testid='sharedLists' className={ROW_LIST}>
           {shared.map((list) => (
             <ListRow
               key={list.id}
@@ -253,7 +283,7 @@ const ListBoard: React.FC<ListBoardProps> = ({
       paragraph, so each route owns its own heading and this one can say what the
       page is for rather than who is looking at it.
     */
-    <div className='flex flex-col gap-8'>
+    <div className='flex flex-col gap-8 sm:gap-12'>
       <h1 className='sr-only'>{dict.listBoard.yourLists}</h1>
 
       {sharedFirst ? (
@@ -334,16 +364,25 @@ const SectionHead: React.FC<{
         made.
       */
       /*
-        And a heading takes neither the rule nor the padding under it, so the distance
-        from the heading to the first row is the section's own gap and not the sum of
-        the two.
+        And a heading takes neither the rule nor the padding under it, so below `sm`
+        the distance from the heading to the first row is the section's own gap and
+        not the sum of the two.
       */
       heading && 'border-b-0',
       heading && 'pb-0',
       'sm:flex-row',
       'sm:items-end',
       'sm:justify-between',
-      'sm:gap-6'
+      'sm:gap-6',
+      /*
+        From `sm` both heads take the same 12px, the heading too. There the section's
+        own gap is 4px, so a heading with no padding would sit 16px from its rows and
+        a ruled label 29px - two labels one page apart saying "this is what is under
+        me" at two different distances. Equal padding under both is what makes the
+        pair read as one grammar, and the rule is the only thing that still tells
+        them apart.
+      */
+      'sm:pb-3'
     )}
   >
     {/*
@@ -453,8 +492,8 @@ const CreatePlate: React.FC<{ dict: Translations; onCreate: () => void }> = ({
  *
  * **No measure, and that is the fix.** This carried `max-w-[44ch]`, which is the
  * app's reading measure for prose - and a one-sentence note is not prose. At 13px
- * the measure capped the note at roughly 380px on a sheet whose content column is
- * 910px, so a sentence of sixty-odd characters broke onto two lines with more than
+ * the measure capped the note at roughly 380px on a sheet whose content column was
+ * 910px then, so a sentence of sixty-odd characters broke onto two lines with more than
  * half the sheet empty to its right, and read as a layout failure rather than as
  * anything anybody had written. Widening the box is the whole fix: the sentence now
  * takes the sheet's own measure and wraps only where it has to. On a phone the

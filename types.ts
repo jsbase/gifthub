@@ -1202,6 +1202,14 @@ export interface SheetFrameProps {
   header: HeaderProps;
   dict: Translations;
   children: ReactNode;
+  /**
+   * From `sm` up, cap the sheet at a reading width and centre it, instead of
+   * letting it fill the page's `max-w-5xl` column. The contents page passes it and
+   * the sheet of one list does not: a contents row is a name, a figure and four
+   * controls on one line, and those only read as one row when the line is short
+   * enough to take in at once. Below `sm` it changes nothing.
+   */
+  narrow?: boolean;
 }
 
 /**
