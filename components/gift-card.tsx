@@ -120,6 +120,26 @@ const GiftCard: React.FC<GiftCardProps> = ({
   const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pressOrigin = useRef<{ x: number; y: number } | null>(null);
 
+  /*
+    Whether the press that is ending has already been spent on a selection.
+
+    A hold that selects a wish is a whole gesture, and what the browser does when the
+    finger lifts is not up to it: many touch browsers still deliver a `click` to
+    whatever is under the finger, and some open their own context menu while it is
+    held. Both are wrong here and the first is worse than it sounds. The cell has a
+    mark button and a delete button of its own and only the checkbox opts out of the
+    press (`data-no-longpress`), so holding a thumb on the cart would select the wish
+    *and* then mark it bought - a change to a shared mark, made by a gesture that was
+    meant to do something else.
+
+    So the cell remembers that the timer fired, swallows the one click that can follow
+    it (in the capture phase, before a child's own handler sees it) and refuses the
+    context menu. It is cleared by the next press, not by the click: some browsers
+    send no click after a long press at all, and a flag that waited for one would eat
+    the next real tap instead.
+  */
+  const longPressFired = useRef(false);
+
   const cancelLongPress = useCallback(() => {
     if (longPressTimer.current !== null) {
       clearTimeout(longPressTimer.current);
@@ -138,6 +158,10 @@ const GiftCard: React.FC<GiftCardProps> = ({
 
   const handlePointerDown = useCallback(
     (event: React.PointerEvent<HTMLElement>) => {
+      // A new press starts clean, whatever kind of pointer it is: the flag belongs to
+      // the previous gesture, and a mouse click after a touch hold is not part of it.
+      longPressFired.current = false;
+
       /*
         Only a primary pointer, and never for the reader who is already using
         the keyboard or the checkbox: a long press on a cell is a *second* way to
@@ -155,11 +179,31 @@ const GiftCard: React.FC<GiftCardProps> = ({
       longPressTimer.current = setTimeout(() => {
         longPressTimer.current = null;
         pressOrigin.current = null;
+        longPressFired.current = true;
         onToggleSelected(gift.id);
       }, LONG_PRESS_MS);
     },
     [canSelect, gift.id, onToggleSelected]
   );
+
+  const handleClickCapture = useCallback((event: React.MouseEvent) => {
+    if (!longPressFired.current) return;
+    longPressFired.current = false;
+    event.preventDefault();
+    event.stopPropagation();
+  }, []);
+
+  /*
+    Refused while a press is in progress or has just selected, and only then. A mouse
+    never starts the timer, so a right-click keeps its menu; it is the touch hold -
+    which some browsers answer with a menu of their own just as the timer fires - that
+    would otherwise open over the selection it has just made.
+  */
+  const handleContextMenu = useCallback((event: React.MouseEvent) => {
+    if (longPressFired.current || longPressTimer.current !== null) {
+      event.preventDefault();
+    }
+  }, []);
 
   const handlePointerMove = useCallback(
     (event: React.PointerEvent<HTMLElement>) => {
@@ -222,6 +266,8 @@ const GiftCard: React.FC<GiftCardProps> = ({
       onPointerUp={canSelect ? cancelLongPress : undefined}
       onPointerCancel={canSelect ? cancelLongPress : undefined}
       onPointerLeave={canSelect ? cancelLongPress : undefined}
+      onClickCapture={canSelect ? handleClickCapture : undefined}
+      onContextMenu={canSelect ? handleContextMenu : undefined}
       className={cn(
         'group/cell',
         'flex',
