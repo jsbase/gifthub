@@ -212,6 +212,7 @@ const DashboardPage: NextPage<PageProps> = ({ params }) => {
         showAuth: true,
       }}
       dict={dict}
+      narrow
     >
       <ListBoard
         lists={lists}
