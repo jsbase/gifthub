@@ -20,7 +20,7 @@ import type { Gift, MemberGiftCounts } from '@/types';
 */
 
 const require = createRequire(import.meta.url);
-const { sheetCounts, splitSheet, giftCountLabel } =
+const { sheetCounts, splitSheet, giftCountLabel, selectedCountLabel } =
   require('../../lib/gift-count.ts') as typeof import('@/lib/gift-count');
 
 /*
@@ -132,10 +132,119 @@ test('the sheet splits into what is needed and what is handled', () => {
 test('the two zero states are told apart by the counts they are given', () => {
   /*
     Read together on purpose: the same `unbought: 0` is `none` at total 0 and
-    `zero` at any total above it. Asserted as one loop so a change that makes
-    the first branch reachable from the second shows up here.
+    `zero` at any total above it. Asserted as one loop so a change that makes the
+    first branch reachable from the second shows up here.
   */
   for (const total of [1, 2, 17]) {
     assert.equal(label(total, 0), 'STATE:zero', `total ${total}, unbought 0`);
   }
+});
+
+/*
+  HOW MANY WISHES ARE SELECTED, WHICH IS A DIFFERENT COUNT.
+
+  Not a reuse of `giftCountLabel` and not a second copy of it. That function's four
+  states are two zeroes and two numbers - a sheet can be empty and a sheet can be
+  finished, and the row has to say which - and a selection has neither state: the
+  bar it belongs to is rendered for as long as a transfer mode is active, so it also
+  stands there with nothing ticked, and what it prints then is a number. Carrying
+  `none` and `zero` here would answer a question the bar is not asking: those two
+  describe a sheet, and "0 selected" makes neither claim.
+
+  What is left is the part that does vary, and it varies by more than one/plural:
+  Russian has three forms (1 пожелание, 2-4 пожелания, 5+ пожеланий) and a
+  one-form plural template cannot produce them. Four states is the honest ladder for
+  that - and they are the four CLDR plural *categories*, which is why they are
+  exactly those four: `two` is a real category in Irish, Welsh and Breton, and a
+  locale that needs it must be able to name it rather than have the function decide.
+
+  The wordings are stubbed for the reason the states above are: four distinct
+  markers make the branch visible in a failure message instead of hiding behind four
+  non-empty strings that all look right.
+*/
+const selectionDict = {
+  selectedCount: {
+    one: 'SELECTED:one {count}',
+    two: 'SELECTED:two {count}',
+    few: 'SELECTED:few {count}',
+    many: 'SELECTED:many {count}',
+  },
+};
+
+const selected = (count: number, locale = 'ru'): string =>
+  selectedCountLabel(count, locale, selectionDict);
+
+test('one selected wish is singular, in every shipped language', () => {
+  assert.equal(selected(1), 'SELECTED:one 1');
+  assert.equal(selected(1, 'de'), 'SELECTED:one 1');
+  assert.equal(selected(1, 'en'), 'SELECTED:one 1');
+});
+
+test('two to four take the second form in Russian, which has no separate two', () => {
+  // `two` is an empty band for Russian and German. It is still a key: a locale that
+  // fills it in gets it, and one that does not is not made to pretend.
+  assert.equal(selected(2), 'SELECTED:few 2');
+  assert.equal(selected(3), 'SELECTED:few 3');
+  assert.equal(selected(4), 'SELECTED:few 4');
+});
+
+test('five and above take the plural band', () => {
+  assert.equal(selected(5), 'SELECTED:many 5');
+  assert.equal(selected(12), 'SELECTED:many 12');
+});
+
+/*
+  THE CASE THAT KILLED THE FIRST VERSION.
+
+  An earlier version compared the number against a ladder - 1, 2, 3-4, 5+ - which is
+  right for every number a reader sees on a phone and wrong for the rest. Russian 21
+  is one (21 желание) and 22 is two (22 желания); the ladder put both in the `many`
+  band and printed "21 желаний", which is a sentence about a number that exists on
+  any sheet somebody reaches a dozen wishes on.
+
+  These four numbers are the whole reason the function asks `Intl.PluralRules`
+  rather than counting, and they are here to stop a future reader from "simplifying"
+  the platform call back into comparisons - a simplification that looks strictly
+  cheaper and passes every test above it.
+*/
+test('Russian is decided by the number, not by its last digit', () => {
+  assert.equal(selected(21), 'SELECTED:one 21', '21 желание, not 21 желаний');
+  assert.equal(selected(22), 'SELECTED:few 22', '22 желания, not 22 желаний');
+  assert.equal(selected(25), 'SELECTED:many 25');
+  assert.equal(selected(11), 'SELECTED:many 11', 'the teens take the plural too');
+});
+
+test('German has one plural band and everything else lands in it', () => {
+  // `other` has no key and falls through to `many`. That is not a gap: German's
+  // plural *is* the band `many` names, so the two languages disagree about the
+  // category's name and not about the sentence.
+  for (const count of [0, 2, 5, 21, 100]) {
+    assert.equal(selected(count, 'de'), `SELECTED:many ${count}`, `de ${count}`);
+  }
+});
+
+test('a zero selection is still a grammatical sentence', () => {
+  /*
+    Zero is reachable: the bar is rendered for as long as a transfer mode is active
+    (`transferMode !== null`), and a reader who has just pressed *Kopieren* has
+    ticked nothing yet, so the function is called with it. It is the one value where
+    a clamp or an exception would be most tempting. All three locales put zero in
+    the plural band - `other` in German and English, `many` in Russian, and `other`
+    falls through to `many` - so the plain answer is the correct one in each.
+    Pinned all the same, because that is a fact about the platform's plural rules
+    rather than about this function, and a new locale could change it without any
+    other test noticing.
+  */
+  assert.equal(selected(0), 'SELECTED:many 0');
+});
+
+test('the selection count is never the sheet count', () => {
+  /*
+    The trap this exists beside: a selection is a subset of a sheet, so a sheet that
+    says "3 wishes still needed" while the bar says "2 selected" is correct, and a
+    function that read the wrong figure would produce a plausible sentence about the
+    wrong number. Asserted with the two figures deliberately different.
+  */
+  assert.equal(selected(2), 'SELECTED:few 2');
+  assert.notEqual(selected(2), 'SELECTED:few 3');
 });

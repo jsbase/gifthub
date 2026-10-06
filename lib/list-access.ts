@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import prisma from '@/lib/prisma';
 import type { Prisma } from '@prisma/client';
 import type { Refusal } from '@/lib/refusals';
@@ -22,6 +23,8 @@ import type { ListVisibility } from '@/types';
  *   clear a mark somebody else set        403       yes        yes           404
  *   add an idea                           yes       403        403           404
  *   delete an idea                        yes       403        403           404
+ *   copy an idea to a list you own        yes       403        403           404
+ *   move an idea to a list you own        yes       403        403           404
  *   rename the list                       yes       403        403           404
  *   change visibility                     yes       403        403           404
  *   grant access (needs SHARED)           yes       403        403           404
@@ -29,7 +32,7 @@ import type { ListVisibility } from '@/types';
  *   revoke a group grant                  yes       403        403           404
  *   delete the list (cascades ideas)      yes       403        403           404
  *
- * Four things in that table are not obvious and each has a reason.
+ * Five things in that table are not obvious and each has a reason.
  *
  * 1. `404` and `403` are not interchangeable. An account with no relationship to a
  *    list is told there is nothing there, so another person's list is never
@@ -75,6 +78,18 @@ import type { ListVisibility } from '@/types';
  *    still there. `tests/groups.spec.ts` asserts that case directly, because a
  *    permission rule only one implementation knows about is a rule with one
  *    implementation.
+ *
+ * 5. The two transfer rows are gated *asymmetrically*, and the asymmetry is the
+ *    whole of the rule. The source goes through `requireWritableList`, which is
+ *    403 for somebody who can already read it; the destination goes through
+ *    `findOwnedList`, which is 404 for anybody who does not own it. So naming
+ *    somebody else's list as a destination is answered with "there is nothing here
+ *    for you" rather than with "that list exists and is not yours" - the same
+ *    disclosure rule as rule 1, applied to a second list in a single request. A
+ *    destination the caller may merely *read* is refused too: being able to see a
+ *    sheet is not a reason a wish may be written on it, and reusing
+ *    `requireWritableList` there would have quietly granted the group-reach row
+ *    above a capability its owners do not have.
  *
  * Note what is deliberately absent: there is no repository port here. Prisma is the
  * only implementation, and a seam with one adapter is indirection rather than a
@@ -909,6 +924,333 @@ export const removeGift = async (
 
   await prisma.gift.delete({ where: { id: giftId } });
   return done(gift);
+};
+
+/**
+ * The most wishes one transfer may name.
+ *
+ * Not a timeout guard: a batch is one read and one write whatever its size, so the
+ * number of statements no longer grows with the selection. What still grows is the
+ * `IN (...)` list of the read and the single `INSERT` of a copy, and a sheet is ticked
+ * by hand - nobody ticks a hundred wishes one at a time and means them as one
+ * decision. A list that long is filed in two goes.
+ *
+ * There is no measurement behind exactly 100. It sits far above anything a person
+ * selects and far below anything one statement minds, so it is a bound rather than a
+ * tuned value. The refusal's sentence (`giftsTransferTooMany`) names no figure for the
+ * same reason, which is what lets this number change here alone.
+ */
+export const MAX_TRANSFER_BATCH = 100;
+
+/*
+  The one failure inside the move's transaction that is a result rather than an
+  error: a row that stopped being on the source list between the read above and the
+  guarded write below. Its own type so the catch around the transaction can answer
+  it with the same `not_found` the pre-flight check gives - a race a caller can see
+  and retry - instead of letting it escape as an unhandled exception that the route
+  answers with a 500. Anything else thrown inside the transaction is not foreseeable
+  and stays an exception.
+*/
+class GiftLeftSource extends Error {}
+
+/**
+ * The id a copy is given when its attempt has a name.
+ *
+ * Derived from the attempt rather than remembered, and that is the whole reason a
+ * copy can be sent twice and land once without a table to record that it was: the
+ * same attempt asks for the same ids, so the second `INSERT` finds them taken and
+ * skips them. Remembering the attempt instead would need a row per request, a
+ * cleanup for it, and a migration - all for a fact the ids can carry themselves.
+ *
+ * Four inputs, and each is there because leaving it out merges two things that must
+ * stay apart. The account, so one person's attempt name can never collide with
+ * another's. The source wish, so the wishes of one batch get different ids. The
+ * destination, so the same wish filed onto two lists under one attempt name - a
+ * reader who fails once, then picks another list - is two copies and not one.
+ * Hashed rather than concatenated so the attempt name, which the caller chooses,
+ * cannot be shaped to read as a different account's or a different wish's id.
+ *
+ * `c` and 24 hex characters is the shape `cuid()` produces for the rows around it,
+ * so nothing downstream can tell a keyed row from any other.
+ */
+const keyedGiftId = (
+  accountId: string,
+  requestId: string,
+  sourceGiftId: string,
+  targetListId: string
+): string =>
+  'c' +
+  createHash('sha256')
+    .update([accountId, requestId, sourceGiftId, targetListId].join('\u0000'))
+    .digest('hex')
+    .slice(0, 24);
+
+/**
+ * Put one or more ideas from this list onto another list this account owns, keeping
+ * them or leaving them behind.
+ *
+ * Owner on both ends, and the two ends are gated differently - see header rule 5.
+ * The source is `requireWritableList` because the caller is removing from it, which
+ * is a write; the destination is `findOwnedList` because a list the caller can only
+ * read is not a place a wish may be put.
+ *
+ * **`move` keeps the mark, `copy` leaves it behind - and that is the
+ * entire design.** A moved idea arrives on the target exactly as it
+ * stood: a bought one arrives bought, carrying the account that
+ * marked it, so it cannot become purchasable again on the other
+ * sheet, and an open one arrives open. `move` is therefore a bare
+ * re-point, and the double-buy the mark exists to prevent is
+ * prevented on the target exactly as it was on the source.
+ *
+ * A **copy** is a new thought on a new sheet, so it arrives as an
+ * *open* wish: `isPurchased` false, no attribution, ready to be
+ * marked by the target's own audience. The original keeps its mark
+ * on the source, because copying changes nothing there - the
+ * coordination the mark carries is neither duplicated onto the
+ * target nor lost from the source. That is why the copy branch
+ * writes two literals instead of the row's own values, and why
+ * there is no branch anywhere on `isPurchased`: a moved wish must
+ * not arrive open, and a copied one must.
+ *
+ * **Nothing the copy reads can change.** The only mutation the product
+ * makes to a gift row is the mark - there is no edit endpoint - and
+ * the mark no longer travels with a copy, so the fields the copy
+ * reads (`title`, `description`, `url`, `createdAt`) are the same at
+ * the insert as they were at the read, whichever request lands in
+ * between. The old reason this read's timing mattered - a buyer
+ * marking mid-flight would be copied with the mark it carried by
+ * then - went away with the mark itself. `move` reads nothing: it
+ * re-points the row, so the row's own state is its own answer.
+ *
+ * **All of it or none of it.** A batch of twelve that lands eight is worse than
+ * retyping the twelve, and it is the only failure mode this function creates that
+ * did not exist before it. A requested id that is not on the source refuses the whole
+ * batch rather than transferring the ones that happened to exist, and each mode is
+ * atomic on its own terms: a copy is one `INSERT`, which Postgres applies whole or
+ * not at all, and a move is one `UPDATE` whose row count is checked inside a
+ * transaction that is rolled back when it comes up short.
+ *
+ * **Two statements, whatever the size.** The first version wrote one row at a time
+ * inside an interactive transaction. That is a round trip per wish, and Prisma ends
+ * an interactive transaction after five seconds unless told otherwise - so how long a
+ * batch took grew with its size while the allowance did not, and the way it failed was
+ * a 500 on a request that had asked for nothing wrong. A read and a write cost the
+ * same for three wishes as for a hundred, which is also why the size is capped by
+ * `MAX_TRANSFER_BATCH` and not by the clock.
+ *
+ * **Sending it again is safe.** The sheet cannot tell a request that never arrived
+ * from one whose reply was lost, and its answer to both is "press it again" - the
+ * selection and the dialog are still there. That has to be harmless, and it is made so
+ * without remembering anything:
+ *
+ *   - A **move** that finds every requested wish already on the destination, and none
+ *     on the source, is a move that already happened. It answers with the same
+ *     success and writes nothing. It stays all-or-nothing: one id that is on neither
+ *     list is still `not_found`, because that is a request naming something that is
+ *     not there rather than a request repeated.
+ *   - A **copy** has no such tell. The source looks the same before and after, and
+ *     identical-looking wishes on the destination may be there on purpose - copying a
+ *     wish again is what the mark's design is *for*, a present that is wanted twice.
+ *     So the caller supplies the tell: `requestId` names one attempt and the id of
+ *     every copy is derived from it (`keyedGiftId`), so the same attempt sent twice
+ *     writes the same ids and the second insert skips them. A new attempt carries a
+ *     new `requestId` and writes new rows, which is what keeps "copy it again"
+ *     meaning what it says. With no `requestId` nothing is derived and the copy is
+ *     exactly as repeatable as it was.
+ *
+ * `count` is how many of the batch's wishes are on the destination when this returns:
+ * the batch size, and the same on a repeat that wrote nothing.
+ */
+export const transferGifts = async (
+  input: { giftIds: string[]; mode: 'copy' | 'move'; requestId?: string },
+  listId: string,
+  targetListId: string,
+  accountId: string
+): Promise<Outcome<{ count: number }>> => {
+  /*
+    Deduplicated first, because every length in this function is only honest against
+    what was actually asked for: `findMany` answers a repeated id with one row, and
+    compared against the raw length a redundant request would be refused as
+    `not_found` for a wish that was found. The sheet's own selection cannot repeat an
+    id - it is toggled - so this is the crafted-request case, answered as the
+    duplicate it is.
+  */
+  const giftIds = [...new Set(input.giftIds)];
+
+  /*
+    An empty batch is refused here as well as in the route, because this is the
+    function that would otherwise report it as a success. With nothing named every
+    length check below is `0 === 0`, so a copy or a move of nothing would answer `ok`
+    with a count of zero - a success for a request that did nothing, which a second
+    caller that is not the route could hand it without anyone noticing.
+
+    `nothing_to_change` rather than `not_found`: it is the same 400 the route gives
+    for the same body, whereas a 404 would say that something the caller named is
+    missing, and they named nothing.
+  */
+  if (giftIds.length === 0) return refused('nothing_to_change');
+
+  /*
+    Refused before either list is looked up, and that order discloses nothing: the
+    answer is decided from the body alone, so it is the same for a stranger as for the
+    owner and says nothing about whether either list exists. It also spares two
+    lookups for a request that cannot succeed.
+  */
+  if (giftIds.length > MAX_TRANSFER_BATCH) return refused('too_many_gifts');
+
+  const source = await requireWritableList(listId, accountId);
+  if (!source.ok) return refused(source.refusal);
+
+  /*
+    The destination is checked after the source and with a different gate, and the
+    order is the point: a buyer is refused at the source before a second list is
+    looked at at all, so nothing about the caller's other lists is observable to
+    somebody who cannot write to the one they named.
+  */
+  const target = await findOwnedList(targetListId, accountId);
+  if (!target.ok) return refused(target.refusal);
+
+  /*
+    Refused on the request shape rather than looked up, and 400 rather than 404 for
+    the reason `lib/api-refusal.ts` records: both ids are already known to be the
+    caller's own, so there is nothing here being hidden. A transfer onto the sheet
+    it started from is a client that built its request wrong, not a permission
+    question, and the picker never offers it.
+  */
+  if (listId === targetListId) return refused('already_on_this_list');
+
+  /*
+    Scoped to the source list, and that scoping is the batch's security property: an
+    id belonging to some other sheet matches no row here, so the length check below
+    refuses it and a caller cannot use a transfer to pull an idea off a list they
+    only have read access to - or off anybody's list at all.
+  */
+  const rows = await prisma.gift.findMany({
+    where: { id: { in: giftIds }, listId },
+  });
+
+  /*
+    One bad id refuses all of them. A partial transfer is the failure this function
+    must not have, and it is refused here - before anything is written, where there
+    is still nothing to undo - rather than detected halfway through.
+  */
+  if (rows.length !== giftIds.length) {
+    /*
+      The one way "not on the source" is not a refusal: a move that has already
+      happened, asked for again because its reply was lost. Every requested wish is
+      on the destination, so the answer is the success the first attempt should have
+      delivered.
+
+      Scoped to the destination, which the gate above has just shown this account
+      owns, so the lookup tells the caller nothing about a list that is not theirs.
+      And it is all of them or it is a refusal: a request naming one wish that has
+      landed and one that is somewhere else is not a repeat of anything.
+    */
+    if (input.mode === 'move') {
+      const landed = await prisma.gift.count({
+        where: { id: { in: giftIds }, listId: targetListId },
+      });
+      if (landed === giftIds.length) return done({ count: landed });
+    }
+
+    return refused('not_found');
+  }
+
+  if (input.mode === 'copy') {
+    const { requestId } = input;
+
+    /*
+      `createdAt` is carried so the copy lands on the target in the position it
+      holds on the source. `listGifts` orders by `createdAt desc`, and a copied
+      idea that jumped to the top of a list it was written for last year would
+      say the owner had just thought of it.
+
+      The mark is the one thing deliberately NOT carried. A copy is a new
+      thought on a new sheet, so it arrives open - `isPurchased: false` and no
+      attribution - and the target's own audience is the one that decides
+      whether it is already bought. The source keeps its mark, untouched,
+      because this branch inserts rather than updates.
+
+      One statement, so it needs no transaction: it is applied whole or not at all.
+      And it needs no guard on the source either, which is what the move below has
+      to carry - it inserts rather than re-points, so there is no row that could have
+      moved underneath it.
+
+      `skipDuplicates` only when the attempt is named. That is the half of the
+      repeat-safety that lives here: a repeat derives the same ids and they are
+      skipped. Without a name there are no derived ids to collide, and switching it
+      on anyway would turn any future unique constraint on this table into a silent
+      no-op instead of an error.
+    */
+    await prisma.gift.createMany({
+      data: rows.map((row) => ({
+        id:
+          requestId === undefined
+            ? undefined
+            : keyedGiftId(accountId, requestId, row.id, targetListId),
+        title: row.title,
+        description: row.description,
+        url: row.url,
+        isPurchased: false,
+        purchasedById: null,
+        createdAt: row.createdAt,
+        listId: targetListId,
+      })),
+      skipDuplicates: requestId !== undefined,
+    });
+
+    return done({ count: rows.length });
+  }
+
+  /*
+    Wrapped in a transaction for one reason: a write that has to be *checked* and able
+    to undo itself. A single `UPDATE` is atomic, but it is atomic over the rows that
+    still match, and a batch that moved nine of ten is the partial transfer this
+    function must not have. The transaction is what lets the count below veto it.
+
+    The condition on the update is the narrowing. `where: { id, listId }` says "these
+    rows, and only while they are still on the source", so a row that somebody moved
+    between the read above and this write matches nothing and the batch is refused
+    whole. The unguarded form - `where: { id }` - would have quietly re-pointed a wish
+    from whatever list it had moved to in the meantime, which is a batch landing on
+    the target with a row in it that was never selected from the source. That window is
+    narrow and it is the same shape of failure as the partial batch: wishes on a list
+    the reader did not choose.
+
+    One statement inside it, so unlike the loop it replaced it cannot run into the
+    transaction's time limit however long the selection is.
+  */
+  try {
+    await prisma.$transaction(async (tx) => {
+      const moved = await tx.gift.updateMany({
+        where: { id: { in: giftIds }, listId },
+        data: { listId: targetListId },
+      });
+
+      /*
+        Fewer rows matched than were read, so some of them are no longer where they
+        were when this batch was composed. Throwing rolls the whole transaction back,
+        which is the only way to keep the promise above: a batch that cannot land
+        entirely does not land. The dedicated type is what lets the catch below answer
+        this as a refusal rather than as a server error.
+      */
+      if (moved.count !== rows.length) {
+        throw new GiftLeftSource(
+          `Some of ${rows.length} gifts are no longer on list ${listId}`
+        );
+      }
+    });
+  } catch (error) {
+    /*
+      The rollback has already happened by the time the error arrives here. Only the
+      race is translated; everything else is a failure this function cannot foresee,
+      and those stay exceptions so the route answers them as the 500 they are.
+    */
+    if (error instanceof GiftLeftSource) return refused('not_found');
+    throw error;
+  }
+
+  return done({ count: rows.length });
 };
 
 /**

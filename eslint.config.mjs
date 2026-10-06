@@ -71,6 +71,7 @@ export default defineConfig([
     '.agents/**',
     '.claude/**',
     '.codex/**',
+    '.cursor/**',
     '.kilo/**',
     '.github/agents/**',
     '.github/hooks/**',

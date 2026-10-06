@@ -121,6 +121,9 @@ const nameFailureText = (
     nothing_to_change: undefined,
     ambiguous_change: undefined,
     invalid_visibility: undefined,
+    // A transfer refusal: this endpoint renames a group and cannot produce one.
+    already_on_this_list: undefined,
+    too_many_gifts: undefined,
     no_such_account: undefined,
     already_shared: undefined,
     cannot_share_with_owner: undefined,

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { IconArrowLeft, IconCirclePlus, IconTrash } from '@tabler/icons-react';
 import { Button } from '@/components/ui/button';
@@ -10,21 +10,95 @@ import { Textarea } from '@/components/ui/textarea';
 import { CropMarks } from '@/components/ui/dialog';
 import ConfirmDialog from '@/components/confirm-dialog';
 import GiftCard from '@/components/gift-card';
+import TransferDialog from '@/components/transfer-dialog';
 import Footer from '@/components/footer';
 import Header from '@/components/header';
 import { StatusBadge } from '@/components/status-badge';
 import { ListVisibilityDialog } from '@/components/share-list-dialog';
-import { isRefusal } from '@/lib/refusals';
+import { isRefusal, type Refusal } from '@/lib/refusals';
 import { cn } from '@/lib/utils';
 import { memberInkStyle } from '@/lib/member-ink';
-import { giftCountLabel, sheetCounts, splitSheet } from '@/lib/gift-count';
+import {
+  giftCountLabel,
+  selectedCountLabel,
+  sheetCounts,
+  splitSheet,
+} from '@/lib/gift-count';
 import { GIFT_FIELD_LIMITS } from '@/lib/gift-text';
+import { getLocaleFromPath } from '@/lib/i18n-config';
+import { usePathname } from 'next/navigation';
 import type {
   Gift,
   ListSheetProps,
+  ListSummary,
   ListVisibility,
   SheetFrameProps,
+  Translations,
 } from '@/types';
+
+/**
+ * A name for one transfer attempt, sent with the request so that pressing the same
+ * button again after a lost reply cannot write a copy twice (`transferGifts` has the
+ * server half).
+ *
+ * `crypto.randomUUID` is only defined in a secure context, and the sheet is opened
+ * over plain `http` by anybody testing from a phone against a development machine's
+ * address - where it is simply absent, and a missing function would fail every
+ * transfer with a sentence about the network. The fallback is not secret and does not
+ * need to be: the server namespaces the value by account, so all it has to be is
+ * different from the last attempt's. Its alphabet is the one the route accepts.
+ */
+const newRequestId = (): string =>
+  typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
+    ? crypto.randomUUID()
+    : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
+
+/**
+ * The sentence for a transfer the server answered with a refusal.
+ *
+ * Exhaustive over `Refusal`, like the tables in `account-picker.tsx` and
+ * `groups-dialog.tsx`: a code added to the vocabulary does not typecheck here until
+ * somebody has decided what a person making a transfer is told. Most of them are the
+ * generic sentence, and that is a decision rather than an omission - an
+ * `invalid_email` cannot come out of this route, and if one ever did the honest thing
+ * to say is that the wishes were not transferred.
+ *
+ * Only two are specific, and both because the reader can do something about them:
+ * `not_found` (a wish or the destination has gone since the sheet loaded) and
+ * `too_many_gifts` (select fewer).
+ */
+const transferFailureText = (dict: Translations, code: unknown): string => {
+  const generic = dict.toasts.giftsTransferFailed;
+  if (!isRefusal(code)) return generic;
+
+  const table: Record<Refusal, string> = {
+    not_found: dict.toasts.giftsTransferNotFound,
+    too_many_gifts: dict.toasts.giftsTransferTooMany,
+    invalid_email: generic,
+    duplicate_email: generic,
+    invalid_nickname: generic,
+    duplicate_nickname: generic,
+    weak_password: generic,
+    invalid_display_name: generic,
+    invalid_identifier: generic,
+    nothing_to_change: generic,
+    ambiguous_change: generic,
+    invalid_visibility: generic,
+    already_on_this_list: generic,
+    no_such_account: generic,
+    already_shared: generic,
+    cannot_share_with_owner: generic,
+    not_shared_yet: generic,
+    invalid_search_query: generic,
+    no_such_group: generic,
+    duplicate_group_name: generic,
+    cannot_join_own_group: generic,
+    forbidden: generic,
+    cannot_clear_purchase: generic,
+  };
+
+  return table[code];
+};
 
 /**
  * The board, the sheet it holds, and the two pieces of furniture around them.
@@ -303,6 +377,7 @@ const ListSheet: React.FC<ListSheetProps> = ({
   onDeleteList,
   onShareList,
   onVisibilityChanged,
+  onTransferred,
 }) => {
   const [showAddGiftForm, setShowAddGiftForm] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
@@ -313,6 +388,203 @@ const ListSheet: React.FC<ListSheetProps> = ({
   const [changedId, setChangedId] = useState<string | null>(null);
   const [pendingDeletion, setPendingDeletion] = useState<Gift | null>(null);
   const [isVisibilityOpen, setIsVisibilityOpen] = useState(false);
+
+  /*
+    THE BATCH, AND WHERE IT LIVES.
+
+    `selectedIds` is plain local state and nothing else. It is not a URL, not a
+    context and not a server round trip, because marking a wish selected is a
+    gesture and a gesture that waits on a request is slower than retyping the wishes
+    this whole feature exists to avoid. The page does not change, the sheet does not
+    re-fetch, and the only thing that happens is that the bar at the foot counts.
+
+    It exists only inside a transfer mode: the checkboxes and the long-press are
+    both gated on `transferMode` (the `canSelect` every `GiftCard` below is
+    given), so when the mode ends there is no orphan state to clean up beyond the
+    mode itself.
+
+    That is the whole of the "instant" half of the rule: anything that is only local
+    state is instant, and this is the most local state in the component.
+  */
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [isTransferOpen, setIsTransferOpen] = useState(false);
+  /*
+    The active transfer mode - the sheet's second way of being a sheet. While it
+    holds a verb, the checkboxes are on the cells, the action bar at the foot is
+    the selection bar, and the wishes the reader marks are a batch. `null` is the
+    ordinary sheet, and the two verbs on the action bar are the only way in.
+  */
+  const [transferMode, setTransferMode] = useState<'copy' | 'move' | null>(null);
+  /* Whether the transfer request is in flight - the dialog's pending state. */
+  const [isTransferPending, setIsTransferPending] = useState(false);
+
+  /*
+    The caller's own lists, fetched when a transfer mode is entered rather than
+    when the dialog opens.
+
+    The timing is the point. There is idle time between the moments - the reader
+    presses *Kopieren* or *Verschieben*, marks wishes, reads the bar, decides, and
+    then opens the picker - and fetching during it means the dialog opens with its
+    rows already in hand and has nothing to wait for. Fetching on open would make
+    the one sheet in the product whose content cannot be known in advance into the
+    one that visibly stalls.
+
+    `null` rather than `[]` because "not fetched yet" and "fetched, and there are
+    none" are different states: the first is a spinner, the second is an invitation
+    to make a list, and collapsing them would tell a reader with a dozen lists that
+    they have none.
+  */
+  const [transferTargets, setTransferTargets] = useState<ListSummary[] | null>(null);
+  const [targetsFailed, setTargetsFailed] = useState(false);
+
+  /*
+    The batch whose request is in flight, which is NOT the live selection.
+
+    Two lists, and conflating them is a bug with a symptom nothing else would
+    catch: the selection is cleared the moment a transfer is sent, so passing it as
+    the "currently transferring" set would make that set empty for the whole duration
+    of the request - the rows would never dim and never go inert, and the property
+    `gift-card.tsx` documents would simply never happen. Worse, the sheet would be
+    fully interactive again mid-flight, so a reader could start a second batch on top
+    of the first and watch the first one's navigation arrive underneath it.
+
+    So this is captured at the moment the request goes out and released when it
+    comes back, and the selection is free to be whatever the reader does next.
+  */
+  const [transferringIds, setTransferringIds] = useState<string[]>([]);
+
+  /*
+    The locale, from the path, because `selectedCountLabel` has to be told which
+    language's plural rules to apply and a client component is not handed one.
+    `usePathname` plus `getLocaleFromPath` is what `auth-buttons.tsx` already does
+    for the same reason, so this is the second place and not a new convention.
+  */
+  const pathname = usePathname();
+
+  /*
+    The selection as it stands on the sheet *now*, which is what is counted, sent and
+    dimmed - not `selectedIds` itself.
+
+    The two differ after a transfer is refused with `not_found`: the sheet reloads to
+    show what is really there, and a wish that is no longer on it would otherwise stay
+    in the batch with nothing on screen to untick. The bar would count a wish nobody
+    can see and every further press would be refused for it - a batch the reader could
+    only escape by leaving the mode. Derived in render rather than pruned in an effect,
+    so there is no moment at which the bar and the sheet disagree.
+  */
+  const liveSelectedIds = useMemo(
+    () => selectedIds.filter((id) => gifts.some((gift) => gift.id === id)),
+    [selectedIds, gifts]
+  );
+
+  const hasSelection = liveSelectedIds.length > 0;
+
+  /*
+    The name of the attempt in flight, held across presses on purpose. It is created
+    on the first press of a batch and kept until a transfer succeeds, so a press that
+    follows a failure of unknown outcome - a dropped connection, a reply that never
+    came - is the *same* attempt and the server can recognise it. Dropped on success
+    and with the mode, so the next batch is a new attempt and "copy it again" still
+    means a second copy.
+
+    It is deliberately not keyed on the selection or the destination. A reader whose
+    reply was lost and who then ticks one more wish should get the new wish and not a
+    second copy of the old ones, and the server already tells batches apart by wish
+    and by destination (`keyedGiftId`) - so a key that changed with the selection
+    would turn that second press into a duplicate instead of a continuation.
+
+    A ref rather than state: nothing renders it, and it must be readable by the press
+    handler at the instant of the press, not at the render before.
+  */
+  const transferRequestId = useRef<string | null>(null);
+
+  /*
+    Whether the caller's lists have been asked for already.
+
+    A ref rather than state, and the reason is that this is a latch, not a value
+    anything renders: it decides whether a *gesture* starts a request, and reading
+    `transferTargets === null` for the same purpose would both re-render the whole
+    sheet to answer it and still be wrong on the second wish of a batch, because by
+    then `transferTargets` is non-null only if the first request had already landed.
+  */
+  const targetsRequested = useRef(false);
+
+  const loadTransferTargets = useCallback(async () => {
+    try {
+      const response = await fetch('/api/lists');
+      if (!response.ok) throw new Error('Failed to load lists');
+
+      const body = (await response.json()) as { owned?: ListSummary[] };
+      /*
+        `owned` and not `shared`: a destination is gated by `findOwnedList`, which
+        is 404 for a list the caller does not own, so offering a list they may merely
+        read would be offering a row that cannot be pressed. The source is removed
+        here rather than in the dialog so that the sheet - which knows which list it
+        is - is what guarantees it.
+      */
+      setTransferTargets((body.owned ?? []).filter((row) => row.id !== list.id));
+      setTargetsFailed(false);
+    } catch {
+      setTargetsFailed(true);
+    }
+  }, [list.id]);
+
+  const ensureTargets = useCallback(() => {
+    if (targetsRequested.current) return;
+    targetsRequested.current = true;
+    void loadTransferTargets();
+  }, [loadTransferTargets]);
+
+  /*
+    Selection is computed here rather than inside the state updater.
+
+    The updater stays pure, which matters: React may call a `setState` updater twice
+    in StrictMode, so a fetch kicked off from inside one would fire twice on mount in
+    development and never be explainable from the code that starts it. The fetch is
+    not here at all - it starts on the gesture that creates the intent, the mode
+    entry below, and the latch in `targetsRequested` keeps it to one request.
+  */
+  const toggleSelected = useCallback(
+    (giftId: string) => {
+      const next = selectedIds.includes(giftId)
+        ? selectedIds.filter((id) => id !== giftId)
+        : [...selectedIds, giftId];
+
+      setSelectedIds(next);
+    },
+    [selectedIds]
+  );
+
+  const clearSelection = useCallback(() => setSelectedIds([]), []);
+
+  /*
+    Entering a transfer mode: the checkboxes appear, the action bar becomes the
+    selection bar, and the caller's own lists are asked for - here, on the gesture
+    that created the intent, which is the earliest moment it exists. Not on the
+    first wish marked (one render after the reader's thumb has already decided) and
+    not on the first dialog open (a request that can only start a stall). The latch
+    in `targetsRequested` keeps a re-entry from starting a second request, so
+    toggling between the two verbs costs nothing.
+  */
+  const enterTransferMode = useCallback(
+    (mode: 'copy' | 'move') => {
+      setTransferMode(mode);
+      ensureTargets();
+    },
+    [ensureTargets]
+  );
+
+  /*
+    Leaving the mode, from the selection bar's *Abbrechen*: the mode and the
+    selection are one state machine, so both end at once - a selection with no
+    mode would be a batch the sheet has no control left to act on, and a mode
+    with no way out would be a trap the reader had to reload to escape.
+  */
+  const exitTransferMode = useCallback(() => {
+    setTransferMode(null);
+    clearSelection();
+    transferRequestId.current = null;
+  }, [clearSelection]);
 
   /*
     Newest first within each section, because that is the order the API returns
@@ -440,6 +712,23 @@ const ListSheet: React.FC<ListSheetProps> = ({
         if (!response.ok) throw new Error('Failed to delete gift');
 
         toast.success(dict.toasts.giftDeleted);
+        /*
+          Dropped from the batch here rather than by watching the sheet for ids that
+          have gone. Deleting is the one event the reader performs on this sheet that
+          removes a row while the selection stands - a transfer clears it before it
+          sends, and marking bought only moves the wish between two sections of the
+          same sheet - so handling the one event that does is both smaller than a
+          general effect and impossible to get wrong on a path nobody tested.
+
+          Without it the id would sit in the bar until the reload landed, and a press
+          in that gap would have the server refuse the *whole* batch over a row the
+          reader had just deleted themselves.
+
+          A row that goes for a reason the reader did not perform - a transfer refused
+          because a wish was already gone - is the other case, and `liveSelectedIds`
+          covers it by being derived from the sheet rather than from an event.
+        */
+        setSelectedIds((current) => current.filter((id) => id !== giftId));
         onGiftDeleted();
       } catch {
         toast.error(dict.toasts.giftDeleteFailed);
@@ -451,6 +740,111 @@ const ListSheet: React.FC<ListSheetProps> = ({
   const handleConfirmDelete = useCallback(() => {
     if (pendingDeletion) handleDeleteGift(pendingDeletion.id);
   }, [pendingDeletion, handleDeleteGift]);
+
+  /*
+    ONE REQUEST FOR THE WHOLE SELECTION, then a toast and a route change.
+
+    The batch is sent as one call because that is the feature: a dozen wishes filed
+    wrongly are one mistake, and twelve requests would be twelve chances for the
+    batch to end up half-transferred. The server refuses the whole thing if any id
+    is not on this sheet, so there is no partial case to reconcile here.
+
+    **The dialog stays open and the selection stays intact until the request has
+    succeeded.** Both halves are the spec's own shape rather than a preference: the
+    pressed button is what swaps to its pending wording, and a pressed button is only
+    visible while the dialog is on screen. Closing it first - which is what this did
+    the first time - made that pending state unreachable and threw the state away
+    while it was still needed.
+
+    Which matters on failure. A reader who has just discovered their twelve wishes
+    are on the wrong sheet is not going to thank an interface that answered a dropped
+    request by clearing their selection: they would be back to marking twelve boxes,
+    which is the tedium this feature exists to remove. So on a failure the dialog is
+    still open with the same row chosen, the selection is still on the sheet, and the
+    only new fact is the toast. Pressing again is one tap.
+
+    **That second press is safe, and it has to be.** A dropped connection and a lost
+    reply look the same from here: either the batch never arrived or it landed and the
+    answer did not come back. The attempt's name (`transferRequestId`) goes out with
+    every press and survives a failure, so the server can tell a repeat from a new
+    request - a copy is not written twice and a move that already happened answers as
+    the success it was.
+
+    **A refusal is read, not flattened.** The server says *why* in `code`, and the
+    toast says it back (`transferFailureText`). The one that changes what the sheet
+    does is `not_found`: a wish or the destination has gone since this loaded, so the
+    sheet and the picker are reloaded to show what is really there. The picker's list
+    is the reason - a destination that was deleted would otherwise still be offered,
+    and the reader would press the same row into the same refusal.
+  */
+  const handleTransfer = useCallback(
+    async (targetListId: string, mode: 'copy' | 'move') => {
+      setIsTransferPending(true);
+      setTransferringIds(liveSelectedIds);
+
+      if (transferRequestId.current === null) {
+        transferRequestId.current = newRequestId();
+      }
+
+      try {
+        const response = await fetch(`/api/lists/${list.id}/gifts/transfer`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            giftIds: liveSelectedIds,
+            targetListId,
+            mode,
+            requestId: transferRequestId.current,
+          }),
+        });
+
+        if (!response.ok) {
+          const body = (await response.json().catch(() => null)) as {
+            code?: unknown;
+          } | null;
+
+          toast.error(transferFailureText(dict, body?.code));
+
+          if (body?.code === 'not_found') {
+            onGiftChanged();
+            void loadTransferTargets();
+          }
+
+          return;
+        }
+
+        transferRequestId.current = null;
+        toast.success(
+          mode === 'copy' ? dict.toasts.giftsCopied : dict.toasts.giftsMoved
+        );
+
+        // Only now, and in this order: the sheet is leaving, so the batch, the
+        // mode and the bar go together rather than one of them being visible on
+        // their own. The mode ends here rather than in the `finally` because a
+        // failed transfer keeps it - the reader is still filing this batch, and
+        // *Abbrechen* is still the way out of it.
+        setIsTransferOpen(false);
+        setTransferMode(null);
+        clearSelection();
+        onGiftChanged();
+        onTransferred(targetListId);
+      } catch {
+        toast.error(dict.toasts.giftsTransferFailed);
+      } finally {
+        setIsTransferPending(false);
+        setTransferringIds([]);
+      }
+    },
+    [
+      clearSelection,
+      dict,
+      list.id,
+      liveSelectedIds,
+      loadTransferTargets,
+      onGiftChanged,
+      onTransferred,
+    ]
+  );
 
   const handleVisibilitySelected = useCallback(
     async (visibility: ListVisibility) => {
@@ -841,17 +1235,21 @@ const ListSheet: React.FC<ListSheetProps> = ({
                         gift={gift}
                         dict={dict.listSheet}
                         canDelete={isOwner}
-                        // The mark is the one control that is never simply
-                        // present: an owner may put a mark on but may not take one
-                        // off, so on an open idea - which nobody has marked - the
-                        // owner clears it and everybody can.
+                        canSelect={isOwner && transferMode !== null}
                         onDelete={(id) =>
                           setPendingDeletion(
                             gifts.find((candidate) => candidate.id === id) ??
                               null
                           )
                         }
+                        // The mark is the one control that is never simply
+                        // present: an owner may put a mark on but may not take one
+                        // off, so on an open idea - which nobody has marked - the
+                        // owner clears it and everybody can.
                         onTogglePurchased={handleTogglePurchased}
+                        onToggleSelected={toggleSelected}
+                        isSelected={selectedIds.includes(gift.id)}
+                        transferringIds={transferringIds}
                         togglingId={togglingId}
                         changedId={changedId}
                       />
@@ -880,7 +1278,7 @@ const ListSheet: React.FC<ListSheetProps> = ({
                     read is theirs to undo and there is nothing to explain.
 
 It cannot be rendered inside the cell: `GiftCardProps.dict` is
-                     narrowed to three keys and `types.ts` is frozen, so the note
+                     narrowed to five keys and `types.ts` is frozen, so the note
                      is attached to the section from here.
 
                      And it is conditioned on there being a mark it applies to. The
@@ -913,6 +1311,7 @@ It cannot be rendered inside the cell: `GiftCardProps.dict` is
                         gift={gift}
                         dict={dict.listSheet}
                         canDelete={isOwner}
+                        canSelect={isOwner && transferMode !== null}
                         onDelete={(id) =>
                           setPendingDeletion(
                             gifts.find((candidate) => candidate.id === id) ??
@@ -920,6 +1319,9 @@ It cannot be rendered inside the cell: `GiftCardProps.dict` is
                           )
                         }
                         onTogglePurchased={handleTogglePurchased}
+                        onToggleSelected={toggleSelected}
+                        isSelected={selectedIds.includes(gift.id)}
+                        transferringIds={transferringIds}
                         togglingId={togglingId}
                         changedId={changedId}
                       />
@@ -931,37 +1333,168 @@ It cannot be rendered inside the cell: `GiftCardProps.dict` is
           )}
 
           {/*
-            The add action is at the foot of the sheet and it is quiet. It was a
-            solid ink button at the head of the list, where it outweighed the
-            person's own name - the loudest thing on a page should be the thing
-            the page is about, and the page is about their ideas.
+            THE SELECTION BAR, IN PLACE OF THE ACTION BAR WHILE A MODE IS ACTIVE.
+
+            The action bar at the foot becomes this bar the moment a transfer
+            mode is entered: the three verbs are spent, and what is left to do
+            is count what is marked, choose where it goes, or stop. Sticky, and
+            that is the load-bearing part of it. A selection made near the top
+            of a long sheet has to keep its action reachable, and the foot is
+            the one row at the bottom of the scroll on a phone - so a bar that
+            merely sat in the flow would be a bar the reader had to scroll to
+            the end of a list of twelve wishes in order to use, which is the
+            same tedium the feature exists to remove.
+
+            `bottom-0` rather than `top-*`: it is pinned to the foot of the
+            viewport, so it stays in the thumb zone on a phone.
+
+            It renders for the whole mode rather than only while something is
+            selected, and that is deliberate: a mode with an empty selection
+            still has the two things it needs - the count at zero, and the way
+            out. *Abbrechen* stays reachable even when the mode has emptied the
+            sheet, which is the one state in which this bar is the only control
+            on it.
+
+            Three things and no more: how many are selected, where to put them,
+            and how to stop. Every other action on a selected wish is still on the
+            cell - a bar that also carried "delete these" would make a batch of four
+            destructive controls out of one, and this product has exactly two
+            destructive controls by design (`PRODUCT.md:67`).
+          */}
+          {transferMode !== null && (
+            <div
+              data-testid='selectionBar'
+              className={cn(
+                'sticky',
+                'bottom-0',
+                'z-10',
+                '-mx-4',
+                'border-t',
+                'border-rule',
+                'bg-sheet',
+                'px-4',
+                'py-2.5'
+              )}
+            >
+              <div className='flex items-center gap-2'>
+                {/*
+                  The count, in words, through `selectedCountLabel` and not as a
+                  numeral. It is the one new number in the feature and Russian
+                  inflects it by number, so a figure here would be a sentence three
+                  times over in one of the three shipped languages - and not only in
+                  the single digits, which is why the function asks the platform for
+                  the plural category rather than counting. The four dictionary keys
+                  are the four CLDR categories, beside the one `giftCountLabel`
+                  already uses.
+                */}
+                <span
+                  className='min-w-0 flex-1 text-[0.8125rem] leading-snug text-caption'
+                  data-testid='selectedCount'
+                >
+                  {selectedCountLabel(
+                    liveSelectedIds.length,
+                    getLocaleFromPath(pathname),
+                    dict.listSheet
+                  )}
+                </span>
+
+                {/*
+                  Disabled until at least one wish is marked: with nothing
+                  chosen there is no destination to choose, and a press would
+                  open a picker whose single button could never be pressed. The
+                  verb itself was decided on the action bar, so this button
+                  names the next decision, not the transfer.
+                */}
+                <Button
+                  variant='outline'
+                  onClick={() => setIsTransferOpen(true)}
+                  disabled={!hasSelection}
+                  className={cn('shrink-0', 'text-[0.875rem]')}
+                  data-testid='chooseTargetButton'
+                >
+                  {dict.listSheet.chooseTarget}
+                </Button>
+
+                {/*
+                  Out of the mode, not out of the batch alone: it ends the
+                  transfer and clears the selection together, because a
+                  selection with no mode is a batch the sheet has no control
+                  left to act on. It says what it does, and a reader who meant
+                  to leave the page can tell this apart from the back row
+                  above, which navigates.
+                */}
+                <Button
+                  variant='ghost'
+                  onClick={exitTransferMode}
+                  className={cn('shrink-0', 'text-[0.875rem]')}
+                  data-testid='clearSelection'
+                >
+                  {dict.listSheet.cancel}
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/*
+            THE ACTION BAR, at the foot of the sheet: three verbs, and the
+            whole of the owner-only surface below the cells. It replaces the
+            one quiet add row that was here before, because the transfer
+            feature put two more owner-only actions on this sheet and a foot
+            row that could only say "add" was a bar with two buttons missing.
+
+            Three buttons, and their treatment is the hierarchy: *Neuen Wunsch
+            erstellen* is solid, because writing a wish down is the action this
+            surface exists for; *Kopieren* and *Verschieben* are outline,
+            because they act on wishes that already exist. The verb is chosen
+            here, once, and the dialog that follows has only the destination
+            left to ask.
+
+            Stacked below `sm` and one row from it up: two long German or
+            Russian labels do not fit beside a third at 390px, and a wrapped
+            row of three is a column, which is what `flex-col gap-2` makes it.
+            The buttons fill the width below `sm` for the same reason every
+            control on a phone does - a thumb aims at the middle of a wide
+            target, not the edge of a narrow one.
 
             It is the foot row only once the sheet has something on it, and only
             for a reader who may add. On an empty sheet the blank cell is the add
             control, and leaving a second one here would be two controls
             performing one action; for a buyer it would be an invitation to
-            perform an action the server refuses.
+            perform an action the server refuses. While a mode is active the bar
+            is the selection bar instead (above), which is also what keeps
+            *Abbrechen* reachable when a mode has emptied the sheet.
           */}
-          {gifts.length > 0 && canAdd && (
+          {gifts.length > 0 && canAdd && transferMode === null && (
             <div className='mt-1 border-t border-rule pt-3'>
-              <Button
-                variant='ghost'
-                onClick={() => setShowAddGiftForm(true)}
-                className={cn(
-                  'w-full',
-                  'justify-start',
-                  'gap-2.5',
-                  'px-3',
-                  'text-caption'
-                )}
-                data-testid='addGiftButton'
-              >
-                {/* `stroke`, not `strokeWidth`: Tabler reads `stroke` as the
-                    stroke width. 1.75 on a 16px icon, carried over from the
-                    member sheet so the icon is the same object it was. */}
-                <IconCirclePlus className='h-4 w-4' stroke={1.75} aria-hidden='true' />
-                <span className='label-print'>{dict.listSheet.addGiftRow}</span>
-              </Button>
+              <div className='flex flex-col gap-2 sm:flex-row'>
+                <Button
+                  onClick={() => setShowAddGiftForm(true)}
+                  data-testid='addGiftButton'
+                  className={cn('w-full', 'gap-2.5', 'sm:w-auto')}
+                >
+                  {/* `stroke`, not `strokeWidth`: Tabler reads `stroke` as the
+                      stroke width. 1.75 on a 16px icon, carried over from the
+                      member sheet so the icon is the same object it was. */}
+                  <IconCirclePlus className='h-4 w-4' stroke={1.75} aria-hidden='true' />
+                  {dict.listSheet.newGift}
+                </Button>
+
+                <Button
+                  variant='outline'
+                  onClick={() => enterTransferMode('copy')}
+                  className={cn('w-full', 'sm:w-auto')}
+                >
+                  {dict.listSheet.copy}
+                </Button>
+
+                <Button
+                  variant='outline'
+                  onClick={() => enterTransferMode('move')}
+                  className={cn('w-full', 'sm:w-auto')}
+                >
+                  {dict.listSheet.move}
+                </Button>
+              </div>
             </div>
           )}
         </>
@@ -1107,6 +1640,41 @@ It cannot be rendered inside the cell: `GiftCardProps.dict` is
         dict={dict}
         onSelect={handleVisibilitySelected}
       />
+
+      {/*
+        The destination picker, and the one place on this sheet that has to be
+        rendered *only* when it is open rather than toggled with a prop - because it
+        holds local state (which list is chosen) and a `Dialog` that stays mounted
+        with `open={false}` would keep that choice alive between two batches. Mounting
+        it fresh each time means it opens with nothing selected, which is the only
+        honest state for a picker whose answer depends on a selection the previous
+        batch has already gone.
+
+        `isLoading` is `transferTargets === null`, and it is passed rather than
+        inferred from an empty array on purpose: the prefetch begins when the mode
+        is entered, so a reader can open this before it lands, and `[]` would tell them
+        they own no other lists - advice for a situation they are not in.
+
+        The `transferMode !== null` guard is the type's, not the product's: the only
+        trigger for this dialog is the selection bar, which exists only inside a mode,
+        so there is no state of the sheet in which it could be open without a verb.
+        It also means a dialog can never outlive the mode it was opened in.
+      */}
+      {isTransferOpen && transferMode !== null && (
+        <TransferDialog
+          isOpen
+          onClose={() => setIsTransferOpen(false)}
+          lists={transferTargets ?? []}
+          isLoading={transferTargets === null}
+          sourceListName={list.name}
+          dict={dict}
+          loadFailed={targetsFailed}
+          onRetry={loadTransferTargets}
+          mode={transferMode}
+          isPending={isTransferPending}
+          onTransfer={handleTransfer}
+        />
+      )}
 
       {/*
         The one destructive action on a cell, and the only one a buyer cannot

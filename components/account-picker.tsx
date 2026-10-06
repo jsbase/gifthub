@@ -120,6 +120,10 @@ const lookupFailureText = (
     nothing_to_change: undefined,
     ambiguous_change: undefined,
     invalid_visibility: undefined,
+    // A transfer refusal. This endpoint cannot produce it, and a table that omits
+    // it would not typecheck - which is the point of the exhaustive `Record`.
+    already_on_this_list: undefined,
+    too_many_gifts: undefined,
     no_such_account: undefined,
     already_shared: undefined,
     cannot_share_with_owner: undefined,
@@ -165,6 +169,9 @@ const grantFailureText = (
     nothing_to_change: undefined,
     ambiguous_change: undefined,
     invalid_visibility: undefined,
+    // Same as above: the grant endpoint cannot produce it.
+    already_on_this_list: undefined,
+    too_many_gifts: undefined,
     no_such_group: undefined,
     duplicate_group_name: undefined,
     cannot_join_own_group: undefined,

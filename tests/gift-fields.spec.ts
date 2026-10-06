@@ -8,7 +8,7 @@ import {
 import { PrismaClient } from '@prisma/client';
 
 /*
-  THE LENGTH OF A WISH, AS THE SERVER SEES IT.
+  HOW MUCH OF A WISH FITS ON A SHEET, AND WHAT A TRANSFER CARRIES WITH IT.
 
   This file is deliberately NOT in `sharing.spec.ts`, and that placement is the
   point. That file's header says everything in it is a claim about *who may do
@@ -32,12 +32,30 @@ import { PrismaClient } from '@prisma/client';
   change. `tests/unit/gift-text.test.ts` now pins the numbers themselves, at
   milliseconds; this file pins the consequence, which is the part only a real
   request can show.
+
+  It also carries the transfer batch at the foot, for a reason that is the mirror
+  image of the one above. `sharing.spec.ts` asks *who may* transfer, and every case
+  in it is a refusal. What is here is the other half: what the wishes look like once
+  a transfer is allowed. The two files meet on exactly one question - whether a
+  partly-failing batch changes anything - and it is in both on purpose, because it is
+  both an authorization claim and the whole reason the feature is safe to use on a
+  dozen wishes at once.
+
+  And why the transfer's *state* belongs in a file about field lengths: the obvious
+  home for "a bought wish moves still bought" is a file about the bought mark, and
+  there is no such file. The mark's behaviour is split across `sharing.spec.ts` -
+  who may set and clear it - and here - what is on the sheet at all. Filing it
+  under either heading fits worse than the one thing the two have in common, which
+  is that both are claims about a whole row rather than about a form field. The rule
+  this file states is the one that makes the feature honest: a wish arrives on the
+  other list exactly as it left this one.
 */
 
 const prisma = new PrismaClient();
 
 const PASSWORD = 'test1234';
 const ANNA = 'anna@example.test';
+const BEN = 'ben@example.test';
 
 type Actor = { context: BrowserContext; api: BrowserContext['request'] };
 
@@ -90,11 +108,20 @@ test.afterAll(async () => {
   await prisma.$disconnect();
 });
 
-/** A private list, created through the API under test, and remembered for the teardown. */
-const createList = async (actor: Actor): Promise<string> => {
+/**
+ * A list, created through the API under test, and remembered for the teardown.
+ *
+ * Private unless a test says otherwise, because a grant needs a `SHARED` list and
+ * nothing else here does - so the default keeps the length tests above as
+ * single-actor as they were written.
+ */
+const createList = async (
+  actor: Actor,
+  visibility: 'PRIVATE' | 'SHARED' = 'PRIVATE'
+): Promise<string> => {
   const name = names.next();
   const response = await actor.api.post('/api/lists', {
-    data: { name, visibility: 'PRIVATE' },
+    data: { name, visibility },
   });
   expect(
     response.ok(),
@@ -103,6 +130,54 @@ const createList = async (actor: Actor): Promise<string> => {
   const body = await response.json();
   createdLists.push(body.list.id);
   return body.list.id;
+};
+
+/** One idea on a sheet, through the API under test. */
+const addGift = async (actor: Actor, listId: string, title: string): Promise<string> => {
+  const response = await actor.api.post(`/api/lists/${listId}/gifts`, {
+    data: { title },
+  });
+  expect(
+    response.ok(),
+    `adding "${title}" failed: ${response.status()} ${await response.text()}`
+  ).toBe(true);
+  const body = await response.json();
+  return body.gift.id;
+};
+
+/** Put somebody on the list, so a mark can be set by somebody other than its owner. */
+const grant = async (actor: Actor, listId: string, email: string) =>
+  actor.api.post(`/api/lists/${listId}/access`, { data: { email } });
+
+/**
+ * The batch route, with the body the sheet sends.
+ *
+ * `requestId` is the attempt's name, which the sheet always sends and a bare API
+ * caller may leave out. Left out here by default so the tests that do not care about
+ * repeat-safety keep asking for exactly what they asked for before it existed.
+ */
+const transfer = async (
+  actor: Actor,
+  listId: string,
+  giftIds: string[],
+  targetListId: string,
+  mode: 'copy' | 'move',
+  requestId?: string
+) =>
+  actor.api.post(`/api/lists/${listId}/gifts/transfer`, {
+    data: { giftIds, targetListId, mode, requestId },
+  });
+
+/** The sheet's own view of its ideas, as the page reads it. */
+const sheet = async (
+  actor: Actor,
+  listId: string
+): Promise<
+  { id: string; title: string; isPurchased: boolean; canClear: boolean }[]
+> => {
+  const response = await actor.api.get(`/api/lists/${listId}`);
+  expect(response.status(), `reading ${listId}`).toBe(200);
+  return (await response.json()).gifts;
 };
 
 /**
@@ -345,6 +420,616 @@ test.describe('How much of a wish fits on a sheet', () => {
     expect(typeof body.message).toBe('string');
     expect(body.message.length).toBeGreaterThan(0);
     expect(body.code).toBeUndefined();
+
+    await anna.context.close();
+  });
+});
+
+/*
+  WHAT A WISH LOOKS LIKE ON THE OTHER LIST.
+
+  Three rules, and everything below is one of them or a consequence of it:
+
+    1. A MOVED wish arrives exactly as it left. Open stays open, bought stays bought,
+       and the bought mark travels with it - including the fact that the reader of
+       the target may not clear it.
+    2. A COPIED wish arrives open, whatever the original was. A copy is a new thought
+       on a new sheet - the flowers that were bought for one occasion and are wanted
+       again for the next - and the original keeps its mark on the source. This is
+       the design, not a gap in rule 1.
+    3. All of the batch or none of it, and a request sent twice changes nothing
+       further: the sheet's answer to a lost reply is to press again.
+
+  `sharing.spec.ts` covers who may start one of these. This covers what comes out,
+  and the case worth naming under rule 1 is the bought one: an earlier draft of the
+  design deliberately had a bought wish arrive *open* after a *move*, and every test
+  here would have passed under it. That is the double-buy this product exists to
+  prevent - the row lands looking purchasable, everybody who can read the target
+  buys it - so it is the case that is pinned hardest, and pinned from the reader's
+  side (`canClear` on the target's own response) rather than off the database. Rule 2
+  is pinned the other way round, by the copy of a bought wish below.
+*/
+test.describe('Moving and copying wishes between your own lists', () => {
+  test('three open wishes move, and the source is left empty', async ({ browser }) => {
+    const anna = await signIn(browser, ANNA);
+
+    const sourceId = await createList(anna);
+    const targetId = await createList(anna);
+    const giftIds = [
+      await addGift(anna, sourceId, 'Lampe'),
+      await addGift(anna, sourceId, 'Puzzle'),
+      await addGift(anna, sourceId, 'Schuhe'),
+    ];
+
+    const moved = await transfer(anna, sourceId, giftIds, targetId, 'move');
+
+    expect(
+      moved.ok(),
+      `three wishes in one request must succeed: ${moved.status()} ${await moved.text()}`
+    ).toBe(true);
+    // The count, not the wishes: the batch writes to two sheets and the caller is
+    // standing on one of them, so the gifts now on the target are not this
+    // response's to return. See the route.
+    expect((await moved.json()).count).toBe(3);
+
+    expect(
+      await prisma.gift.count({ where: { listId: sourceId } }),
+      'a move leaves the source with nothing'
+    ).toBe(0);
+    expect(
+      await prisma.gift.count({ where: { listId: targetId } }),
+      'and the target with all three'
+    ).toBe(3);
+
+    // The same three, not three new rows that happen to exist. `move` re-points
+    // `listId` and writes nothing else, so the ids are the ones that were selected
+    // - which is what a buyer with an open tab on the old sheet needs.
+    const arrived = await prisma.gift.findMany({ where: { listId: targetId } });
+    expect(arrived.map((gift) => gift.id).sort()).toEqual([...giftIds].sort());
+
+    await anna.context.close();
+  });
+
+  test('a copy leaves the source exactly as it was', async ({ browser }) => {
+    const anna = await signIn(browser, ANNA);
+
+    const sourceId = await createList(anna);
+    const targetId = await createList(anna);
+    const giftIds = [
+      await addGift(anna, sourceId, 'Lampe'),
+      await addGift(anna, sourceId, 'Puzzle'),
+    ];
+
+    const copied = await transfer(anna, sourceId, giftIds, targetId, 'copy');
+    expect(
+      copied.ok(),
+      `copying must succeed: ${copied.status()} ${await copied.text()}`
+    ).toBe(true);
+    expect((await copied.json()).count).toBe(2);
+
+    // Both halves at once, because "copy" and "move" differ in exactly one thing and
+    // a test that pinned only the target could not tell them apart.
+    expect(await prisma.gift.count({ where: { listId: sourceId } })).toBe(2);
+    expect(await prisma.gift.count({ where: { listId: targetId } })).toBe(2);
+
+    const arrived = await prisma.gift.findMany({ where: { listId: targetId } });
+    expect(
+      arrived.map((gift) => gift.id),
+      'a copy is a new row, so it gets a new id'
+    ).not.toEqual(expect.arrayContaining(giftIds));
+
+    await anna.context.close();
+  });
+
+  test('a mixed batch of open and bought wishes moves, and each keeps its state', async ({
+    browser,
+  }) => {
+    const anna = await signIn(browser, ANNA);
+    const ben = await signIn(browser, BEN);
+
+    const sourceId = await createList(anna, 'SHARED');
+    const targetId = await createList(anna);
+    const openId = await addGift(anna, sourceId, 'Noch offen');
+    const boughtId = await addGift(anna, sourceId, 'Schon gekauft');
+    await grant(anna, sourceId, BEN);
+
+    // Ben marks one of them, so the bought row carries an attribution that is not
+    // Anna's - which is the case the next test is about and the one that makes
+    // "the state travels" mean something.
+    const marked = await ben.api.post(
+      `/api/lists/${sourceId}/gifts/${boughtId}/toggle`
+    );
+    expect(
+      marked.ok(),
+      `Ben must be able to mark it: ${marked.status()} ${await marked.text()}`
+    ).toBe(true);
+
+    const moved = await transfer(anna, sourceId, [openId, boughtId], targetId, 'move');
+    expect(
+      moved.ok(),
+      `a mixed batch must succeed: ${moved.status()} ${await moved.text()}`
+    ).toBe(true);
+
+    const arrived = await sheet(anna, targetId);
+    const open = arrived.find((gift) => gift.id === openId);
+    const bought = arrived.find((gift) => gift.id === boughtId);
+
+    expect(open, 'the open wish arrived').toBeTruthy();
+    expect(
+      open!.isPurchased,
+      'an open wish arrives open - the whole of rule 1'
+    ).toBe(false);
+
+    expect(bought, 'the bought wish arrived').toBeTruthy();
+    expect(
+      bought!.isPurchased,
+      'a bought wish arrives BOUGHT. If this fails, `move` grew a branch that resets the state, and that is the double-buy this product exists to prevent.'
+    ).toBe(true);
+
+    // And the attribution travelled with it, which is why the owner cannot clear the
+    // mark on the target either. `canClear: false` is the observable consequence:
+    // `purchasedById` never leaves the server, so this boolean is the only way the
+    // rule can be seen from outside - see `mayClearMark`.
+    expect(
+      bought!.canClear,
+      "the target's owner may not clear a mark somebody else set, on the target either"
+    ).toBe(false);
+
+    await anna.context.close();
+    await ben.context.close();
+  });
+
+  test("a copy of somebody else's bought wish arrives open and can be marked", async ({
+    browser,
+  }) => {
+    const anna = await signIn(browser, ANNA);
+    const ben = await signIn(browser, BEN);
+
+    const sourceId = await createList(anna, 'SHARED');
+    const targetId = await createList(anna);
+    const giftId = await addGift(anna, sourceId, 'Besorgt');
+    await grant(anna, sourceId, BEN);
+    await ben.api.post(`/api/lists/${sourceId}/gifts/${giftId}/toggle`);
+
+    const copied = await transfer(anna, sourceId, [giftId], targetId, 'copy');
+    expect(
+      copied.ok(),
+      `copying a bought wish must succeed: ${copied.status()} ${await copied.text()}`
+    ).toBe(true);
+
+    const copy = (await sheet(anna, targetId)).find((gift) => gift.id !== giftId);
+    expect(copy, 'the copy is on the target under a new id').toBeTruthy();
+    /*
+      The mark does NOT travel with a copy. A copy is a new thought on a
+      new sheet: it arrives open, and the target's own audience is the one
+      that decides whether it is already bought. `canClear: true` is the
+      observable form of that, the same way `canClear: false` was the
+      observable form of the mark travelling before the semantics changed -
+      `purchasedById` never leaves the server, so this boolean is the only
+      way the rule can be seen from outside (see `mayClearMark`).
+    */
+    expect(
+      copy!.isPurchased,
+      'a copy arrives open - the mark belongs to the source list, not to the copy'
+    ).toBe(false);
+    expect(
+      copy!.canClear,
+      'and the owner may mark it there, because it is open'
+    ).toBe(true);
+
+    // The source keeps the mark it had, because copy changes nothing on this side.
+    const original = (await sheet(anna, sourceId))[0];
+    expect(original.isPurchased, 'the source is unchanged by a copy').toBe(true);
+    expect(
+      original.canClear,
+      "and Ben's mark on it is still the owner's to live with"
+    ).toBe(false);
+
+    /*
+      The positive form of "arrives open": the one request the old
+      semantics refused - the owner marking the copy - is the request
+      that works now. The copy becomes a bought wish on the target,
+      marked by its own owner, and clearable by her for the same reason.
+    */
+    const marked = await anna.api.post(
+      `/api/lists/${targetId}/gifts/${copy!.id}/toggle`
+    );
+    expect(
+      marked.status(),
+      'the owner can mark an open copy like any open wish'
+    ).toBe(200);
+
+    const markedCopy = (await sheet(anna, targetId)).find(
+      (gift) => gift.id === copy!.id
+    );
+    expect(
+      markedCopy!.isPurchased,
+      'the copy takes the mark like any open wish'
+    ).toBe(true);
+    expect(
+      markedCopy!.canClear,
+      'and the owner may clear what they themselves marked'
+    ).toBe(true);
+
+    await anna.context.close();
+    await ben.context.close();
+  });
+
+  test('a batch that cannot land entirely lands not at all', async ({ browser }) => {
+    const anna = await signIn(browser, ANNA);
+
+    const sourceId = await createList(anna);
+    const strangerId = await createList(anna);
+    const targetId = await createList(anna);
+    const mineId = await addGift(anna, sourceId, 'Gehört hierher');
+    const strangerGiftId = await addGift(anna, strangerId, 'Gehört woanders');
+
+    const refused = await transfer(
+      anna,
+      sourceId,
+      [mineId, strangerGiftId],
+      targetId,
+      'move'
+    );
+
+    /*
+      404 rather than 400: the id is simply not on the source, which is what
+      `sharing.spec.ts` calls this from the other side - one bad id in a batch of two
+      refuses both. That is the difference between this feature and the tedium it
+      replaced, and it is why the assertion below is about *counts* rather than about
+      a status: a request that answered 404 after moving the first wish would pass
+      every other assertion in this file.
+    */
+    expect(refused.status()).toBe(404);
+    expect((await refused.json()).code).toBe('not_found');
+
+    expect(
+      await prisma.gift.count({ where: { listId: sourceId } }),
+      'the real wish must still be on the source'
+    ).toBe(1);
+    expect(
+      await prisma.gift.count({ where: { listId: strangerId } }),
+      "and the other must still be on its own list"
+    ).toBe(1);
+    expect(
+      await prisma.gift.count({ where: { listId: targetId } }),
+      'the target must be untouched'
+    ).toBe(0);
+
+    await anna.context.close();
+  });
+
+  test('a copied wish keeps its place in the order, not the top of the list', async ({
+    browser,
+  }) => {
+    const anna = await signIn(browser, ANNA);
+
+    const sourceId = await createList(anna);
+    const targetId = await createList(anna);
+
+    /*
+      Oldest first, which is the reverse of the order `listGifts` returns, so the
+      copy under test has to land in the *middle* to prove anything. A copy that
+      jumped to the front would pass a test whose target held only the copy.
+
+      The fixture is stated in ages rather than in sleeps: `createdAt` has a
+      millisecond resolution and these three writes are milliseconds apart, so
+      sleeping is the only way to be sure of the order and it is the one thing that
+      makes this test slow and flaky. Ages do not.
+    */
+    const aged = async (giftId: string, seconds: number) => {
+      await prisma.gift.update({
+        where: { id: giftId },
+        data: { createdAt: new Date(Date.now() - seconds * 1000) },
+      });
+    };
+
+    const old = await addGift(anna, targetId, 'Schon lange auf der Zieliste');
+    const copiedFrom = await addGift(anna, sourceId, 'Seit 2023 offen');
+    const recent = await addGift(anna, targetId, 'Neu auf der Zieliste');
+    await aged(old, 300);
+    await aged(copiedFrom, 200);
+    await aged(recent, 100);
+
+    const copied = await transfer(anna, sourceId, [copiedFrom], targetId, 'copy');
+    expect(
+      copied.ok(),
+      `copying must succeed: ${copied.status()} ${await copied.text()}`
+    ).toBe(true);
+
+    /*
+      `createdAt` is carried over on copy precisely so a wish lands on the target
+      where it belongs rather than at the top of a list it was written for last year.
+      A copy that jumped to the front would say the owner had just thought of it, and
+      on the target sheet that is a claim somebody else acts on.
+
+      Asserted by title rather than by id, and the reason is the copy's own nature:
+      it is a new row with a new id, so the position of *the source wish's id* is not
+      a thing that exists on the target at all. Naming the ids here would have been a
+      test of the wrong claim - and it is the shape of a plausible-looking assertion
+      that fails for a reason that has nothing to do with ordering.
+    */
+    const order = (await sheet(anna, targetId)).map((gift) => gift.title);
+    expect(order, 'newest first, and the copy where the original stood').toEqual([
+      'Neu auf der Zieliste',
+      'Seit 2023 offen',
+      'Schon lange auf der Zieliste',
+    ]);
+
+    // The source is untouched by a copy, including its order, so the copy is the
+    // only thing that arrived and nothing was taken.
+    expect(await prisma.gift.count({ where: { listId: sourceId } })).toBe(1);
+
+    await anna.context.close();
+  });
+});
+
+/*
+  WHAT A SECOND PRESS DOES, AND HOW LARGE A BATCH MAY BE.
+
+  The sheet cannot tell a request that never arrived from one whose reply was lost,
+  and its answer to both is to let the reader press again with the selection still
+  there. These pin that the second press is harmless - and, just as much, that the
+  protection is not so greedy that it stops a reader doing the thing the copy exists
+  for. Both halves are here because a test of only the first would pass against a
+  server that simply refused every copy of a wish that had ever been copied.
+*/
+test.describe('Sending a transfer twice, and sending too many wishes', () => {
+  test('a copy sent twice as the same attempt lands once', async ({ browser }) => {
+    const anna = await signIn(browser, ANNA);
+
+    const sourceId = await createList(anna);
+    const targetId = await createList(anna);
+    const giftIds = [
+      await addGift(anna, sourceId, 'Blumen'),
+      await addGift(anna, sourceId, 'Schokolade'),
+    ];
+
+    const first = await transfer(anna, sourceId, giftIds, targetId, 'copy', 'attempt-one');
+    const again = await transfer(anna, sourceId, giftIds, targetId, 'copy', 'attempt-one');
+
+    expect(
+      first.ok(),
+      `the first send must succeed: ${first.status()} ${await first.text()}`
+    ).toBe(true);
+    expect(
+      again.ok(),
+      `the repeat must succeed rather than fail: ${again.status()} ${await again.text()}`
+    ).toBe(true);
+    // The batch is on the destination, so that is what the count says - also on a
+    // repeat that wrote nothing, which is what lets the sheet treat both alike.
+    expect((await again.json()).count).toBe(2);
+
+    expect(
+      await prisma.gift.count({ where: { listId: targetId } }),
+      'two wishes were asked for, so two copies exist and not four'
+    ).toBe(2);
+    expect(
+      await prisma.gift.count({ where: { listId: sourceId } }),
+      'and a copy never touches the source'
+    ).toBe(2);
+
+    await anna.context.close();
+  });
+
+  test('a copy under a new attempt, or under none, is a new copy', async ({
+    browser,
+  }) => {
+    const anna = await signIn(browser, ANNA);
+
+    const sourceId = await createList(anna);
+    const targetId = await createList(anna);
+    const giftId = await addGift(anna, sourceId, 'Blumen');
+
+    /*
+      The case the protection must not eat: the same wish copied onto the same list
+      again, because the reader wants flowers again. Three sends, three attempts - two
+      named differently and one with no name at all - and three copies, each one a row
+      of its own. A server that deduplicated on content, or that remembered "this wish
+      has been copied here", would pass the test above and fail this one.
+    */
+    for (const requestId of ['attempt-one', 'attempt-two', undefined]) {
+      const copied = await transfer(anna, sourceId, [giftId], targetId, 'copy', requestId);
+      expect(
+        copied.ok(),
+        `copying again must succeed: ${copied.status()} ${await copied.text()}`
+      ).toBe(true);
+    }
+
+    expect(
+      await prisma.gift.count({ where: { listId: targetId } }),
+      'three attempts are three copies'
+    ).toBe(3);
+
+    await anna.context.close();
+  });
+
+  test('one attempt name filed onto two lists is a copy on each', async ({
+    browser,
+  }) => {
+    const anna = await signIn(browser, ANNA);
+
+    const sourceId = await createList(anna);
+    const firstTarget = await createList(anna);
+    const secondTarget = await createList(anna);
+    const giftId = await addGift(anna, sourceId, 'Schokolade');
+
+    /*
+      A reader whose first send failed, who then picks a different list and presses
+      again, sends the same attempt name to a new destination. That is not a repeat of
+      anything, and the destination is one of the inputs of the derived id for exactly
+      this reason.
+    */
+    await transfer(anna, sourceId, [giftId], firstTarget, 'copy', 'attempt-one');
+    const second = await transfer(
+      anna,
+      sourceId,
+      [giftId],
+      secondTarget,
+      'copy',
+      'attempt-one'
+    );
+
+    expect(second.ok(), `${second.status()} ${await second.text()}`).toBe(true);
+    expect(await prisma.gift.count({ where: { listId: firstTarget } })).toBe(1);
+    expect(
+      await prisma.gift.count({ where: { listId: secondTarget } }),
+      'the second list must get its own copy'
+    ).toBe(1);
+
+    await anna.context.close();
+  });
+
+  test('a move sent twice answers the same success and writes nothing more', async ({
+    browser,
+  }) => {
+    const anna = await signIn(browser, ANNA);
+
+    const sourceId = await createList(anna);
+    const targetId = await createList(anna);
+    const giftIds = [
+      await addGift(anna, sourceId, 'Lampe'),
+      await addGift(anna, sourceId, 'Puzzle'),
+      await addGift(anna, sourceId, 'Schuhe'),
+    ];
+
+    const first = await transfer(anna, sourceId, giftIds, targetId, 'move');
+    expect(first.ok(), `${first.status()} ${await first.text()}`).toBe(true);
+
+    /*
+      By now none of the three is on the source, which is what used to make the second
+      press a refusal - "not found" for a batch that had worked. No attempt name is
+      sent: a move needs none, because the wishes being on the destination is the
+      evidence that it already happened.
+    */
+    const again = await transfer(anna, sourceId, giftIds, targetId, 'move');
+    expect(
+      again.ok(),
+      `a move that already happened must not be reported as a failure: ${again.status()} ${await again.text()}`
+    ).toBe(true);
+    expect((await again.json()).count).toBe(3);
+
+    expect(await prisma.gift.count({ where: { listId: sourceId } })).toBe(0);
+    const arrived = await prisma.gift.findMany({ where: { listId: targetId } });
+    expect(
+      arrived.map((gift) => gift.id).sort(),
+      'the same three wishes, once each'
+    ).toEqual([...giftIds].sort());
+
+    await anna.context.close();
+  });
+
+  test('a repeated move that names one wish more than has landed is refused', async ({
+    browser,
+  }) => {
+    const anna = await signIn(browser, ANNA);
+
+    const sourceId = await createList(anna);
+    const targetId = await createList(anna);
+    const landed = [
+      await addGift(anna, sourceId, 'Lampe'),
+      await addGift(anna, sourceId, 'Puzzle'),
+    ];
+    const stayed = await addGift(anna, sourceId, 'Schuhe');
+
+    await transfer(anna, sourceId, landed, targetId, 'move');
+
+    /*
+      Two of the three are on the destination and one is still on the source. That is
+      not a request repeated, it is a different request - and it must stay the
+      all-or-nothing refusal, or "already landed" would become a way for a batch to
+      half-move and report success.
+    */
+    const refused = await transfer(
+      anna,
+      sourceId,
+      [...landed, stayed],
+      targetId,
+      'move'
+    );
+    expect(refused.status()).toBe(404);
+    expect((await refused.json()).code).toBe('not_found');
+
+    expect(
+      await prisma.gift.count({ where: { listId: sourceId } }),
+      'the one that was never moved is still where it was'
+    ).toBe(1);
+    expect(await prisma.gift.count({ where: { listId: targetId } })).toBe(2);
+
+    await anna.context.close();
+  });
+
+  test('a batch over the limit is refused whole, and one at the limit goes through', async ({
+    browser,
+  }) => {
+    const anna = await signIn(browser, ANNA);
+
+    const sourceId = await createList(anna);
+    const targetId = await createList(anna);
+
+    // Written straight to the table: a hundred and one `POST`s would make this the
+    // slowest test in the file to set up a state it only needs to count.
+    await prisma.gift.createMany({
+      data: Array.from({ length: 101 }, (_, index) => ({
+        title: `Wunsch ${index}`,
+        listId: sourceId,
+      })),
+    });
+    const giftIds = (
+      await prisma.gift.findMany({ where: { listId: sourceId }, select: { id: true } })
+    ).map((gift) => gift.id);
+    expect(giftIds).toHaveLength(101);
+
+    const over = await transfer(anna, sourceId, giftIds, targetId, 'move');
+    expect(over.status(), 'a hundred and one is one too many').toBe(400);
+    expect((await over.json()).code).toBe('too_many_gifts');
+    expect(
+      await prisma.gift.count({ where: { listId: sourceId } }),
+      'a refused batch moves nothing, not even the first hundred'
+    ).toBe(101);
+    expect(await prisma.gift.count({ where: { listId: targetId } })).toBe(0);
+
+    const atLimit = await transfer(anna, sourceId, giftIds.slice(0, 100), targetId, 'move');
+    expect(
+      atLimit.ok(),
+      `a hundred must go through: ${atLimit.status()} ${await atLimit.text()}`
+    ).toBe(true);
+    expect((await atLimit.json()).count).toBe(100);
+    expect(await prisma.gift.count({ where: { listId: sourceId } })).toBe(1);
+    expect(await prisma.gift.count({ where: { listId: targetId } })).toBe(100);
+
+    await anna.context.close();
+  });
+
+  test('an attempt name that is not one is refused rather than ignored', async ({
+    browser,
+  }) => {
+    const anna = await signIn(browser, ANNA);
+
+    const sourceId = await createList(anna);
+    const targetId = await createList(anna);
+    const giftId = await addGift(anna, sourceId, 'Blumen');
+
+    /*
+      Refused rather than dropped, because dropping it would turn a caller's attempt
+      at repeat-safety into a copy that is silently repeatable. Each of these is a
+      different way of not being a name: empty, a character outside the alphabet, one
+      over the length, and two values that are not strings at all.
+    */
+    for (const requestId of ['', 'has space', 'a/b', 'x'.repeat(65), 42, null]) {
+      const refused = await anna.api.post(`/api/lists/${sourceId}/gifts/transfer`, {
+        data: { giftIds: [giftId], targetListId: targetId, mode: 'copy', requestId },
+      });
+      expect(
+        refused.status(),
+        `${JSON.stringify(requestId)} is not an attempt name`
+      ).toBe(400);
+    }
+
+    expect(
+      await prisma.gift.count({ where: { listId: targetId } }),
+      'and nothing was copied by any of them'
+    ).toBe(0);
 
     await anna.context.close();
   });
