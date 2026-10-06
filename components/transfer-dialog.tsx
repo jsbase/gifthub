@@ -168,8 +168,35 @@ const TransferDialog: React.FC<TransferDialogProps> = ({
             {dict.listBoard.noLists}
           </p>
         ) : (
+          /*
+            The list is the one part of this dialog that scrolls, and that is the
+            point of the three classes that are not about looks.
+
+            `DialogContent` scrolls its whole body, which is right for a form and
+            wrong for this: the button that commits the transfer is the last thing
+            in it, so with seven lists on a 667px phone it sat below the fold, and
+            at 800px on a desktop it was clipped by the sheet's own edge. Measured,
+            not guessed - and the title scrolled away with the rows, which left a
+            reader choosing a destination without the sentence that says what is
+            being filed.
+
+            `min-h-0` is what lets this shrink: a flex item will not go below its
+            content height by default, so without it the list would push the footer
+            out of the sheet instead of scrolling inside it. It is deliberately not
+            `flex-1` - that sets the basis to 0% and, above `sm` where the sheet
+            hugs its content, collapses the list to nothing (the note in
+            `components/ui/dialog.tsx` is about the same trap one level up). With
+            few lists the list is exactly its rows and nothing scrolls; with many it
+            gives way and the header and the footer stay where they are.
+
+            `-mx-1.5 px-1.5` is room for the focus ring. `overflow-y: auto` makes
+            `overflow-x` clip too, and the radio sits against the left edge of its
+            row, so its 4px ring - drawn outside the box - was cut off at the left.
+            The negative margin and the padding cancel, so the rows are the width
+            they were.
+          */
           <ul
-            className='flex flex-col divide-y divide-rule'
+            className='-mx-1.5 flex min-h-0 flex-col divide-y divide-rule overflow-y-auto px-1.5'
             data-testid='transferTargetList'
           >
             {lists.map((list) => {
