@@ -368,6 +368,7 @@ const ListSheet: React.FC<ListSheetProps> = ({
   list,
   gifts,
   access,
+  groupAccess,
   isOwner,
   dict,
   onClose,
@@ -1592,10 +1593,25 @@ It cannot be rendered inside the cell: `GiftCardProps.dict` is
         control on them. Withdrawing is in the share sheet, which is where the
         owner's own three controls are and where a confirmation can state what is
         being withdrawn.
+
+        **"Nobody" has to mean nobody, and a group is somebody.** The empty sentence
+        used to be gated on `access` alone, so a `SHARED` list whose only readers
+        arrive through a group - no `ListAccess` row, which is exactly what sharing
+        with a group and nothing else produces - told its owner they had shared it
+        with no one, above a group that could open it. `groupAccess` was already on
+        the props and the page already passed it; the sheet simply never read it.
+        The two kinds stay two lists under one head, for the reason
+        `AudienceList` keeps two arrays: a person who is also in a granted group
+        appears once, as a person, and the group row is the one that stands for the
+        several people it reaches. The group rows carry their own test id because
+        `accessList` is the share dialog's too, and that dialog opens over this
+        sheet - a group name under both would be counted twice by anything asking
+        for it once.
       */}
-      {isOwner && (isShared || access.length > 0) && (
+      {isOwner &&
+        (isShared || access.length > 0 || groupAccess.length > 0) && (
         <section className='flex flex-col gap-2'>
-          {access.length === 0 ? (
+          {access.length === 0 && groupAccess.length === 0 ? (
             /*
               One sentence, and no head above it. The head used to read "Noch mit
               niemandem geteilt" and the sentence under it read "Noch niemand
@@ -1613,21 +1629,55 @@ It cannot be rendered inside the cell: `GiftCardProps.dict` is
             <>
               <SectionHead label={dict.visibility.sharedWith} />
 
-              <ul data-testid='accessList' className='divide-y divide-rule'>
-                {access.map((row) => (
-                  <li
-                    key={row.id}
-                    className='flex min-w-0 flex-col gap-0.5 py-2'
+              <div className='divide-y divide-rule'>
+                {access.length > 0 && (
+                  <ul data-testid='accessList' className='divide-y divide-rule'>
+                    {access.map((row) => (
+                      <li
+                        key={row.id}
+                        className='flex min-w-0 flex-col gap-0.5 py-2'
+                      >
+                        <span className='break-words text-[0.9375rem] text-ink'>
+                          {row.displayName}
+                        </span>
+                        <span className='min-w-0 truncate text-[0.8125rem] text-caption'>
+                          {row.email}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+
+                {groupAccess.length > 0 && (
+                  <ul
+                    data-testid='groupAccessList'
+                    className='divide-y divide-rule'
                   >
-                    <span className='break-words text-[0.9375rem] text-ink'>
-                      {row.displayName}
-                    </span>
-                    <span className='min-w-0 truncate text-[0.8125rem] text-caption'>
-                      {row.email}
-                    </span>
-                  </li>
-                ))}
-              </ul>
+                    {groupAccess.map((row) => (
+                      <li
+                        key={row.id}
+                        className='flex min-w-0 flex-col gap-0.5 py-2'
+                      >
+                        {/*
+                          The same row as `AudienceList` prints for a group, minus
+                          its control: the name in the serif, because a group name
+                          is a name, and under it how many people this one grant
+                          reaches.
+                        */}
+                        <span className='font-serif break-words text-[0.9375rem] font-semibold leading-snug text-ink'>
+                          {row.groupName}
+                        </span>
+                        <span className='min-w-0 truncate text-[0.8125rem] text-caption'>
+                          {dict.shareList.groupReaches.replace(
+                            '{count}',
+                            String(row.memberCount)
+                          )}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
             </>
           )}
         </section>
