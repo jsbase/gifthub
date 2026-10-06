@@ -199,6 +199,77 @@ test.describe('Group sheets', () => {
       await prisma.listGroupAccess.deleteMany({ where: { listId: list.id } });
     }
   });
+
+  /*
+    The list sheet's own audience block, which is not the share dialog's. It was
+    handed `groupAccess` by the page and never read it, so a `SHARED` list whose
+    only readers arrive through a group - no `ListAccess` row at all - printed
+    "You have not shared your wishes with anyone yet" directly above a group that
+    can open it. The row on the contents page already said otherwise
+    (`sharedWithGroupCount`), which is what made the sheet read as a contradiction
+    and not merely as a thin summary.
+
+    Each list is created here and deleted in `finally`, rather than borrowed from
+    the seed: a seeded list may carry individual grants, and one individual grant
+    is enough to hide the defect.
+  */
+  const withSharedList = async (
+    grantGroup: boolean,
+    run: (listId: string) => Promise<void>
+  ) => {
+    const anna = await prisma.account.findUniqueOrThrow({
+      where: { email: ANNA },
+    });
+    const list = await prisma.list.create({
+      data: {
+        name: `spec-list-${process.pid}-${grantGroup ? 'group' : 'bare'}`,
+        ownerId: anna.id,
+        visibility: 'SHARED',
+      },
+    });
+    try {
+      if (grantGroup) {
+        await prisma.listGroupAccess.create({
+          data: { listId: list.id, groupId: await groupId() },
+        });
+      }
+      await run(list.id);
+    } finally {
+      // The grant goes with the list (`onDelete: Cascade`), so one delete is enough.
+      await prisma.list.deleteMany({ where: { id: list.id } });
+    }
+  };
+
+  test('a list reached only through a group does not claim to be shared with nobody', async ({
+    page,
+  }) => {
+    await withSharedList(true, async (listId) => {
+      await signIn(page, ANNA);
+      await page.goto(`/${lang}/list/${listId}`);
+
+      await expect(page.getByTestId('groupAccessList')).toBeVisible();
+      await expect(
+        page.getByTestId('groupAccessList').getByText(GROUP_NAME)
+      ).toHaveCount(1);
+      await expect(page.getByTestId('nobodyYet')).toHaveCount(0);
+    });
+  });
+
+  test('a shared list nobody has been added to still says so', async ({
+    page,
+  }) => {
+    // The guard for the other direction: the fix must not make the empty sentence
+    // unreachable, only conditional on there being no group either.
+    await withSharedList(false, async (listId) => {
+      await signIn(page, ANNA);
+      await page.goto(`/${lang}/list/${listId}`);
+
+      await expect(page.getByTestId('nobodyYet')).toHaveText(
+        dict.shareList.nobodyYet
+      );
+      await expect(page.getByTestId('groupAccessList')).toHaveCount(0);
+    });
+  });
 });
 
 const groupId = async () => {
