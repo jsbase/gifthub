@@ -19,7 +19,7 @@ wishy gives one person a list of gift ideas and lets them share it with the spec
 - `proxy.ts` — the Next 16 replacement for `middleware.ts`: locale negotiation plus the auth gate for the contents page and the list sheet.
 - `public/sw.js` — the actual service worker, plus `offline.html`, `flags/`, `site.webmanifest`.
 - `scripts/lint-ratchet.mjs` + `lint-baseline.json` — the lint warning gate. Read the script before touching either.
-- `docs/` — not part of the repo. `/docs/` is gitignored (`.gitignore:70`) and nothing under it is tracked; it holds local planning and audit material from whichever session produced it. Do not read it as project truth, and do not expect a colleague to have it.
+- `docs/` — mostly not part of the repo. `/docs/*` is gitignored except `docs/agents/` (the config the engineering skills read: issue tracker, triage labels, domain-doc rules) and `docs/adr/` (decisions); everything else under it is local planning and audit material from whichever session produced it. Do not read that as project truth, and do not expect a colleague to have it.
 - `DESIGN.md` — the design system as YAML frontmatter (colour, type, spacing). `PRODUCT.md` — the product brief, including a list of unfulfilled README claims that are explicitly off-limits to build on.
 - `.github/workflows/` — exactly one workflow, `playwright.yml`. It is the full CI gate.
 
@@ -102,6 +102,20 @@ Conditional:
 - Translation strings changed → all three of `lib/translations/{de,en,ru}.json` updated, and the key present in the `Translations` interface in `types.ts`.
 - Prisma schema changed → a migration exists under `prisma/migrations/` and `npx prisma migrate deploy` applies it cleanly.
 - Pre-existing lint findings → do not "fix" them as a side effect and do not re-baseline to make a gate pass. The ratchet works like this: `scripts/lint-ratchet.mjs` runs ESLint, identifies each warning by file + rule + first line of prose (deliberately not line number, and not the code frame, which embeds an absolute path), and compares that multiset against `lint-baseline.json`. Duplicates count, so three `setState` calls in one file are three warnings and only the fourth is new. Shrinking the debt passes; only growing it fails. `npm run lint:baseline` rewrites the baseline to accept the current warnings — that is a deliberate, reviewable act, not a way to get to green. Note that `prisma/**` is globally ignored by ESLint, so Prisma files are not linted at all.
+
+## Agent skills
+
+### Issue tracker
+
+Issues and specs are markdown files under `.scratch/<feature>/`, not GitHub Issues. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+The five default roles (`needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`), recorded as a `Status:` line in each issue file. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context: one `GLOSSARY.md` and `docs/adr/` at the repo root. See `docs/agents/domain.md`.
 
 <!-- BEGIN:nextjs-agent-rules -->
 
