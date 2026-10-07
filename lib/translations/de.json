@@ -278,7 +278,10 @@
     "copyright": "© 2026 wishy",
     "privacyPolicy": "Datenschutz",
     "termsConditions": "AGB",
-    "support": "Spendier mir einen Kaffee"
+    "support": "Spendier mir einen Kaffee",
+    "affiliateDisclosures": {
+      "amazonDe": "Als Amazon-Partner verdiene ich an qualifizierten Verkäufen."
+    }
   },
   "privacy": {
     "title": "Datenschutzrichtlinie",

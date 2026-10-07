@@ -36,6 +36,7 @@ export function amazonDe(tag: string | undefined): AffiliateProgram | null {
   return {
     id: 'amazon-de',
     shortHosts: ['amzn.to', 'amzn.eu', 'a.co'],
+    disclosure: 'amazonDe',
     recognises: (url) => AMAZON_DE_HOSTS.has(url.hostname),
     apply: (url) => {
       const tagged = new URL(url);

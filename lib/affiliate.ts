@@ -1,4 +1,4 @@
-import { affiliateLink } from '@/lib/affiliate-link';
+import { affiliateLink, disclosuresFor } from '@/lib/affiliate-link';
 import type { AffiliateLink, AffiliateProgram } from '@/lib/affiliate-link';
 import { amazonDe } from '@/lib/affiliate-programs/amazon-de';
 
@@ -23,6 +23,13 @@ import { amazonDe } from '@/lib/affiliate-programs/amazon-de';
 export const AFFILIATE_PROGRAMS: readonly AffiliateProgram[] = [
   amazonDe(process.env.NEXT_PUBLIC_AMAZON_TAG),
 ].filter((program): program is AffiliateProgram => program !== null);
+
+/**
+ * The sentences the site must carry for the programmes that are switched on. The
+ * footer reads this, so the statement appears exactly when a programme earns and
+ * never otherwise.
+ */
+export const AFFILIATE_DISCLOSURES = disclosuresFor(AFFILIATE_PROGRAMS);
 
 /** `affiliateLink` over the programmes that are switched on. */
 export function affiliateFor(url: string): AffiliateLink {

@@ -22,6 +22,8 @@
   database.
 */
 
+import type { AffiliateDisclosureTranslations } from '@/types';
+
 export interface AffiliateProgram {
   /** A stable name, for tests and for anything that has to say which one fired. */
   id: string;
@@ -43,6 +45,13 @@ export interface AffiliateProgram {
    * is the whole of what it may fetch on the programme's behalf.
    */
   shortHosts?: readonly string[];
+  /**
+   * The sentence this programme's agreement requires on the site, as a key into
+   * `AffiliateDisclosureTranslations`. A key and not the text because the text is
+   * copy in three languages and lives in the dictionaries; a programme without a
+   * requirement leaves it out.
+   */
+  disclosure?: keyof AffiliateDisclosureTranslations;
 }
 
 export interface AffiliateLink {
@@ -69,4 +78,18 @@ export function affiliateLink(
   const program = programs.find((p) => p.recognises(parsed));
   if (!program) return unchanged;
   return { href: program.apply(parsed).toString(), earns: true };
+}
+
+/**
+ * The sentences the site has to carry for the programmes it is given, each once and
+ * in the order the programmes are listed. The footer asks this and knows no shop:
+ * a programme that is switched off is not in `programs`, so its sentence is never
+ * shown, and a sentence claiming we earn from a shop we are not tied to would be
+ * untrue.
+ */
+export function disclosuresFor(
+  programs: readonly AffiliateProgram[]
+): (keyof AffiliateDisclosureTranslations)[] {
+  const keys = programs.flatMap((p) => (p.disclosure ? [p.disclosure] : []));
+  return [...new Set(keys)];
 }

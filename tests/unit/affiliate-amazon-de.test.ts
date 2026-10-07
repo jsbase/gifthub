@@ -121,3 +121,11 @@ test('the short-link hosts are exactly the three, and none of them is a page we 
     assert.equal(p.recognises(new URL(`https://${host}/x`)), false, host);
   }
 });
+
+test('the programme names the sentence its agreement requires on the site', () => {
+  // Amazon's agreement requires one fixed sentence on the site. The programme
+  // carries which sentence, by key, so the footer can show it exactly when this
+  // programme is switched on and never otherwise: "I earn from qualifying
+  // purchases" with no programme behind it would be false.
+  assert.equal(programme().disclosure, 'amazonDe');
+});

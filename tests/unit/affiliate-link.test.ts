@@ -16,7 +16,7 @@ import type { AffiliateProgram } from '@/lib/affiliate-link';
 */
 
 const require = createRequire(import.meta.url);
-const { affiliateLink } =
+const { affiliateLink, disclosuresFor } =
   require('../../lib/affiliate-link.ts') as typeof import('@/lib/affiliate-link');
 
 const paramShop: AffiliateProgram = {
@@ -111,4 +111,19 @@ test('with no programmes configured nothing is rewritten', () => {
     href: 'https://shop.example/item/7',
     earns: false,
   });
+});
+
+test('the sentences the footer must show are those of the programmes that are on, each once', () => {
+  // The footer asks this and nothing about shops. A programme that is not
+  // configured is not in the list at all, so its sentence is not shown, and two
+  // programmes that need the same sentence do not print it twice.
+  const requires = (id: string): AffiliateProgram => ({
+    ...paramShop,
+    id,
+    disclosure: 'amazonDe',
+  });
+  assert.deepEqual(disclosuresFor([]), []);
+  assert.deepEqual(disclosuresFor([paramShop, wrapShop]), []);
+  assert.deepEqual(disclosuresFor([paramShop, requires('a'), wrapShop]), ['amazonDe']);
+  assert.deepEqual(disclosuresFor([requires('a'), requires('b')]), ['amazonDe']);
 });

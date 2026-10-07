@@ -275,6 +275,13 @@ export interface Translations {
     privacyPolicy: string;
     termsConditions: string;
     support: string;
+    /**
+     * The sentence each affiliate programme requires on the site, shown by the
+     * footer for the programmes that are switched on. Keyed by the `disclosure` a
+     * programme names, so adding one is a key here in all three locales and a line
+     * on the programme, and the footer does not change.
+     */
+    affiliateDisclosures: AffiliateDisclosureTranslations;
   };
   privacy: PrivacyTranslations;
   terms: TermsTranslations;
@@ -1459,6 +1466,22 @@ export interface PageProps {
 export interface FeatureCardProps {
   title: string;
   description: string;
+}
+
+/**
+ * The sentences affiliate programmes require on the site, one key per programme
+ * that requires one. An `AffiliateProgram` names its key in `disclosure`.
+ *
+ * `amazonDe` is the sentence of Amazon's partner agreement (section 5), worded as
+ * Amazon gives it in German. The English is Amazon's own standard wording. The
+ * Russian is a translation, not Amazon's: the agreement asks for that sentence or
+ * one "substantially similar", which is why it is not a different claim.
+ * Deliberately nothing else about the programme is said anywhere: the agreement
+ * limits public statements about it to this one, and the advertisement marking
+ * the law requires is the only exception (`affiliateNotice`).
+ */
+export interface AffiliateDisclosureTranslations {
+  amazonDe: string;
 }
 
 export interface FooterProps {

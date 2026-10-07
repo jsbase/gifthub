@@ -278,7 +278,10 @@
     "copyright": "© 2026 wishy",
     "privacyPolicy": "Политика конфиденциальности",
     "termsConditions": "Условия",
-    "support": "Угости меня кофе"
+    "support": "Угости меня кофе",
+    "affiliateDisclosures": {
+      "amazonDe": "Как партнёр Amazon я зарабатываю на соответствующих покупках."
+    }
   },
   "privacy": {
     "title": "Политика конфиденциальности",

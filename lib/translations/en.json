@@ -278,7 +278,10 @@
     "copyright": "© 2026 wishy",
     "privacyPolicy": "Privacy policy",
     "termsConditions": "Terms",
-    "support": "Buy me a coffee"
+    "support": "Buy me a coffee",
+    "affiliateDisclosures": {
+      "amazonDe": "As an Amazon Associate I earn from qualifying purchases."
+    }
   },
   "privacy": {
     "title": "Privacy Policy",
