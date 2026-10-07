@@ -184,6 +184,7 @@
     "chooseTarget": "Choose destination",
     "selectGift": "Select wish",
     "selectGiftNamed": "Select wish “{title}”",
+    "affiliateNotice": "Ad: wishy earns a commission on purchases made through this link.",
     "selectedCount": {
       "one": "{count} wish selected",
       "two": "{count} wishes selected",

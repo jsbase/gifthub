@@ -184,6 +184,7 @@
     "chooseTarget": "Выбрать список",
     "selectGift": "Выбрать желание",
     "selectGiftNamed": "Выбрать желание «{title}»",
+    "affiliateNotice": "Реклама: за покупку по этой ссылке wishy получает комиссию.",
     "selectedCount": {
       "one": "выбрано {count} желание",
       "two": "выбрано {count} желания",

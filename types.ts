@@ -635,6 +635,18 @@ export interface ListSheetTranslations {
    */
   selectGiftNamed: string;
   /**
+   * What the advertisement mark on a cell says, once, for the tooltip a pointer
+   * reads and for the link's name a screen reader announces. One string for both
+   * so the two cannot say different things about the same link.
+   *
+   * It leads with the word that makes it recognisable as advertising and says who
+   * earns, and it does not name the shop: the partner agreement limits what may be
+   * said publicly about the programme to its own one-line statement, with the
+   * marking the law requires as the only exception, and this is that marking. The
+   * statement itself is not here.
+   */
+  affiliateNotice: string;
+  /**
    * How many wishes are selected, in four forms.
    *
    * Russian inflects by number and one template cannot express it, so this is a
@@ -1562,6 +1574,7 @@ export interface GiftCardProps {
     | 'deleteGift'
     | 'selectGift'
     | 'selectGiftNamed'
+    | 'affiliateNotice'
   >;
   onDelete: (id: string) => void;
   onTogglePurchased: (id: string) => void;

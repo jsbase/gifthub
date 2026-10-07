@@ -22,26 +22,49 @@
 const AMAZON_HOSTS = new Set(['amazon.de', 'www.amazon.de']);
 
 /**
- * The address to link to for `url`, tagged with `tag` when it is an amazon.de
- * link and returned untouched otherwise.
+ * The one place that decides whether an address is ours to tag, so that the link
+ * and the mark that says it is an advertisement can never disagree: a link tagged
+ * without the mark is an undisclosed advertisement, and a mark on a link we did not
+ * tag is a claim that is not true.
  *
- * Never throws: a wish's link is free text, so "not a link" is an ordinary input
- * and has to come back as it went in rather than take the sheet down. An empty or
- * missing `tag` means the feature is off.
+ * Never throws: a wish's link is free text, so "not a link" is an ordinary input.
  */
-export function withAffiliateTag(url: string, tag: string | undefined): string {
-  if (!tag) return url;
-
+function amazonDeAddress(url: string): URL | null {
   let parsed: URL;
   try {
     parsed = new URL(url);
   } catch {
-    return url;
+    return null;
   }
 
-  if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') return url;
-  if (!AMAZON_HOSTS.has(parsed.hostname)) return url;
+  if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') return null;
+  if (!AMAZON_HOSTS.has(parsed.hostname)) return null;
+  return parsed;
+}
+
+/**
+ * The address to link to for `url`, tagged with `tag` when it is an amazon.de
+ * link and returned untouched otherwise. An empty or missing `tag` means the
+ * feature is off.
+ */
+export function withAffiliateTag(url: string, tag: string | undefined): string {
+  if (!tag) return url;
+
+  const parsed = amazonDeAddress(url);
+  if (!parsed) return url;
 
   parsed.searchParams.set('tag', tag);
   return parsed.toString();
+}
+
+/**
+ * Whether `url` is one `withAffiliateTag` tags, and so one that earns us a
+ * commission and has to be marked as an advertisement.
+ *
+ * Asked separately rather than inferred from "the address came back different":
+ * a link that already carries our own tag comes back byte for byte, and would be
+ * taken for an ordinary one.
+ */
+export function isAffiliateLink(url: string, tag: string | undefined): boolean {
+  return Boolean(tag) && amazonDeAddress(url) !== null;
 }

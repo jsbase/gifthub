@@ -1,10 +1,10 @@
 'use client';
 
 import React, { memo, useCallback, useEffect, useRef } from 'react';
-import { IconExternalLink, IconShoppingCart, IconShoppingCartMinus, IconShoppingCartPlus, IconTrash } from '@tabler/icons-react';
+import { IconBadgeAd, IconExternalLink, IconShoppingCart, IconShoppingCartMinus, IconShoppingCartPlus, IconTrash } from '@tabler/icons-react';
 import { Button } from '@/components/ui/button';
 import { useDebounce } from '@/hooks/use-debounce';
-import { withAffiliateTag } from '@/lib/affiliate-link';
+import { isAffiliateLink, withAffiliateTag } from '@/lib/affiliate-link';
 import { cn } from '@/lib/utils';
 import type { GiftCardProps } from '@/types';
 
@@ -544,7 +544,14 @@ const GiftCard: React.FC<GiftCardProps> = ({
           rel='noopener noreferrer'
           className={interactiveClasses}
         >
-          <GiftCardBody gift={gift} />
+          <GiftCardBody
+            gift={gift}
+            affiliateNotice={
+              isAffiliateLink(gift.url, AMAZON_TAG)
+                ? dict.affiliateNotice
+                : undefined
+            }
+          />
         </a>
       ) : (
         <div className={interactiveClasses}>
@@ -600,7 +607,13 @@ const GiftCard: React.FC<GiftCardProps> = ({
  */
 const GiftCardBody: React.FC<{
   gift: GiftCardProps['gift'];
-}> = ({ gift }) => (
+  /**
+   * Present exactly when the link out of this cell is one we tag and earn from.
+   * The text and the decision both come from the parent, so the body draws a mark
+   * and never works out for itself whether a mark is owed.
+   */
+  affiliateNotice?: string;
+}> = ({ gift, affiliateNotice }) => (
   <div
     className={cn(
       'min-w-0',
@@ -686,6 +699,19 @@ const GiftCardBody: React.FC<{
       </p>
     )}
 
+    {affiliateNotice && (
+      /*
+        The mark's name for assistive technology. The row below that carries the
+        icon is `aria-hidden`, like the address beside it, so without this the
+        link would announce as an ordinary one while the page shows it is an
+        advertisement - the disclosure would exist for sighted readers only. It is
+        inside the link on purpose: the cell is one link and a second control for
+        it would be the nested-interactive problem this file already spent a
+        finding on.
+      */
+      <span className='sr-only'>{affiliateNotice}</span>
+    )}
+
     {gift.url && (
       /*
         The address of the thing, printed under the note the way a catalogue
@@ -727,6 +753,66 @@ const GiftCardBody: React.FC<{
         <span className='min-w-0 truncate'>
           {gift.url.replace(/^https?:\/\//, '').replace(/\/$/, '')}
         </span>
+        {affiliateNotice && (
+          /*
+            The advertisement mark, pushed to the row's trailing edge so the
+            tooltip, which opens towards the leading side, always has the cell's
+            width to open into instead of the width of a short address.
+
+            It sits in the address row and is not a control: the cell is the link and
+            this is a label on it. Hover is therefore all a pointer gets, and it is
+            deliberately not the only way to know - the icon is on the cell at all
+            times, which is what makes it recognisable as an advertisement on a
+            phone where nothing hovers, and `affiliateNotice` is in the link's
+            accessible name for everybody who cannot see it.
+
+            Drawn at full strength even on a collected cell, where the row around it
+            drops to half: the mark is a disclosure, and one that fades with the
+            wish's state is one that is hardest to read exactly when the cell has been
+            dealt with and the link is still live.
+          */
+          <span
+            className={cn(
+              'group/ad',
+              'relative',
+              'ml-auto',
+              'shrink-0',
+              'normal-case',
+              'transition-colors',
+              gift.isPurchased
+                ? 'text-collected-foreground'
+                : 'text-caption hover:text-ink'
+            )}
+          >
+            <IconBadgeAd className='-my-0.5 h-[1.125rem] w-[1.125rem]' stroke={1.75} />
+            <span
+              className={cn(
+                'pointer-events-none',
+                'invisible',
+                'absolute',
+                'bottom-full',
+                'right-0',
+                'z-20',
+                'mb-1.5',
+                'w-max',
+                'max-w-[16rem]',
+                'rounded-sm',
+                'bg-ink',
+                'px-2.5',
+                'py-1.5',
+                'font-sans',
+                'text-[0.75rem]',
+                'font-normal',
+                'leading-snug',
+                'tracking-normal',
+                'text-ink-foreground',
+                'group-hover/ad:visible'
+              )}
+            >
+              {affiliateNotice}
+            </span>
+          </span>
+        )}
       </span>
     )}
   </div>

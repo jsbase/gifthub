@@ -184,6 +184,7 @@
     "chooseTarget": "Ziel wählen",
     "selectGift": "Wunsch auswählen",
     "selectGiftNamed": "Wunsch „{title}“ auswählen",
+    "affiliateNotice": "Anzeige: Für einen Kauf über diesen Link erhält wishy eine Provision.",
     "selectedCount": {
       "one": "{count} Wunsch ausgewählt",
       "two": "{count} Wünsche ausgewählt",

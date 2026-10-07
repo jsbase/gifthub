@@ -11,10 +11,45 @@ import { createRequire } from 'node:module';
 */
 
 const require = createRequire(import.meta.url);
-const { withAffiliateTag } =
+const { withAffiliateTag, isAffiliateLink } =
   require('../../lib/affiliate-link.ts') as typeof import('@/lib/affiliate-link');
 
 const TAG = 'test-21';
+
+// Shared between `withAffiliateTag` and `isAffiliateLink`, so the two are held to
+// the same links and cannot drift into disagreeing about what is ours.
+const LOOK_ALIKES = [
+  'https://example.com/dp/B08N5WRWNW',
+  'https://amazon.de.evil.com/dp/B08N5WRWNW',
+  'https://notamazon.de/dp/B08N5WRWNW',
+  'https://amazon.de@evil.com/dp/B08N5WRWNW',
+  'https://evil.com/?u=https://www.amazon.de/dp/B08N5WRWNW',
+];
+const OTHER_MARKETPLACES = [
+  'https://www.amazon.com/dp/B08N5WRWNW',
+  'https://www.amazon.co.uk/dp/B08N5WRWNW',
+  'https://amzn.to/3abcdef',
+  'https://amzn.eu/d/abcdef',
+  'https://a.co/d/abcdef',
+];
+const NOT_ADDRESSES = [
+  'not a link',
+  'www.amazon.de/dp/B08N5WRWNW',
+  'javascript:alert(1)',
+  'mailto:anna@example.de',
+  'ftp://www.amazon.de/dp/B08N5WRWNW',
+];
+
+test('a link we would tag is reported as an affiliate link', () => {
+  assert.equal(isAffiliateLink('https://www.amazon.de/dp/B08N5WRWNW', TAG), true);
+  // Already carrying our own tag, `withAffiliateTag` returns it byte for byte. That
+  // is why the card cannot infer "this was tagged" from "the href changed": it
+  // would call our own affiliate link an ordinary one and leave it unmarked.
+  assert.equal(
+    isAffiliateLink('https://www.amazon.de/dp/B08N5WRWNW?tag=test-21', TAG),
+    true
+  );
+});
 
 test('an amazon.de link without a tag gets ours', () => {
   assert.equal(
@@ -54,14 +89,7 @@ test('only amazon.de is rewritten, and a look-alike host is not amazon.de', () =
   // a gift link route a buyer through a page that merely starts with our name.
   // `https://amazon.de@evil.com/` is the classic version: the real host is what
   // follows the `@`.
-  const untouched = [
-    'https://example.com/dp/B08N5WRWNW',
-    'https://amazon.de.evil.com/dp/B08N5WRWNW',
-    'https://notamazon.de/dp/B08N5WRWNW',
-    'https://amazon.de@evil.com/dp/B08N5WRWNW',
-    'https://evil.com/?u=https://www.amazon.de/dp/B08N5WRWNW',
-  ];
-  for (const link of untouched) {
+  for (const link of LOOK_ALIKES) {
     assert.equal(withAffiliateTag(link, TAG), link, link);
   }
 });
@@ -69,14 +97,7 @@ test('only amazon.de is rewritten, and a look-alike host is not amazon.de', () =
 test('other marketplaces and short links are left alone', () => {
   // Our ID belongs to the amazon.de programme only, and a short link carries its
   // tag in the redirect rather than in the URL, so there is nothing here to set.
-  const untouched = [
-    'https://www.amazon.com/dp/B08N5WRWNW',
-    'https://www.amazon.co.uk/dp/B08N5WRWNW',
-    'https://amzn.to/3abcdef',
-    'https://amzn.eu/d/abcdef',
-    'https://a.co/d/abcdef',
-  ];
-  for (const link of untouched) {
+  for (const link of OTHER_MARKETPLACES) {
     assert.equal(withAffiliateTag(link, TAG), link, link);
   }
 });
@@ -84,14 +105,20 @@ test('other marketplaces and short links are left alone', () => {
 test('anything that is not a web address is returned as it came in', () => {
   // A wish's link is free text in the form, so these reach the card. A throw
   // here would take the whole sheet down for one badly typed cell.
-  const untouched = [
-    'not a link',
-    'www.amazon.de/dp/B08N5WRWNW',
-    'javascript:alert(1)',
-    'mailto:anna@example.de',
-    'ftp://www.amazon.de/dp/B08N5WRWNW',
-  ];
-  for (const link of untouched) {
+  for (const link of NOT_ADDRESSES) {
     assert.equal(withAffiliateTag(link, TAG), link, link);
+  }
+});
+
+test('without a tag nothing is an affiliate link', () => {
+  const link = 'https://www.amazon.de/dp/B08N5WRWNW';
+  assert.equal(isAffiliateLink(link, undefined), false);
+  assert.equal(isAffiliateLink(link, ''), false);
+});
+
+test('whatever is left untouched is not an affiliate link either', () => {
+  // A mark on a link we did not tag claims a commission we do not earn.
+  for (const link of [...LOOK_ALIKES, ...OTHER_MARKETPLACES, ...NOT_ADDRESSES]) {
+    assert.equal(isAffiliateLink(link, TAG), false, link);
   }
 });
