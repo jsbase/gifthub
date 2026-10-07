@@ -2,123 +2,113 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 
+import type { AffiliateProgram } from '@/lib/affiliate-link';
+
 /*
-  The tag is a parameter and the function never reads `process.env`, so every
-  case here runs with a made-up ID and no `.env.local`. The one place that does
-  read `NEXT_PUBLIC_AMAZON_TAG` is the gift card, which is where Next.js inlines
-  it at build time; a lookup through a variable would not be inlined and the
-  link would silently go out untagged.
+  The core knows no shop. It takes the programmes it is handed and asks them in
+  order, so everything here runs against two made-up ones - and made up in two
+  different mechanisms on purpose. Amazon puts a parameter on the address; most
+  networks wrap the address in a tracking one. If the core only coped with the
+  first kind, adding the second would be a rewrite and not a new file, and that is
+  the thing this suite is here to hold.
+
+  Amazon's own rules are `affiliate-amazon-de.test.ts`.
 */
 
 const require = createRequire(import.meta.url);
-const { withAffiliateTag, isAffiliateLink } =
+const { affiliateLink } =
   require('../../lib/affiliate-link.ts') as typeof import('@/lib/affiliate-link');
 
-const TAG = 'test-21';
+const paramShop: AffiliateProgram = {
+  id: 'param-shop',
+  recognises: (url) => url.hostname === 'shop.example',
+  apply: (url) => {
+    const out = new URL(url);
+    out.searchParams.set('partner', 'p-1');
+    return out;
+  },
+};
 
-// Shared between `withAffiliateTag` and `isAffiliateLink`, so the two are held to
-// the same links and cannot drift into disagreeing about what is ours.
-const LOOK_ALIKES = [
-  'https://example.com/dp/B08N5WRWNW',
-  'https://amazon.de.evil.com/dp/B08N5WRWNW',
-  'https://notamazon.de/dp/B08N5WRWNW',
-  'https://amazon.de@evil.com/dp/B08N5WRWNW',
-  'https://evil.com/?u=https://www.amazon.de/dp/B08N5WRWNW',
-];
-const OTHER_MARKETPLACES = [
-  'https://www.amazon.com/dp/B08N5WRWNW',
-  'https://www.amazon.co.uk/dp/B08N5WRWNW',
-  'https://amzn.to/3abcdef',
-  'https://amzn.eu/d/abcdef',
-  'https://a.co/d/abcdef',
-];
-const NOT_ADDRESSES = [
-  'not a link',
-  'www.amazon.de/dp/B08N5WRWNW',
-  'javascript:alert(1)',
-  'mailto:anna@example.de',
-  'ftp://www.amazon.de/dp/B08N5WRWNW',
-];
+const wrapShop: AffiliateProgram = {
+  id: 'wrap-shop',
+  recognises: (url) => url.hostname === 'wrap.example',
+  apply: (url) =>
+    new URL(`https://track.example/go?to=${encodeURIComponent(url.toString())}&id=w-9`),
+};
 
-test('a link we would tag is reported as an affiliate link', () => {
-  assert.equal(isAffiliateLink('https://www.amazon.de/dp/B08N5WRWNW', TAG), true);
-  // Already carrying our own tag, `withAffiliateTag` returns it byte for byte. That
-  // is why the card cannot infer "this was tagged" from "the href changed": it
-  // would call our own affiliate link an ordinary one and leave it unmarked.
-  assert.equal(
-    isAffiliateLink('https://www.amazon.de/dp/B08N5WRWNW?tag=test-21', TAG),
-    true
-  );
+test('a link a programme recognises is rewritten and reported as earning', () => {
+  assert.deepEqual(affiliateLink('https://shop.example/item/7', [paramShop]), {
+    href: 'https://shop.example/item/7?partner=p-1',
+    earns: true,
+  });
 });
 
-test('an amazon.de link without a tag gets ours', () => {
-  assert.equal(
-    withAffiliateTag('https://www.amazon.de/dp/B08N5WRWNW', TAG),
-    'https://www.amazon.de/dp/B08N5WRWNW?tag=test-21'
-  );
+test('a link no programme recognises comes back as it went in, not earning', () => {
+  assert.deepEqual(affiliateLink('https://elsewhere.example/item/7', [paramShop]), {
+    href: 'https://elsewhere.example/item/7',
+    earns: false,
+  });
 });
 
-test("somebody else's tag is replaced, not added to, and the rest of the link stays", () => {
-  // This is the whole point of the feature. `append` instead of `set` would send
-  // `tag=other-21&tag=test-21` and leave it to Amazon to pick one.
-  assert.equal(
-    withAffiliateTag(
-      'https://www.amazon.de/Beispiel-Produkt/dp/B08N5WRWNW?th=1&tag=other-21&psc=1#reviews',
-      TAG
-    ),
-    'https://www.amazon.de/Beispiel-Produkt/dp/B08N5WRWNW?th=1&tag=test-21&psc=1#reviews'
-  );
-  assert.equal(
-    withAffiliateTag('http://amazon.de/dp/B08N5WRWNW?tag=a-21&tag=b-21', TAG),
-    'http://amazon.de/dp/B08N5WRWNW?tag=test-21'
-  );
-});
-
-test('without a tag the link is left exactly as typed', () => {
-  // An unset variable arrives as `undefined` and a blank one in `.env.local` as
-  // an empty string. Both mean "off": CI and the e2e suite run with neither set
-  // and must see the same hrefs they always did.
-  const link = 'https://www.amazon.de/dp/B08N5WRWNW';
-  assert.equal(withAffiliateTag(link, undefined), link);
-  assert.equal(withAffiliateTag(link, ''), link);
-});
-
-test('only amazon.de is rewritten, and a look-alike host is not amazon.de', () => {
-  // The host is matched exactly. A substring or suffix test would tag
-  // `amazon.de.evil.com` and `notamazon.de`, and would let anybody who can type
-  // a gift link route a buyer through a page that merely starts with our name.
-  // `https://amazon.de@evil.com/` is the classic version: the real host is what
-  // follows the `@`.
-  for (const link of LOOK_ALIKES) {
-    assert.equal(withAffiliateTag(link, TAG), link, link);
-  }
-});
-
-test('other marketplaces and short links are left alone', () => {
-  // Our ID belongs to the amazon.de programme only, and a short link carries its
-  // tag in the redirect rather than in the URL, so there is nothing here to set.
-  for (const link of OTHER_MARKETPLACES) {
-    assert.equal(withAffiliateTag(link, TAG), link, link);
-  }
-});
-
-test('anything that is not a web address is returned as it came in', () => {
+test('anything that is not a web address is returned as it came in, and no programme is asked', () => {
   // A wish's link is free text in the form, so these reach the card. A throw
-  // here would take the whole sheet down for one badly typed cell.
-  for (const link of NOT_ADDRESSES) {
-    assert.equal(withAffiliateTag(link, TAG), link, link);
+  // would take the whole sheet down for one badly typed cell, and a programme
+  // handed `javascript:` or `ftp:` would have to know to refuse it - so it is
+  // refused once, here, before any programme sees it.
+  const asked: string[] = [];
+  const spy: AffiliateProgram = {
+    id: 'spy',
+    recognises: (url) => {
+      asked.push(url.toString());
+      return false;
+    },
+    apply: (url) => url,
+  };
+  for (const link of [
+    'not a link',
+    '',
+    'www.shop.example/item/7',
+    'javascript:alert(1)',
+    'mailto:anna@example.de',
+    'ftp://shop.example/item/7',
+  ]) {
+    assert.deepEqual(affiliateLink(link, [spy]), { href: link, earns: false }, link);
   }
+  assert.deepEqual(asked, []);
 });
 
-test('without a tag nothing is an affiliate link', () => {
-  const link = 'https://www.amazon.de/dp/B08N5WRWNW';
-  assert.equal(isAffiliateLink(link, undefined), false);
-  assert.equal(isAffiliateLink(link, ''), false);
+test('a second programme with another mechanism goes through the same call', () => {
+  const programs = [paramShop, wrapShop];
+  assert.deepEqual(affiliateLink('https://wrap.example/item/7', programs), {
+    href: 'https://track.example/go?to=https%3A%2F%2Fwrap.example%2Fitem%2F7&id=w-9',
+    earns: true,
+  });
+  assert.deepEqual(affiliateLink('https://shop.example/item/7', programs), {
+    href: 'https://shop.example/item/7?partner=p-1',
+    earns: true,
+  });
 });
 
-test('whatever is left untouched is not an affiliate link either', () => {
-  // A mark on a link we did not tag claims a commission we do not earn.
-  for (const link of [...LOOK_ALIKES, ...OTHER_MARKETPLACES, ...NOT_ADDRESSES]) {
-    assert.equal(isAffiliateLink(link, TAG), false, link);
-  }
+test('the first programme that recognises a link wins, and the rest are not asked to mark it', () => {
+  let secondApplied = false;
+  const greedy: AffiliateProgram = {
+    id: 'greedy',
+    recognises: (url) => url.hostname === 'shop.example',
+    apply: () => {
+      secondApplied = true;
+      return new URL('https://greedy.example/');
+    },
+  };
+  assert.equal(
+    affiliateLink('https://shop.example/item/7', [paramShop, greedy]).href,
+    'https://shop.example/item/7?partner=p-1'
+  );
+  assert.equal(secondApplied, false);
+});
+
+test('with no programmes configured nothing is rewritten', () => {
+  assert.deepEqual(affiliateLink('https://shop.example/item/7', []), {
+    href: 'https://shop.example/item/7',
+    earns: false,
+  });
 });
