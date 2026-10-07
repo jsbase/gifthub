@@ -4,6 +4,7 @@ import React, { memo, useCallback, useEffect, useRef } from 'react';
 import { IconExternalLink, IconShoppingCart, IconShoppingCartMinus, IconShoppingCartPlus, IconTrash } from '@tabler/icons-react';
 import { Button } from '@/components/ui/button';
 import { useDebounce } from '@/hooks/use-debounce';
+import { withAffiliateTag } from '@/lib/affiliate-link';
 import { cn } from '@/lib/utils';
 import type { GiftCardProps } from '@/types';
 
@@ -31,6 +32,17 @@ const LONG_PRESS_MS = 500;
  * and got a selection would have to find the bar and clear it.
  */
 const LONG_PRESS_SLOP_PX = 10;
+
+/**
+ * Our Amazon PartnerNet tracking ID, or `undefined` when none is configured.
+ *
+ * Read here as a literal `process.env.NEXT_PUBLIC_…` and not through a helper or
+ * a variable, because that is the only form Next.js inlines into the client
+ * bundle at build time; any other lookup is `undefined` in the browser and every
+ * link would silently go out untagged. It also means the value is frozen at
+ * build, so a changed ID needs a redeploy.
+ */
+const AMAZON_TAG = process.env.NEXT_PUBLIC_AMAZON_TAG;
 
 /**
  * One cell of the album page.
@@ -527,7 +539,7 @@ const GiftCard: React.FC<GiftCardProps> = ({
 
       {gift.url ? (
         <a
-          href={gift.url}
+          href={withAffiliateTag(gift.url, AMAZON_TAG)}
           target='_blank'
           rel='noopener noreferrer'
           className={interactiveClasses}
