@@ -79,11 +79,16 @@ test.describe('Start page Functionality', () => {
   The expected strings are literals rather than read from the dictionaries, so a
   dictionary that drifted would disagree with this file instead of agreeing with
   itself.
+
+  The cup is a picture and the label is the name. It is checked as text on the page
+  and kept out of the accessible name, because a screen reader would otherwise say
+  "hot beverage" in front of the words, and the words are what a person who cannot
+  see the cup is asked to act on.
 */
 const supportLabels = {
-  de: 'Wishy unterstützen',
-  en: 'Support wishy',
-  ru: 'Поддержать wishy',
+  de: 'Spendier mir einen Kaffee',
+  en: 'Buy me a coffee',
+  ru: 'Угости меня кофе',
 } as const;
 
 test.describe('Voluntary support link', () => {
@@ -92,7 +97,8 @@ test.describe('Voluntary support link', () => {
       await page.goto(`/${locale}`);
 
       const link = page.getByTestId('footer').getByTestId('linkSupport');
-      await expect(link).toHaveText(label);
+      await expect(link).toHaveAccessibleName(label);
+      await expect(link).toContainText('☕');
       await expect(link).toHaveAttribute('href', 'https://ko-fi.com/wishyapp');
       await expect(link).toHaveAttribute('target', '_blank');
       await expect(link).toHaveAttribute('rel', /\bnoopener\b/);

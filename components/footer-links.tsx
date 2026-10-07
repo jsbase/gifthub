@@ -78,17 +78,27 @@ const FooterLinks = ({ dict }: Pick<FooterProps, 'dict'>) => {
         prefetch and nothing for the router to do. Nothing is requested from Ko-fi
         until the click and nothing is passed to it with the click - no query
         string, and `noreferrer` withholds the referrer, so Ko-fi is not told which
-        wishy page it came from. That is what the privacy policy tells people. `noopener` is spelled out although current browsers
-        imply it for `_blank`, the same as the idea links in `gift-card.tsx`, so an
-        older browser does not give the new tab a handle back to this one.
+        wishy page it came from. That is what the privacy policy tells people.
+        `noopener` is spelled out although current browsers imply it for `_blank`,
+        the same as the idea links in `gift-card.tsx`, so an older browser does not
+        give the new tab a handle back to this one.
+
+        The cup was the owner's call: the plain "Support wishy" read as unremarkable
+        beside the two legal links. It is the system's emoji rather than a drawn
+        icon, so it takes the platform's colours and not the palette's, and
+        `aria-hidden` keeps it out of the accessible name: a screen reader says the
+        words, not "hot beverage" in front of them.
       */}
       <a
         href={SUPPORT_URL}
         target='_blank'
         rel='noopener noreferrer'
-        className={linkClasses}
+        className={cn(linkClasses, 'gap-2')}
         data-testid='linkSupport'
       >
+        <span aria-hidden='true' className={cn('text-base')}>
+          ☕
+        </span>
         {dict.footer.support}
       </a>
     </div>
