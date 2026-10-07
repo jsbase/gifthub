@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAccountId } from '@/lib/auth-server';
-import { addGift } from '@/lib/list-access';
+import { addGift, requireWritableList } from '@/lib/list-access';
 import { refusalResponse } from '@/lib/api-refusal';
 import { toWireGift } from '@/lib/wire';
 import { checkGiftField, type GiftField } from '@/lib/gift-text';
@@ -110,16 +110,22 @@ export const POST: (
       behind a short link can be longer. Keeping the short link, which still opens,
       is better than refusing a wish for a length nobody typed.
 
-      It runs before `addGift` and so before the permission check: an account that
-      may not write to this list can still cause one of these requests. The cost of
-      that is bounded by the allow-list, three hops and one deadline.
+      It only runs for an account that may write to this list. `addGift` checks that
+      again and still owns the refusal, so a request that is refused is answered
+      exactly as it was and only the fetch is skipped: an account with no business
+      here must not be able to make our server request an address by posting to a
+      list it cannot write to. The price is a second read of the list, spent only
+      when there is an address to resolve.
     */
     const typedUrl = optionalText(url);
     let storedUrl = typedUrl;
     if (typedUrl) {
-      const expanded = await expandShortLink(typedUrl, AFFILIATE_PROGRAMS);
-      const tooLong = checkGiftField('url', expanded, { tooLong: () => '' });
-      if (!tooLong) storedUrl = expanded;
+      const gate = await requireWritableList(id, accountId);
+      if (gate.ok) {
+        const expanded = await expandShortLink(typedUrl, AFFILIATE_PROGRAMS);
+        const tooLong = checkGiftField('url', expanded, { tooLong: () => '' });
+        if (!tooLong) storedUrl = expanded;
+      }
     }
 
     const gift = await addGift(
