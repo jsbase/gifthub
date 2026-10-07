@@ -274,6 +274,7 @@ export interface Translations {
     copyright: string;
     privacyPolicy: string;
     termsConditions: string;
+    support: string;
   };
   privacy: PrivacyTranslations;
   terms: TermsTranslations;

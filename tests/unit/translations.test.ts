@@ -107,6 +107,28 @@ test('a string is empty in every locale or in none', () => {
   assert.deepEqual(disagree, []);
 });
 
+test('the privacy policy names Ko-fi in every locale', () => {
+  /*
+    The footer links out to Ko-fi, and `PRODUCT.md` (the voluntary-support bullet
+    under "Unfulfilled claims") settles that the policy says so. The parity tests
+    above cannot see this: a policy that names Ko-fi in German and says nothing in
+    Russian has the same keys in all three files. Searched across every section
+    rather than pinned to one index, because inserting a section in the middle
+    renumbers the rest and what matters is that the policy says it, not which
+    number it carries.
+  */
+  const sectionBody = /^privacy\.sections\.\d+\.content$/;
+  for (const locale of LOCALES) {
+    const naming = [...flat[locale]].filter(
+      ([key, text]) => sectionBody.test(key) && text.includes('Ko-fi')
+    );
+    assert.ok(
+      naming.length > 0,
+      `${locale}: no privacy section names Ko-fi, but the footer links to it`
+    );
+  }
+});
+
 test('the selection count has its four plural forms, each carrying the number', () => {
   /*
     The one dictionary section a function reads by *computed* key
