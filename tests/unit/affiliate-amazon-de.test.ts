@@ -129,3 +129,18 @@ test('the programme names the sentence its agreement requires on the site', () =
   // purchases" with no programme behind it would be false.
   assert.equal(programme().disclosure, 'amazonDe');
 });
+
+test('a link as Amazon itself issues it keeps every other byte, literal commas included', () => {
+  // The shape of a real SiteStripe short link's destination: literal commas in
+  // `sprefix`, a percent-encoded `__mk_de_DE`, `+` for spaces, and the other
+  // partner's `linkCode`, `tag`, `linkId` and `ref_=as_li_ss_tl` around them.
+  // Re-serialising the query through `URLSearchParams` turned the commas into `%2C`:
+  // the same value to any server, but not the same link, and "we only touched
+  // the tag" is a promise worth keeping literally.
+  const issued =
+    'https://www.amazon.de/Produkt/dp/B0BNLN9V3M?__mk_de_DE=%C3%85M%C3%85%C5%BD%C3%95%C3%91&crid=CE0V17TGVLH1&keywords=Gardena+Micro-Drip-System&sprefix=gardena+micro-drip-system,aps,135&sr=8-6&linkCode=sl1&tag=other-21&linkId=2d94b9ea&language=de_DE&ref_=as_li_ss_tl';
+  assert.equal(
+    programme().apply(new URL(issued)).toString(),
+    'https://www.amazon.de/Produkt/dp/B0BNLN9V3M?__mk_de_DE=%C3%85M%C3%85%C5%BD%C3%95%C3%91&crid=CE0V17TGVLH1&keywords=Gardena+Micro-Drip-System&sprefix=gardena+micro-drip-system,aps,135&sr=8-6&tag=test-21&language=de_DE'
+  );
+});
