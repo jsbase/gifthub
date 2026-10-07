@@ -276,7 +276,8 @@
   "footer": {
     "copyright": "© 2026 wishy",
     "privacyPolicy": "Datenschutz",
-    "termsConditions": "AGB"
+    "termsConditions": "AGB",
+    "support": "Spendier mir einen Kaffee"
   },
   "privacy": {
     "title": "Datenschutzrichtlinie",
@@ -299,7 +300,7 @@
       },
       {
         "title": "5. Weitergabe und Übermittlung von Daten",
-        "content": "Wir geben Ihre persönlichen Daten nur weiter, wenn es für die Erfüllung unserer Dienstleistung notwendig ist oder wir gesetzlich dazu verpflichtet sind. An Dritte geben wir sie nur mit Ihrer ausdrücklichen Zustimmung weiter."
+        "content": "Wir geben Ihre persönlichen Daten nur weiter, wenn es für die Erfüllung unserer Dienstleistung notwendig ist oder wir gesetzlich dazu verpflichtet sind. An Dritte geben wir sie nur mit Ihrer ausdrücklichen Zustimmung weiter. In der Fußzeile verlinken wir auf Ko-fi, die Seite eines Drittanbieters, über die Sie wishy freiwillig unterstützen können. Wir geben dabei keine Daten an Ko-fi weiter; mit dem Klick verlassen Sie wishy, und es gelten die Datenschutzbestimmungen von Ko-fi."
       },
       {
         "title": "6. Aufbewahrung und Löschung von Daten",

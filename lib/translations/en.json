@@ -276,7 +276,8 @@
   "footer": {
     "copyright": "© 2026 wishy",
     "privacyPolicy": "Privacy policy",
-    "termsConditions": "Terms"
+    "termsConditions": "Terms",
+    "support": "Buy me a coffee"
   },
   "privacy": {
     "title": "Privacy Policy",
@@ -299,7 +300,7 @@
       },
       {
         "title": "5. Data Sharing and Transfer",
-        "content": "We share your personal data only when it is necessary to provide our service or when the law requires it. We pass data to third parties only with your explicit consent."
+        "content": "We share your personal data only when it is necessary to provide our service or when the law requires it. We pass data to third parties only with your explicit consent. The footer links to Ko-fi, a third-party page where you can support wishy voluntarily. We pass no data on to Ko-fi; once you click the link you have left wishy, and Ko-fi's own privacy policy applies."
       },
       {
         "title": "6. Data Retention and Deletion",
