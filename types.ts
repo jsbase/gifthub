@@ -275,6 +275,13 @@ export interface Translations {
     privacyPolicy: string;
     termsConditions: string;
     support: string;
+    /**
+     * The sentence each affiliate programme requires on the site, shown by the
+     * footer for the programmes that are switched on. Keyed by the `disclosure` a
+     * programme names, so adding one is a key here in all three locales and a line
+     * on the programme, and the footer does not change.
+     */
+    affiliateDisclosures: AffiliateDisclosureTranslations;
   };
   privacy: PrivacyTranslations;
   terms: TermsTranslations;
@@ -634,6 +641,18 @@ export interface ListSheetTranslations {
    * title is the fact the cell's text gives a sighted owner.
    */
   selectGiftNamed: string;
+  /**
+   * What the advertisement mark on a cell says, once, for the tooltip a pointer
+   * reads and for the link's name a screen reader announces. One string for both
+   * so the two cannot say different things about the same link.
+   *
+   * It leads with the word that makes it recognisable as advertising and says who
+   * earns, and it does not name the shop: the partner agreement limits what may be
+   * said publicly about the programme to its own one-line statement, with the
+   * marking the law requires as the only exception, and this is that marking. The
+   * statement itself is not here.
+   */
+  affiliateNotice: string;
   /**
    * How many wishes are selected, in four forms.
    *
@@ -1449,6 +1468,22 @@ export interface FeatureCardProps {
   description: string;
 }
 
+/**
+ * The sentences affiliate programmes require on the site, one key per programme
+ * that requires one. An `AffiliateProgram` names its key in `disclosure`.
+ *
+ * `amazonDe` is the sentence of Amazon's partner agreement (section 5), worded as
+ * Amazon gives it in German. The English is Amazon's own standard wording. The
+ * Russian is a translation, not Amazon's: the agreement asks for that sentence or
+ * one "substantially similar", which is why it is not a different claim.
+ * Deliberately nothing else about the programme is said anywhere: the agreement
+ * limits public statements about it to this one, and the advertisement marking
+ * the law requires is the only exception (`affiliateNotice`).
+ */
+export interface AffiliateDisclosureTranslations {
+  amazonDe: string;
+}
+
 export interface FooterProps {
   dict: Translations;
 }
@@ -1562,6 +1597,7 @@ export interface GiftCardProps {
     | 'deleteGift'
     | 'selectGift'
     | 'selectGiftNamed'
+    | 'affiliateNotice'
   >;
   onDelete: (id: string) => void;
   onTogglePurchased: (id: string) => void;
