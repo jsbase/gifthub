@@ -396,6 +396,42 @@ test.describe('How much of a wish fits on a sheet', () => {
     await anna.context.close();
   });
 
+  test('a link that is not a web address is refused, and names its field', async ({
+    browser,
+  }) => {
+    const anna = await signIn(browser, ANNA);
+    const listId = await createList(anna);
+
+    /*
+      The form's `type='url'` accepts any scheme and a request need not come from the
+      form, so the route is where this is decided. Each of these would have been a
+      link a buyer is sent to: an app's scheme, a file, a page that is not a page,
+      and an address with no scheme, which a browser resolves against wishy itself.
+    */
+    for (const url of [
+      'mailto:anna@example.test',
+      'file:///etc/passwd',
+      'data:text/html,<p>hi</p>',
+      'www.amazon.de/dp/B08N5WRWNW',
+    ]) {
+      const refused = await anna.api.post(`/api/lists/${listId}/gifts`, {
+        data: { title: 'Lampe', url },
+      });
+      await expectFieldRefusal(refused, 'url', `the link ${url}`);
+    }
+    expect(await prisma.gift.count({ where: { listId } })).toBe(0);
+
+    // A web address in either case is stored, and a blank link is no link.
+    for (const url of ['HTTPS://example.de/lampe', '   ']) {
+      const stored = await anna.api.post(`/api/lists/${listId}/gifts`, {
+        data: { title: 'Lampe', url },
+      });
+      expect(stored.ok(), `${JSON.stringify(url)}: ${await stored.text()}`).toBe(true);
+    }
+
+    await anna.context.close();
+  });
+
   test('a title that is empty is a different sentence from one that is too short', async ({
     browser,
   }) => {

@@ -1612,6 +1612,14 @@ It cannot be rendered inside the cell: `GiftCardProps.dict` is
               data-testid='giftUrlInput'
               name='url'
               type='url'
+              /*
+                `type='url'` accepts any scheme, and the route only stores http and
+                https (`isWebAddress`). Without this the browser would send a
+                `mailto:` and the reader would get the generic failure toast instead
+                of the browser's own note on the field. Case-insensitive by hand,
+                because a pattern has no flags and a scheme has no case.
+              */
+              pattern='[Hh][Tt][Tt][Pp][Ss]?://.+'
               placeholder={`${dict.listSheet.enterUrl} (${dict.listSheet.optional})`}
               maxLength={GIFT_FIELD_LIMITS.url.max}
             />
