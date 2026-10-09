@@ -115,6 +115,7 @@
     "giftsMoved": "Wishes moved",
     "giftsTransferFailed": "Wishes not transferred",
     "giftsTransferNotFound": "A wish or the destination list is gone",
+    "giftsTransferBought": "A wish was bought in the meantime and can't be copied",
     "giftsTransferTooMany": "Too many wishes at once",
     "listCreated": "List created",
     "listCreateFailed": "List not created",
@@ -177,6 +178,7 @@
     "collectedIdeas": "Collected",
     "youAreABuyer": "This list belongs to someone else. You may tick an idea off once you have bought it — nothing else.",
     "markedBySomeoneElse": "Somebody else marked this — the mark stays.",
+    "boughtNotCopyable": "Bought wishes can be moved, but not copied.",
     "backToLists": "Back to your lists",
     "newGift": "Create new wish",
     "copy": "Copy",
@@ -184,7 +186,6 @@
     "chooseTarget": "Choose destination",
     "selectGift": "Select wish",
     "selectGiftNamed": "Select wish “{title}”",
-    "affiliateNotice": "Ad: wishy earns a commission on purchases made through this link.",
     "selectedCount": {
       "one": "{count} wish selected",
       "two": "{count} wishes selected",
@@ -278,10 +279,7 @@
     "copyright": "© 2026 wishy",
     "privacyPolicy": "Privacy policy",
     "termsConditions": "Terms",
-    "support": "Buy me a coffee",
-    "affiliateDisclosures": {
-      "amazonDe": "As an Amazon Associate I earn from qualifying purchases."
-    }
+    "support": "Buy me a coffee"
   },
   "privacy": {
     "title": "Privacy Policy",

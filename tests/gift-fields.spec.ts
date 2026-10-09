@@ -396,6 +396,42 @@ test.describe('How much of a wish fits on a sheet', () => {
     await anna.context.close();
   });
 
+  test('a link that is not a web address is refused, and names its field', async ({
+    browser,
+  }) => {
+    const anna = await signIn(browser, ANNA);
+    const listId = await createList(anna);
+
+    /*
+      The form's `type='url'` accepts any scheme and a request need not come from the
+      form, so the route is where this is decided. Each of these would have been a
+      link a buyer is sent to: an app's scheme, a file, a page that is not a page,
+      and an address with no scheme, which a browser resolves against wishy itself.
+    */
+    for (const url of [
+      'mailto:anna@example.test',
+      'file:///etc/passwd',
+      'data:text/html,<p>hi</p>',
+      'www.amazon.de/dp/B08N5WRWNW',
+    ]) {
+      const refused = await anna.api.post(`/api/lists/${listId}/gifts`, {
+        data: { title: 'Lampe', url },
+      });
+      await expectFieldRefusal(refused, 'url', `the link ${url}`);
+    }
+    expect(await prisma.gift.count({ where: { listId } })).toBe(0);
+
+    // A web address in either case is stored, and a blank link is no link.
+    for (const url of ['HTTPS://example.de/lampe', '   ']) {
+      const stored = await anna.api.post(`/api/lists/${listId}/gifts`, {
+        data: { title: 'Lampe', url },
+      });
+      expect(stored.ok(), `${JSON.stringify(url)}: ${await stored.text()}`).toBe(true);
+    }
+
+    await anna.context.close();
+  });
+
   test('a title that is empty is a different sentence from one that is too short', async ({
     browser,
   }) => {
@@ -433,10 +469,10 @@ test.describe('How much of a wish fits on a sheet', () => {
     1. A MOVED wish arrives exactly as it left. Open stays open, bought stays bought,
        and the bought mark travels with it - including the fact that the reader of
        the target may not clear it.
-    2. A COPIED wish arrives open, whatever the original was. A copy is a new thought
-       on a new sheet - the flowers that were bought for one occasion and are wanted
-       again for the next - and the original keeps its mark on the source. This is
-       the design, not a gap in rule 1.
+    2. A COPIED wish arrives open, and only an open wish is copied. A copy is a new
+       thought on a new sheet, so a copy of a bought wish would be an open duplicate
+       of a present already being given; a bought wish is moved or left where it is.
+       Rule 6 in the header of `lib/list-access.ts` has the reason in full.
     3. All of the batch or none of it, and a request sent twice changes nothing
        further: the sheet's answer to a lost reply is to press again.
 
@@ -447,7 +483,7 @@ test.describe('How much of a wish fits on a sheet', () => {
   prevent - the row lands looking purchasable, everybody who can read the target
   buys it - so it is the case that is pinned hardest, and pinned from the reader's
   side (`canClear` on the target's own response) rather than off the database. Rule 2
-  is pinned the other way round, by the copy of a bought wish below.
+  is pinned by the refused copies of bought wishes below.
 */
 test.describe('Moving and copying wishes between your own lists', () => {
   test('three open wishes move, and the source is left empty', async ({ browser }) => {
@@ -579,7 +615,7 @@ test.describe('Moving and copying wishes between your own lists', () => {
     await ben.context.close();
   });
 
-  test("a copy of somebody else's bought wish arrives open and can be marked", async ({
+  test('a bought wish is not copied, and a batch that names one lands not at all', async ({
     browser,
   }) => {
     const anna = await signIn(browser, ANNA);
@@ -587,69 +623,83 @@ test.describe('Moving and copying wishes between your own lists', () => {
 
     const sourceId = await createList(anna, 'SHARED');
     const targetId = await createList(anna);
-    const giftId = await addGift(anna, sourceId, 'Besorgt');
+    const openId = await addGift(anna, sourceId, 'Noch offen');
+    const bensId = await addGift(anna, sourceId, 'Von Ben besorgt');
+    const annasId = await addGift(anna, sourceId, 'Selbst besorgt');
     await grant(anna, sourceId, BEN);
-    await ben.api.post(`/api/lists/${sourceId}/gifts/${giftId}/toggle`);
-
-    const copied = await transfer(anna, sourceId, [giftId], targetId, 'copy');
-    expect(
-      copied.ok(),
-      `copying a bought wish must succeed: ${copied.status()} ${await copied.text()}`
-    ).toBe(true);
-
-    const copy = (await sheet(anna, targetId)).find((gift) => gift.id !== giftId);
-    expect(copy, 'the copy is on the target under a new id').toBeTruthy();
-    /*
-      The mark does NOT travel with a copy. A copy is a new thought on a
-      new sheet: it arrives open, and the target's own audience is the one
-      that decides whether it is already bought. `canClear: true` is the
-      observable form of that, the same way `canClear: false` was the
-      observable form of the mark travelling before the semantics changed -
-      `purchasedById` never leaves the server, so this boolean is the only
-      way the rule can be seen from outside (see `mayClearMark`).
-    */
-    expect(
-      copy!.isPurchased,
-      'a copy arrives open - the mark belongs to the source list, not to the copy'
-    ).toBe(false);
-    expect(
-      copy!.canClear,
-      'and the owner may mark it there, because it is open'
-    ).toBe(true);
-
-    // The source keeps the mark it had, because copy changes nothing on this side.
-    const original = (await sheet(anna, sourceId))[0];
-    expect(original.isPurchased, 'the source is unchanged by a copy').toBe(true);
-    expect(
-      original.canClear,
-      "and Ben's mark on it is still the owner's to live with"
-    ).toBe(false);
+    expect((await ben.api.post(`/api/lists/${sourceId}/gifts/${bensId}/toggle`)).ok()).toBe(true);
+    expect((await anna.api.post(`/api/lists/${sourceId}/gifts/${annasId}/toggle`)).ok()).toBe(true);
 
     /*
-      The positive form of "arrives open": the one request the old
-      semantics refused - the owner marking the copy - is the request
-      that works now. The copy becomes a bought wish on the target,
-      marked by its own owner, and clearable by her for the same reason.
+      Bought is bought whoever set the mark: a buyer's mark and the owner's own "I
+      already have this" refuse a copy alike. And one bought wish beside an open one
+      refuses both - rule 3 - so the open wish is not copied on its own either.
     */
-    const marked = await anna.api.post(
-      `/api/lists/${targetId}/gifts/${copy!.id}/toggle`
-    );
-    expect(
-      marked.status(),
-      'the owner can mark an open copy like any open wish'
-    ).toBe(200);
+    for (const [what, giftIds] of [
+      ["a wish somebody else bought", [bensId]],
+      ['a wish the owner marked herself', [annasId]],
+      ['an open wish beside a bought one', [openId, bensId]],
+    ] as [string, string[]][]) {
+      const refused = await transfer(anna, sourceId, giftIds, targetId, 'copy');
+      expect(refused.status(), what).toBe(400);
+      expect((await refused.json()).code, what).toBe('cannot_copy_bought_idea');
+    }
 
-    const markedCopy = (await sheet(anna, targetId)).find(
-      (gift) => gift.id === copy!.id
+    expect(
+      await prisma.gift.count({ where: { listId: targetId } }),
+      'nothing landed on the target'
+    ).toBe(0);
+    const source = await sheet(anna, sourceId);
+    expect(source).toHaveLength(3);
+    expect(
+      source.filter((gift) => gift.isPurchased).map((gift) => gift.id).sort(),
+      'and both marks are still where they were set'
+    ).toEqual([bensId, annasId].sort());
+
+    // A bought wish may still be moved, and the open one may still be copied alone.
+    expect((await transfer(anna, sourceId, [openId], targetId, 'copy')).ok()).toBe(true);
+    expect((await transfer(anna, sourceId, [bensId], targetId, 'move')).ok()).toBe(true);
+
+    await anna.context.close();
+    await ben.context.close();
+  });
+
+  test('a copy that landed, sent again after its original was bought, is the same success', async ({
+    browser,
+  }) => {
+    const anna = await signIn(browser, ANNA);
+    const ben = await signIn(browser, BEN);
+
+    const sourceId = await createList(anna, 'SHARED');
+    const targetId = await createList(anna);
+    const giftId = await addGift(anna, sourceId, 'Gerade noch offen');
+    await grant(anna, sourceId, BEN);
+
+    const first = await transfer(anna, sourceId, [giftId], targetId, 'copy', 'landed-once');
+    expect(first.ok(), `the first copy: ${first.status()} ${await first.text()}`).toBe(true);
+
+    // The reply is lost, and before the sheet presses again Ben buys the original.
+    expect((await ben.api.post(`/api/lists/${sourceId}/gifts/${giftId}/toggle`)).ok()).toBe(
+      true
     );
+
+    /*
+      The same attempt again names a bought wish now, but its copy is already on the
+      target: it is a repeat, and a repeat answers with the first attempt's success
+      rather than with a refusal for a copy that did happen. A new attempt is not a
+      repeat, and is refused.
+    */
+    const again = await transfer(anna, sourceId, [giftId], targetId, 'copy', 'landed-once');
+    expect(again.status(), await again.text()).toBe(200);
+    expect((await again.json()).count).toBe(1);
     expect(
-      markedCopy!.isPurchased,
-      'the copy takes the mark like any open wish'
-    ).toBe(true);
-    expect(
-      markedCopy!.canClear,
-      'and the owner may clear what they themselves marked'
-    ).toBe(true);
+      await prisma.gift.count({ where: { listId: targetId } }),
+      'and still one copy'
+    ).toBe(1);
+
+    const fresh = await transfer(anna, sourceId, [giftId], targetId, 'copy', 'a-new-attempt');
+    expect(fresh.status()).toBe(400);
+    expect((await fresh.json()).code).toBe('cannot_copy_bought_idea');
 
     await anna.context.close();
     await ben.context.close();
@@ -1030,6 +1080,43 @@ test.describe('Sending a transfer twice, and sending too many wishes', () => {
       await prisma.gift.count({ where: { listId: targetId } }),
       'and nothing was copied by any of them'
     ).toBe(0);
+
+    await anna.context.close();
+  });
+
+  test('a body that is not a transfer is a 400, not a server error', async ({
+    browser,
+  }) => {
+    const anna = await signIn(browser, ANNA);
+
+    const sourceId = await createList(anna);
+    const targetId = await createList(anna);
+    const giftId = await addGift(anna, sourceId, 'Blumen');
+    const url = `/api/lists/${sourceId}/gifts/transfer`;
+
+    /*
+      Not JSON, JSON that is not an object, and ids that no list or wish could have:
+      each is a request built wrong, so each is the same 400 a body naming the wrong
+      fields gets, and none of them reaches the database.
+    */
+    for (const [what, options] of [
+      ['a body that is not JSON', { headers: { 'Content-Type': 'application/json' }, data: '{' }],
+      ['JSON that is null', { data: 'null', headers: { 'Content-Type': 'application/json' } }],
+      ['JSON that is a list', { data: [giftId] }],
+      [
+        'a wish id far longer than any id',
+        { data: { giftIds: ['a'.repeat(65)], targetListId: targetId, mode: 'copy' } },
+      ],
+      [
+        'a destination id with a separator in it',
+        { data: { giftIds: [giftId], targetListId: `${targetId}/x`, mode: 'copy' } },
+      ],
+    ] as [string, Parameters<typeof anna.api.post>[1]][]) {
+      const refused = await anna.api.post(url, options);
+      expect(refused.status(), what).toBe(400);
+    }
+
+    expect(await prisma.gift.count({ where: { listId: targetId } })).toBe(0);
 
     await anna.context.close();
   });

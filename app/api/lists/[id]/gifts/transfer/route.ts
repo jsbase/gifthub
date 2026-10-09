@@ -15,6 +15,14 @@ type ListContext = { params: Promise<{ id: string }> };
 const REQUEST_ID = /^[A-Za-z0-9_-]{1,64}$/;
 
 /**
+ * What a list's or a wish's id may look like. Every id in this product is a cuid or
+ * a `keyedGiftId` - 25 letters and digits - so this is generous, and its job is not
+ * to recognise an id but to keep a request from naming a string of any length and
+ * any content and having it carried into a query.
+ */
+const ID = /^[A-Za-z0-9_-]{1,64}$/;
+
+/**
  * A batch of ideas from this list onto another one, keeping them or leaving them.
  *
  * One request for a whole selection rather than one per wish, and that is the
@@ -47,7 +55,16 @@ export const POST: (
     }
 
     const { id } = await params;
-    const { giftIds, targetListId, mode, requestId } = await request.json();
+    /*
+      A body that is not JSON, or JSON that is not an object, is a malformed request
+      and answered as one - with the same 400 as a body naming the wrong fields -
+      rather than thrown into the 500 below, which would say the server had failed.
+    */
+    const body: unknown = await request.json().catch(() => null);
+    const { giftIds, targetListId, mode, requestId } =
+      typeof body === 'object' && body !== null && !Array.isArray(body)
+        ? (body as Record<string, unknown>)
+        : {};
 
     /*
       The fields, checked before anything is looked up.
@@ -73,9 +90,9 @@ export const POST: (
     if (
       !Array.isArray(giftIds) ||
       giftIds.length === 0 ||
-      !giftIds.every((value) => typeof value === 'string') ||
+      !giftIds.every((value) => typeof value === 'string' && ID.test(value)) ||
       typeof targetListId !== 'string' ||
-      targetListId.length === 0 ||
+      !ID.test(targetListId) ||
       (mode !== 'copy' && mode !== 'move') ||
       (requestId !== undefined &&
         (typeof requestId !== 'string' || !REQUEST_ID.test(requestId)))

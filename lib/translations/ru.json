@@ -115,6 +115,7 @@
     "giftsMoved": "Желания перенесены",
     "giftsTransferFailed": "Желания не перенесены",
     "giftsTransferNotFound": "Желания или списка назначения больше нет",
+    "giftsTransferBought": "Одно из желаний уже купили — его нельзя скопировать",
     "giftsTransferTooMany": "Слишком много желаний сразу",
     "listCreated": "Список создан",
     "listCreateFailed": "Список не создан",
@@ -177,6 +178,7 @@
     "collectedIdeas": "Куплено",
     "youAreABuyer": "Этот список принадлежит другому человеку. Ты можешь отметить идею, когда купишь её, — и больше ничего.",
     "markedBySomeoneElse": "Отметил кто-то другой — отметка остаётся.",
+    "boughtNotCopyable": "Купленные желания можно перенести, но не скопировать.",
     "backToLists": "К твоим спискам",
     "newGift": "Создать желание",
     "copy": "Копировать",
@@ -184,7 +186,6 @@
     "chooseTarget": "Выбрать список",
     "selectGift": "Выбрать желание",
     "selectGiftNamed": "Выбрать желание «{title}»",
-    "affiliateNotice": "Реклама: за покупку по этой ссылке wishy получает комиссию.",
     "selectedCount": {
       "one": "выбрано {count} желание",
       "two": "выбрано {count} желания",
@@ -278,10 +279,7 @@
     "copyright": "© 2026 wishy",
     "privacyPolicy": "Политика конфиденциальности",
     "termsConditions": "Условия",
-    "support": "Угости меня кофе",
-    "affiliateDisclosures": {
-      "amazonDe": "Как партнёр Amazon я зарабатываю на соответствующих покупках."
-    }
+    "support": "Угости меня кофе"
   },
   "privacy": {
     "title": "Политика конфиденциальности",

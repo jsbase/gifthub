@@ -1,11 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAccountId } from '@/lib/auth-server';
-import { addGift, requireWritableList } from '@/lib/list-access';
+import { addGift } from '@/lib/list-access';
 import { refusalResponse } from '@/lib/api-refusal';
 import { toWireGift } from '@/lib/wire';
-import { checkGiftField, type GiftField } from '@/lib/gift-text';
-import { AFFILIATE_PROGRAMS } from '@/lib/affiliate';
-import { expandShortLink } from '@/lib/affiliate-expand';
+import { checkGiftField, isWebAddress, type GiftField } from '@/lib/gift-text';
 
 /**
  * An optional field that arrived blank is stored as absent rather than as an empty
@@ -95,44 +93,23 @@ export const POST: (
     }
 
     /*
-      A short link is opened once, here, and the long address it leads to is what
-      is stored. A short link carries its partner tag in the redirect and not in the
-      address, so left as typed it would go out as somebody else's link with nothing
-      for the sheet to replace; resolved, it is an ordinary amazon.de link and
-      `affiliateLink` swaps the tag at render like any other.
-
-      Only hosts a programme lists as a short-link host are ever requested, and
-      every failure - a slow host, an answer that is not a redirect, a chain that
-      does not end - returns the address as typed, so this cannot refuse a save. See
-      `lib/affiliate-expand.ts` for what it will and will not do.
-
-      The length limit was checked above on what the person typed, and the address
-      behind a short link can be longer. Keeping the short link, which still opens,
-      is better than refusing a wish for a length nobody typed.
-
-      It only runs for an account that may write to this list. `addGift` checks that
-      again and still owns the refusal, so a request that is refused is answered
-      exactly as it was and only the fetch is skipped: an account with no business
-      here must not be able to make our server request an address by posting to a
-      list it cannot write to. The price is a second read of the list, spent only
-      when there is an address to resolve.
+      A link is only stored if it is one a buyer can safely be sent to - see
+      `isWebAddress`. A field-shape refusal like the length ones above, so it names
+      the field and carries no code. A blank link is no link and is not refused.
     */
-    const typedUrl = optionalText(url);
-    let storedUrl = typedUrl;
-    if (typedUrl) {
-      const gate = await requireWritableList(id, accountId);
-      if (gate.ok) {
-        const expanded = await expandShortLink(typedUrl, AFFILIATE_PROGRAMS);
-        const tooLong = checkGiftField('url', expanded, { tooLong: () => '' });
-        if (!tooLong) storedUrl = expanded;
-      }
+    const link = optionalText(url);
+    if (link !== undefined && !isWebAddress(link)) {
+      return NextResponse.json(
+        { message: 'That url must start with http:// or https://', field: 'url' },
+        { status: 400 }
+      );
     }
 
     const gift = await addGift(
       {
         title: title.trim(),
         description: optionalText(description),
-        url: storedUrl,
+        url: link,
       },
       id,
       accountId

@@ -269,7 +269,7 @@ test.describe('Selecting and sending wishes from a sheet', () => {
     const chocolate = await addGift(anna, sourceId, 'Schokolade');
     await addGift(anna, sourceId, 'Kerze');
     await grant(anna, sourceId, BEN);
-    // Bought by somebody else, so the copy has something it must NOT carry along.
+    // Bought by somebody else, so the copy mode has a wish it must not offer.
     const marked = await ben.context.request.post(
       `/api/lists/${sourceId}/gifts/${chocolate}/toggle`
     );
@@ -285,9 +285,22 @@ test.describe('Selecting and sending wishes from a sheet', () => {
     await expectCount(page, 0);
     await expect(page.getByTestId('chooseTargetButton')).toBeDisabled();
 
+    // Only an open idea is copied: the bought one has no box, and the section it is
+    // in says why, once.
+    await expect(
+      page
+        .getByTestId('giftCard')
+        .filter({ hasText: 'Schokolade' })
+        .getByTestId('giftSelect')
+    ).toHaveCount(0);
+    await expect(page.getByTestId('giftSelect')).toHaveCount(2);
+    await expect(page.getByTestId('boughtNotCopyable')).toHaveText(
+      dict.listSheet.boughtNotCopyable
+    );
+
     await tick(page, 'Blumen');
     await expectCount(page, 1);
-    await tick(page, 'Schokolade');
+    await tick(page, 'Kerze');
     await expectCount(page, 2);
     await expect(page.getByTestId('chooseTargetButton')).toBeEnabled();
 
@@ -309,10 +322,10 @@ test.describe('Selecting and sending wishes from a sheet', () => {
     await atList(page, targetId);
 
     const arrived = await sheetOf(anna, targetId);
-    expect(arrived.map((gift) => gift.title).sort()).toEqual(['Blumen', 'Schokolade']);
+    expect(arrived.map((gift) => gift.title).sort()).toEqual(['Blumen', 'Kerze']);
     expect(
       arrived.every((gift) => !gift.isPurchased),
-      'a copy arrives open, the bought one included'
+      'a copy arrives open'
     ).toBe(true);
 
     // And the original is exactly as it was, mark and all.
@@ -345,6 +358,8 @@ test.describe('Selecting and sending wishes from a sheet', () => {
     const { page } = anna;
     await openSheet(page, sourceId);
     await enterMode(page, 'move');
+    // A bought idea may be moved, so it has its box and the copy sentence is absent.
+    await expect(page.getByTestId('boughtNotCopyable')).toHaveCount(0);
     await tick(page, 'Blumen');
     await tick(page, 'Schokolade');
     await openDialog(page);
@@ -782,6 +797,53 @@ test.describe('When the server refuses, the reader is told why', () => {
     expect(await titlesOf(anna, targetId)).toEqual(['Blumen']);
 
     await anna.context.close();
+  });
+
+  test('a wish bought after it was ticked: the sentence, a reload, a smaller selection, and a way on', async ({
+    browser,
+  }) => {
+    const anna = await signIn(browser, ANNA);
+    const ben = await signIn(browser, BEN);
+    const sourceId = await createList(anna, 'SHARED');
+    const targetId = await createList(anna);
+    await addGift(anna, sourceId, 'Blumen');
+    const bought = await addGift(anna, sourceId, 'Kerze');
+    await addGift(anna, sourceId, 'Buch');
+    await grant(anna, sourceId, BEN);
+
+    const { page } = anna;
+    await openSheet(page, sourceId);
+    await enterMode(page, 'copy');
+    await tick(page, 'Blumen');
+    await tick(page, 'Kerze');
+    await expectCount(page, 2);
+    await openDialog(page);
+    await pick(page, targetId);
+
+    // Ben buys one of the two while they are ticked here.
+    const marked = await ben.context.request.post(
+      `/api/lists/${sourceId}/gifts/${bought}/toggle`
+    );
+    expect(marked.ok()).toBe(true);
+
+    await commitButton(page, 'copy').click();
+    await expect(toast(page, dict.toasts.giftsTransferBought)).toBeVisible();
+
+    // The sheet reloaded and shows it bought, so it has no box in the copy mode and is
+    // no longer in the batch. Nothing landed: the batch was refused whole.
+    await expectCount(page, 1);
+    await expect(page.getByTestId('giftSelect')).toHaveCount(2);
+    await expect(page.getByTestId('transferDialog')).toBeVisible();
+    await expect(page.getByTestId(`transferTarget-${targetId}`)).toBeChecked();
+    expect(await titlesOf(anna, targetId)).toEqual([]);
+
+    await commitButton(page, 'copy').click();
+    await expect(toast(page, dict.toasts.giftsCopied)).toBeVisible();
+    await atList(page, targetId);
+    expect(await titlesOf(anna, targetId)).toEqual(['Blumen']);
+
+    await anna.context.close();
+    await ben.context.close();
   });
 
   test('a destination that is gone: the sentence, and it is no longer offered', async ({

@@ -63,9 +63,10 @@ const newRequestId = (): string =>
  * `invalid_email` cannot come out of this route, and if one ever did the honest thing
  * to say is that the wishes were not transferred.
  *
- * Only two are specific, and both because the reader can do something about them:
- * `not_found` (a wish or the destination has gone since the sheet loaded) and
- * `too_many_gifts` (select fewer).
+ * Only three are specific, and all because the reader can do something about them:
+ * `not_found` (a wish or the destination has gone since the sheet loaded),
+ * `too_many_gifts` (select fewer) and `cannot_copy_bought_idea` (a wish was bought
+ * after it was ticked, and the reload takes it out of the batch).
  */
 const transferFailureText = (dict: Translations, code: unknown): string => {
   const generic = dict.toasts.giftsTransferFailed;
@@ -74,6 +75,7 @@ const transferFailureText = (dict: Translations, code: unknown): string => {
   const table: Record<Refusal, string> = {
     not_found: dict.toasts.giftsTransferNotFound,
     too_many_gifts: dict.toasts.giftsTransferTooMany,
+    cannot_copy_bought_idea: dict.toasts.giftsTransferBought,
     invalid_email: generic,
     duplicate_email: generic,
     invalid_nickname: generic,
@@ -494,10 +496,21 @@ const ListSheet: React.FC<ListSheetProps> = ({
     can see and every further press would be refused for it - a batch the reader could
     only escape by leaving the mode. Derived in render rather than pruned in an effect,
     so there is no moment at which the bar and the sheet disagree.
+
+    The same goes for a wish that is still on the sheet but can no longer be copied:
+    only an open idea is copied, so in the copy mode a wish that has been bought since
+    it was ticked - by a buyer, or by the owner from this very sheet - has no checkbox
+    any more, and it leaves the batch here rather than staying in it unseen.
   */
   const liveSelectedIds = useMemo(
-    () => selectedIds.filter((id) => gifts.some((gift) => gift.id === id)),
-    [selectedIds, gifts]
+    () =>
+      selectedIds.filter((id) =>
+        gifts.some(
+          (gift) =>
+            gift.id === id && !(transferMode === 'copy' && gift.isPurchased)
+        )
+      ),
+    [selectedIds, gifts, transferMode]
   );
 
   const hasSelection = liveSelectedIds.length > 0;
@@ -794,11 +807,14 @@ const ListSheet: React.FC<ListSheetProps> = ({
     the success it was.
 
     **A refusal is read, not flattened.** The server says *why* in `code`, and the
-    toast says it back (`transferFailureText`). The one that changes what the sheet
-    does is `not_found`: a wish or the destination has gone since this loaded, so the
+    toast says it back (`transferFailureText`). Two of them change what the sheet
+    does. `not_found`: a wish or the destination has gone since this loaded, so the
     sheet and the picker are reloaded to show what is really there. The picker's list
     is the reason - a destination that was deleted would otherwise still be offered,
     and the reader would press the same row into the same refusal.
+    `cannot_copy_bought_idea`: a ticked wish was bought before the copy went out, so
+    the sheet is reloaded and shows it bought, and `liveSelectedIds` drops it from the
+    batch. The dialog stays open, so the rest of the batch is one more press.
   */
   const handleTransfer = useCallback(
     async (targetListId: string, mode: 'copy' | 'move') => {
@@ -832,6 +848,7 @@ const ListSheet: React.FC<ListSheetProps> = ({
             onGiftChanged();
             void loadTransferTargets();
           }
+          if (body?.code === 'cannot_copy_bought_idea') onGiftChanged();
 
           return;
         }
@@ -1327,6 +1344,31 @@ It cannot be rendered inside the cell: `GiftCardProps.dict` is
                     </p>
                   )}
 
+                  {/*
+                    Why this section has no checkboxes in the copy mode, said once at
+                    its head for the reason `markedBySomeoneElse` is: a rule is read
+                    before the section, not on every stamp in it. Only an open idea is
+                    copied (header rule 6 in `lib/list-access.ts`), and a missing
+                    checkbox with no sentence beside it would read as a fault. Not a
+                    disabled checkbox per cell instead: a disabled control cannot be
+                    reached from the keyboard, so its reason would never be read out.
+                  */}
+                  {transferMode === 'copy' && (
+                    <p
+                      data-testid='boughtNotCopyable'
+                      className={cn(
+                        'max-w-[54ch]',
+                        '-mt-1',
+                        'text-[0.8125rem]',
+                        'leading-relaxed',
+                        'text-pretty',
+                        'text-caption'
+                      )}
+                    >
+                      {dict.listSheet.boughtNotCopyable}
+                    </p>
+                  )}
+
                   <ul className='flex flex-col gap-2'>
                     {collectedGifts.map((gift) => (
                       <GiftCard
@@ -1334,7 +1376,7 @@ It cannot be rendered inside the cell: `GiftCardProps.dict` is
                         gift={gift}
                         dict={dict.listSheet}
                         canDelete={isOwner}
-                        canSelect={isOwner && transferMode !== null}
+                        canSelect={isOwner && transferMode === 'move'}
                         onDelete={(id) =>
                           setPendingDeletion(
                             gifts.find((candidate) => candidate.id === id) ??
@@ -1570,6 +1612,14 @@ It cannot be rendered inside the cell: `GiftCardProps.dict` is
               data-testid='giftUrlInput'
               name='url'
               type='url'
+              /*
+                `type='url'` accepts any scheme, and the route only stores http and
+                https (`isWebAddress`). Without this the browser would send a
+                `mailto:` and the reader would get the generic failure toast instead
+                of the browser's own note on the field. Case-insensitive by hand,
+                because a pattern has no flags and a scheme has no case.
+              */
+              pattern='[Hh][Tt][Tt][Pp][Ss]?://.+'
               placeholder={`${dict.listSheet.enterUrl} (${dict.listSheet.optional})`}
               maxLength={GIFT_FIELD_LIMITS.url.max}
             />

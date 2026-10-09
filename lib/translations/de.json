@@ -115,6 +115,7 @@
     "giftsMoved": "Wünsche umgezogen",
     "giftsTransferFailed": "Wünsche nicht übertragen",
     "giftsTransferNotFound": "Ein Wunsch oder die Zielliste ist nicht mehr da",
+    "giftsTransferBought": "Ein Wunsch wurde inzwischen gekauft und lässt sich nicht kopieren",
     "giftsTransferTooMany": "Zu viele Wünsche auf einmal",
     "listCreated": "Liste erstellt",
     "listCreateFailed": "Liste nicht erstellt",
@@ -177,6 +178,7 @@
     "collectedIdeas": "Besorgt",
     "youAreABuyer": "Diese Liste gehört jemand anderem. Abhaken, sobald du etwas besorgt hast, darfst du — mehr nicht.",
     "markedBySomeoneElse": "Jemand anderes hat das abgehakt — die Markierung bleibt.",
+    "boughtNotCopyable": "Gekaufte Wünsche lassen sich verschieben, aber nicht kopieren.",
     "backToLists": "Zurück zu den Listen",
     "newGift": "Neuen Wunsch erstellen",
     "copy": "Kopieren",
@@ -184,7 +186,6 @@
     "chooseTarget": "Ziel wählen",
     "selectGift": "Wunsch auswählen",
     "selectGiftNamed": "Wunsch „{title}“ auswählen",
-    "affiliateNotice": "Anzeige: Für einen Kauf über diesen Link erhält wishy eine Provision.",
     "selectedCount": {
       "one": "{count} Wunsch ausgewählt",
       "two": "{count} Wünsche ausgewählt",
@@ -278,10 +279,7 @@
     "copyright": "© 2026 wishy",
     "privacyPolicy": "Datenschutz",
     "termsConditions": "AGB",
-    "support": "Spendier mir einen Kaffee",
-    "affiliateDisclosures": {
-      "amazonDe": "Als Amazon-Partner verdiene ich an qualifizierten Verkäufen."
-    }
+    "support": "Spendier mir einen Kaffee"
   },
   "privacy": {
     "title": "Datenschutzrichtlinie",

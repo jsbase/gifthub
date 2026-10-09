@@ -275,13 +275,6 @@ export interface Translations {
     privacyPolicy: string;
     termsConditions: string;
     support: string;
-    /**
-     * The sentence each affiliate programme requires on the site, shown by the
-     * footer for the programmes that are switched on. Keyed by the `disclosure` a
-     * programme names, so adding one is a key here in all three locales and a line
-     * on the programme, and the footer does not change.
-     */
-    affiliateDisclosures: AffiliateDisclosureTranslations;
   };
   privacy: PrivacyTranslations;
   terms: TermsTranslations;
@@ -622,6 +615,13 @@ export interface ListSheetTranslations {
    * because it is not a failure: the mark is correct and permanent.
    */
   markedBySomeoneElse: string;
+  /**
+   * Shown at the head of the bought section while the owner is choosing what to
+   * copy, where that section has no checkboxes: only an open idea is copied, and
+   * a bought one may still be moved. Said once for the section rather than per
+   * cell, for the reason `markedBySomeoneElse` is.
+   */
+  boughtNotCopyable: string;
   backToLists: string;
 
   /**
@@ -641,18 +641,6 @@ export interface ListSheetTranslations {
    * title is the fact the cell's text gives a sighted owner.
    */
   selectGiftNamed: string;
-  /**
-   * What the advertisement mark on a cell says, once, for the tooltip a pointer
-   * reads and for the link's name a screen reader announces. One string for both
-   * so the two cannot say different things about the same link.
-   *
-   * It leads with the word that makes it recognisable as advertising and says who
-   * earns, and it does not name the shop: the partner agreement limits what may be
-   * said publicly about the programme to its own one-line statement, with the
-   * marking the law requires as the only exception, and this is that marking. The
-   * statement itself is not here.
-   */
-  affiliateNotice: string;
   /**
    * How many wishes are selected, in four forms.
    *
@@ -732,13 +720,14 @@ export interface ToastTranslations {
    * two operations and interpolating it into a sentence would need a placeholder
    * that no locale can fill with a correctly inflected pair of words.
    *
-   * **Three ways to fail, because the server says which.** `giftsTransferFailed` is
+   * **Four ways to fail, because the server says which.** `giftsTransferFailed` is
    * the sentence for a request that did not arrive or was not understood - the reader
-   * cannot act on it except by pressing again. The other two are for refusals the
+   * cannot act on it except by pressing again. The other three are for refusals the
    * reader *can* act on: `giftsTransferNotFound` when a wish or the destination has
    * gone since the sheet was loaded (the sheet reloads and the next press is a
-   * different request), and `giftsTransferTooMany` when the selection is over the
-   * limit. The limit is not in the sentence for the same reason there is no `{count}`
+   * different request), `giftsTransferBought` when a ticked wish was bought before a
+   * copy went out (the sheet reloads and the wish leaves the batch), and
+   * `giftsTransferTooMany` when the selection is over the limit. The limit is not in the sentence for the same reason there is no `{count}`
    * - and so that the number can change on the server without three translations
    * going stale.
    */
@@ -746,6 +735,7 @@ export interface ToastTranslations {
   giftsMoved: string;
   giftsTransferFailed: string;
   giftsTransferNotFound: string;
+  giftsTransferBought: string;
   giftsTransferTooMany: string;
 }
 
@@ -1468,22 +1458,6 @@ export interface FeatureCardProps {
   description: string;
 }
 
-/**
- * The sentences affiliate programmes require on the site, one key per programme
- * that requires one. An `AffiliateProgram` names its key in `disclosure`.
- *
- * `amazonDe` is the sentence of Amazon's partner agreement (section 5), worded as
- * Amazon gives it in German. The English is Amazon's own standard wording. The
- * Russian is a translation, not Amazon's: the agreement asks for that sentence or
- * one "substantially similar", which is why it is not a different claim.
- * Deliberately nothing else about the programme is said anywhere: the agreement
- * limits public statements about it to this one, and the advertisement marking
- * the law requires is the only exception (`affiliateNotice`).
- */
-export interface AffiliateDisclosureTranslations {
-  amazonDe: string;
-}
-
 export interface FooterProps {
   dict: Translations;
 }
@@ -1597,7 +1571,6 @@ export interface GiftCardProps {
     | 'deleteGift'
     | 'selectGift'
     | 'selectGiftNamed'
-    | 'affiliateNotice'
   >;
   onDelete: (id: string) => void;
   onTogglePurchased: (id: string) => void;
