@@ -44,6 +44,13 @@ export type Refusal =
     fewer, and go again".
   */
   | 'too_many_gifts'
+  /*
+    A copy naming a bought idea. Only an open idea is copied - the rule is the sixth
+    in the header of `lib/list-access.ts` - and its own code rather than a reuse of
+    `nothing_to_change`, because the sheet can tell the reader what happened: one of
+    the wishes was bought after it was ticked.
+  */
+  | 'cannot_copy_bought_idea'
   // Sharing.
   | 'no_such_account'
   | 'already_shared'
@@ -82,6 +89,7 @@ export const REFUSALS: Refusal[] = [
   'invalid_visibility',
   'already_on_this_list',
   'too_many_gifts',
+  'cannot_copy_bought_idea',
   'no_such_account',
   'already_shared',
   'cannot_share_with_owner',

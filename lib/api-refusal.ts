@@ -49,6 +49,12 @@ const STATUS: Record<Refusal, number> = {
   */
   already_on_this_list: 400,
   too_many_gifts: 400,
+  /*
+    400 for the reason `already_on_this_list` is: both lists are the caller's own and
+    the bought idea is on their own sheet, so nothing is hidden and no permission is
+    denied. It is a request for something the product does not do.
+  */
+  cannot_copy_bought_idea: 400,
   already_shared: 400,
   cannot_share_with_owner: 400,
   not_shared_yet: 400,
@@ -81,6 +87,7 @@ const MESSAGE: Record<Refusal, string> = {
   invalid_visibility: 'That visibility does not exist',
   already_on_this_list: 'That wish is already on this list',
   too_many_gifts: 'Too many wishes in one request',
+  cannot_copy_bought_idea: 'A bought wish can be moved, but not copied',
   already_shared: 'This list is already shared with them',
   cannot_share_with_owner: 'You already have this list',
   not_shared_yet: 'Make the list shared before sharing it',

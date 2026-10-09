@@ -22,7 +22,7 @@ import { PrismaClient } from '@prisma/client';
     clear other's mark 403        200             200          404
     add an idea        200        403             403          404
     delete an idea     200        403             403          404
-    copy an idea       200        403             403          404
+    copy an open idea  200        403             403          404
     move an idea       200        403             403          404
     rename             200        403             403          404
     change visibility  200        403             403          404

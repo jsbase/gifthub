@@ -23,7 +23,7 @@ import type { ListVisibility } from '@/types';
  *   clear a mark somebody else set        403       yes        yes           404
  *   add an idea                           yes       403        403           404
  *   delete an idea                        yes       403        403           404
- *   copy an idea to a list you own        yes       403        403           404
+ *   copy an OPEN idea to a list you own   yes       403        403           404
  *   move an idea to a list you own        yes       403        403           404
  *   rename the list                       yes       403        403           404
  *   change visibility                     yes       403        403           404
@@ -32,7 +32,7 @@ import type { ListVisibility } from '@/types';
  *   revoke a group grant                  yes       403        403           404
  *   delete the list (cascades ideas)      yes       403        403           404
  *
- * Five things in that table are not obvious and each has a reason.
+ * Six things in that table are not obvious and each has a reason.
  *
  * 1. `404` and `403` are not interchangeable. An account with no relationship to a
  *    list is told there is nothing there, so another person's list is never
@@ -90,6 +90,15 @@ import type { ListVisibility } from '@/types';
  *    sheet is not a reason a wish may be written on it, and reusing
  *    `requireWritableList` there would have quietly granted the group-reach row
  *    above a capability its owners do not have.
+ *
+ * 6. Only an open idea may be copied; a bought one may still be moved. A copy
+ *    arrives open, so a copy of a bought idea is an open duplicate of a present
+ *    that is already being given - and the one sheet it can land on unnoticed is
+ *    the one it came from: move it away, where it stays bought, then copy it back
+ *    into the position it held. A move keeps the mark and so has nothing to shed.
+ *    The refusal is 400, not 403: both lists are the caller's own, so nothing is
+ *    hidden and no permission is denied - the request asks for something this
+ *    product does not do.
  *
  * Note what is deliberately absent: there is no repository port here. Prisma is the
  * only implementation, and a seam with one adapter is indirection rather than a
@@ -1003,8 +1012,8 @@ const keyedGiftId = (
  * is a write; the destination is `findOwnedList` because a list the caller can only
  * read is not a place a wish may be put.
  *
- * **`move` keeps the mark, `copy` leaves it behind - and that is the
- * entire design.** A moved idea arrives on the target exactly as it
+ * **`move` keeps the mark, and only an open idea is copied - that is
+ * the entire design.** A moved idea arrives on the target exactly as it
  * stood: a bought one arrives bought, carrying the account that
  * marked it, so it cannot become purchasable again on the other
  * sheet, and an open one arrives open. `move` is therefore a bare
@@ -1013,23 +1022,24 @@ const keyedGiftId = (
  *
  * A **copy** is a new thought on a new sheet, so it arrives as an
  * *open* wish: `isPurchased` false, no attribution, ready to be
- * marked by the target's own audience. The original keeps its mark
- * on the source, because copying changes nothing there - the
- * coordination the mark carries is neither duplicated onto the
- * target nor lost from the source. That is why the copy branch
- * writes two literals instead of the row's own values, and why
- * there is no branch anywhere on `isPurchased`: a moved wish must
- * not arrive open, and a copied one must.
+ * marked by the target's own audience. Because it arrives open, it is
+ * only made of an idea that is open as well - header rule 6 - and a
+ * batch naming a bought idea is refused whole with
+ * `cannot_copy_bought_idea`, like a batch naming an id that is not on
+ * the source. The copy branch still writes two literals rather than
+ * the row's own values: the read below is not the last word on the
+ * mark, as the next paragraph says.
  *
- * **Nothing the copy reads can change.** The only mutation the product
- * makes to a gift row is the mark - there is no edit endpoint - and
- * the mark no longer travels with a copy, so the fields the copy
- * reads (`title`, `description`, `url`, `createdAt`) are the same at
- * the insert as they were at the read, whichever request lands in
- * between. The old reason this read's timing mattered - a buyer
- * marking mid-flight would be copied with the mark it carried by
- * then - went away with the mark itself. `move` reads nothing: it
- * re-points the row, so the row's own state is its own answer.
+ * **One thing the copy reads can change, and that is acceptable.** The
+ * only mutation the product makes to a gift row is the mark - there is
+ * no edit endpoint - so `title`, `description`, `url` and `createdAt`
+ * are the same at the insert as they were at the read. The mark is not:
+ * a buyer can mark an idea between the read and the insert, and the
+ * copy lands open beside an original that is now bought. That is the
+ * copy having happened a moment earlier, which it could have, and not a
+ * mark shed - the original keeps it, on the sheet it was set on. `move`
+ * reads nothing: it re-points the row, so the row's own state is its
+ * own answer.
  *
  * **All of it or none of it.** A batch of twelve that lands eight is worse than
  * retyping the twelve, and it is the only failure mode this function creates that
@@ -1066,6 +1076,10 @@ const keyedGiftId = (
  *     new `requestId` and writes new rows, which is what keeps "copy it again"
  *     meaning what it says. With no `requestId` nothing is derived and the copy is
  *     exactly as repeatable as it was.
+ *   - A named **copy** repeated after a buyer marked one of its originals in between
+ *     would now name a bought idea. If every copy the attempt derives is already on
+ *     the destination, it is a repeat and answers with the first attempt's success;
+ *     only an attempt that has not landed is refused for the mark.
  *
  * `count` is how many of the batch's wishes are on the destination when this returns:
  * the batch size, and the same on a repeat that wrote nothing.
@@ -1169,6 +1183,36 @@ export const transferGifts = async (
     const { requestId } = input;
 
     /*
+      Only an open idea is copied - header rule 6. Checked here, after both gates and
+      the source-scoped read, so the refusal can only be reached by somebody who owns
+      both lists, and it says nothing they could not see on their own sheet.
+
+      Before refusing, the one repeat this check would otherwise break: an attempt
+      that already landed, whose reply was lost, and whose original was marked by a
+      buyer before the sheet sent it again. Its copies are on the destination under
+      the ids this attempt derives, so finding all of them there is the first
+      attempt's success, answered again. Finding fewer is not a repeat: the batch is
+      all-or-nothing, so an attempt that landed landed whole.
+    */
+    if (rows.some((row) => row.isPurchased)) {
+      if (requestId !== undefined) {
+        const landed = await prisma.gift.count({
+          where: {
+            id: {
+              in: rows.map((row) =>
+                keyedGiftId(accountId, requestId, row.id, targetListId)
+              ),
+            },
+            listId: targetListId,
+          },
+        });
+        if (landed === rows.length) return done({ count: landed });
+      }
+
+      return refused('cannot_copy_bought_idea');
+    }
+
+    /*
       `createdAt` is carried so the copy lands on the target in the position it
       holds on the source. `listGifts` orders by `createdAt desc`, and a copied
       idea that jumped to the top of a list it was written for last year would
@@ -1177,8 +1221,8 @@ export const transferGifts = async (
       The mark is the one thing deliberately NOT carried. A copy is a new
       thought on a new sheet, so it arrives open - `isPurchased: false` and no
       attribution - and the target's own audience is the one that decides
-      whether it is already bought. The source keeps its mark, untouched,
-      because this branch inserts rather than updates.
+      whether it is already bought. Written as literals even though every row
+      read above was open, because a buyer may have marked one since.
 
       One statement, so it needs no transaction: it is applied whole or not at all.
       And it needs no guard on the source either, which is what the move below has
