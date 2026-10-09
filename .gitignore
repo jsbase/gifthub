@@ -70,6 +70,10 @@ node_modules/
 # repo - audits, implementation plans and the SDD workspace are working material
 # for the session that produced them.
 /docs/
+# the local-markdown issue tracker (docs/agents/issue-tracker.md): tickets are
+# per-clone working state, so they stay out of feature branches and the PRs into
+# preview.
+/.scratch/
 # the SDD ledger and its review diffs. Its own nested .gitignore covers it with
 # `*`, but that file ignores itself, so deleting it would expose all of it.
 /.superpowers/
