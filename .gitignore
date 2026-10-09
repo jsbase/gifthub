@@ -66,10 +66,14 @@ node_modules/
 /.github/hooks
 
 # agent plan workspace
-# Local planning and audit documents only. Nothing under /docs belongs in the
-# repo - audits, implementation plans and the SDD workspace are working material
-# for the session that produced them.
-/docs/
+# Nothing under /docs belongs in the repo except docs/agents (the config the
+# engineering skills read) and docs/adr (decisions that outlive a session) -
+# audits, implementation plans and the SDD workspace are working material for
+# the session that produced them. `/docs/*` plus negations rather than `/docs/`:
+# git cannot re-include a file whose parent directory is itself excluded.
+/docs/*
+!/docs/agents/
+!/docs/adr/
 # the local-markdown issue tracker (docs/agents/issue-tracker.md): tickets are
 # per-clone working state, so they stay out of feature branches and the PRs into
 # preview.
