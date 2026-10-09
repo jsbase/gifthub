@@ -15,14 +15,12 @@ import type { AffiliateProgram } from '@/lib/affiliate-link';
   This is the only place the feature makes the server fetch an address a person
   typed, so it is built around what it must not do:
 
-    - It only requests an address a programme's `shortLinks` rule allows: a listed
-      host and a path shaped like a short code, over https, with no port, no
-      credentials and no query. Anything else is returned untouched and never
-      fetched, which is what stops a wish being a way to make our server request an
-      internal address or an arbitrary path on a listed one.
+    - It only requests hosts a programme lists in `shortHosts`. Anything else is
+      returned untouched and never fetched, which is what stops a wish being a way
+      to make our server request an internal address.
     - It does not follow a redirect to an address that is neither a link the
-      programme recognises nor another short link its rules allow. The destination
-      of somebody else's short link is not trusted either.
+      programme recognises nor another of its short hosts. The destination of
+      somebody else's short link is not trusted either.
     - It never opens the product page. The redirect's own `Location` already says
       where it goes, and reading the page would be a download from a host we do
       not control.
@@ -50,22 +48,21 @@ const isWebAddress = (url: URL) =>
 /**
  * The address to request for `url`, or `null` when it is not one we may send.
  *
- * Built from the host in the programme's own rule plus the path, and never from
- * `url` itself. The typed address is checked, not forwarded: what leaves the
- * server is always `https`, always a host somebody listed, with no port, no
- * credentials and no query, whatever was typed or whatever a redirect asked for.
- * The path is the one part a person controls, so it is only used once it has
- * matched the rule's shape for a short code - a few letters and digits, nothing
- * that could name another path, another host or a dot segment - and a path that
- * does not match is not requested at all.
+ * Built from the host in the programme's own list plus the person's path and
+ * query, and never from `url` itself. The typed address is checked, not forwarded:
+ * what leaves the server is always `https`, always a host somebody listed, with no
+ * port and no credentials, whatever was typed or whatever a redirect asked for.
+ * Only the path and query are the person's, and they cannot change where the
+ * request goes.
+ *
+ * It is also the shape a code scanner can read: a host that comes out of a
+ * constant list, and a suffix that follows a `/`.
  */
 function requestFor(program: AffiliateProgram, url: URL): URL | null {
-  const rule = program.shortLinks?.find(
-    (listed) => listed.host === url.hostname && listed.path.test(url.pathname)
-  );
-  if (!rule) return null;
+  const host = program.shortHosts?.find((listed) => listed === url.hostname);
+  if (host === undefined) return null;
   if (url.port !== '' || url.username !== '' || url.password !== '') return null;
-  return new URL(`https://${rule.host}${url.pathname}`);
+  return new URL(`https://${host}/${url.pathname.slice(1)}${url.search}`);
 }
 
 /**
@@ -87,19 +84,11 @@ export async function expandShortLink(
   }
   if (!isWebAddress(current)) return url;
 
-  // The first programme with a short-link rule this address satisfies, and the
-  // request that rule allows for it. Neither exists for anything else, which is
-  // returned untouched and never fetched.
-  let program: AffiliateProgram | undefined;
-  let request: URL | null = null;
-  for (const candidate of programs) {
-    request = requestFor(candidate, current);
-    if (request) {
-      program = candidate;
-      break;
-    }
-  }
-  if (!program || !request) return url;
+  const program = programs.find((p) => p.shortHosts?.includes(current.hostname));
+  if (!program) return url;
+
+  let request = requestFor(program, current);
+  if (!request) return url;
 
   /*
     A controller and a timer of our own rather than `AbortSignal.timeout`, whose

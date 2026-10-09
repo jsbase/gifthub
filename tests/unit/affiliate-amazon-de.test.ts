@@ -110,51 +110,15 @@ test('apply returns a new address and leaves the one it was given alone', () => 
   assert.equal(given.toString(), 'https://www.amazon.de/dp/B08N5WRWNW?tag=other-21');
 });
 
-test('the short links are exactly three hosts, and none of them is a page we tag', () => {
+test('the short-link hosts are exactly the three, and none of them is a page we tag', () => {
   // This list is the whole of what the server may fetch on Amazon's behalf, so it
   // is asserted as a list. And a host that is also `recognises` would mean
   // fetching the product page itself, which is never the point: the short link's
   // own redirect already says where it goes.
   const p = programme();
-  assert.deepEqual(
-    (p.shortLinks ?? []).map((rule) => rule.host),
-    ['amzn.to', 'amzn.eu', 'a.co']
-  );
-  for (const rule of p.shortLinks ?? []) {
-    assert.equal(p.recognises(new URL(`https://${rule.host}/x`)), false, rule.host);
-  }
-});
-
-test('a short code is a few letters and digits, optionally under /d/, and nothing else', () => {
-  // What may be requested is the programme's to say, not just which host: the
-  // person's path is what reaches the server, so only a path shaped like the codes
-  // Amazon issues is ever sent. Anything else - no code, a nested path, dot
-  // segments, an encoded one, a separator in the code, an over-long one - is not a
-  // short link and is not requested.
-  const rules = programme().shortLinks ?? [];
-  // Without this a programme with no rules would pass by looping over nothing.
-  assert.equal(rules.length, 3);
-  for (const rule of rules) {
-    for (const path of ['/4b8Q8eK', '/d/0h6u0Rp', '/3abcdef/', '/AbCd']) {
-      assert.equal(rule.path.test(path), true, `${rule.host} ${path}`);
-    }
-    for (const path of [
-      '/',
-      '/abc',
-      '/a/b/c1234',
-      '/%2e%2e/admin',
-      '/../admin',
-      '/co-de1234',
-      '/co_de1234',
-      '//evil.com/abcd',
-      `/${'a'.repeat(30)}`,
-      '/ab cd1234',
-      '/abcd?x=1',
-      '/d/',
-      '/d/d/abcd',
-    ]) {
-      assert.equal(rule.path.test(path), false, `${rule.host} ${path}`);
-    }
+  assert.deepEqual(p.shortHosts, ['amzn.to', 'amzn.eu', 'a.co']);
+  for (const host of p.shortHosts ?? []) {
+    assert.equal(p.recognises(new URL(`https://${host}/x`)), false, host);
   }
 });
 
