@@ -46,26 +46,6 @@ const isWebAddress = (url: URL) =>
   url.protocol === 'https:' || url.protocol === 'http:';
 
 /**
- * The address to request for `url`, or `null` when it is not one we may send.
- *
- * Built from the host in the programme's own list plus the person's path and
- * query, and never from `url` itself. The typed address is checked, not forwarded:
- * what leaves the server is always `https`, always a host somebody listed, with no
- * port and no credentials, whatever was typed or whatever a redirect asked for.
- * Only the path and query are the person's, and they cannot change where the
- * request goes.
- *
- * It is also the shape a code scanner can read: a host that comes out of a
- * constant list, and a suffix that follows a `/`.
- */
-function requestFor(program: AffiliateProgram, url: URL): URL | null {
-  const host = program.shortHosts?.find((listed) => listed === url.hostname);
-  if (host === undefined) return null;
-  if (url.port !== '' || url.username !== '' || url.password !== '') return null;
-  return new URL(`https://${host}/${url.pathname.slice(1)}${url.search}`);
-}
-
-/**
  * The long address behind a short link, or `url` unchanged.
  */
 export async function expandShortLink(
@@ -87,9 +67,6 @@ export async function expandShortLink(
   const program = programs.find((p) => p.shortHosts?.includes(current.hostname));
   if (!program) return url;
 
-  let request = requestFor(program, current);
-  if (!request) return url;
-
   /*
     A controller and a timer of our own rather than `AbortSignal.timeout`, whose
     timer does not keep the event loop alive: in a process with nothing else
@@ -104,7 +81,7 @@ export async function expandShortLink(
 
   try {
     for (let hop = 0; hop < maxHops; hop++) {
-      const response = await fetchImpl(request, {
+      const response = await fetchImpl(current, {
         redirect: 'manual',
         signal: deadline.signal,
       });
@@ -121,10 +98,8 @@ export async function expandShortLink(
       const next = new URL(location, current);
       if (!isWebAddress(next)) return url;
       if (program.recognises(next)) return next.toString();
-      const nextRequest = requestFor(program, next);
-      if (!nextRequest) return url;
+      if (!program.shortHosts?.includes(next.hostname)) return url;
       current = next;
-      request = nextRequest;
     }
   } catch {
     return url;
