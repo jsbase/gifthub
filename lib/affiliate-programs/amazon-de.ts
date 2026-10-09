@@ -1,4 +1,4 @@
-import type { AffiliateProgram } from '@/lib/affiliate-link';
+import type { AffiliateProgram, ShortLinkRule } from '@/lib/affiliate-link';
 
 const AMAZON_DE_HOSTS = new Set(['amazon.de', 'www.amazon.de']);
 
@@ -22,6 +22,21 @@ const FOREIGN_PARTNER_PARAMS = [
   'camp',
 ];
 
+/*
+  Amazon's short links: `amzn.to/4b8Q8eK`, and `/d/` before the code on `amzn.eu`
+  and `a.co`. A code is a few letters and digits and nothing else, so a path with a
+  separator, a dot segment, an encoded character, a query or a code of the wrong
+  length is not one and is never requested. The `/d/` is allowed on every host
+  rather than pinned per host: what matters is that the path cannot say anything
+  but "this code", and a code that Amazon does not know is answered with a
+  redirect to its home page, which is not followed.
+*/
+const SHORT_CODE_PATH = /^\/(?:d\/)?[A-Za-z0-9]{4,20}\/?$/;
+
+const SHORT_LINKS: readonly ShortLinkRule[] = ['amzn.to', 'amzn.eu', 'a.co'].map(
+  (host) => ({ host, path: SHORT_CODE_PATH })
+);
+
 /**
  * Our Amazon PartnerNet programme for amazon.de, or `null` when no tracking ID is
  * configured - the programme does not exist rather than existing and doing
@@ -35,7 +50,7 @@ export function amazonDe(tag: string | undefined): AffiliateProgram | null {
 
   return {
     id: 'amazon-de',
-    shortHosts: ['amzn.to', 'amzn.eu', 'a.co'],
+    shortLinks: SHORT_LINKS,
     disclosure: 'amazonDe',
     recognises: (url) => AMAZON_DE_HOSTS.has(url.hostname),
     apply: (url) => {

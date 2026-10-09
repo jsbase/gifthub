@@ -24,6 +24,17 @@
 
 import type { AffiliateDisclosureTranslations } from '@/types';
 
+/**
+ * One kind of short link. The path is part of the rule because it is the one part
+ * of the request a person controls: a rule that only named the host would let
+ * anybody send any path on it. `path` is matched against the whole `pathname`, so it
+ * must be anchored, and it is the only thing that decides what is requested.
+ */
+export interface ShortLinkRule {
+  host: string;
+  path: RegExp;
+}
+
 export interface AffiliateProgram {
   /** A stable name, for tests and for anything that has to say which one fired. */
   id: string;
@@ -40,11 +51,12 @@ export interface AffiliateProgram {
    */
   apply(url: URL): URL;
   /**
-   * Hosts of short links whose redirect leads to an address this programme
-   * recognises. The server resolves these on save and nowhere else, and this list
-   * is the whole of what it may fetch on the programme's behalf.
+   * The short links whose redirect leads to an address this programme recognises:
+   * a host, and the shape of the paths on it that are short codes. The server
+   * resolves these on save and nowhere else, and this list is the whole of what it
+   * may fetch on the programme's behalf - not a host, but a host and a code.
    */
-  shortHosts?: readonly string[];
+  shortLinks?: readonly ShortLinkRule[];
   /**
    * The sentence this programme's agreement requires on the site, as a key into
    * `AffiliateDisclosureTranslations`. A key and not the text because the text is
