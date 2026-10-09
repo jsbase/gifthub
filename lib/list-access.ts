@@ -854,6 +854,15 @@ export const toggleGiftPurchased = async (
     where: {
       id: giftId,
       /*
+        The list the gate was asked about, again, because an idea can now leave it:
+        a move re-points the row. Without this, a buyer whose read landed just before
+        the owner moved the idea away would write the mark on a list they cannot
+        read - possibly clearing somebody else's mark there - and only the read-back
+        below would notice, after the fact. With it, the write matches nothing and
+        the read-back answers `not_found`, which is true.
+      */
+      listId,
+      /*
         The state we expect to find is the state we read, not the state we are
         about to write. The first version put the negation here, which is the value
         the update is setting - so a clear looked for an open idea, matched nothing,
