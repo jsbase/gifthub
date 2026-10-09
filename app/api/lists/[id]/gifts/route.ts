@@ -123,8 +123,15 @@ export const POST: (
       const gate = await requireWritableList(id, accountId);
       if (gate.ok) {
         const expanded = await expandShortLink(typedUrl, AFFILIATE_PROGRAMS);
-        const tooLong = checkGiftField('url', expanded, { tooLong: () => '' });
-        if (!tooLong) storedUrl = expanded;
+        /*
+          Compared with `undefined`, because that is the whole of `checkGiftField`'s
+          "acceptable". The first version read the result as a boolean with an empty
+          sentence for "too long", and an empty string is falsy - so the check never
+          fired and an expansion over the limit was stored.
+        */
+        const fits =
+          checkGiftField('url', expanded, { tooLong: () => 'too long' }) === undefined;
+        if (fits) storedUrl = expanded;
       }
     }
 
