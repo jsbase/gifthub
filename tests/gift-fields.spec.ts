@@ -1083,4 +1083,41 @@ test.describe('Sending a transfer twice, and sending too many wishes', () => {
 
     await anna.context.close();
   });
+
+  test('a body that is not a transfer is a 400, not a server error', async ({
+    browser,
+  }) => {
+    const anna = await signIn(browser, ANNA);
+
+    const sourceId = await createList(anna);
+    const targetId = await createList(anna);
+    const giftId = await addGift(anna, sourceId, 'Blumen');
+    const url = `/api/lists/${sourceId}/gifts/transfer`;
+
+    /*
+      Not JSON, JSON that is not an object, and ids that no list or wish could have:
+      each is a request built wrong, so each is the same 400 a body naming the wrong
+      fields gets, and none of them reaches the database.
+    */
+    for (const [what, options] of [
+      ['a body that is not JSON', { headers: { 'Content-Type': 'application/json' }, data: '{' }],
+      ['JSON that is null', { data: 'null', headers: { 'Content-Type': 'application/json' } }],
+      ['JSON that is a list', { data: [giftId] }],
+      [
+        'a wish id far longer than any id',
+        { data: { giftIds: ['a'.repeat(65)], targetListId: targetId, mode: 'copy' } },
+      ],
+      [
+        'a destination id with a separator in it',
+        { data: { giftIds: [giftId], targetListId: `${targetId}/x`, mode: 'copy' } },
+      ],
+    ] as [string, Parameters<typeof anna.api.post>[1]][]) {
+      const refused = await anna.api.post(url, options);
+      expect(refused.status(), what).toBe(400);
+    }
+
+    expect(await prisma.gift.count({ where: { listId: targetId } })).toBe(0);
+
+    await anna.context.close();
+  });
 });
