@@ -158,7 +158,12 @@ One field, two kinds of answer: a nickname, or an email address.
       .setExpirationTime('7d')
       .sign(new TextEncoder().encode(process.env.JWT_SECRET));
 
-    const response = NextResponse.json({ token, success: true });
+    /*
+      The token travels in the cookie and nowhere else. It used to be in this body
+      as well, which no client read, and which handed the one value `httpOnly` exists
+      to keep from scripts to any script that could see the response.
+    */
+    const response = NextResponse.json({ success: true });
 
     response.cookies.set({
       name: 'auth-token',

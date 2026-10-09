@@ -4,6 +4,7 @@ import React, { memo, useCallback, useEffect, useRef } from 'react';
 import { IconExternalLink, IconShoppingCart, IconShoppingCartMinus, IconShoppingCartPlus, IconTrash } from '@tabler/icons-react';
 import { Button } from '@/components/ui/button';
 import { useDebounce } from '@/hooks/use-debounce';
+import { isWebAddress } from '@/lib/gift-text';
 import { cn } from '@/lib/utils';
 import type { GiftCardProps } from '@/types';
 
@@ -525,7 +526,13 @@ const GiftCard: React.FC<GiftCardProps> = ({
         </span>
       )}
 
-      {gift.url ? (
+      {/*
+        Only a web address becomes a link. The route has refused anything else
+        since it started checking, but rows stored before that are still read, and
+        a link a buyer follows is not the place to find out what one of them holds.
+        Such a cell is drawn like one with no link; its address is still printed.
+      */}
+      {gift.url && isWebAddress(gift.url) ? (
         <a
           href={gift.url}
           target='_blank'

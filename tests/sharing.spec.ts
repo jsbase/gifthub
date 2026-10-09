@@ -22,7 +22,7 @@ import { PrismaClient } from '@prisma/client';
     clear other's mark 403        200             200          404
     add an idea        200        403             403          404
     delete an idea     200        403             403          404
-    copy an idea       200        403             403          404
+    copy an open idea  200        403             403          404
     move an idea       200        403             403          404
     rename             200        403             403          404
     change visibility  200        403             403          404
@@ -732,6 +732,30 @@ test.describe('Sharing permissions', () => {
 
     await anna.context.close();
     await ben.context.close();
+  });
+
+  test('the session token is in the cookie and in no response body', async ({
+    browser,
+  }) => {
+    const context = await browser.newContext();
+    const response = await context.request.post('/api/auth/login', {
+      data: { identifier: ANNA, password: PASSWORD },
+    });
+    expect(response.ok()).toBe(true);
+
+    /*
+      The cookie is `httpOnly` so that no script on the page can read the session.
+      The login body used to carry the same token beside `success`, unread by any
+      client, which undid that for whatever could see the response. Searched as a
+      string, like the buyer above, so it also catches the token under another name.
+    */
+    const cookie = (await context.cookies()).find((c) => c.name === 'auth-token');
+    expect(cookie?.httpOnly).toBe(true);
+    expect(cookie?.value).toBeTruthy();
+    expect(await response.text()).not.toContain(cookie!.value);
+    expect(await response.json()).toEqual({ success: true });
+
+    await context.close();
   });
 
   test('sharing is refused in the states that cannot work', async ({ browser }) => {

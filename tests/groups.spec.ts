@@ -784,6 +784,9 @@ test.describe('What a group does for a list', () => {
     // Ben's own group, so the "grant a group" refusal below cannot be explained by the
     // group not being his: the list gate answers first.
     const bensGroup = await createGroup(ben);
+    // And Ben's own list, for the same reason: a transfer onto a list he owns is
+    // refused at the source, which he may read but not write to.
+    const bensList = await createList(ben, 'PRIVATE');
 
     for (const [what, response] of [
       [
@@ -793,6 +796,15 @@ test.describe('What a group does for a list', () => {
         }),
       ],
       ['delete an idea', ben.api.delete(`/api/lists/${listId}/gifts/${giftId}`)],
+      ...(['copy', 'move'] as const).map(
+        (mode) =>
+          [
+            `${mode} an idea to a list he owns`,
+            ben.api.post(`/api/lists/${listId}/gifts/transfer`, {
+              data: { giftIds: [giftId], targetListId: bensList, mode },
+            }),
+          ] as [string, Promise<APIResponse>]
+      ),
       [
         'rename the list',
         ben.api.patch(`/api/lists/${listId}`, { data: { name: 'X' } }),

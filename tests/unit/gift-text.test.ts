@@ -142,3 +142,38 @@ test('the three fields keep three different bounds', () => {
     }
   }
 });
+/*
+  The link's scheme. `isWebAddress` decides both whether a link is stored and whether
+  a stored one is drawn as a link, so a scheme it lets through is a scheme a buyer can
+  be sent to.
+*/
+const { isWebAddress } =
+  require('../../lib/gift-text.ts') as typeof import('@/lib/gift-text');
+
+test('a web address is http or https, whatever its case and spacing', () => {
+  for (const url of [
+    'https://www.amazon.de/dp/B08N5WRWNW',
+    'http://example.com',
+    'HTTPS://EXAMPLE.COM/a?b=c',
+    '  https://example.com/  ',
+  ]) {
+    assert.equal(isWebAddress(url), true, url);
+  }
+});
+
+test('anything else is not a web address', () => {
+  for (const url of [
+    'javascript:alert(1)',
+    'data:text/html,<p>hi</p>',
+    'file:///etc/passwd',
+    'mailto:anna@example.test',
+    'ftp://example.com/file',
+    'intent://scan/#Intent;scheme=zxing;end',
+    // No scheme: a browser would resolve these against wishy itself.
+    'www.amazon.de/dp/B08N5WRWNW',
+    '/de/dashboard',
+    '',
+  ]) {
+    assert.equal(isWebAddress(url), false, url);
+  }
+});

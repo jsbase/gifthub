@@ -615,6 +615,13 @@ export interface ListSheetTranslations {
    * because it is not a failure: the mark is correct and permanent.
    */
   markedBySomeoneElse: string;
+  /**
+   * Shown at the head of the bought section while the owner is choosing what to
+   * copy, where that section has no checkboxes: only an open idea is copied, and
+   * a bought one may still be moved. Said once for the section rather than per
+   * cell, for the reason `markedBySomeoneElse` is.
+   */
+  boughtNotCopyable: string;
   backToLists: string;
 
   /**
@@ -713,13 +720,14 @@ export interface ToastTranslations {
    * two operations and interpolating it into a sentence would need a placeholder
    * that no locale can fill with a correctly inflected pair of words.
    *
-   * **Three ways to fail, because the server says which.** `giftsTransferFailed` is
+   * **Four ways to fail, because the server says which.** `giftsTransferFailed` is
    * the sentence for a request that did not arrive or was not understood - the reader
-   * cannot act on it except by pressing again. The other two are for refusals the
+   * cannot act on it except by pressing again. The other three are for refusals the
    * reader *can* act on: `giftsTransferNotFound` when a wish or the destination has
    * gone since the sheet was loaded (the sheet reloads and the next press is a
-   * different request), and `giftsTransferTooMany` when the selection is over the
-   * limit. The limit is not in the sentence for the same reason there is no `{count}`
+   * different request), `giftsTransferBought` when a ticked wish was bought before a
+   * copy went out (the sheet reloads and the wish leaves the batch), and
+   * `giftsTransferTooMany` when the selection is over the limit. The limit is not in the sentence for the same reason there is no `{count}`
    * - and so that the number can change on the server without three translations
    * going stale.
    */
@@ -727,6 +735,7 @@ export interface ToastTranslations {
   giftsMoved: string;
   giftsTransferFailed: string;
   giftsTransferNotFound: string;
+  giftsTransferBought: string;
   giftsTransferTooMany: string;
 }
 

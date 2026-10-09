@@ -3,7 +3,7 @@ import { requireAccountId } from '@/lib/auth-server';
 import { addGift } from '@/lib/list-access';
 import { refusalResponse } from '@/lib/api-refusal';
 import { toWireGift } from '@/lib/wire';
-import { checkGiftField, type GiftField } from '@/lib/gift-text';
+import { checkGiftField, isWebAddress, type GiftField } from '@/lib/gift-text';
 
 /**
  * An optional field that arrived blank is stored as absent rather than as an empty
@@ -92,11 +92,24 @@ export const POST: (
       }
     }
 
+    /*
+      A link is only stored if it is one a buyer can safely be sent to - see
+      `isWebAddress`. A field-shape refusal like the length ones above, so it names
+      the field and carries no code. A blank link is no link and is not refused.
+    */
+    const link = optionalText(url);
+    if (link !== undefined && !isWebAddress(link)) {
+      return NextResponse.json(
+        { message: 'That url must start with http:// or https://', field: 'url' },
+        { status: 400 }
+      );
+    }
+
     const gift = await addGift(
       {
         title: title.trim(),
         description: optionalText(description),
-        url: optionalText(url),
+        url: link,
       },
       id,
       accountId

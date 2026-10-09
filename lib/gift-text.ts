@@ -64,3 +64,23 @@ export function checkGiftField(
   if (length > max) return messages.tooLong(max);
   return undefined;
 }
+/**
+ * Whether a wish's link is an address a reader may be sent to: `http` or `https`,
+ * and nothing else.
+ *
+ * Every link is typed by the list's owner and followed by the people they shared it
+ * with, so the scheme is checked where it is stored and again where it is drawn.
+ * React already refuses a `javascript:` link and browsers refuse to open `data:`,
+ * but `file:`, an app's own scheme or an address with no scheme at all - which a
+ * browser resolves against wishy itself - got through both. The form's `type='url'`
+ * does not help: it accepts any scheme, and a request does not have to come from
+ * the form.
+ */
+export function isWebAddress(value: string): boolean {
+  try {
+    const { protocol } = new URL(value.trim());
+    return protocol === 'https:' || protocol === 'http:';
+  } catch {
+    return false;
+  }
+}

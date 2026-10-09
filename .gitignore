@@ -59,6 +59,7 @@ node_modules/
 /.codex
 /.kilo
 /.cursor
+/.gemini
 /skills-lock.json
 # agent tooling that lives inside .github - ignored, not deleted
 /.github/agents
