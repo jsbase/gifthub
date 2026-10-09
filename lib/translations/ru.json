@@ -184,7 +184,6 @@
     "chooseTarget": "Выбрать список",
     "selectGift": "Выбрать желание",
     "selectGiftNamed": "Выбрать желание «{title}»",
-    "affiliateNotice": "Реклама: за покупку по этой ссылке wishy получает комиссию.",
     "selectedCount": {
       "one": "выбрано {count} желание",
       "two": "выбрано {count} желания",
@@ -278,10 +277,7 @@
     "copyright": "© 2026 wishy",
     "privacyPolicy": "Политика конфиденциальности",
     "termsConditions": "Условия",
-    "support": "Угости меня кофе",
-    "affiliateDisclosures": {
-      "amazonDe": "Как партнёр Amazon я зарабатываю на соответствующих покупках."
-    }
+    "support": "Угости меня кофе"
   },
   "privacy": {
     "title": "Политика конфиденциальности",

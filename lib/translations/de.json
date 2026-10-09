@@ -184,7 +184,6 @@
     "chooseTarget": "Ziel wählen",
     "selectGift": "Wunsch auswählen",
     "selectGiftNamed": "Wunsch „{title}“ auswählen",
-    "affiliateNotice": "Anzeige: Für einen Kauf über diesen Link erhält wishy eine Provision.",
     "selectedCount": {
       "one": "{count} Wunsch ausgewählt",
       "two": "{count} Wünsche ausgewählt",
@@ -278,10 +277,7 @@
     "copyright": "© 2026 wishy",
     "privacyPolicy": "Datenschutz",
     "termsConditions": "AGB",
-    "support": "Spendier mir einen Kaffee",
-    "affiliateDisclosures": {
-      "amazonDe": "Als Amazon-Partner verdiene ich an qualifizierten Verkäufen."
-    }
+    "support": "Spendier mir einen Kaffee"
   },
   "privacy": {
     "title": "Datenschutzrichtlinie",

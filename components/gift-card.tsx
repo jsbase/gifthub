@@ -1,10 +1,9 @@
 'use client';
 
 import React, { memo, useCallback, useEffect, useRef } from 'react';
-import { IconBadgeAd, IconExternalLink, IconShoppingCart, IconShoppingCartMinus, IconShoppingCartPlus, IconTrash } from '@tabler/icons-react';
+import { IconExternalLink, IconShoppingCart, IconShoppingCartMinus, IconShoppingCartPlus, IconTrash } from '@tabler/icons-react';
 import { Button } from '@/components/ui/button';
 import { useDebounce } from '@/hooks/use-debounce';
-import { affiliateFor } from '@/lib/affiliate';
 import { cn } from '@/lib/utils';
 import type { GiftCardProps } from '@/types';
 
@@ -242,11 +241,6 @@ const GiftCard: React.FC<GiftCardProps> = ({
   // album - but the motion is one-shot, confined to the cell that changed.
   const justChanged = changedId === gift.id;
   const isCollected = gift.isPurchased;
-
-  // Once, because the link and the mark that says it is an advertisement have to
-  // come from the same answer. The printed address below keeps `gift.url`: only
-  // the `href` is rewritten, so the sheet never shows our tracking under a wish.
-  const link = gift.url ? affiliateFor(gift.url) : null;
 
   /*
     Shared by the linked and unlinked variants so the two cannot drift. The hover
@@ -531,17 +525,14 @@ const GiftCard: React.FC<GiftCardProps> = ({
         </span>
       )}
 
-      {link ? (
+      {gift.url ? (
         <a
-          href={link.href}
+          href={gift.url}
           target='_blank'
           rel='noopener noreferrer'
           className={interactiveClasses}
         >
-          <GiftCardBody
-            gift={gift}
-            affiliateNotice={link.earns ? dict.affiliateNotice : undefined}
-          />
+          <GiftCardBody gift={gift} />
         </a>
       ) : (
         <div className={interactiveClasses}>
@@ -597,13 +588,7 @@ const GiftCard: React.FC<GiftCardProps> = ({
  */
 const GiftCardBody: React.FC<{
   gift: GiftCardProps['gift'];
-  /**
-   * Present exactly when the link out of this cell is one we tag and earn from.
-   * The text and the decision both come from the parent, so the body draws a mark
-   * and never works out for itself whether a mark is owed.
-   */
-  affiliateNotice?: string;
-}> = ({ gift, affiliateNotice }) => (
+}> = ({ gift }) => (
   <div
     className={cn(
       'min-w-0',
@@ -636,115 +621,35 @@ const GiftCardBody: React.FC<{
       'py-3'
     )}
   >
-    <div className='flex items-start gap-2'>
-      {affiliateNotice && (
-        <>
-          {/*
-            The mark's name for assistive technology, first because the icon is first.
-            The icon below is decorative and its tooltip is a pointer's, so without
-            this the link would announce as an ordinary one while the page shows it
-            is an advertisement - a disclosure for sighted readers only. It is inside
-            the link on purpose: the cell is one link, and a second control for the
-            mark would be the nested-interactive problem this file already spent a
-            finding on.
-          */}
-          <span className='sr-only'>{affiliateNotice}</span>
-          {/*
-            The advertisement mark, in front of the title where it reads as part of
-            what the cell offers and not as a footnote to its address. It is not a
-            control: the cell is the link and this is a label on it, so hover is all
-            a pointer gets. That is deliberately not the only way to know - the icon
-            is on the cell at all times, which is what makes it recognisable as an
-            advertisement on a phone where nothing hovers.
+    <h3
+      data-testid='giftTitle'
+      className={cn(
+        'break-words',
+        /*
+          Two lines, then an ellipsis. The wish title is the largest object in the
+          cell and the thing a buyer reads from across the room, so it is never
+          truncated to one line - but it is clamped, because a wish written before the
+          field had a limit is still in the database and will otherwise fill the
+          viewport and push the rest of the sheet off the page.
 
-            Drawn at full strength even on a collected cell, where the title around it
-            changes: the mark is a disclosure, and one that fades with the wish's
-            state is hardest to read exactly when the cell has been dealt with and the
-            link is still live.
-
-            The tooltip opens to the right and upward because the mark is at the
-            cell's leading edge; the width it needs is the cell's.
-          */}
-          <span
-            aria-hidden='true'
-            className={cn(
-              'group/ad',
-              'relative',
-              'mt-px',
-              'flex',
-              'shrink-0',
-              'transition-colors',
-              gift.isPurchased
-                ? 'text-collected-foreground'
-                : 'text-caption hover:text-ink'
-            )}
-          >
-            <IconBadgeAd className='h-[1.125rem] w-[1.125rem]' stroke={1.75} />
-            <span
-              className={cn(
-                'pointer-events-none',
-                'invisible',
-                'absolute',
-                'bottom-full',
-                'left-0',
-                'z-20',
-                'mb-1.5',
-                'w-max',
-                'max-w-[16rem]',
-                'rounded-sm',
-                'bg-ink',
-                'px-2.5',
-                'py-1.5',
-                'font-sans',
-                'text-[0.75rem]',
-                'font-normal',
-                'normal-case',
-                'leading-snug',
-                'tracking-normal',
-                'text-ink-foreground',
-                'group-hover/ad:visible'
-              )}
-            >
-              {affiliateNotice}
-            </span>
-          </span>
-        </>
+          `line-clamp` rather than `truncate` because `truncate` is one line and a
+          two-word German compound does not fit in one line at 390px. Both leave a
+          horizontal scrollbar out of the cell: the clamp adds an ellipsis inside the
+          box and keeps the content width inside the cell's own border, which is the
+          property that matters on a phone.
+        */
+        'line-clamp-2',
+        'font-label',
+        'text-[0.9375rem]',
+        'font-bold',
+        'uppercase',
+        'leading-[1.35]',
+        'tracking-[0.055em]',
+        gift.isPurchased ? 'text-collected-foreground' : 'text-ink'
       )}
-      <h3
-        data-testid='giftTitle'
-        className={cn(
-          'min-w-0',
-          'break-words',
-          /*
-            Two lines, then an ellipsis. The wish title is the largest object in the
-            cell and the thing a buyer reads from across the room, so it is never
-            truncated to one line - but it is clamped, because a wish written before the
-            field had a limit is still in the database and will otherwise fill the
-            viewport and push the rest of the sheet off the page.
-
-            `line-clamp` rather than `truncate` because `truncate` is one line and a
-            two-word German compound does not fit in one line at 390px. Both leave a
-            horizontal scrollbar out of the cell: the clamp adds an ellipsis inside the
-            box and keeps the content width inside the cell's own border, which is the
-            property that matters on a phone.
-
-            `min-w-0` because the title is now a flex item beside the mark, and a flex
-            item will not shrink below its content without it: the clamp would never
-            get a narrower box to clamp to.
-          */
-          'line-clamp-2',
-          'font-label',
-          'text-[0.9375rem]',
-          'font-bold',
-          'uppercase',
-          'leading-[1.35]',
-          'tracking-[0.055em]',
-          gift.isPurchased ? 'text-collected-foreground' : 'text-ink'
-        )}
-      >
-        {gift.title}
-      </h3>
-    </div>
+    >
+      {gift.title}
+    </h3>
 
     {gift.description && (
       <p
