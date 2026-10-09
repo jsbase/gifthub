@@ -134,7 +134,7 @@ export const login: (
     `null` parses and then throws on the first property read below, which lands in
     the same place. There is no optional chaining here for that reason.
 
-    A 2xx is unaffected. The route's success response is `{ token, success: true }`,
+    A 2xx is unaffected. The route's success response is `{ success: true }`,
     and it is the only 2xx the route sends - there is no empty-but-successful answer
     to break.
   */
